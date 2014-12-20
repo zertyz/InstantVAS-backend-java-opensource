@@ -1,0 +1,169 @@
+package mutua.hangmansmsgame.smslogic;
+
+import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import mutua.hangmansmsgame.dispatcher.IResponseReceiver;
+import mutua.hangmansmsgame.dispatcher.MessageDispatcher;
+import mutua.hangmansmsgame.dto.UserSessionDto;
+import mutua.hangmansmsgame.i18n.IPhraseology;
+import mutua.hangmansmsgame.smslogic.NavigationMap.ECOMMANDS;
+import mutua.hangmansmsgame.smslogic.NavigationMap.ESTATES;
+import mutua.hangmansmsgame.smslogic.commands.ICommandProcessor;
+import mutua.hangmansmsgame.smslogic.commands.dto.CommandAnswerDto;
+import mutua.hangmansmsgame.smslogic.commands.dto.CommandInvocationDto;
+import mutua.hangmansmsgame.smslogic.commands.dto.CommandMessageDto;
+import mutua.hangmansmsgame.smslogic.commands.dto.CommandMessageDto.EResponseMessageType;
+import mutua.hangmansmsgame.smslogic.commands.dto.CommandPatternsDto;
+import mutua.smsin.dto.IncomingSMSDto;
+import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
+
+/** <pre>
+ * HangmanSMSGameProcessor.java
+ * ============================
+ * (created by luiz, Dec 19, 2014)
+ *
+ * Class responsible for receiving input SMSes and producing output SMSes for the
+ * Hangman SMS Game
+ *
+ * @see RelatedClass(es)
+ * @version $Id$
+ * @author luiz
+ */
+
+public class HangmanSMSGameProcessor {
+
+	// phraseology
+	//////////////
+	
+	private static IPhraseology phrases;
+	
+	// message dispatchers
+	//////////////////////
+	
+	private MessageDispatcher mtDispatcher;
+	
+	
+	/***********************
+	** PROCESSING METHODS **
+	***********************/
+	
+	/*
+	 * Gets a processor instance which will deliver Output SMSes (MT's) to the 
+	 * provided 'interactionReceiver' MessageReceiver instance
+	 */
+	public HangmanSMSGameProcessor(IResponseReceiver defaultReceiver) {
+		mtDispatcher = new MessageDispatcher(defaultReceiver);
+	}
+	
+	/*
+	 *  from the available options (i.e., the commands that belongs to the current 'userState') determine which one of them
+	 *  should process the 'incomingText' and build the object needed to issue the call
+	 */
+	protected CommandInvocationDto resolveInvocationHandler(ESTATES state, String incomingText) {
+		
+		CommandPatternsDto[] commandPatterns = state.getCommandPatterns();
+		// traverse all commands
+		for (int comandIndex=0; comandIndex<commandPatterns.length; comandIndex++) {
+			ECOMMANDS command = commandPatterns[comandIndex].getCommand();
+			String[] patterns = commandPatterns[comandIndex].getPatterns();
+			// try to match 'incomingText' against each pattern
+			for (int patternIndex=0; patternIndex<patterns.length; patternIndex++) {
+				String regularExpression = patterns[patternIndex];
+				Pattern pattern = Pattern.compile(regularExpression, Pattern.CASE_INSENSITIVE);
+				Matcher m = pattern.matcher(incomingText);
+				// build the invocation object
+				if (m.matches()) {
+					ICommandProcessor commandProcessor = command.getCommandProcessor();
+					// the parameters
+					ArrayList<String> parameters = new ArrayList<String>();
+					// rules:
+					// discard item 0 -- the matched string
+					// do not insert null items
+					for (int i=0; i<m.groupCount(); i++) {
+						String parameter = m.group(i+1);
+						if (parameter != null) {
+							parameters.add(parameter.trim());
+						}
+					}
+					return new CommandInvocationDto(command, commandProcessor, parameters.toArray(new String[] {}));
+				}
+			}
+		}
+		return null;
+	}
+	
+	/*
+	 *  invoke the command determined as the one to process the 'incomingSMS'
+	 */
+	protected CommandAnswerDto invokeCommand(CommandInvocationDto invocationHandler, UserSessionDto userSession, IncomingSMSDto incomingSMS) {
+		ICommandProcessor commandProcessor = invocationHandler.getCommandProcessor();
+		String[] parameters = invocationHandler.getParameters();
+		String incomingPhone = incomingSMS.getPhone();
+		String incomingText = incomingSMS.getText();
+		CommandAnswerDto commandAnswer;
+		try {
+			ESMSInParserCarrier carrier = incomingSMS.getCarrier();
+			commandAnswer = commandProcessor.processCommand(userSession, carrier, parameters, IPhraseology.getCarrierSpecificPhraseology(carrier));
+		} catch (Throwable t) {
+			// in case of error...
+			//Instrumentation.reportSevereError("BlocosDeCarnaval: Error processing message '"+incoming_text+"' from phone '"+incoming_phone+"'", t);
+			CommandMessageDto message = new CommandMessageDto(incomingPhone,
+				"Desculpe o transtorno mas sua mensagem nao pode ser processada agora. Por favor, tente novamente mais tarde",
+				EResponseMessageType.ERROR);
+			commandAnswer = new CommandAnswerDto(message, null);
+		}
+		return commandAnswer;
+	}
+	
+	/*
+	 *  route the SMS response of a command to the appropriate dispatcher 
+	 */
+	protected void routeMessages(CommandAnswerDto commandResponse, IncomingSMSDto incomingSMS) {
+		try {
+			CommandMessageDto[] responseMessages = commandResponse.getResponseMessages();
+//			if ((response_messages != null) && (response_messages[0].getType() == EResponseMessageType.NEWS_INCENTIVE)) {
+//				// broadcast
+//				broadcast_dispatcher.dispatchMessage(command_response, incoming_sms);
+//			}
+//			else {
+				// normal interaction
+				mtDispatcher.dispatchMessage(commandResponse, incomingSMS);
+//			}
+		} catch (Throwable t) {
+			throw new RuntimeException("Cannot dispatch a message in response to {phone='"+incomingSMS.getPhone()+"', text='"+incomingSMS.getText()+"'}", t);
+		}
+	}
+	
+
+	public void process(IncomingSMSDto incomingSMS) throws SMSProcessorException {
+		
+		String incomingPhone = incomingSMS.getPhone();
+		String incomingText = incomingSMS.getText();
+		
+		// the user state
+		UserSessionDto userSession;
+		try {
+			//userSession = DALFactory.getInstance().getStateDAO().findDTOByPhone(incomingPhone);
+			userSession = new UserSessionDto(incomingPhone, "NEW_USER");
+		} catch (Exception e) {
+			throw new RuntimeException("Database comunication problem: cannot retrieve state for user '"+incomingPhone+"'", e);
+		}
+			
+		// determine which command (and arguments) to call
+		CommandInvocationDto invocationHandler = resolveInvocationHandler(ESTATES.valueOf(userSession.getNavigationState()), incomingText);
+		if (invocationHandler != null) {
+			// execute
+			CommandAnswerDto command_response = invokeCommand(invocationHandler, userSession, incomingSMS);
+			// route messages
+			routeMessages(command_response, incomingSMS);
+		} else {
+			throw new RuntimeException("The incoming message '" + incomingText +
+			                           "', belonging to " +
+			                           " the state '" + userSession.getNavigationState() + "' doesn't match " +
+			                           "with none of the commands listed in the 'NavigationMap'.");
+		}
+
+	}
+}
