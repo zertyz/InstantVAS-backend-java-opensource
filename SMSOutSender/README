@@ -1,0 +1,10 @@
+SMSOutSender
+============
+
+This project establishes the foundation for outgoing SMSes to whatever gateway we're using.
+
+By using a common foundation we can achieve some advantages, like easily replacing the gateway on
+ongoing projects and code reuse on outgoing routing -- enqueueing, for example.
+
+This project defines a common class to rule out how messages going to different destinations (an http
+service, for instance) should be invoked

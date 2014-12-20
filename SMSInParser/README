@@ -1,0 +1,12 @@
+SMSInParser
+===========
+
+This project establishes the foundations for incoming message parsers for the various SMS gateways
+that we're going to deal with.
+
+By having the same foundation we can achieve some advantages, like easily replacing the gateway on
+ongoing projects -- using the factory pattern, for instance -- and code reuse on incoming SMS
+routing -- enqueueing, for example.
+
+This project defines a common class to rule out how messages coming from various sources (by an
+HttpServlet, for instance) should be parsed and replied.
