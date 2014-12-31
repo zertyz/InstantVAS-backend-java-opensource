@@ -1,0 +1,27 @@
+HangmanSMSGame
+==============
+
+Integration API exposed by the hangman sms game:
+
+MO:
+http://localhost:8080/HangmanSMSGameServices/AddToMOQueue?AUTHENTICATION_TOKEN=...&MSISDN=(+55)?DDN?NNNNNNNN&CARRIER_NAME=...&LA=...&MO_ID=...&TEXT=...
+Response type: plain text. One of:
+ACCEPTED  -- the message was accepted for processing
+POSTPONED -- the message cannot be accepted now. Please try again in some seconds.
+REJECTED  -- the message was rejected and trying again with the same parameters won't help
+
+User Registration notification:
+http://localhost:8080/HangmanSMSGameServices/AddToSubscribeUserQueue?AUTHENTICATION_TOKEN=...&MSISDN=(+55)?DDN?NNNNNNNN&CARRIER_NAME=...&LA=...&SUBSCRIPTION_ID=...&SUBSCRIPTION_CHANNEL=...
+SUBSCRIPTION_CHANNEL: "api", indicating a registration due to GP request
+Response type: plain text. One of:
+ACCEPTED  -- the request was accepted for processing
+POSTPONED -- the request cannot be accepted now. Please try again in some seconds.
+REJECTED  -- the request was rejected and trying again with the same parameters won't help
+
+User Deregistration notification:
+http://localhost:8080/HangmanSMSGameServices/AddToUnsubscribeUserQueue?AUTHENTICATION_TOKEN=...&MSISDN=(+55)?DDN?NNNNNNNN&CARRIER_NAME=...&LA=...&SUBSCRIPTION_ID=...&UNSUBSCRIPTION_CHANNEL=...
+UNSUBSCRIPTION_CHANNEL: "renewal_failed", "carrier_request" or "api" 
+Response type: plain text. One of:
+ACCEPTED  -- the request was accepted for processing
+POSTPONED -- the request cannot be accepted now. Please try again in some seconds.
+REJECTED  -- the request was rejected and trying again with the same parameters won't help
