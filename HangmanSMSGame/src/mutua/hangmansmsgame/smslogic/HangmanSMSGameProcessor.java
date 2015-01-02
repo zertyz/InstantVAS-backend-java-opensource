@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import mutua.hangmansmsgame.dal.DALFactory;
+import mutua.hangmansmsgame.dal.IUserSessionDB;
+import mutua.hangmansmsgame.dal.dto.UserSessionDto;
 import mutua.hangmansmsgame.dispatcher.IResponseReceiver;
 import mutua.hangmansmsgame.dispatcher.MessageDispatcher;
-import mutua.hangmansmsgame.dto.UserSessionDto;
 import mutua.hangmansmsgame.i18n.IPhraseology;
 import mutua.hangmansmsgame.smslogic.NavigationMap.ECOMMANDS;
 import mutua.hangmansmsgame.smslogic.NavigationMap.ESTATES;
@@ -34,6 +36,11 @@ import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 
 public class HangmanSMSGameProcessor {
 
+	// databases
+	////////////
+	
+	private static IUserSessionDB userSessionDB = DALFactory.getSessionDB();
+	
 	// phraseology
 	//////////////
 	
@@ -120,16 +127,15 @@ public class HangmanSMSGameProcessor {
 	/*
 	 *  route the SMS response of a command to the appropriate dispatcher 
 	 */
-	protected void routeMessages(CommandAnswerDto commandResponse, IncomingSMSDto incomingSMS) {
+	protected void routeMessages(CommandMessageDto[] responseMessages, IncomingSMSDto incomingSMS) {
 		try {
-			CommandMessageDto[] responseMessages = commandResponse.getResponseMessages();
 //			if ((response_messages != null) && (response_messages[0].getType() == EResponseMessageType.NEWS_INCENTIVE)) {
 //				// broadcast
 //				broadcast_dispatcher.dispatchMessage(command_response, incoming_sms);
 //			}
 //			else {
 				// normal interaction
-				mtDispatcher.dispatchMessage(commandResponse, incomingSMS);
+				mtDispatcher.dispatchMessage(responseMessages, incomingSMS);
 //			}
 		} catch (Throwable t) {
 			throw new RuntimeException("Cannot dispatch a message in response to {phone='"+incomingSMS.getPhone()+"', text='"+incomingSMS.getText()+"'}", t);
@@ -142,11 +148,14 @@ public class HangmanSMSGameProcessor {
 		String incomingPhone = incomingSMS.getPhone();
 		String incomingText = incomingSMS.getText();
 		
-		// the user state
+		// get the user state
 		UserSessionDto userSession;
 		try {
-			//userSession = DALFactory.getInstance().getStateDAO().findDTOByPhone(incomingPhone);
-			userSession = new UserSessionDto(incomingPhone, "NEW_USER");
+			userSession = userSessionDB.getSession(incomingPhone);
+			// new user
+			if (userSession == null) {
+				userSession = new UserSessionDto(incomingPhone, "NEW_USER");
+			}
 		} catch (Exception e) {
 			throw new RuntimeException("Database comunication problem: cannot retrieve state for user '"+incomingPhone+"'", e);
 		}
@@ -154,10 +163,22 @@ public class HangmanSMSGameProcessor {
 		// determine which command (and arguments) to call
 		CommandInvocationDto invocationHandler = resolveInvocationHandler(ESTATES.valueOf(userSession.getNavigationState()), incomingText);
 		if (invocationHandler != null) {
+			
 			// execute
-			CommandAnswerDto command_response = invokeCommand(invocationHandler, userSession, incomingSMS);
+			CommandAnswerDto commandResponse = invokeCommand(invocationHandler, userSession, incomingSMS);
+			
+			// set the user state
+			UserSessionDto newUserSession = commandResponse.getUserSession();
+			if (newUserSession != null) {
+				System.out.println("Setting new user session: " + newUserSession);
+				userSessionDB.setSession(newUserSession);
+			} else {
+				System.out.println("Not setting a new user session");
+			}
+			
 			// route messages
-			routeMessages(command_response, incomingSMS);
+			routeMessages(commandResponse.getResponseMessages(), incomingSMS);
+			
 		} else {
 			throw new RuntimeException("The incoming message '" + incomingText +
 			                           "', belonging to " +

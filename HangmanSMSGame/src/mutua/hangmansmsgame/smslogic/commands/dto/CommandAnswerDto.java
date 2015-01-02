@@ -2,7 +2,7 @@ package mutua.hangmansmsgame.smslogic.commands.dto;
 
 import java.util.Arrays;
 
-import mutua.hangmansmsgame.dto.UserSessionDto;
+import mutua.hangmansmsgame.dal.dto.UserSessionDto;
 
 /* CommandAnswerDto.java  --  $Id: CommandAnswerDto.java 847 2011-02-23 21:36:49Z asantos $
  * =====================
@@ -18,11 +18,11 @@ import mutua.hangmansmsgame.dto.UserSessionDto;
 
 public class CommandAnswerDto {
 	
-	private final CommandMessageDto[] responseMesages;
+	private final CommandMessageDto[] responseMessages;
 	private final UserSessionDto sessionAfterCommandExecution;
 	
 	public CommandAnswerDto(CommandMessageDto[] responseMessages, UserSessionDto sessionAfterCommandExecution) {
-		this.responseMesages = responseMessages;
+		this.responseMessages = responseMessages;
 		this.sessionAfterCommandExecution = sessionAfterCommandExecution;
 	}
 	
@@ -31,11 +31,7 @@ public class CommandAnswerDto {
 	}
 
 	public CommandMessageDto[] getResponseMessages() {
-		return responseMesages;
-	}
-
-	public CommandMessageDto[] getResponseMesages() {
-		return responseMesages;
+		return responseMessages;
 	}
 
 	public UserSessionDto getUserSession() {
@@ -44,7 +40,7 @@ public class CommandAnswerDto {
 
 	@Override
 	public String toString() {
-		return "CommandAnswerDto [responseMesages=" + Arrays.toString(responseMesages) +
+		return "CommandAnswerDto [responseMessages=" + Arrays.toString(responseMessages) +
 		       ", userSession=" + sessionAfterCommandExecution + "]";
 	}
 	

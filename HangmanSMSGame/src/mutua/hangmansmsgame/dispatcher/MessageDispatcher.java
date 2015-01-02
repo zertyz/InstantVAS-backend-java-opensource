@@ -2,9 +2,8 @@ package mutua.hangmansmsgame.dispatcher;
 
 import java.sql.SQLException;
 
-import mutua.hangmansmsgame.dto.UserSessionDto;
+import mutua.hangmansmsgame.dal.dto.UserSessionDto;
 import mutua.hangmansmsgame.smslogic.BillingRules;
-import mutua.hangmansmsgame.smslogic.commands.dto.CommandAnswerDto;
 import mutua.hangmansmsgame.smslogic.commands.dto.CommandMessageDto;
 import mutua.smsin.dto.IncomingSMSDto;
 import mutua.smsout.dto.OutgoingSMSDto;
@@ -96,15 +95,11 @@ public class MessageDispatcher {
 	}
 
 	/**
-	 * Dispatches a message generated in the system to a receiver able to forward it to it's destination
-	 * @param commandResponse
+	 * Dispatches messages generated in the system to a receiver able to forward it to their destination
+	 * @param internalMessages
 	 * @param incomingSms
-	 * @throws SQLException
 	 */
-	public void dispatchMessage(CommandAnswerDto commandResponse, IncomingSMSDto incomingSms) throws SQLException {
-		// String originating_phone = incomingSms.getPhone();
-		// setState(originating_phone, command_response.getUserState());
-		CommandMessageDto[] internalMessages = commandResponse.getResponseMessages();
+	public void dispatchMessage(CommandMessageDto[] internalMessages, IncomingSMSDto incomingSms) throws SQLException {
 		OutgoingSMSDto externalMessage;
 		for (int i = 0; i < internalMessages.length; i++) {
 			externalMessage = translateResponseMessage(incomingSms, internalMessages[i]);

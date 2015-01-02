@@ -23,7 +23,21 @@ import mutua.hangmansmsgame.smslogic.commands.dto.CommandPatternsDto;
 public class StateDetails {
 
 	public static final CommandPatternsDto[] NEW_USER = {
+		new CommandPatternsDto(ECOMMANDS.START_INVITATION_PROCESS, new String[] {
+			"C"}),
+		new CommandPatternsDto(ECOMMANDS.SHOW_FULL_HELP_MESSAGE, new String[] {
+			"(.*)AJUDA(.*)"}),
 		new CommandPatternsDto(ECOMMANDS.SHOW_WELCOME_MESSAGE, new String[] {
+			"(.*)"}),
+	};
+	
+	public static final CommandPatternsDto[] ENTERING_OPPONENT_CONTACT_INFO = {
+		new CommandPatternsDto(ECOMMANDS.REGISTER_OPPONENT_PHONE, new String[] {
+			"(\\d+)"}),
+	};
+
+	public static final CommandPatternsDto[] ENTERING_MATCH_WORD = {
+		new CommandPatternsDto(ECOMMANDS.REGISTER_MATCH_WORD, new String[] {
 			"(.*)"}),
 	};
 

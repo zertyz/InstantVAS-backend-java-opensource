@@ -30,15 +30,15 @@ public class BillingRules {
 		switch (responseMessageType) {
 			case HELP:
 				return EBillingType.FREE;
-			case BLOCOS_LIST:
-				return EBillingType.SMS;
-			case BLOCOS_DETAIL:
-				return EBillingType.SMS;
-			case DETAIL_DISABIGUATION:
+			case ACQUIRE_MATCH_INFORMATION:
 				return EBillingType.FREE;
+			case MATCH:
+				return EBillingType.SMS;
 			case ERROR:
 				return EBillingType.FREE;
 			case INCENTIVE:
+				return EBillingType.FREE;
+			case INVITATION_MESSAGE:
 				return EBillingType.FREE;
 			default:
 				throw new RuntimeException("Billing rule not defined for response message type '" +

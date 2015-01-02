@@ -19,8 +19,8 @@ public class CommandMessageDto {
 
 	// classes of messages produced by the system
 	public enum EResponseMessageType {
-		HELP, BLOCOS_LIST, BLOCOS_DETAIL, DETAIL_DISABIGUATION,
-		ERROR, INCENTIVE,
+		HELP, ACQUIRE_MATCH_INFORMATION, MATCH,
+		ERROR, INCENTIVE, INVITATION_MESSAGE,
 	};
 	
 	private String phone;
