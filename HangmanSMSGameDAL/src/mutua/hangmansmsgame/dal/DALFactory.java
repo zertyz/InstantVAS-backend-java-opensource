@@ -14,27 +14,30 @@ package mutua.hangmansmsgame.dal;
 
 public class DALFactory {
 
-	public enum EDataAccessLayers {MEMORY, POSTGRESQL}
+	public enum EDataAccessLayers {RAM, POSTGRESQL}
 	
 	// configurable values
-	public static EDataAccessLayers DEFAULT_DAL = EDataAccessLayers.MEMORY;
-	
+	public static EDataAccessLayers DEFAULT_DAL = EDataAccessLayers.RAM;
+
 	private static final DALFactory[] instances;
 	
 	static {
 		// build the multiton instances
 		instances = new DALFactory[EDataAccessLayers.values().length];
-		instances[EDataAccessLayers.MEMORY.ordinal()]     = new DALFactory(EDataAccessLayers.MEMORY);
+		instances[EDataAccessLayers.RAM.ordinal()]        = new DALFactory(EDataAccessLayers.RAM);
 		instances[EDataAccessLayers.POSTGRESQL.ordinal()] = new DALFactory(EDataAccessLayers.POSTGRESQL);
 	}
 	
-	private IUserSessionDB userSessionDB;
+	private ISessionDB sessionDB;
+	private IUserDB userDB;
+	
 	
 	private DALFactory(EDataAccessLayers dal) {
 		
 		switch (dal) {
-			case MEMORY:
-				userSessionDB = new mutua.hangmansmsgame.dal.ram.UserSessionDB();
+			case RAM:
+				sessionDB = new mutua.hangmansmsgame.dal.ram.SessionDB();
+				userDB    = new mutua.hangmansmsgame.dal.ram.UserDB();
 				break;
 			case POSTGRESQL:
 				break;
@@ -44,12 +47,28 @@ public class DALFactory {
 		
 	}
 	
-	public static IUserSessionDB getSessionDB(EDataAccessLayers dal) {
-		return instances[dal.ordinal()].userSessionDB;
+	
+	// SessionDB
+	////////////
+	
+	public static ISessionDB getSessionDB(EDataAccessLayers dal) {
+		return instances[dal.ordinal()].sessionDB;
 	}
 	
-	public static IUserSessionDB getSessionDB() {
+	public static ISessionDB getSessionDB() {
 		return getSessionDB(DEFAULT_DAL);
+	}
+	
+	
+	// UserDB
+	/////////
+	
+	public static IUserDB getUserDB(EDataAccessLayers dal) {
+		return instances[dal.ordinal()].userDB;
+	}
+	
+	public static IUserDB getUserDB() {
+		return getUserDB(DEFAULT_DAL);
 	}
 	
 }

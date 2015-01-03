@@ -2,12 +2,12 @@ package mutua.hangmansmsgame.dal.dto;
 
 import java.util.Arrays;
 
-import mutua.hangmansmsgame.dal.dto.UserSessionDto.EUserSessionParameters;
+import mutua.hangmansmsgame.dal.dto.SessionDto.ESessionParameters;
 
 
 /** <pre>
- * UserSessionDto.java
- * ===================
+ * SessionDto.java
+ * ===============
  * (created by luiz, Dec 19, 2014)
  *
  * Represents the (somewhat) persistent user session information
@@ -17,9 +17,9 @@ import mutua.hangmansmsgame.dal.dto.UserSessionDto.EUserSessionParameters;
  * @author luiz
  */
 
-public class UserSessionDto {
+public class SessionDto {
 
-	public enum EUserSessionParameters {
+	public enum ESessionParameters {
 
 		// listing users session info
 		NEXT_LISTED_PLAYER_ID,
@@ -37,24 +37,24 @@ public class UserSessionDto {
 	private final String navigationState;
 	private final String[] parameterValues;
 
-	public UserSessionDto(String phone, String navigationState) {
-		this(phone, navigationState, new String[EUserSessionParameters.values().length]);
+	public SessionDto(String phone, String navigationState) {
+		this(phone, navigationState, new String[ESessionParameters.values().length]);
 	}
 	
-	public UserSessionDto(String phone, String navigationState, String[] parameterValues) {
+	public SessionDto(String phone, String navigationState, String[] parameterValues) {
 		this.phone = phone;
 		this.navigationState = navigationState;
 		this.parameterValues = parameterValues;
 	}
 	
-	public UserSessionDto getNewUserSession(String newNavigationState) {
-		return new UserSessionDto(phone, newNavigationState);
+	public SessionDto getNewSessionDto(String newNavigationState) {
+		return new SessionDto(phone, newNavigationState);
 	}
 
-	public UserSessionDto getNewUserSession(String newNavigationState, EUserSessionParameters parameter, String parameterValue) {
+	public SessionDto getNewSessionDto(String newNavigationState, ESessionParameters parameter, String parameterValue) {
 		String[] newParameterValues = Arrays.copyOf(parameterValues, parameterValues.length);
 		newParameterValues[parameter.ordinal()] = parameterValue;
-		return new UserSessionDto(phone, newNavigationState, newParameterValues);
+		return new SessionDto(phone, newNavigationState, newParameterValues);
 	}
 
 	public String getPhone() {
@@ -65,17 +65,17 @@ public class UserSessionDto {
 		return navigationState;
 	}
 
-	public String getParameterValue(EUserSessionParameters parameter) {
+	public String getParameterValue(ESessionParameters parameter) {
 		return parameterValues[parameter.ordinal()];
 	}
 
 	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		sb.append("UserSessionDto [phone='").append(phone).append("', navigationState='");
+		sb.append("SessionDto [phone='").append(phone).append("', navigationState='");
 		sb.append(navigationState).append("', parameterValues={");
 		for (int i=1; i<parameterValues.length; i++) {
-			sb.append(EUserSessionParameters.values()[i]).append('=');
+			sb.append(ESessionParameters.values()[i]).append('=');
 			sb.append("'").append(parameterValues[i]).append("'");
 			sb.append(i<parameterValues.length-1 ? "," : "");
 		}

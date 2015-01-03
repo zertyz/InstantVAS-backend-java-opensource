@@ -1,5 +1,8 @@
 package mutua.hangmansmsgame.smslogic;
 
+import mutua.hangmansmsgame.dal.DALFactory;
+import mutua.hangmansmsgame.dal.IUserDB;
+
 import org.junit.Test;
 
 /** <pre>
@@ -16,6 +19,13 @@ public class HangmanSMSGameProcessorTests {
 
 	
 	private TestCommons tc = new TestCommons();
+	
+	
+	// databases
+	////////////
+	
+	private static IUserDB userDB = DALFactory.getUserDB();
+
 	
 	
 	/*********************
@@ -37,17 +47,20 @@ public class HangmanSMSGameProcessorTests {
 	
 	@Test
 	public void testExternalUserInvitationPlayingPath() {
-		String expectedNickName = "HardCodedNick";
+		String playerNickName = "HardCodedNick";
+		String guestNickname  = "haole";
+		userDB.checkAvailabilityAndRecordNickname("21991234899", playerNickName);
+		userDB.checkAvailabilityAndRecordNickname("21998019167", guestNickname);
 		tc.checkResponse("21991234899", "Forca", "Welcome to the HANGMAN game. Join and compete for prizes. Send HELP for free to XXXX to know the rules.");
 		tc.checkResponse("21991234899", "AJUDA", new String[] {
 			"1/3: You can play the HANGMAN game in 2 ways: guessing someone's word or inviting someone to play with your word",
 			"2/3: You'll get 1 lucky number each word you guess. Whenever you invite a friend or user to play, you win another lucky number",
 			"3/3: Every week, 1 lucky number is selected to win the prize. Send an option to XXXX: (J)Play online; (C)Invite a friend or user; (R)anking; (A)Help"});
-		tc.checkResponse("21991234899", "C", "HANGMAN: Name registered: " + expectedNickName + ". Send your friend's phone to XXXX or LIST to see online players. NICK <NEW NICK> to change your name.");
+		tc.checkResponse("21991234899", "C", "HANGMAN: Name registered: " + playerNickName + ". Send your friend's phone to XXXX or LIST to see online players. NICK <NEW NICK> to change your name.");
 		tc.checkResponse("21991234899", "21998019167", "HANGMAN: Your friend's phone: 21998019167. Think of a word without special digits and send it now to XXXX. After the invitation, you'll get a lucky number");
 		tc.checkResponse("21991234899", "coco", new String[] {
-			"Howlie was invited to play with you. while you wait, you can provoke Howlie by sending a message to XXXX (0.31+tax) or send SIGNUP to provoke for free how many times you want",
-			"HANGMAN: HardCodedNick is inviting you for a hangman match. Do you accept? Send YES to XXXXX or PROFILE to see HardCodedNick information"});
+			guestNickname + " was invited to play with you. while you wait, you can provoke " + guestNickname + " by sending a message to XXXX (0.31+tax) or send SIGNUP to provoke for free how many times you want",
+			"HANGMAN: " + playerNickName + " is inviting you for a hangman match. Do you accept? Send YES to XXXXX or PROFILE to see " + playerNickName + " information"});
 	}
 	
 }

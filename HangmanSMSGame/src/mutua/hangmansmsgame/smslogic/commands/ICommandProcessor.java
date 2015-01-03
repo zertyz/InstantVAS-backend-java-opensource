@@ -1,6 +1,6 @@
 package mutua.hangmansmsgame.smslogic.commands;
 
-import mutua.hangmansmsgame.dal.dto.UserSessionDto;
+import mutua.hangmansmsgame.dal.dto.SessionDto;
 import mutua.hangmansmsgame.i18n.IPhraseology;
 import mutua.hangmansmsgame.smslogic.commands.dto.CommandAnswerDto;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
@@ -24,6 +24,6 @@ public interface ICommandProcessor {
 	 * by convention when -- in the 'CommandAnswerInfo' -- the 'phone' is null, the messages are
 	 * addressed to the same person that just sent the incoming message
 	 */
-	CommandAnswerDto processCommand(UserSessionDto userSession, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases);
+	CommandAnswerDto processCommand(SessionDto userSession, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases);
 
 }

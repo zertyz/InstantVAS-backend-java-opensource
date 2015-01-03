@@ -2,7 +2,7 @@ package mutua.hangmansmsgame.dispatcher;
 
 import java.sql.SQLException;
 
-import mutua.hangmansmsgame.dal.dto.UserSessionDto;
+import mutua.hangmansmsgame.dal.dto.SessionDto;
 import mutua.hangmansmsgame.smslogic.BillingRules;
 import mutua.hangmansmsgame.smslogic.commands.dto.CommandMessageDto;
 import mutua.smsin.dto.IncomingSMSDto;
@@ -57,7 +57,7 @@ public class MessageDispatcher {
 	 * change. Note: the corresponding 'getState' function is implemented in the
 	 * 'BlocosDeCarnavalProcessor' class
 	 */
-	private static void setState(String phone, UserSessionDto userSessionDto) {
+	private static void setState(String phone, SessionDto userSessionDto) {
 		if (userSessionDto != null) {
 //			stateDAO.update(phone, userSessionDto.getState().name());
 //			stateDAO.updateStateParameters(phone, userSessionDto.getParameters());

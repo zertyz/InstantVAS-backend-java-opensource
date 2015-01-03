@@ -5,8 +5,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import mutua.hangmansmsgame.dal.DALFactory;
-import mutua.hangmansmsgame.dal.IUserSessionDB;
-import mutua.hangmansmsgame.dal.dto.UserSessionDto;
+import mutua.hangmansmsgame.dal.ISessionDB;
+import mutua.hangmansmsgame.dal.dto.SessionDto;
 import mutua.hangmansmsgame.dispatcher.IResponseReceiver;
 import mutua.hangmansmsgame.dispatcher.MessageDispatcher;
 import mutua.hangmansmsgame.i18n.IPhraseology;
@@ -39,7 +39,7 @@ public class HangmanSMSGameProcessor {
 	// databases
 	////////////
 	
-	private static IUserSessionDB userSessionDB = DALFactory.getSessionDB();
+	private static ISessionDB userSessionDB = DALFactory.getSessionDB();
 	
 	// phraseology
 	//////////////
@@ -104,7 +104,7 @@ public class HangmanSMSGameProcessor {
 	/*
 	 *  invoke the command determined as the one to process the 'incomingSMS'
 	 */
-	protected CommandAnswerDto invokeCommand(CommandInvocationDto invocationHandler, UserSessionDto userSession, IncomingSMSDto incomingSMS) {
+	protected CommandAnswerDto invokeCommand(CommandInvocationDto invocationHandler, SessionDto userSession, IncomingSMSDto incomingSMS) {
 		ICommandProcessor commandProcessor = invocationHandler.getCommandProcessor();
 		String[] parameters = invocationHandler.getParameters();
 		String incomingPhone = incomingSMS.getPhone();
@@ -149,12 +149,12 @@ public class HangmanSMSGameProcessor {
 		String incomingText = incomingSMS.getText();
 		
 		// get the user state
-		UserSessionDto userSession;
+		SessionDto userSession;
 		try {
 			userSession = userSessionDB.getSession(incomingPhone);
 			// new user
 			if (userSession == null) {
-				userSession = new UserSessionDto(incomingPhone, "NEW_USER");
+				userSession = new SessionDto(incomingPhone, "NEW_USER");
 			}
 		} catch (Exception e) {
 			throw new RuntimeException("Database comunication problem: cannot retrieve state for user '"+incomingPhone+"'", e);
@@ -168,7 +168,7 @@ public class HangmanSMSGameProcessor {
 			CommandAnswerDto commandResponse = invokeCommand(invocationHandler, userSession, incomingSMS);
 			
 			// set the user state
-			UserSessionDto newUserSession = commandResponse.getUserSession();
+			SessionDto newUserSession = commandResponse.getUserSession();
 			if (newUserSession != null) {
 				System.out.println("Setting new user session: " + newUserSession);
 				userSessionDB.setSession(newUserSession);

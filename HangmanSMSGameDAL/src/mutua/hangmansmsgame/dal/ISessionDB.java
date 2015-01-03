@@ -1,6 +1,6 @@
 package mutua.hangmansmsgame.dal;
 
-import mutua.hangmansmsgame.dal.dto.UserSessionDto;
+import mutua.hangmansmsgame.dal.dto.SessionDto;
 
 /** <pre>
  * ISessionDB.java
@@ -14,14 +14,14 @@ import mutua.hangmansmsgame.dal.dto.UserSessionDto;
  * @author luiz
  */
 
-public interface IUserSessionDB {
+public interface ISessionDB {
 
 	/** Reset the database, for testing purposes */
 	void reset();
 	
 	/** Retrieve a 'UserSessionDto' from the database */
-	UserSessionDto getSession(String phone);
+	SessionDto getSession(String phone);
 	
 	/** Stores a 'UserSessionDto' on the database */
-	void setSession(UserSessionDto userSession);
+	void setSession(SessionDto userSession);
 }
