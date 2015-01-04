@@ -12,7 +12,7 @@ import mutua.hangmansmsgame.dal.dto.SessionDto.ESessionParameters;
  *
  * Represents the (somewhat) persistent user session information
  *
- * @see RelatedClass(es)
+ * @see ISessionDB
  * @version $Id$
  * @author luiz
  */
@@ -41,10 +41,23 @@ public class SessionDto {
 		this(phone, navigationState, new String[ESessionParameters.values().length]);
 	}
 	
-	public SessionDto(String phone, String navigationState, String[] parameterValues) {
+	private SessionDto(String phone, String navigationState, String[] parameterValues) {
 		this.phone = phone;
 		this.navigationState = navigationState;
 		this.parameterValues = parameterValues;
+	}
+	
+	public SessionDto(String phone, String navigationState,
+                      ESessionParameters parameter1, String parameter1Value) {
+		this(phone, navigationState);
+		parameterValues[parameter1.ordinal()] = parameter1Value;
+	}
+	
+	public SessionDto(String phone, String navigationState,
+	                  ESessionParameters parameter1, String parameter1Value,
+	                  ESessionParameters parameter2, String parameter2Value) {
+		this(phone, navigationState, parameter1, parameter1Value);
+		parameterValues[parameter2.ordinal()] = parameter2Value;
 	}
 	
 	public SessionDto getNewSessionDto(String newNavigationState) {

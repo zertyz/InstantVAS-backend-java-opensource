@@ -34,6 +34,8 @@ public class BillingRules {
 				return EBillingType.FREE;
 			case MATCH:
 				return EBillingType.SMS;
+			case PLAYING:
+				return EBillingType.SMS;
 			case ERROR:
 				return EBillingType.FREE;
 			case INCENTIVE:

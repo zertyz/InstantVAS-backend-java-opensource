@@ -9,7 +9,7 @@ import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
  *
  * Define the methods that will generate the phrasing for the SMS Application
  *
- * @see RelatedClass(es)
+ * @see TestPhraseology
  * @version $Id$
  * @author luiz
  */
@@ -118,6 +118,14 @@ public abstract class IPhraseology {
 		       "|/ \\\n" +
 		       "====\n";
 	}
+
+	
+	/** sent to the player who provided the word when the match starts -- when it is accepted by the opponent player */
+	public abstract String PLAYINGWordProvidingPlayerStart(String guessedWordSoFar, String wordGuessingPlayerNick);
+
+	/** sent back to the player who is attempting to guess the word when the match starts 
+	 * @param usedLetters TODO*/
+	public abstract String PLAYINGWordGuessingPlayerStart(String guessedWordSoFar, String usedLetters);
 	
 	/** shows the state of the game play to the player attempting to guess the word */
 	public abstract String PLAYINGWordGuessingPlayerStatus(boolean drawHead, boolean drawLeftArm, boolean drawRightArm,
@@ -182,5 +190,5 @@ public abstract class IPhraseology {
 
 	/** the message sent to the destination user when he is being provoked by someone */
 	public abstract String PROVOKINGSendMessage(String nick, String message);
-	
+
 }

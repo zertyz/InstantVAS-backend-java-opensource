@@ -30,17 +30,19 @@ public class NavigationMap {
 
 		// help commands
 		////////////////
-
+		
 		SHOW_WELCOME_MESSAGE(CommandDetails.SHOW_WELCOME_MESSAGE),
 		SHOW_FULL_HELP_MESSAGE(CommandDetails.SHOW_FULL_HELP_MESSAGE),
 		
 		
 		// invitation commands
 		//////////////////////
+
 		
 		START_INVITATION_PROCESS(CommandDetails.START_INVITATION_PROCESS),
 		REGISTER_OPPONENT_PHONE(CommandDetails.REGISTER_OPPONENT_PHONE),
 		REGISTER_MATCH_WORD(CommandDetails.REGISTER_MATCH_WORD),
+		ACCEPT_INVITATION(CommandDetails.ACCEPT_INVITATION),
 		
 		
 		;
@@ -71,8 +73,15 @@ public class NavigationMap {
 		//////////////////////////////////
 		
 		NEW_USER(StateDetails.NEW_USER),
+		
+		
+		// invitation states
+		////////////////////
+		
 		ENTERING_OPPONENT_CONTACT_INFO(StateDetails.ENTERING_OPPONENT_CONTACT_INFO),
 		ENTERING_MATCH_WORD_TO_PLAY(StateDetails.ENTERING_MATCH_WORD),
+		ANSWERING_TO_INVITATION(StateDetails.ANSWERING_TO_INVITATION),
+		PLAYING(StateDetails.PLAYING),
 				
 		;
 		

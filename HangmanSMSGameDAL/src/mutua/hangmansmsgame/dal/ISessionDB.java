@@ -9,19 +9,19 @@ import mutua.hangmansmsgame.dal.dto.SessionDto;
  *
  * Defines access methods for the "User Session" data base
  *
- * @see RelatedClass(es)
+ * @see ram.SessionDB, postgresql.SessionDB
  * @version $Id$
  * @author luiz
  */
 
 public interface ISessionDB {
 
-	/** Reset the database, for testing purposes */
+	/** Resets the database, for testing purposes */
 	void reset();
 	
-	/** Retrieve a 'UserSessionDto' from the database */
+	/** Retrieves a 'UserSessionDto' from the database */
 	SessionDto getSession(String phone);
 	
 	/** Stores a 'UserSessionDto' on the database */
-	void setSession(SessionDto userSession);
+	void setSession(SessionDto session);
 }

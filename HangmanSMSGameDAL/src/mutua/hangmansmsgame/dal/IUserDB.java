@@ -7,7 +7,7 @@ package mutua.hangmansmsgame.dal;
  *
  * Defines access methods for the "Users" data base
  *
- * @see RelatedClass(es)
+ * @see ram.UserDB, postgresql.SessionDB
  * @version $Id$
  * @author luiz
  */

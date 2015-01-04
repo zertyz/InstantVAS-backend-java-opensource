@@ -20,10 +20,10 @@ import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 public interface ICommandProcessor {
 
 	/**
-	 * method to get the response message.
+	 * Method to execute the command and get the response message(s) and persistent information.
 	 * by convention when -- in the 'CommandAnswerInfo' -- the 'phone' is null, the messages are
 	 * addressed to the same person that just sent the incoming message
 	 */
-	CommandAnswerDto processCommand(SessionDto userSession, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases);
+	CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases);
 
 }

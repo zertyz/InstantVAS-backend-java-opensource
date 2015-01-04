@@ -20,7 +20,8 @@ public class CommandMessageDto {
 	// classes of messages produced by the system
 	public enum EResponseMessageType {
 		HELP, ACQUIRE_MATCH_INFORMATION, MATCH,
-		ERROR, INCENTIVE, INVITATION_MESSAGE,
+		PLAYING,
+		ERROR, INCENTIVE, INVITATION_MESSAGE, 
 	};
 	
 	private String phone;

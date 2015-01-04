@@ -41,4 +41,16 @@ public class StateDetails {
 			"(.*)"}),
 	};
 
+	public static final CommandPatternsDto[] ANSWERING_TO_INVITATION = {
+		new CommandPatternsDto(ECOMMANDS.ACCEPT_INVITATION, new String[] {
+			"YES"}),
+//		new CommandPatternsDto(ECOMMANDS.REFUSE_INVITATION, new String[] {
+//			"NO"}),
+	};
+
+	public static final CommandPatternsDto[] PLAYING = {
+		new CommandPatternsDto(ECOMMANDS.SHOW_FULL_HELP_MESSAGE, new String[] {
+			"(.*)"}),
+	};
+
 }

@@ -29,7 +29,8 @@ public class DALFactory {
 	}
 	
 	private ISessionDB sessionDB;
-	private IUserDB userDB;
+	private IUserDB    userDB;
+	private IMatchDB   matchDB;
 	
 	
 	private DALFactory(EDataAccessLayers dal) {
@@ -38,6 +39,7 @@ public class DALFactory {
 			case RAM:
 				sessionDB = new mutua.hangmansmsgame.dal.ram.SessionDB();
 				userDB    = new mutua.hangmansmsgame.dal.ram.UserDB();
+				matchDB   = new mutua.hangmansmsgame.dal.ram.MatchDB();
 				break;
 			case POSTGRESQL:
 				break;
@@ -69,6 +71,18 @@ public class DALFactory {
 	
 	public static IUserDB getUserDB() {
 		return getUserDB(DEFAULT_DAL);
+	}
+	
+	
+	// MatchDB
+	//////////
+	
+	public static IMatchDB getMatchDB(EDataAccessLayers dal) {
+		return instances[dal.ordinal()].matchDB;
+	}
+	
+	public static IMatchDB getMatchDB() {
+		return getMatchDB(DEFAULT_DAL);
 	}
 	
 }

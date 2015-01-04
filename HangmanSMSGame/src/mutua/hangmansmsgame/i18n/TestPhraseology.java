@@ -79,6 +79,18 @@ public class TestPhraseology extends IPhraseology {
 	}
 
 	@Override
+	public String PLAYINGWordProvidingPlayerStart(String guessedWordSoFar, String wordGuessingPlayerNick) {
+		return "Game started with " + wordGuessingPlayerNick + ".\n" +
+		       getHangDrawing(false, false, false, false, false, false) +
+		       "Send P " + wordGuessingPlayerNick + " MSG to give him/her hints";
+	}
+
+	@Override
+	public String PLAYINGWordGuessingPlayerStart(String guessedWordSoFar, String usedLetters) {
+		return PLAYINGWordGuessingPlayerStatus(false, false, false, false, false, false, guessedWordSoFar, usedLetters);
+	}
+	
+	@Override
 	public String PLAYINGWordGuessingPlayerStatus(boolean drawHead, boolean drawLeftArm, boolean drawRightArm,
 	                                              boolean drawChest, boolean drawLeftLeg, boolean drawRightLeg,
 	                                              String guessedWordSoFar, String usedLetters) {
@@ -97,7 +109,7 @@ public class TestPhraseology extends IPhraseology {
 		       getHangDrawing(drawHead, drawLeftArm, drawRightArm, drawChest, drawLeftLeg, drawRightLeg) +
 		       "Word: " + guessedWordSoFar + "\n" +
 		       "Used: " + usedLetters + "\n" +
-		       "Send P " + nick + " MSG to provoke (him/her)";
+		       "Send P " + nick + " MSG to provoke him/her";
 	}
 
 	@Override
@@ -170,5 +182,5 @@ public class TestPhraseology extends IPhraseology {
 	public String PROVOKINGSendMessage(String nick, String message) {
 		return nick + ": " + message + " - Answer by sending P " + nick + " MSG to XXXX";
 	}
-	
+
 }

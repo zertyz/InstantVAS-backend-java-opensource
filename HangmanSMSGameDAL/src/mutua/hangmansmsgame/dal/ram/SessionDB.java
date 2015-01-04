@@ -19,8 +19,16 @@ import mutua.hangmansmsgame.dal.dto.SessionDto;
 
 public class SessionDB implements ISessionDB {
 	
+	
+	// data structures
+	//////////////////
+	
 	/** sessions := {[phone] = SessionDto, ...} */
 	private static Hashtable<String, SessionDto> sessions = new Hashtable<String, SessionDto>();
+	
+	
+	// ISessionDB implementation
+	////////////////////////////
 
 	@Override
 	public void reset() {
@@ -33,8 +41,8 @@ public class SessionDB implements ISessionDB {
 	}
 
 	@Override
-	public void setSession(SessionDto userSession) {
-		sessions.put(userSession.getPhone(), userSession);
+	public void setSession(SessionDto session) {
+		sessions.put(session.getPhone(), session);
 	}
 
 }
