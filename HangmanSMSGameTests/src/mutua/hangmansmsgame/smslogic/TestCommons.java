@@ -49,10 +49,13 @@ public class TestCommons {
 			boolean isNullityCorrect = ((expectedResponsesText == null) && (observedResponses == null)) ||
 			                           ((expectedResponsesText != null) && (observedResponses != null));
 			assertTrue("The 'expectedResponseText' nullity isn't the same as 'observedResponses's", isNullityCorrect);
+System.out.print("#"+phone+";"+inputText+";");
 			String[] observedResponsesText = new String[observedResponses.length];
 			for (int i=0; i<observedResponses.length; i++) {
+System.out.print(observedResponses[i].getPhone()+";"+observedResponses[i].getText().replaceAll("\n", "\\\\n")+";");
 				observedResponsesText[i] = observedResponses[i].getText();
 			}
+System.out.println("\n");
 			assertArrayEquals("This command generated the wrong messages", expectedResponsesText, observedResponsesText);
 		} catch (SMSProcessorException e) {
 			fail("Exception while processing message: "+e.getMessage());

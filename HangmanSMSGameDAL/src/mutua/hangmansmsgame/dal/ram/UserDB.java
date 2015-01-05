@@ -35,6 +35,11 @@ public class UserDB implements IUserDB {
 	}
 
 	@Override
+	public String getUserPhoneNumber(String nickname) {
+		return phonesByNickname.get(nickname);
+	}
+
+	@Override
 	public boolean checkAvailabilityAndRecordNickname(String phoneNumber, String nickname) {
 		if (phonesByNickname.containsKey(nickname)) {
 			return false;

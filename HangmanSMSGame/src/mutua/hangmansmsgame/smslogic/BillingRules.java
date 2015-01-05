@@ -36,6 +36,10 @@ public class BillingRules {
 				return EBillingType.SMS;
 			case PLAYING:
 				return EBillingType.SMS;
+			case CHAT:
+				return EBillingType.SMS;
+			case PROFILE:
+				return EBillingType.SMS;
 			case ERROR:
 				return EBillingType.FREE;
 			case INCENTIVE:

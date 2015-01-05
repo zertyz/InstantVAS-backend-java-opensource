@@ -38,11 +38,30 @@ public class NavigationMap {
 		// invitation commands
 		//////////////////////
 
-		
 		START_INVITATION_PROCESS(CommandDetails.START_INVITATION_PROCESS),
 		REGISTER_OPPONENT_PHONE(CommandDetails.REGISTER_OPPONENT_PHONE),
 		REGISTER_MATCH_WORD(CommandDetails.REGISTER_MATCH_WORD),
 		ACCEPT_INVITATION(CommandDetails.ACCEPT_INVITATION),
+		
+		
+		// playing commands
+		///////////////////
+		
+		SUGGEST_LETTER_OR_WORD(CommandDetails.SUGGEST_LETTER_OR_WORD),
+		
+		
+		// provocation commands
+		///////////////////////
+		
+		PROVOKE(CommandDetails.PROVOKE),
+		
+		
+		// profile commands
+		///////////////////
+		
+		SHOW_PROFILE(CommandDetails.SHOW_PROFILE),
+		DEFINE_NICK(CommandDetails.DEFINE_NICK),
+		LIST_USERS(CommandDetails.LIST_USERS),
 		
 		
 		;

@@ -34,6 +34,10 @@ public class HangmanGame {
 		suggestLetter(word.substring(word.length()-1).toCharArray()[0]);
 	}
 
+	public HangmanGame(String serializedGame) {
+		desserializeGameState(serializedGame);
+	}
+
 	public boolean suggestLetter(char letter) {
 		if (gameState != EHangmanGameStates.PLAYING) {
 			throw new RuntimeException("Attempted to play a hangman game which is not in the 'PLAYING' state. The game state is "+gameState);
@@ -67,8 +71,20 @@ public class HangmanGame {
 		return new String(guessedWordSoFar);
 	}
 	
+	public String getAttemptedLettersSoFar() {
+		char[] possibleCharacters = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'};
+		char[] usedCharacters = new char[possibleCharacters.length];
+		int usedCharactersLength = 0;
+		for (char possibleCharacter : possibleCharacters) {
+			if (attemptedLetters.containsKey(possibleCharacter)) {
+				usedCharacters[usedCharactersLength++] = possibleCharacter;
+			}
+		}
+		return new String(usedCharacters, 0, usedCharactersLength);
+	}
+	
 	private void computeGameState() {
-		if (numberOfWrongTries <= 0) {
+		if (numberOfWrongTriesLeft <= 0) {
 			gameState = EHangmanGameStates.LOST;
 		}
 		if (word.equals(getGuessedWordSoFar())) {
@@ -78,6 +94,31 @@ public class HangmanGame {
 	
 	public EHangmanGameStates getGameState() {
 		return gameState;
+	}
+
+	public String getWord() {
+		return word;
+	}
+
+	private void desserializeGameState(String state) {
+		String[] variables = state.split(";");
+		gameState          = EHangmanGameStates.valueOf(variables[0]);
+		word               = variables[1];
+		numberOfWrongTries = Integer.parseInt(variables[2]);
+		attemptedLetters   = new Hashtable<Character, Boolean>();
+		for (int i=0; i<variables[3].length(); i++) {
+			attemptedLetters.put(variables[3].charAt(i), true);
+		}
+		numberOfWrongTriesLeft = Integer.parseInt(variables[4]);
+	}
+	
+	public String serializeGameState() {
+		return new StringBuffer().
+		       append(gameState.name()).append(';').
+		       append(word).append(';').
+		       append(numberOfWrongTries).append(';').
+		       append(getAttemptedLettersSoFar()).append(';').
+		       append(numberOfWrongTriesLeft).toString();
 	}
 
 }

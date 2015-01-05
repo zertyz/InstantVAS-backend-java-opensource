@@ -2,6 +2,7 @@ package mutua.hangmansmsgame.smslogic;
 
 import mutua.hangmansmsgame.dal.DALFactory;
 import mutua.hangmansmsgame.dal.IUserDB;
+import mutua.hangmansmsgame.i18n.TestPhraseology;
 
 import org.junit.Test;
 
@@ -19,6 +20,7 @@ public class HangmanSMSGameProcessorTests {
 
 	
 	private TestCommons tc = new TestCommons();
+	TestPhraseology testPhraseology = new TestPhraseology();
 	
 	
 	// databases
@@ -66,13 +68,15 @@ public class HangmanSMSGameProcessorTests {
 			"1/3: You can play the HANGMAN game in 2 ways: guessing someone's word or inviting someone to play with your word",
 			"2/3: You'll get 1 lucky number each word you guess. Whenever you invite a friend or user to play, you win another lucky number",
 			"3/3: Every week, 1 lucky number is selected to win the prize. Send an option to XXXX: (J)Play online; (C)Invite a friend or user; (R)anking; (A)Help"});
+		tc.checkResponse("21991234899", "nick HardCodedNick", "HANGMAN: Name registered: HardCodedNick. Send LIST to XXXX to see online players. NICK <NEW NICK> to change your name.");
+		tc.checkResponse("21998019167", "nick haole", "HANGMAN: Name registered: haole. Send LIST to XXXX to see online players. NICK <NEW NICK> to change your name.");
 		tc.checkResponse("21991234899", "C", "HANGMAN: Name registered: " + playerNickName + ". Send your friend's phone to XXXX or LIST to see online players. NICK <NEW NICK> to change your name.");
 		tc.checkResponse("21991234899", "21998019167", "HANGMAN: Your friend's phone: 21998019167. Think of a word without special digits and send it now to XXXX. After the invitation, you'll get a lucky number");
-		tc.checkResponse("21991234899", "coco", new String[] {
+		tc.checkResponse("21991234899", "coco word", new String[] {
 			guestNickname + " was invited to play with you. while you wait, you can provoke " + guestNickname + " by sending a message to XXXX (0.31+tax) or send SIGNUP to provoke for free how many times you want",
 			"HANGMAN: " + playerNickName + " is inviting you for a hangman match. Do you accept? Send YES to XXXXX or PROFILE to see " + playerNickName + " information"});
 		
-		// opponent player wanting to play
+		// opponent player wants to play and the game starts
 		tc.checkResponse("21998019167", "YES", new String[] {"Game started with haole.\n" +
 		                                                     "+-+\n" +
 		                                                     "| \n" +
@@ -80,16 +84,66 @@ public class HangmanSMSGameProcessorTests {
 		                                                     "|  \n" +
 		                                                     "|\n" +
 		                                                     "====\n" +
-		                                                     "Send P haole MSG to give him/her hints",
+		                                                     "Send P haole MSG to give him/her clues",
 		                                                     "+-+\n" +
 		                                                     "| \n" +
 		                                                     "|  \n" +
 		                                                     "|  \n" +
 		                                                     "|\n" +
 		                                                     "====\n" +
-		                                                     "Word: coco word\n" +
-		                                                     "Used: cd\n" +
+		                                                     "Word: C-C-----D\n" +
+		                                                     "Used: CD\n" +
 		                                                     "Send a letter, the complete word or END to cancel the game"});
+		tc.checkResponse("21998019167", "o", new String[] {"haole guessed letter o\n" +
+                "+-+\n" +
+                "| \n" +
+                "|  \n" +
+                "|  \n" +
+                "|\n" +
+                "====\n" +
+                "Word: COCO--O-D\n" +
+                "Used: CDO\n" +
+                "Send P haole MSG to provoke him/her",
+                "+-+\n" +
+                "| \n" +
+                "|  \n" +
+                "|  \n" +
+                "|\n" +
+                "====\n" +
+                "Word: COCO--O-D\n" +
+                "Used: CDO\n" +
+                "Send a letter, the complete word or END to cancel the game"});
+		tc.checkResponse("21998019167", "a", new String[] {
+			testPhraseology.PLAYINGWordProvidingPlayerStatus(true, false, false, false, false, false, "COCO--O-D", "a", "ACDO", guestNickname),
+			testPhraseology.PLAYINGWordGuessingPlayerStatus (true, false, false, false, false, false, "COCO--O-D", "ACDO")});
+		tc.checkResponse("21998019167", "b", new String[] {
+			testPhraseology.PLAYINGWordProvidingPlayerStatus(true, true, false, false, false, false, "COCO--O-D", "b", "ABCDO", guestNickname),
+			testPhraseology.PLAYINGWordGuessingPlayerStatus (true, true, false, false, false, false, "COCO--O-D", "ABCDO")});
+		tc.checkResponse("21998019167", "c", new String[] {
+			testPhraseology.PLAYINGWordProvidingPlayerStatus(true, true, false, false, false, false, "COCO--O-D", "c", "ABCDO", guestNickname),
+			testPhraseology.PLAYINGWordGuessingPlayerStatus (true, true, false, false, false, false, "COCO--O-D", "ABCDO")});
+		tc.checkResponse("21998019167", "e", new String[] {
+			testPhraseology.PLAYINGWordProvidingPlayerStatus(true, true, true, false, false, false, "COCO--O-D", "e", "ABCDEO", guestNickname),
+			testPhraseology.PLAYINGWordGuessingPlayerStatus (true, true, true, false, false, false, "COCO--O-D", "ABCDEO")});
+		tc.checkResponse("21998019167", "f", new String[] {
+			testPhraseology.PLAYINGWordProvidingPlayerStatus(true, true, true, true, false, false, "COCO--O-D", "f", "ABCDEFO", guestNickname),
+			testPhraseology.PLAYINGWordGuessingPlayerStatus (true, true, true, true, false, false, "COCO--O-D", "ABCDEFO")});
+		tc.checkResponse("21998019167", "g", new String[] {
+			testPhraseology.PLAYINGWordProvidingPlayerStatus(true, true, true, true, true, false, "COCO--O-D", "g", "ABCDEFGO", guestNickname),
+			testPhraseology.PLAYINGWordGuessingPlayerStatus (true, true, true, true, true, false, "COCO--O-D", "ABCDEFGO")});
+		tc.checkResponse("21998019167", "h", new String[] {
+			"Good one! haole wasn't able to guessed your word! P haole MSG to provoke him/her or INVITE haole for a new match",
+			testPhraseology.PLAYINGLoosingMessageForWordGuessingPlayer("COCO WORD", playerNickName)});
+		// TODO in the middle of the game, the word providing player might want to send a provocative message by just typing?
+		
+		String chatMessage = "now pick one for me!";
+		tc.checkResponse("21991234899", "P " + guestNickname + " " + chatMessage, new String[] {
+			testPhraseology.PROVOKINGDeliveryNotification(guestNickname),
+			testPhraseology.PROVOKINGSendMessage(playerNickName, chatMessage)});
+		
+		tc.checkResponse("21998019167", "profile haole", "HANGMAN: DeiaGATA: Subscribed, Rio de Janeiro, 109 lucky numbers. Send SIGNUP to provoke for free or INVITE DeiaGATA for a match.");
+		tc.checkResponse("21998019167", "nick pAtRiCiA", "HANGMAN: Name registered: pAtRiCiA. Send LIST to XXXX to see online players. NICK <NEW NICK> to change your name.");
+		tc.checkResponse("21998019167", "list", "HardCodedNick(RJ/1), pAtRiCiA(RJ/2). To play, send INVITE NICK to XXXXX; MORE for more players or PROFILE NICK");
 	}
 	
 }

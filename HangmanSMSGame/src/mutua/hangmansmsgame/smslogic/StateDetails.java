@@ -27,6 +27,12 @@ public class StateDetails {
 			"C"}),
 		new CommandPatternsDto(ECOMMANDS.SHOW_FULL_HELP_MESSAGE, new String[] {
 			"(.*)AJUDA(.*)"}),
+		new CommandPatternsDto(ECOMMANDS.SHOW_PROFILE, new String[] {
+			"PROFILE (.*)"}),
+		new CommandPatternsDto(ECOMMANDS.DEFINE_NICK, new String[] {
+			"NICK (.*)"}),
+		new CommandPatternsDto(ECOMMANDS.LIST_USERS, new String[] {
+			"LIST"}),
 		new CommandPatternsDto(ECOMMANDS.SHOW_WELCOME_MESSAGE, new String[] {
 			"(.*)"}),
 	};
@@ -49,7 +55,9 @@ public class StateDetails {
 	};
 
 	public static final CommandPatternsDto[] PLAYING = {
-		new CommandPatternsDto(ECOMMANDS.SHOW_FULL_HELP_MESSAGE, new String[] {
+		new CommandPatternsDto(ECOMMANDS.PROVOKE, new String[] {
+			"P ([^ ]+) (.*)"}),
+		new CommandPatternsDto(ECOMMANDS.SUGGEST_LETTER_OR_WORD, new String[] {
 			"(.*)"}),
 	};
 

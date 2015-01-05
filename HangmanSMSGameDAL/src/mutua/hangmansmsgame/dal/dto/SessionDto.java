@@ -24,13 +24,12 @@ public class SessionDto {
 		// listing users session info
 		NEXT_LISTED_PLAYER_ID,
 		
-		// playing session info
-		HANGMAN_GUESSING_WORD,
-		HANGMAN_GUESSING_WRONG_ATTEMPTS_LEFT,
-		HANGMAN_GAME_STATE,
+		// playing state info
+		HANGMAN_SERIALIZED_GAME_STATE,
 		
-		// invitation to play session info
+		// invitation to play info
 		OPPONENT_PHONE_NUMBER,
+		MATCH_ID,
 	}
 	
 	private final String phone;

@@ -77,12 +77,18 @@ public class TestPhraseology extends IPhraseology {
 	public String PROFILEFullfillingAskNick() {
 		return "HANGMAN: To play with a friend, u need first to sign your name. Now send your name (8 letters or numbers max.) to XXXXX";
 	}
+	
+	@Override
+	public String PROFILENickRegisteredNotification(String newNickname) {
+		return "HANGMAN: Name registered: " + newNickname + ". Send LIST to XXXX to see online players. NICK <NEW NICK> to change your name.";
+	}
+
 
 	@Override
 	public String PLAYINGWordProvidingPlayerStart(String guessedWordSoFar, String wordGuessingPlayerNick) {
 		return "Game started with " + wordGuessingPlayerNick + ".\n" +
 		       getHangDrawing(false, false, false, false, false, false) +
-		       "Send P " + wordGuessingPlayerNick + " MSG to give him/her hints";
+		       "Send P " + wordGuessingPlayerNick + " MSG to give him/her clues";
 	}
 
 	@Override
@@ -109,7 +115,7 @@ public class TestPhraseology extends IPhraseology {
 		       getHangDrawing(drawHead, drawLeftArm, drawRightArm, drawChest, drawLeftLeg, drawRightLeg) +
 		       "Word: " + guessedWordSoFar + "\n" +
 		       "Used: " + usedLetters + "\n" +
-		       "Send P " + nick + " MSG to provoke him/her";
+		       "Send P " + nick + " MSG to provoke him/her";
 	}
 
 	@Override
@@ -167,8 +173,14 @@ public class TestPhraseology extends IPhraseology {
 
 	@Override
 	public String LISTINGShowPlayers(String[][] playersInfo) {
-		String playerTemplate = "\\1 (\\2/\\3)";
-		String[] players = {"BrunoCBO (RJ/64)", "DeiaGATA (SP/89)", "Doido (BA/102)", "zaza (RS/49)"};
+		String[] players = new String[playersInfo.length];
+		for (int i=0; i<playersInfo.length; i++) {
+			String[] playerInfo = playersInfo[i];
+			String nick                 = playerInfo[0];
+			String estate               = playerInfo[1];
+			String numberOfLuckyNumbers = playerInfo[2];
+			players[i] = nick + "(" + estate + "/" + numberOfLuckyNumbers + ")";
+		}
 		String playersList = getList(players, ", ", ", ");
 		return playersList + ". To play, send INVITE NICK to XXXXX; MORE for more players or PROFILE NICK";
 	}
@@ -179,8 +191,8 @@ public class TestPhraseology extends IPhraseology {
 	}
 
 	@Override
-	public String PROVOKINGSendMessage(String nick, String message) {
-		return nick + ": " + message + " - Answer by sending P " + nick + " MSG to XXXX";
+	public String PROVOKINGSendMessage(String sourceNick, String message) {
+		return sourceNick + ": " + message + " - Answer by sending P " + sourceNick + " MSG to XXXX";
 	}
 
 }

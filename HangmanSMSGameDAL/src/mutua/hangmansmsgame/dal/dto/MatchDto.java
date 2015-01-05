@@ -26,21 +26,21 @@ public class MatchDto {
 
 	private final String       wordProvidingPlayerPhone;
 	private final String       wordGuessingPlayerPhone;
-	private final String       word;
+	private final String       serializedGame;
 	private final long         matchStartMillis;
 	private final EMatchStatus status;
 	
 	
-	public MatchDto(String wordProvidingPlayerPhone, String wordGuessingPlayerPhone, String word, long matchStartMillis, EMatchStatus status) {
+	public MatchDto(String wordProvidingPlayerPhone, String wordGuessingPlayerPhone, String serializedGame, long matchStartMillis, EMatchStatus status) {
 		this.wordProvidingPlayerPhone = wordProvidingPlayerPhone;
 		this.wordGuessingPlayerPhone  = wordGuessingPlayerPhone;
-		this.word                     = word;
+		this.serializedGame           = serializedGame;
 		this.matchStartMillis         = matchStartMillis;
 		this.status                   = status;
 	}
 
 	public MatchDto getNewMatch(EMatchStatus status) {
-		return new MatchDto(wordProvidingPlayerPhone, wordGuessingPlayerPhone, word, matchStartMillis, status);
+		return new MatchDto(wordProvidingPlayerPhone, wordGuessingPlayerPhone, serializedGame, matchStartMillis, status);
 	}
 	
 }

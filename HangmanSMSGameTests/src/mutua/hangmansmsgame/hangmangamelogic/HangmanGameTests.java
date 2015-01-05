@@ -38,10 +38,10 @@ public class HangmanGameTests {
 	}
 
 	@Test
-	public void testSimpleGameFlow() {
+	public void testSimpleGameWinningFlow() {
 		String word = "anycharsequence";
 		int totalNumberOfWrongTries = 6;
-		HangmanGame game = new HangmanGame(word, 6);
+		HangmanGame game = new HangmanGame(word, totalNumberOfWrongTries);
 		int numberOfWrongTriesLeft = game.getNumberOfWrongTriesLeft();
 		String guessedWordSoFar = game.getGuessedWordSoFar();
 		assertEquals("Wrong 'number of wrong tries left'", totalNumberOfWrongTries, numberOfWrongTriesLeft);
@@ -58,6 +58,32 @@ public class HangmanGameTests {
 		suggestLetter(game, 'q');
 		//boolean isTheRightWord = game.tryToGuessTheWholeWord();
 		suggestLetter(game, 'x');
+		// TODO test getAttemptedLettersSoFar as well
+		// TODO test for cases like "COCO", where the game is presented in an already solved manner -- the game should refuse the creation of the match, pointing that
+		// TODO also, words with spaces or special characters should not be accepted
+	}
+	
+	@Test
+	public void testSimpleGameLosingFlow() {
+		String word = "wrongword";
+		int totalNumberOfWrongTries = 1;
+		HangmanGame game = new HangmanGame(word, totalNumberOfWrongTries);
+		game.suggestLetter('x');
+		assertEquals("Game did not report as being on the LOST state", EHangmanGameStates.LOST, game.getGameState());
+	}
+	
+	@Test
+	public void testGameSerialization() {
+		HangmanGame game      = new HangmanGame("coconuts", 6);
+		String serializedGame = game.serializeGameState();
+		System.out.println("Restarting game with state '"+serializedGame+"'");
+		game = new HangmanGame(serializedGame);
+		suggestLetter(game, 'o');
+		serializedGame = game.serializeGameState();
+		game = new HangmanGame(serializedGame);
+		suggestLetter(game, 'a');
+		serializedGame = game.serializeGameState();
+		System.out.println("Restarting game with state '"+serializedGame+"'");
 	}
 
 }

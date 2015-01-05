@@ -90,6 +90,8 @@ public abstract class IPhraseology {
 	/** shown when the game asks the player to choose a nickname */
 	public abstract String PROFILEFullfillingAskNick();
 
+	/** present the user information regarding the confirmation of his nickname registration */
+	public abstract String PROFILENickRegisteredNotification(String newNickname);
 
 	
 	// PLAYING
@@ -189,6 +191,6 @@ public abstract class IPhraseology {
 	public abstract String PROVOKINGDeliveryNotification(String destinationNick);
 
 	/** the message sent to the destination user when he is being provoked by someone */
-	public abstract String PROVOKINGSendMessage(String nick, String message);
+	public abstract String PROVOKINGSendMessage(String sourceNick, String message);
 
 }

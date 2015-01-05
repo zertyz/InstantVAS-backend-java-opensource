@@ -116,6 +116,7 @@ public class HangmanSMSGameProcessor {
 		} catch (Throwable t) {
 			// in case of error...
 			//Instrumentation.reportSevereError("BlocosDeCarnaval: Error processing message '"+incoming_text+"' from phone '"+incoming_phone+"'", t);
+			t.printStackTrace();
 			CommandMessageDto message = new CommandMessageDto(incomingPhone,
 				"Desculpe o transtorno mas sua mensagem nao pode ser processada agora. Por favor, tente novamente mais tarde",
 				EResponseMessageType.ERROR);
