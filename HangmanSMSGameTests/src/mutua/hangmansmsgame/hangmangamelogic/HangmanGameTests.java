@@ -56,8 +56,11 @@ public class HangmanGameTests {
 		suggestLetter(game, 'r');
 		suggestLetter(game, 's');
 		suggestLetter(game, 'q');
-		//boolean isTheRightWord = game.tryToGuessTheWholeWord();
-		suggestLetter(game, 'x');
+		assertEquals("Game did not report as being on the WON state", EHangmanGameStates.WON, game.getGameState());
+		try {
+			suggestLetter(game, 'x');
+			fail("Game didn't throw an exception after attempting to play a finished game");
+		} catch (RuntimeException e) {}
 		// TODO test getAttemptedLettersSoFar as well
 		// TODO test for cases like "COCO", where the game is presented in an already solved manner -- the game should refuse the creation of the match, pointing that
 		// TODO also, words with spaces or special characters should not be accepted

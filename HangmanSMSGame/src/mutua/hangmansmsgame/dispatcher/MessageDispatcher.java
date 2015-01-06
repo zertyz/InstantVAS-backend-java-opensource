@@ -77,7 +77,7 @@ public class MessageDispatcher {
 		String phone = internalResponseMessage.getPhone();
 		String text  = internalResponseMessage.getText();
 		EBillingType billingType = BillingRules.getBillingTypeForResponseMessageType(incomingSMS.getCarrier(),
-		                                                                              internalResponseMessage.getType());
+		                                                                             internalResponseMessage.getType());
 		if (phone == null) {
 			phone = incomingSMS.getPhone();
 		}

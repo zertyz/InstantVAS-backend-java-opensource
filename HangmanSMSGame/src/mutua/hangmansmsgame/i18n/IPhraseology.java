@@ -143,14 +143,14 @@ public abstract class IPhraseology {
 	public abstract String PLAYINGWinningMessageForWordGuessingPlayer(String word, String luckyNumber);
 	
 	/** show to the word providing player when the word guessing player won the game */
-	public abstract String PLAYINGWinningMessageForWordProvidingPlayer(String nick);
+	public abstract String PLAYINGWinningMessageForWordProvidingPlayer(String wordGuessingPlayerNick);
 	
 	/** shown to the losing player, who tried to guess the word 
-	 * @param nick TODO*/
-	public abstract String PLAYINGLoosingMessageForWordGuessingPlayer(String word, String nick);
+	 * @param wordProvidingPlayerNick TODO*/
+	public abstract String PLAYINGLosingMessageForWordGuessingPlayer(String word, String wordProvidingPlayerNick);
 	
 	/** show to the word providing player when the word guessing player lost the game */
-	public abstract String PLAYINGLoosingMessageForWordProvidingPlayer(String nick);
+	public abstract String PLAYINGLosingMessageForWordProvidingPlayer(String wordGuessingPlayerNick);
 	
 	
 	// INVITING

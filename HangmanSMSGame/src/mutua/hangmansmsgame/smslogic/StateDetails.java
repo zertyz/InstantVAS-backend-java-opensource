@@ -21,33 +21,67 @@ import mutua.hangmansmsgame.smslogic.commands.dto.CommandPatternsDto;
  */
 
 public class StateDetails {
+	
+	
+	// COMMON COMMAND PATTERNS
+	//////////////////////////
+	
+	private static final CommandPatternsDto SHOW_FULL_HELP_COMMAND_PATTERNS =
+		new CommandPatternsDto(ECOMMANDS.SHOW_FULL_HELP_MESSAGE, new String[] {"AJUDA"});
+	private static final CommandPatternsDto SHOW_PROFILE_COMMAND_PATTERNS =
+		new CommandPatternsDto(ECOMMANDS.SHOW_PROFILE, new String[] {"PROFILE (.*)"});
+	private static final CommandPatternsDto DEFINE_NICK_COMMAND_PATTERNS =
+		new CommandPatternsDto(ECOMMANDS.DEFINE_NICK, new String[] {"NICK (.*)"});
+	private static final CommandPatternsDto LIST_USERS_COMMAND_PATTERNS =
+		new CommandPatternsDto(ECOMMANDS.LIST_USERS, new String[] {"LIST"});
+	private static final CommandPatternsDto PROVOKE_COMMAND_PATTERNS =
+		new CommandPatternsDto(ECOMMANDS.PROVOKE, new String[] {"P ([^ ]+) (.*)"});
+	private static final CommandPatternsDto START_INVITATION_PROCESS_COMMAND_PATTERNS = 
+		new CommandPatternsDto(ECOMMANDS.START_INVITATION_PROCESS, new String[] {"C", "CONVIDAR", "INVITE"});
+	private static final CommandPatternsDto FALLBACK_HELP_COMMAND_PATTERNS =
+		new CommandPatternsDto(ECOMMANDS.SHOW_FULL_HELP_MESSAGE, new String[] {".*"});
+	
+	
+	// STATE DETAILS
+	////////////////
 
 	public static final CommandPatternsDto[] NEW_USER = {
-		new CommandPatternsDto(ECOMMANDS.START_INVITATION_PROCESS, new String[] {
-			"C"}),
-		new CommandPatternsDto(ECOMMANDS.SHOW_FULL_HELP_MESSAGE, new String[] {
-			"(.*)AJUDA(.*)"}),
-		new CommandPatternsDto(ECOMMANDS.SHOW_PROFILE, new String[] {
-			"PROFILE (.*)"}),
-		new CommandPatternsDto(ECOMMANDS.DEFINE_NICK, new String[] {
-			"NICK (.*)"}),
-		new CommandPatternsDto(ECOMMANDS.LIST_USERS, new String[] {
-			"LIST"}),
-		new CommandPatternsDto(ECOMMANDS.SHOW_WELCOME_MESSAGE, new String[] {
-			"(.*)"}),
+		SHOW_FULL_HELP_COMMAND_PATTERNS,
+		SHOW_PROFILE_COMMAND_PATTERNS,
+		DEFINE_NICK_COMMAND_PATTERNS,
+		LIST_USERS_COMMAND_PATTERNS,
+		PROVOKE_COMMAND_PATTERNS,
+		START_INVITATION_PROCESS_COMMAND_PATTERNS,
+		FALLBACK_HELP_COMMAND_PATTERNS
 	};
 	
 	public static final CommandPatternsDto[] ENTERING_OPPONENT_CONTACT_INFO = {
 		new CommandPatternsDto(ECOMMANDS.REGISTER_OPPONENT_PHONE, new String[] {
 			"(\\d+)"}),
+		SHOW_FULL_HELP_COMMAND_PATTERNS,
+		SHOW_PROFILE_COMMAND_PATTERNS,
+		DEFINE_NICK_COMMAND_PATTERNS,
+		LIST_USERS_COMMAND_PATTERNS,
+		PROVOKE_COMMAND_PATTERNS,
+		START_INVITATION_PROCESS_COMMAND_PATTERNS,
+		FALLBACK_HELP_COMMAND_PATTERNS
 	};
 
 	public static final CommandPatternsDto[] ENTERING_MATCH_WORD = {
-		new CommandPatternsDto(ECOMMANDS.REGISTER_MATCH_WORD, new String[] {
-			"(.*)"}),
+		SHOW_FULL_HELP_COMMAND_PATTERNS,
+		SHOW_PROFILE_COMMAND_PATTERNS,
+		DEFINE_NICK_COMMAND_PATTERNS,
+		LIST_USERS_COMMAND_PATTERNS,
+		PROVOKE_COMMAND_PATTERNS,
+		START_INVITATION_PROCESS_COMMAND_PATTERNS,
+		new CommandPatternsDto(ECOMMANDS.REGISTER_MATCH_WORD, new String[] {"([^ ]+)"}),
+		FALLBACK_HELP_COMMAND_PATTERNS
 	};
 
 	public static final CommandPatternsDto[] ANSWERING_TO_INVITATION = {
+		SHOW_FULL_HELP_COMMAND_PATTERNS,
+		START_INVITATION_PROCESS_COMMAND_PATTERNS,
+		PROVOKE_COMMAND_PATTERNS,
 		new CommandPatternsDto(ECOMMANDS.ACCEPT_INVITATION, new String[] {
 			"YES"}),
 //		new CommandPatternsDto(ECOMMANDS.REFUSE_INVITATION, new String[] {
@@ -55,8 +89,12 @@ public class StateDetails {
 	};
 
 	public static final CommandPatternsDto[] PLAYING = {
-		new CommandPatternsDto(ECOMMANDS.PROVOKE, new String[] {
-			"P ([^ ]+) (.*)"}),
+		SHOW_FULL_HELP_COMMAND_PATTERNS,
+		SHOW_PROFILE_COMMAND_PATTERNS,
+		DEFINE_NICK_COMMAND_PATTERNS,
+		LIST_USERS_COMMAND_PATTERNS,
+		PROVOKE_COMMAND_PATTERNS,
+		START_INVITATION_PROCESS_COMMAND_PATTERNS,
 		new CommandPatternsDto(ECOMMANDS.SUGGEST_LETTER_OR_WORD, new String[] {
 			"(.*)"}),
 	};

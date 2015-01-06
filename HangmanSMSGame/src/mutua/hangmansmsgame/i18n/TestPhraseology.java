@@ -125,19 +125,19 @@ public class TestPhraseology extends IPhraseology {
 	}
 
 	@Override
-	public String PLAYINGWinningMessageForWordProvidingPlayer(String nick) {
-		return nick + " guessed your word! P " + nick + " MSG to provoke him/her or INVITE " + nick + " for a new match";
+	public String PLAYINGWinningMessageForWordProvidingPlayer(String wordGuessingPlayerNick) {
+		return wordGuessingPlayerNick + " guessed your word! P " + wordGuessingPlayerNick + " MSG to provoke him/her or INVITE " + wordGuessingPlayerNick + " for a new match";
 	}
 
 	@Override
-	public String PLAYINGLoosingMessageForWordGuessingPlayer(String word, String nick) {
+	public String PLAYINGLosingMessageForWordGuessingPlayer(String word, String wordProvidingPlayerNick) {
 		return getLoosingDrawing() + "The word was " + word + ". " + getShortHelp();
 		// TODO: the message may encourage the loosing player to try and suggest a word back to the opponent.
 	}
 
 	@Override
-	public String PLAYINGLoosingMessageForWordProvidingPlayer(String nick) {
-		return "Good one! " + nick + " wasn't able to guessed your word! P " + nick + " MSG to provoke him/her or INVITE " + nick + " for a new match";
+	public String PLAYINGLosingMessageForWordProvidingPlayer(String wordGuessingPlayerNick) {
+		return "Good one! " + wordGuessingPlayerNick + " wasn't able to guessed your word! P " + wordGuessingPlayerNick + " MSG to provoke him/her or INVITE " + wordGuessingPlayerNick + " for a new match";
 	}
 
 	@Override

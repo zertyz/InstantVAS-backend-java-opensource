@@ -65,7 +65,7 @@ public class CommandDetails {
 	public static final ICommandProcessor START_INVITATION_PROCESS = new ICommandProcessor() {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
-			String invitingPlayerNickname = "HardCodedNick";
+			String invitingPlayerNickname = userDB.getUserNickname(session.getPhone());
 			CommandMessageDto commandResponse = new CommandMessageDto(phrases.INVITINGAskOpponentNickOrPhone(invitingPlayerNickname),
 			                                                          EResponseMessageType.HELP);
 			return new CommandAnswerDto(commandResponse, session.getNewSessionDto(ESTATES.ENTERING_OPPONENT_CONTACT_INFO.name()));
@@ -97,7 +97,7 @@ public class CommandDetails {
 			System.out.println("Good! We now have a user to invite, " + opponentPlayerPhoneNumber + ", and a word to play: " + wordToPlay);
 			CommandMessageDto invitingPlayerMessage = new CommandMessageDto(phrases.INVITINGInvitationNotificationForInvitingPlayer(opponentPlayerNickName),
 			                                                                EResponseMessageType.ACQUIRE_MATCH_INFORMATION);
-			CommandMessageDto opponentPlayerMessage = new CommandMessageDto(phrases.INVITINGInvitationNotificationForInvitedPlayer(invitingPlayerNickName),
+			CommandMessageDto opponentPlayerMessage = new CommandMessageDto(opponentPlayerPhoneNumber, phrases.INVITINGInvitationNotificationForInvitedPlayer(invitingPlayerNickName),
                                                                             EResponseMessageType.INVITATION_MESSAGE);
 			SessionDto opponentSession = new SessionDto(opponentPlayerPhoneNumber, ESTATES.ANSWERING_TO_INVITATION.name(),
 			                                            ESessionParameters.OPPONENT_PHONE_NUMBER, session.getPhone(),
@@ -174,25 +174,28 @@ public class CommandDetails {
 					return new CommandAnswerDto(new CommandMessageDto[] {wordProvidingPlayerMessage, wordGuessingPlayerMessage},
                                                 session.getNewSessionDto(ESTATES.PLAYING.name(), ESessionParameters.HANGMAN_SERIALIZED_GAME_STATE, game.serializeGameState()));
 				case WON:
-					wordProvidingPlayerMessage = null;
-					wordGuessingPlayerMessage = null;
-					break;
-				case LOST:
-					matchDB.updateMatchStatus(matchId, EMatchStatus.CLOSED_ATTEMPTS_EXCEEDED);
-					wordProvidingPlayerMessage = new CommandMessageDto(
-						phrases.PLAYINGLoosingMessageForWordProvidingPlayer(wordGuessingPlayerNick),
+					matchDB.updateMatchStatus(matchId, EMatchStatus.CLOSED_WORD_GUESSED);
+					wordProvidingPlayerMessage = new CommandMessageDto(wordProvidingPlayerPhone,
+						phrases.PLAYINGWinningMessageForWordProvidingPlayer(wordGuessingPlayerNick),
 						EResponseMessageType.PLAYING);
 					wordGuessingPlayerMessage = new CommandMessageDto(
-						phrases.PLAYINGLoosingMessageForWordGuessingPlayer(game.getWord(), wordProvidingPlayerNick),
+						phrases.PLAYINGWinningMessageForWordGuessingPlayer(game.getWord(), "xx.xx.xx.xx"),
+						EResponseMessageType.PLAYING);
+					return new CommandAnswerDto(new CommandMessageDto[] {wordProvidingPlayerMessage, wordGuessingPlayerMessage},
+                                                session.getNewSessionDto(ESTATES.PLAYING.name(), ESessionParameters.HANGMAN_SERIALIZED_GAME_STATE, game.serializeGameState()));
+				case LOST:
+					matchDB.updateMatchStatus(matchId, EMatchStatus.CLOSED_ATTEMPTS_EXCEEDED);
+					wordProvidingPlayerMessage = new CommandMessageDto(wordProvidingPlayerPhone,
+						phrases.PLAYINGLosingMessageForWordProvidingPlayer(wordGuessingPlayerNick),
+						EResponseMessageType.PLAYING);
+					wordGuessingPlayerMessage = new CommandMessageDto(
+						phrases.PLAYINGLosingMessageForWordGuessingPlayer(game.getWord(), wordProvidingPlayerNick),
 						EResponseMessageType.PLAYING);
 					return new CommandAnswerDto(new CommandMessageDto[] {wordProvidingPlayerMessage, wordGuessingPlayerMessage},
                                                 session.getNewSessionDto(ESTATES.NEW_USER.name()));
 				default:
 					throw new RuntimeException("Don't know nothing about EHangmanGameState." + gameState);
 			}
-			
-			return new CommandAnswerDto(new CommandMessageDto[] {wordProvidingPlayerMessage, wordGuessingPlayerMessage},
-			                            session.getNewSessionDto(ESTATES.PLAYING.name(), ESessionParameters.HANGMAN_SERIALIZED_GAME_STATE, game.serializeGameState()));
 		}
 	};
 
