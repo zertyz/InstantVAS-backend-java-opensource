@@ -45,7 +45,7 @@ public class IncomingSMSDto /*implements ILoggableRequest*/ {
 
     private final String phone;
     private final String text;
-    private final ESMSInParserCarrier carrierId;
+    private final ESMSInParserCarrier carrier;
     private final String largeAccount;
     private final String messageId;
     private final String[][] extraParameters;
@@ -55,17 +55,17 @@ public class IncomingSMSDto /*implements ILoggableRequest*/ {
      * Constructs a representation of an MO (incoming sms). The optional 'extra_parameters' is defined as:
      * extra_parameters := {{parameter_1_name, parameter_1_value}, ..., {parameter_n_name, parameter_n_value}}
      */
-    public IncomingSMSDto(String phone, String text, ESMSInParserCarrier carrierId, String largeAccount, String messageId, String[][] extraParameters) {
+    public IncomingSMSDto(String phone, String text, ESMSInParserCarrier carrier, String largeAccount, String messageId, String[][] extraParameters) {
         this.phone = phone;
         this.text = text;
-        this.carrierId = carrierId;
+        this.carrier = carrier;
         this.largeAccount = largeAccount;
         this.messageId = messageId;
         this.extraParameters = extraParameters;
     }
 
-    public IncomingSMSDto(String phone, String text, ESMSInParserCarrier carrierId, String largeAccount, String messageId) {
-        this(phone, text, carrierId, largeAccount, messageId, null);
+    public IncomingSMSDto(String phone, String text, ESMSInParserCarrier carrier, String largeAccount, String messageId) {
+        this(phone, text, carrier, largeAccount, messageId, null);
     }
 
 
@@ -78,7 +78,7 @@ public class IncomingSMSDto /*implements ILoggableRequest*/ {
     }
 
     public ESMSInParserCarrier getCarrier() {
-        return carrierId;
+        return carrier;
     }
 
     public String getLargeAccount() {
@@ -110,7 +110,7 @@ public class IncomingSMSDto /*implements ILoggableRequest*/ {
         	IncomingSMSDto other = (IncomingSMSDto)obj;
         	return this.phone.equals(other.phone) &&
         	       this.text.equals(other.text) && 
-        	       this.carrierId.equals(other.carrierId) &&
+        	       this.carrier.equals(other.carrier) &&
         	       this.largeAccount.equals(other.largeAccount) &&
         	       this.messageId.equals(other.messageId) &&
         	       Arrays.equals(this.extraParameters, other.extraParameters);

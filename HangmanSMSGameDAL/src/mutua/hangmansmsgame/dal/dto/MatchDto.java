@@ -38,6 +38,18 @@ public class MatchDto {
 		this.matchStartMillis         = matchStartMillis;
 		this.status                   = status;
 	}
+	
+	public String getWordProvidingPlayerPhone() {
+		return wordProvidingPlayerPhone;
+	}
+	
+	public String getWordGuessingPlayerPhone() {
+		return wordGuessingPlayerPhone;
+	}
+	
+	public EMatchStatus getStatus() {
+		return status;
+	}
 
 	public MatchDto getNewMatch(EMatchStatus status) {
 		return new MatchDto(wordProvidingPlayerPhone, wordGuessingPlayerPhone, serializedGame, matchStartMillis, status);

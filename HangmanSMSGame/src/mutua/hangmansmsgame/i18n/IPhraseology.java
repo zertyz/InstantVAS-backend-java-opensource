@@ -80,6 +80,11 @@ public abstract class IPhraseology {
 	/** shown when the user request the help / instructions */
 	public abstract String[] INFOFullHelp();
 	
+	/** shown when it is not possible to register the user on the registration APIs */
+	public abstract String INFOCouldNotRegister();
+
+
+	
 	
 	// PROFILE
 	//////////
@@ -151,7 +156,13 @@ public abstract class IPhraseology {
 	
 	/** show to the word providing player when the word guessing player lost the game */
 	public abstract String PLAYINGLosingMessageForWordProvidingPlayer(String wordGuessingPlayerNick);
-	
+
+	/** sent to inform the word providing player that the opponent has taken actions that lead to a match give up */
+	public abstract String PLAYINGMatchGiveupNotificationForWordProvidingPlayer(String wordGuessingPlayerNick);
+
+	/** sent to inform the word guessing player that his actions lead to a match give up */
+	public abstract String PLAYINGMatchGiveupNotificationForWordGuessingPlayer(String wordProvidingPlayerNick);
+
 	
 	// INVITING
 	///////////
@@ -181,6 +192,11 @@ public abstract class IPhraseology {
 	
 	/** shows a list of players. 'playersInfo' := { {nick, estate, number of lucky numbers received}, ... } */
 	public abstract String LISTINGShowPlayers(String[][] playersInfo);
+
+	/** used to notify that we were through when showing online players */
+	public abstract String LISTINGNoMorePlayers();
+
+
 	
 	
 	// PROVOKING
@@ -192,5 +208,8 @@ public abstract class IPhraseology {
 
 	/** the message sent to the destination user when he is being provoked by someone */
 	public abstract String PROVOKINGSendMessage(String sourceNick, String message);
+
+	/** presented to inform that the desired nickname was not found */
+	public abstract String PROVOKINGNickNotFound(String nickname);
 
 }

@@ -69,8 +69,13 @@ public class TestPhraseology extends IPhraseology {
 	}
 
 	@Override
+	public String INFOCouldNotRegister() {
+		return "HANGMAN: You could not be registered at this time. Please try again later.";
+	}
+
+	@Override
 	public String PROFILEView(String nick, String state, int numberOfLuckyNumbers) {
-		return "HANGMAN: DeiaGATA: Subscribed, Rio de Janeiro, 109 lucky numbers. Send SIGNUP to provoke for free or INVITE DeiaGATA for a match.";
+		return "HANGMAN: " + nick + ": Subscribed, " + state + ", " + numberOfLuckyNumbers + " lucky numbers. Send SIGNUP to provoke for free or INVITE " + nick + " for a match.";
 	}
 	
 	@Override
@@ -80,7 +85,7 @@ public class TestPhraseology extends IPhraseology {
 	
 	@Override
 	public String PROFILENickRegisteredNotification(String newNickname) {
-		return "HANGMAN: Name registered: " + newNickname + ". Send LIST to XXXX to see online players. NICK <NEW NICK> to change your name.";
+		return "HANGMAN: Name registered: " + newNickname + ". Send LIST to XXXX to see online players. NICK [NEW NICK] to change your name.";
 	}
 
 
@@ -139,10 +144,20 @@ public class TestPhraseology extends IPhraseology {
 	public String PLAYINGLosingMessageForWordProvidingPlayer(String wordGuessingPlayerNick) {
 		return "Good one! " + wordGuessingPlayerNick + " wasn't able to guessed your word! P " + wordGuessingPlayerNick + " MSG to provoke him/her or INVITE " + wordGuessingPlayerNick + " for a new match";
 	}
+	
+	@Override
+	public String PLAYINGMatchGiveupNotificationForWordProvidingPlayer(String wordGuessingPlayerNick) {
+		return wordGuessingPlayerNick + " cancelled the match. To find other users to play with, sent LIST to XXXX";
+	}
+
+	@Override
+	public String PLAYINGMatchGiveupNotificationForWordGuessingPlayer(String wordProvidingPlayerNick) {
+		return "Your match with " + wordProvidingPlayerNick + " has been canceled. Send P " + wordProvidingPlayerNick + " MSG to talk to him/her or LIST to play with someone else";
+	}
 
 	@Override
 	public String INVITINGAskOpponentNickOrPhone(String invitingPlayerNickname) {
-		return "HANGMAN: Name registered: " + invitingPlayerNickname + ". Send your friend's phone to XXXX or LIST to see online players. NICK <NEW NICK> to change your name.";
+		return "HANGMAN: Name registered: " + invitingPlayerNickname + ". Send your friend's phone to XXXX or LIST to see online players. NICK [NEW NICK] to change your name.";
 	}
 
 	@Override
@@ -186,6 +201,11 @@ public class TestPhraseology extends IPhraseology {
 	}
 
 	@Override
+	public String LISTINGNoMorePlayers() {
+		return "There is no more online players to show. Send P NICK MSG to provoke or INVITE PHONE to invite a friend of yours to play.";
+	}
+
+	@Override
 	public String PROVOKINGDeliveryNotification(String destinationNick) {
 		return "Your message was sent to " + destinationNick + ". Wait for the answer or provoke other players sending P NICK MSG to XXXXX. Send SIGNUP to provoke for free.";
 	}
@@ -193,6 +213,11 @@ public class TestPhraseology extends IPhraseology {
 	@Override
 	public String PROVOKINGSendMessage(String sourceNick, String message) {
 		return sourceNick + ": " + message + " - Answer by sending P " + sourceNick + " MSG to XXXX";
+	}
+
+	@Override
+	public String PROVOKINGNickNotFound(String nickname) {
+		return "No user with nickname '" + nickname + "' was found. Maybe he/she changed it? Send LIST to XXXX to see online players";
 	}
 
 }

@@ -27,7 +27,7 @@ public class StateDetails {
 	//////////////////////////
 	
 	private static final CommandPatternsDto SHOW_FULL_HELP_COMMAND_PATTERNS =
-		new CommandPatternsDto(ECOMMANDS.SHOW_FULL_HELP_MESSAGE, new String[] {"AJUDA"});
+		new CommandPatternsDto(ECOMMANDS.SHOW_FULL_HELP_MESSAGE, new String[] {"AJUDA", "HELP"});
 	private static final CommandPatternsDto SHOW_PROFILE_COMMAND_PATTERNS =
 		new CommandPatternsDto(ECOMMANDS.SHOW_PROFILE, new String[] {"PROFILE (.*)"});
 	private static final CommandPatternsDto DEFINE_NICK_COMMAND_PATTERNS =
@@ -52,7 +52,8 @@ public class StateDetails {
 		LIST_USERS_COMMAND_PATTERNS,
 		PROVOKE_COMMAND_PATTERNS,
 		START_INVITATION_PROCESS_COMMAND_PATTERNS,
-		FALLBACK_HELP_COMMAND_PATTERNS
+		new CommandPatternsDto(ECOMMANDS.SHOW_WELCOME_MESSAGE, new String[] {
+			".*"})
 	};
 	
 	public static final CommandPatternsDto[] ENTERING_OPPONENT_CONTACT_INFO = {
@@ -94,9 +95,23 @@ public class StateDetails {
 		DEFINE_NICK_COMMAND_PATTERNS,
 		LIST_USERS_COMMAND_PATTERNS,
 		PROVOKE_COMMAND_PATTERNS,
+		new CommandPatternsDto(ECOMMANDS.SUGGEST_LETTER_OR_WORD, new String[] {
+			"(C)"}),	// TODO fix the C conflict with 'START_INVITATION_PROCESS_COMMAND_PATTERNS'
 		START_INVITATION_PROCESS_COMMAND_PATTERNS,
 		new CommandPatternsDto(ECOMMANDS.SUGGEST_LETTER_OR_WORD, new String[] {
-			"(.*)"}),
+			"(.*)"})
+	};
+	
+	public static final CommandPatternsDto[] LISTING_USERS = {
+		new CommandPatternsDto(ECOMMANDS.LIST_MORE_USERS, new String[] {
+			"MAIS", "MORE", "\\+"}),
+		SHOW_FULL_HELP_COMMAND_PATTERNS,
+		SHOW_PROFILE_COMMAND_PATTERNS,
+		DEFINE_NICK_COMMAND_PATTERNS,
+		LIST_USERS_COMMAND_PATTERNS,
+		PROVOKE_COMMAND_PATTERNS,
+		START_INVITATION_PROCESS_COMMAND_PATTERNS,
+		FALLBACK_HELP_COMMAND_PATTERNS
 	};
 
 }

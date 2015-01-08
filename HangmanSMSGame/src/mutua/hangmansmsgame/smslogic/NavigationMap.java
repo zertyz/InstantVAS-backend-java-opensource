@@ -61,7 +61,13 @@ public class NavigationMap {
 		
 		SHOW_PROFILE(CommandDetails.SHOW_PROFILE),
 		DEFINE_NICK(CommandDetails.DEFINE_NICK),
+		
+		
+		// list users commands
+		//////////////////////
+		
 		LIST_USERS(CommandDetails.LIST_USERS),
+		LIST_MORE_USERS(CommandDetails.LIST_MORE_USERS),
 		
 		
 		;
@@ -100,7 +106,18 @@ public class NavigationMap {
 		ENTERING_OPPONENT_CONTACT_INFO(StateDetails.ENTERING_OPPONENT_CONTACT_INFO),
 		ENTERING_MATCH_WORD_TO_PLAY(StateDetails.ENTERING_MATCH_WORD),
 		ANSWERING_TO_INVITATION(StateDetails.ANSWERING_TO_INVITATION),
+		
+		
+		// playing states
+		/////////////////
+		
 		PLAYING(StateDetails.PLAYING),
+		
+		
+		// listing users states
+		///////////////////////
+		
+		LISTING_USERS(StateDetails.LISTING_USERS),
 				
 		;
 		

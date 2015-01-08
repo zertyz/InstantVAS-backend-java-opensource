@@ -11,7 +11,7 @@ import org.junit.Test;
  * =================================
  * (created by luiz, Jan 19, 2011)
  *
- * Tests the application as described on the product manual -- with emphasis at the phraseologies,
+ * Tests the application as described on the product manual -- with emphasis at the phrasing,
  * and the usage mechanics
  */
 
@@ -25,22 +25,12 @@ public class HangmanSMSGameProcessorTests {
 	
 	// databases
 	////////////
-	
-	private static IUserDB userDB = DALFactory.getUserDB();
 
 	
 	/*********************
 	** AUXILIAR METHODS **
 	*********************/
 	
-	/** Reset the populate Users db. users := { {phone, nick}, ...} */
-	public void setUserDB(String[][] users) {
-		userDB.reset();
-		for (String[] userRecord : users) {
-			userDB.checkAvailabilityAndRecordNickname(userRecord[0], userRecord[1]);
-		}
-	}
-
 	
 	/**********
 	** TESTS **
@@ -58,7 +48,7 @@ public class HangmanSMSGameProcessorTests {
 	public void testExternalUserInvitationPlayingPath() {
 		String playerNickName;
 		String guestNickname;
-		setUserDB(new String[][] {
+		tc.setUserDB(new String[][] {
 			{"21991234899", playerNickName = "HardCodedNick"},
 			{"21998019167", guestNickname  = "haole"},
 		});
@@ -68,9 +58,9 @@ public class HangmanSMSGameProcessorTests {
 			"1/3: You can play the HANGMAN game in 2 ways: guessing someone's word or inviting someone to play with your word",
 			"2/3: You'll get 1 lucky number each word you guess. Whenever you invite a friend or user to play, you win another lucky number",
 			"3/3: Every week, 1 lucky number is selected to win the prize. Send an option to XXXX: (J)Play online; (C)Invite a friend or user; (R)anking; (A)Help"});
-		tc.checkResponse("21991234899", "nick HardCodedNick", "HANGMAN: Name registered: HardCodedNick. Send LIST to XXXX to see online players. NICK <NEW NICK> to change your name.");
-		tc.checkResponse("21998019167", "nick haole", "HANGMAN: Name registered: haole. Send LIST to XXXX to see online players. NICK <NEW NICK> to change your name.");
-		tc.checkResponse("21991234899", "C", "HANGMAN: Name registered: " + playerNickName + ". Send your friend's phone to XXXX or LIST to see online players. NICK <NEW NICK> to change your name.");
+		tc.checkResponse("21991234899", "nick HardCodedNick", "HANGMAN: Name registered: HardCodedNick. Send LIST to XXXX to see online players. NICK [NEW NICK] to change your name.");
+		tc.checkResponse("21998019167", "nick haole", "HANGMAN: Name registered: haole. Send LIST to XXXX to see online players. NICK [NEW NICK] to change your name.");
+		tc.checkResponse("21991234899", "C", "HANGMAN: Name registered: " + playerNickName + ". Send your friend's phone to XXXX or LIST to see online players. NICK [NEW NICK] to change your name.");
 		tc.checkResponse("21991234899", "21998019167", "HANGMAN: Your friend's phone: 21998019167. Think of a word without special digits and send it now to XXXX. After the invitation, you'll get a lucky number");
 		tc.checkResponse("21991234899", "coconuts", new String[] {
 			guestNickname + " was invited to play with you. while you wait, you can provoke " + guestNickname + " by sending a message to XXXX (0.31+tax) or send SIGNUP to provoke for free how many times you want",
@@ -141,9 +131,9 @@ public class HangmanSMSGameProcessorTests {
 			testPhraseology.PROVOKINGDeliveryNotification(guestNickname),
 			testPhraseology.PROVOKINGSendMessage(playerNickName, chatMessage)});
 		
-		tc.checkResponse("21998019167", "profile haole", "HANGMAN: DeiaGATA: Subscribed, Rio de Janeiro, 109 lucky numbers. Send SIGNUP to provoke for free or INVITE DeiaGATA for a match.");
-		tc.checkResponse("21998019167", "nick pAtRiCiA", "HANGMAN: Name registered: pAtRiCiA. Send LIST to XXXX to see online players. NICK <NEW NICK> to change your name.");
-		tc.checkResponse("21998019167", "list", "HardCodedNick(RJ/1), pAtRiCiA(RJ/2). To play, send INVITE NICK to XXXXX; MORE for more players or PROFILE NICK");
+		tc.checkResponse("21998019167", "profile haole", "HANGMAN: haole: Subscribed, RJ, 0 lucky numbers. Send SIGNUP to provoke for free or INVITE haole for a match.");
+		tc.checkResponse("21998019167", "nick pAtRiCiA", "HANGMAN: Name registered: pAtRiCiA. Send LIST to XXXX to see online players. NICK [NEW NICK] to change your name.");
+		tc.checkResponse("21998019167", "list", "HardCodedNick(RJ/10). To play, send INVITE NICK to XXXXX; MORE for more players or PROFILE NICK");
 	}
 	
 }

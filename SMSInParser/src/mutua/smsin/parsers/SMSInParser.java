@@ -18,32 +18,33 @@ import mutua.smsin.dto.IncomingSMSDto;
  */
 
 public abstract class SMSInParser<REQUEST_OBJECT, RESPONSE_OBJECT> {
-    
-    // these are the reply codes, when responding the asynchronous request back to the gateway
+
+	
+    /** the unified reply codes, signaling our acceptance of the asynchronous requests */
     public enum ESMSInParserSMSAcceptionStatus {
         ACCEPTED,       // message was accepted and ready for processing
         REJECTED,       // message won't be processed now nor ever
         POSTPONED,      // message can't be processed now, please re-send later
     }
 
+    
+	/** the name of the child class implementing this one -- for instrumentation */
+	public final String childClassName;
+	
+	/** the name application id using the child implementation -- for instrumentation */
+	public final String smsAppId;
+	
+	
+	/** constructor to be used by subclasses to provide instrumentation information */
+	protected SMSInParser(String childClassName, String smsAppId) {
+		this.childClassName = childClassName;
+		this.smsAppId       = smsAppId;
+	}
 
-    /*****************************
-    ** INCOMING MESSAGES PARSER **
-    *****************************/
-    
-    /**
-     * Responsible for acquiring information from the message and building an 'IncomingSMSDto' object
-     */
+    /** Responsible for acquiring information from the message and building an 'IncomingSMSDto' object */
     public abstract IncomingSMSDto parseIncomingSMS(REQUEST_OBJECT request);
-    
-    
-    /***************************
-    ** ACKNOWLEDGE THE SENDER **
-    ***************************/
-    
-    /**
-     * Responsible for acknowledging the originating gateway how the message was accepted
-     */
+        
+    /** Responsible for acknowledging the originating gateway how the message was accepted */
     public abstract void sendReply(ESMSInParserSMSAcceptionStatus status, RESPONSE_OBJECT response);
 
 }

@@ -22,6 +22,26 @@ public class UserDB implements IUserDB {
 	private static Hashtable<String, String> nicknamesByPhone = new Hashtable<String, String>();
 	/** phonesByNickname := {[nickname] = "phone", ...} */
 	private static Hashtable<String, String> phonesByNickname = new Hashtable<String, String>();
+	
+	
+	// AUXILIAR METHODS
+	///////////////////
+	
+	/** Returns the correctly cased nickname for a case insensitive nickname search, or null if nothing was found */
+	private String caseInsensitiveNicknameSearch(String caseInsensitiveNickname) {
+		String lowercaseNickname = caseInsensitiveNickname.toLowerCase();
+		for (String registeredNickname : phonesByNickname.keySet()) {
+			String lowercaseRegisteredNickname = registeredNickname.toLowerCase();
+			if (lowercaseRegisteredNickname.equals(lowercaseNickname)) {
+				return registeredNickname;
+			}
+		}
+		return null;
+	}
+	
+	
+	// IUserDB IMPLEMENTATION
+	/////////////////////////
 
 	@Override
 	public void reset() {
@@ -36,19 +56,27 @@ public class UserDB implements IUserDB {
 
 	@Override
 	public String getUserPhoneNumber(String nickname) {
-		return phonesByNickname.get(nickname);
+		String registeredNickname = caseInsensitiveNicknameSearch(nickname);
+		if (registeredNickname != null) {
+			String registeredPhone = phonesByNickname.get(registeredNickname);
+			return registeredPhone;
+		} else {
+			return null;
+		}
 	}
 
 	@Override
 	public boolean checkAvailabilityAndRecordNickname(String phoneNumber, String nickname) {
-		if (phonesByNickname.containsKey(nickname)) {
+		
+		String registeredPhoneNumber = getUserPhoneNumber(nickname);
+		if ((registeredPhoneNumber != null) && (!registeredPhoneNumber.equals(phoneNumber))) {
 			return false;
-		} else {
-			// TODO test updating the nickname and leaving no tracks
-			nicknamesByPhone.put(phoneNumber, nickname);
-			phonesByNickname.put(nickname, phoneNumber);
-			return true;
 		}
+		
+		// TODO test updating the nickname and leaving no tracks
+		nicknamesByPhone.put(phoneNumber, nickname);
+		phonesByNickname.put(nickname, phoneNumber);
+		return true;
 	}
 
 	@Override

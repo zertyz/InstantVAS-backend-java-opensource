@@ -1,10 +1,43 @@
- 21991234899 nick CocO
- 21991234899 convidar
- 21991234899 21998019167
- 21991234899 RINGOWORD
- 21998019167 YES
- 21998019167 nick Paty
+ 21991234899	nick CocO
+ 21991234899	convidar	--> convidar nick ou convidar phone não funcionam ainda
+ 21991234899	21998019167
+ 21991234899	RINGOWORD	--> adicionar validador de palavra... qdo o cara digita uma frase, vem o help (deixar assim por enquanto)
+                	        --> o nickname do usuário convidado aparece como 'null' (corrigido)
+ 21998019167	YES
+ 	--> não aceita frases ainda (vai assim mesmo)
+ 	--> ao fim do jogo, J faz nada (usuários continuam no playing state)
+ 	--> c durante o jogo tenta convidar outro usuário para jogar e sai do estado do jogo (corrigido)
+ 	--> quando sair do estado do jogo, avisar o outro usuário que o jogo foi desistido
+ 	--> o jogo deve permitir que o mesmo usuário convide 2 pessoas para jogar como adivinhador da palavra e fique jogando com as 2 (feito)
+ 21998019167	nick Paty
+ 21998019167	P caca, oi	--> considera que o nick eh caca, (deixar assim por enquanto)
+ 21998019168	nick patata
+ 21998019169	nick patati
+ 21998019169	list
+ 21998019169	more	--> more até o fim e depois list dá exception de java.util.regex.PatternSyntaxException: Dangling meta character '+' near index 0 por causa do "+" nos regexps do estado "LISTING USERS" (corrigido)
  
- p nickquenao existe
- colocar output das mensagens de entrada e saída no stdout
+ ----
+ 21999999999	list	--> diz que não tem users? (corrigido)
+ 						--> list em base que nunca setou nick dá erro na hora de usar o nick null (corrigido)
+ 						--> vários usuários repetidos estão sendo listados (parcialmente corrigido)
+ 						--> o próprio usuário que lista aparece nas listagens (corrigido)
+
+---
+21991234899		j		--> jogar online ainda não funciona!!
  
+colocar output das mensagens de entrada e saída no stdout
+ 
+ 
+ 1) * Review the phrasing for a better user experience
+ 	TODO on REGISTER_MATCH_WORD
+ 2) Review the interaction flow to deal with the new rules concerning Lucky Number emissions
+ 3) Review the interaction flow to conciliate invited users (through their phone number) and the need for registration
+ 4) Fix the postgre database model
+ 5) * Implement APIs (both GP and LS)
+ 6) * Obifuscation
+ 7) * Instrumentation (remove first, think of a better alternative, implement latter)
+ 8) * Fix LIST_USERS
+ 9) * Implement nick count on DEFINE_NICK
+ 10) * Fix SHOW_PROFILE & MORE command
+ 11) * IMPLEMENT THE ROBOTS!!! ... or, at least, the "play online" functionality
+ 12) * implement "tell me your nick" when he/she is inviting but has no nickname yet

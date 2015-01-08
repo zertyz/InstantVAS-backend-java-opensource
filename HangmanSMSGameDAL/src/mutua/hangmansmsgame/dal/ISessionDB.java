@@ -24,4 +24,7 @@ public interface ISessionDB {
 	
 	/** Stores a 'UserSessionDto' on the database */
 	void setSession(SessionDto session);
+	
+	/** Retrieve the most recently used session phone numbers, up to 'limit' entries */
+	String[] getRecentlyUpdatedSessionPhoneNumbers(int limit);
 }

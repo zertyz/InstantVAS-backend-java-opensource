@@ -1,8 +1,12 @@
 package mutua.hangmansmsgame.smslogic;
 
-import static org.junit.Assert.*;
-import mutua.hangmansmsgame.smslogic.HangmanSMSGameProcessor;
-import mutua.hangmansmsgame.smslogic.SMSProcessorException;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import mutua.hangmansmsgame.dal.DALFactory;
+import mutua.hangmansmsgame.dal.ISessionDB;
+import mutua.hangmansmsgame.dal.IUserDB;
+import mutua.hangmansmsgame.dal.dto.SessionDto;
 import mutua.smsin.dto.IncomingSMSDto;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 import mutua.smsout.dto.OutgoingSMSDto;
@@ -21,21 +25,50 @@ public class TestCommons {
 	
 	
 	protected ESMSInParserCarrier TEST_CARRIER = ESMSInParserCarrier.TEST_CARRIER;
-
 	
 	private TestResponseReceiver responseReceiver;
 	private HangmanSMSGameProcessor processor;
+
+
+	// databases
+	////////////
+	
+	private static IUserDB    userDB    = DALFactory.getUserDB();
+	private static ISessionDB sessionDB = DALFactory.getSessionDB();
 
 	
 	public TestCommons() {
 		responseReceiver = new TestResponseReceiver();
 		processor = new HangmanSMSGameProcessor(responseReceiver);
 	}
-		
-//	public void setDB(Object[][] blocosDBData) {
-//		IBlocoDAO blocoDB = DALFactory.getInstance().getBlocoDAO();
-//		blocoDB.setData(blocosDBData);
-//	}
+
+	
+	/**********************************
+	** DATABASE MANIPULATION METHODS **
+	**********************************/
+	
+	/** Reset and populate Users database. users := { {phone, nick}, ...} */
+	public void setUserDB(String[][] users) {
+		userDB.reset();
+		for (String[] userRecord : users) {
+			userDB.checkAvailabilityAndRecordNickname(userRecord[0], userRecord[1]);
+		}
+	}
+	
+	/** Reset and populate Sessions Database. sessions := { {phone, state}, ...} */
+	public void setSessionDB(String[][] sessions) {
+		sessionDB.reset();
+		for (String[] sessionEntry : sessions) {
+			sessionDB.setSession(new SessionDto(sessionEntry[0], sessionEntry[1]));
+		}
+	}
+	
+
+
+
+	/********************************
+	** DIALOG VERIFICATION METHODS **
+	********************************/	
 	
 	public void checkResponse(String phone, String inputText, String expectedResponseText) {
 		checkResponse(phone, inputText, new String[] {expectedResponseText});

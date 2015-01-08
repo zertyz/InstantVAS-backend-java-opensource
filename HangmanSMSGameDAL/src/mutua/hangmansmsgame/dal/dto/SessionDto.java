@@ -21,20 +21,21 @@ public class SessionDto {
 
 	public enum ESessionParameters {
 
-		// listing users session info
-		NEXT_LISTED_PLAYER_ID,
-		
 		// playing state info
 		HANGMAN_SERIALIZED_GAME_STATE,
 		
 		// invitation to play info
 		OPPONENT_PHONE_NUMBER,
 		MATCH_ID,
+		
+		// listing users info
+		PRESENTED_USERS,
 	}
 	
 	private final String phone;
 	private final String navigationState;
 	private final String[] parameterValues;
+	private long timestamp;
 
 	public SessionDto(String phone, String navigationState) {
 		this(phone, navigationState, new String[ESessionParameters.values().length]);
@@ -44,10 +45,10 @@ public class SessionDto {
 		this.phone = phone;
 		this.navigationState = navigationState;
 		this.parameterValues = parameterValues;
+		this.timestamp = System.currentTimeMillis();
 	}
 	
-	public SessionDto(String phone, String navigationState,
-                      ESessionParameters parameter1, String parameter1Value) {
+	public SessionDto(String phone, String navigationState, ESessionParameters parameter1, String parameter1Value) {
 		this(phone, navigationState);
 		parameterValues[parameter1.ordinal()] = parameter1Value;
 	}
@@ -80,12 +81,17 @@ public class SessionDto {
 	public String getParameterValue(ESessionParameters parameter) {
 		return parameterValues[parameter.ordinal()];
 	}
+	
+	public long getTimestamp() {
+		return timestamp;
+	}
 
 	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append("SessionDto [phone='").append(phone).append("', navigationState='");
-		sb.append(navigationState).append("', parameterValues={");
+		sb.append(navigationState).append("', timestamp=");
+		sb.append(timestamp).append(", parameterValues={");
 		for (int i=1; i<parameterValues.length; i++) {
 			sb.append(ESessionParameters.values()[i]).append('=');
 			sb.append("'").append(parameterValues[i]).append("'");

@@ -20,11 +20,12 @@ public interface IUserDB {
 	/** Retrieve the nickname for a user, based on it's 'phoneNumber' */
 	String getUserNickname(String phoneNumber);
 
-	/** Retrieve the phone number for a user, based on it's 'nickname' */
+	/** Retrieve the phone number for a user, based on it's case insensitive 'nickname', or null if
+	 *  none was found. */
 	String getUserPhoneNumber(String nickname);	
 
-	/** Returns true if the provided nickname was not being used by any record on the database and could be, then,
-	 *  associated with the provided 'phoneNumber'. */
+	/** Returns true if the provided case insensitive nickname was not being used by any record on 
+	 *  the database and could be, then, associated with the provided 'phoneNumber'. */
 	boolean checkAvailabilityAndRecordNickname(String phoneNumber, String nickname);
 	
 	/** Returns whether we have a record or not for a specific user through it's phone number.
