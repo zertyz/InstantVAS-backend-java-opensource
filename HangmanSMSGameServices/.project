@@ -10,8 +10,8 @@
 		<project>MutuaICCConfiguration</project>
 		<project>MutuaICCInstrumentation</project>
 		<project>SMSInCelltick</project>
-		<project>SMSInParser</project>
 		<project>SMSOutCelltick</project>
+		<project>SMSInParser</project>
 		<project>SMSOutSender</project>
 	</projects>
 	<buildSpec>
