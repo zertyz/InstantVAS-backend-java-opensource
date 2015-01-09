@@ -17,10 +17,7 @@ import mutua.smsout.dto.OutgoingSMSDto;
 
 public interface IResponseReceiver {
 
-	/*
-	 *  on the event that a message is available for sending, this method
-	 *  gets invoked -- with the originating message
-	 */
+	/** on the event that a message is available for sending, this method gets invoked -- with the originating message */
 	void onMessage(OutgoingSMSDto outgoingMessage, IncomingSMSDto incomingMessage);
 
 }

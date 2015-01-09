@@ -23,6 +23,9 @@ public class CelltickLiveScreenAPI {
 
 
 	public static boolean registerSubscriber(String phone) {
+		if (REGISTER_SUBSCRIBER_URL == null) {
+			return true;
+		}
 		try {
 			String url = REGISTER_SUBSCRIBER_URL.replaceAll("%%MSISDN%%", phone);
 			String response = HTTPClientAdapter.requestGet(url, null, "UTF-8");
@@ -39,6 +42,9 @@ public class CelltickLiveScreenAPI {
 	}
 	
 	public static boolean unregisterSubscriber(String phone) {
+		if (UNREGISTER_SUBSCRIBER_URL == null) {
+			return true;
+		}
 		try {
 			String url = UNREGISTER_SUBSCRIBER_URL.replaceAll("%%MSISDN%%", phone);
 			String response = HTTPClientAdapter.requestGet(url, null, "UTF-8");

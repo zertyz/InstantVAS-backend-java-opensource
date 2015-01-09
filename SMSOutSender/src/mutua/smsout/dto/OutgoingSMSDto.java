@@ -46,6 +46,14 @@ public class OutgoingSMSDto {
 	}
 
 	@Override
+	public String toString() {
+		return new StringBuffer().
+			append("OutgoingSMSDto [phone='").append(phone).append("', text='").
+			append(text).append("', billingType=").append(billingType.name()).
+			append("]").toString();
+	}
+
+	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof OutgoingSMSDto) {
 			OutgoingSMSDto other = (OutgoingSMSDto) obj;

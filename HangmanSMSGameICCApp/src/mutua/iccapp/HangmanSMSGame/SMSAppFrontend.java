@@ -3,6 +3,7 @@ package mutua.iccapp.HangmanSMSGame;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import mutua.hangmansmsgame.celltick.CelltickLiveScreenAPI;
 import mutua.hangmansmsgame.smslogic.HangmanSMSGameProcessor;
 import mutua.hangmansmsgame.smslogic.SMSProcessorException;
 import mutua.smsin.dto.IncomingSMSDto;
@@ -23,13 +24,10 @@ public class SMSAppFrontend {
     private static HangmanSMSGameProcessor processor = new HangmanSMSGameProcessor(simulationMessageReceiver);
     
     
-//    static {
-//    	try {
-//    		SetFullDB.setFullDB();
-//    	} catch (Throwable t) {
-//            t.printStackTrace();
-//    	}
-//    }
+    static {
+    	CelltickLiveScreenAPI.REGISTER_SUBSCRIBER_URL = null;
+    	CelltickLiveScreenAPI.REGISTER_SUBSCRIBER_URL = null;
+    }
 
     
     public static String[][] process(String phone, String inputText, String carrier) {
