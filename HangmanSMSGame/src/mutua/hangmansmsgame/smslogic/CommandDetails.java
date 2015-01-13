@@ -201,13 +201,13 @@ public class CommandDetails {
 	/** Implements rules like warning users that a match was cancelled by commands who would force the user from quitting the playing state (invite, list, ...),
 	 *  possibly issueing messages to both users and taking other actions as well. */
 	protected static CommandMessageDto[] applySessionTransitionRules(SessionDto currentSession, ESTATES newNavigationState) {
-		if (ESTATES.PLAYING.name().equals(currentSession.getNavigationState()) &&
-			(newNavigationState != ESTATES.PLAYING)) {
+		if (ESTATES.GUESSING_WORD.name().equals(currentSession.getNavigationState()) &&
+			(newNavigationState != ESTATES.GUESSING_WORD)) {
 			int matchId = Integer.parseInt(currentSession.getParameterValue(ESessionParameters.MATCH_ID));
 			MatchDto match = matchDB.retrieveMatch(matchId);
 			EMatchStatus status = match.getStatus();
 			if (status == EMatchStatus.ACTIVE) {
-				IPhraseology phrases = new TestPhraseology();
+				IPhraseology phrases = IPhraseology.getCarrierSpecificPhraseology(ESMSInParserCarrier.TEST_CARRIER);
 				String wordProvidingPlayerPhone = match.getWordProvidingPlayerPhone();
 				String wordGuessingPlayerPhone  = match.getWordGuessingPlayerPhone();
 				String wordGuessingPlayerNick   = userDB.getUserNickname(wordGuessingPlayerPhone);
@@ -368,7 +368,7 @@ public class CommandDetails {
 //			sessionDB.setSession(opponentSession);
 
 			return getNewCommandAnswerDto(session, new CommandMessageDto[] {wordProvidingPlayerMessage, wordGuessingPlayerMessage},
-			                              ESTATES.PLAYING, ESessionParameters.MATCH_ID, Integer.toString(matchId));
+			                              ESTATES.GUESSING_WORD, ESessionParameters.MATCH_ID, Integer.toString(matchId));
 		}
 	};
 
@@ -411,7 +411,7 @@ public class CommandDetails {
 						EResponseMessageType.PLAYING);
 					newMatchData = matchData;
 					answer = getNewCommandAnswerDto(session, new CommandMessageDto[] {wordProvidingPlayerMessage, wordGuessingPlayerMessage},
-                                                    ESTATES.PLAYING, ESessionParameters.HANGMAN_SERIALIZED_GAME_STATE, game.serializeGameState());
+                                                    ESTATES.GUESSING_WORD, ESessionParameters.HANGMAN_SERIALIZED_GAME_STATE, game.serializeGameState());
 					break;
 				case WON:
 					matchDB.updateMatchStatus(matchId, EMatchStatus.CLOSED_WORD_GUESSED);
@@ -519,6 +519,16 @@ public class CommandDetails {
 				String[] newPresentedUsers = getNewPresentedUsers(presentedUsers, playersInfo);
 				return getNewCommandAnswerDto(session, message, ESTATES.LISTING_USERS, ESessionParameters.PRESENTED_USERS, serializeStringArray(newPresentedUsers, ";"));
 			}
+		}
+	};
+	
+	/** Called when the user issues the "unsubscribe" command from an sms message */
+	public static final ICommandProcessor UNSUBSCRIBE = new ICommandProcessor() {
+		@Override
+		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
+			CelltickLiveScreenAPI.unregisterSubscriber(session.getPhone());
+			CommandMessageDto message = new CommandMessageDto(phrases.UNSUBSCRIBINGUnsubscriptionNotification(), EResponseMessageType.HELP);
+			return getNewCommandAnswerDto(session, message);
 		}
 	};
 

@@ -23,7 +23,7 @@ public class CommandDetailsTests {
 	
 
 	private TestCommons tc = new TestCommons();
-	TestPhraseology testPhraseology = new TestPhraseology();
+	TestPhraseology testPhraseology = new TestPhraseology("XXXX");
 	
 	
 	// databases

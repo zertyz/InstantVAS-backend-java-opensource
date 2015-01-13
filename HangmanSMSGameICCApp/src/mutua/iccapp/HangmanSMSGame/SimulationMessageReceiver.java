@@ -6,7 +6,8 @@ import mutua.hangmansmsgame.dispatcher.IResponseReceiver;
 import mutua.smsin.dto.IncomingSMSDto;
 import mutua.smsout.dto.OutgoingSMSDto;
 
-/* SimulationMessageReceiver.java  --  $Id$
+/** <pre>
+ * SimulationMessageReceiver.java  --  $Id$
  * ==============================
  * (created by luiz, Feb 4, 2011)
  *

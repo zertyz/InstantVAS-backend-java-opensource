@@ -38,6 +38,8 @@ public class StateDetails {
 		new CommandPatternsDto(ECOMMANDS.PROVOKE, new String[] {"P ([^ ]+) (.*)"});
 	private static final CommandPatternsDto START_INVITATION_PROCESS_COMMAND_PATTERNS = 
 		new CommandPatternsDto(ECOMMANDS.START_INVITATION_PROCESS, new String[] {"C", "CONVIDAR", "INVITE"});
+	private static final CommandPatternsDto UNSUBSCRIBE_COMMAND_PATTERNS = 
+		new CommandPatternsDto(ECOMMANDS.UNSUBSCRIBE, new String[] {"UNSUBSCRIBE"});
 	private static final CommandPatternsDto FALLBACK_HELP_COMMAND_PATTERNS =
 		new CommandPatternsDto(ECOMMANDS.SHOW_FULL_HELP_MESSAGE, new String[] {".*"});
 	
@@ -52,6 +54,7 @@ public class StateDetails {
 		LIST_USERS_COMMAND_PATTERNS,
 		PROVOKE_COMMAND_PATTERNS,
 		START_INVITATION_PROCESS_COMMAND_PATTERNS,
+		UNSUBSCRIBE_COMMAND_PATTERNS,
 		new CommandPatternsDto(ECOMMANDS.SHOW_WELCOME_MESSAGE, new String[] {
 			".*"})
 	};
@@ -65,6 +68,7 @@ public class StateDetails {
 		LIST_USERS_COMMAND_PATTERNS,
 		PROVOKE_COMMAND_PATTERNS,
 		START_INVITATION_PROCESS_COMMAND_PATTERNS,
+		UNSUBSCRIBE_COMMAND_PATTERNS,
 		FALLBACK_HELP_COMMAND_PATTERNS
 	};
 
@@ -75,6 +79,7 @@ public class StateDetails {
 		LIST_USERS_COMMAND_PATTERNS,
 		PROVOKE_COMMAND_PATTERNS,
 		START_INVITATION_PROCESS_COMMAND_PATTERNS,
+		UNSUBSCRIBE_COMMAND_PATTERNS,
 		new CommandPatternsDto(ECOMMANDS.REGISTER_MATCH_WORD, new String[] {"([^ ]+)"}),
 		FALLBACK_HELP_COMMAND_PATTERNS
 	};
@@ -82,6 +87,7 @@ public class StateDetails {
 	public static final CommandPatternsDto[] ANSWERING_TO_INVITATION = {
 		SHOW_FULL_HELP_COMMAND_PATTERNS,
 		START_INVITATION_PROCESS_COMMAND_PATTERNS,
+		UNSUBSCRIBE_COMMAND_PATTERNS,
 		PROVOKE_COMMAND_PATTERNS,
 		new CommandPatternsDto(ECOMMANDS.ACCEPT_INVITATION, new String[] {
 			"YES"}),
@@ -89,7 +95,7 @@ public class StateDetails {
 //			"NO"}),
 	};
 
-	public static final CommandPatternsDto[] PLAYING = {
+	public static final CommandPatternsDto[] GUESSING_WORD = {
 		SHOW_FULL_HELP_COMMAND_PATTERNS,
 		SHOW_PROFILE_COMMAND_PATTERNS,
 		DEFINE_NICK_COMMAND_PATTERNS,
@@ -98,6 +104,7 @@ public class StateDetails {
 		new CommandPatternsDto(ECOMMANDS.SUGGEST_LETTER_OR_WORD, new String[] {
 			"(C)"}),	// TODO fix the C conflict with 'START_INVITATION_PROCESS_COMMAND_PATTERNS'
 		START_INVITATION_PROCESS_COMMAND_PATTERNS,
+		UNSUBSCRIBE_COMMAND_PATTERNS,
 		new CommandPatternsDto(ECOMMANDS.SUGGEST_LETTER_OR_WORD, new String[] {
 			"(.*)"})
 	};
@@ -111,6 +118,7 @@ public class StateDetails {
 		LIST_USERS_COMMAND_PATTERNS,
 		PROVOKE_COMMAND_PATTERNS,
 		START_INVITATION_PROCESS_COMMAND_PATTERNS,
+		UNSUBSCRIBE_COMMAND_PATTERNS,
 		FALLBACK_HELP_COMMAND_PATTERNS
 	};
 

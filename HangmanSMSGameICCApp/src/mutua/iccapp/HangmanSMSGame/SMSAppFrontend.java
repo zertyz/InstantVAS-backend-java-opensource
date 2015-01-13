@@ -10,7 +10,8 @@ import mutua.smsin.dto.IncomingSMSDto;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 import mutua.smsout.dto.OutgoingSMSDto;
 
-/* SMSAppFrontend.java  --  $Id$
+/** <pre>
+ *  SMSAppFrontend.java  --  $Id$
  * ===================
  * (created by luiz, Feb 4, 2011)
  *

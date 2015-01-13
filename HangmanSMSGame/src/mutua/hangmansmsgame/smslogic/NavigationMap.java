@@ -70,6 +70,12 @@ public class NavigationMap {
 		LIST_MORE_USERS(CommandDetails.LIST_MORE_USERS),
 		
 		
+		// unsubscription commands
+		//////////////////////////
+		
+		UNSUBSCRIBE(CommandDetails.UNSUBSCRIBE),
+		
+		
 		;
 		
 		private ICommandProcessor commandProcessor;
@@ -100,6 +106,12 @@ public class NavigationMap {
 		NEW_USER(StateDetails.NEW_USER),
 		
 		
+//		// loop state for existing users
+//		////////////////////////////////
+//		
+//		MAIN_MENU(),
+		
+		
 		// invitation states
 		////////////////////
 		
@@ -111,7 +123,7 @@ public class NavigationMap {
 		// playing states
 		/////////////////
 		
-		PLAYING(StateDetails.PLAYING),
+		GUESSING_WORD(StateDetails.GUESSING_WORD),
 		
 		
 		// listing users states

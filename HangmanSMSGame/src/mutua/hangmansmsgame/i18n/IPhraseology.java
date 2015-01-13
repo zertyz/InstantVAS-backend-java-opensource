@@ -1,5 +1,9 @@
 package mutua.hangmansmsgame.i18n;
 
+import java.util.Arrays;
+import java.util.Hashtable;
+import java.util.regex.Matcher;
+
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 
 /** <pre>
@@ -15,6 +19,64 @@ import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
  */
 
 public abstract class IPhraseology {
+	
+	
+	public static String SHORT_CODE = "9714";
+
+	
+	/** phrases_map := { ["phrase name"] = {message1, message2, ...}, ... } */
+	private Hashtable<String, String[]> phrasesMap;
+	
+	/** phrases := { {"phrase name", "phrase text"}, ... } */
+	protected IPhraseology(String[][] phrases) {
+		phrasesMap = new Hashtable<String, String[]>();
+		for (String[] phrase : phrases) {
+			String phraseName = phrase[0];
+			String[] messagesArray = Arrays.copyOfRange(phrase, 1, phrase.length);
+			phrasesMap.put(phraseName, messagesArray);
+		}
+	}
+	
+	/** retrieves the messages for the given 'phraseName', fulfilling all parameters, where
+	 *  'parameters' := { {"name", "value"}, ... }, or 'null' if 'phraseName' wasn't found */
+	protected String[] getPhrases(String phraseName, String[][] parameters) {
+		String[] messages = phrasesMap.get(phraseName);
+		if (messages == null) {
+			return null;
+		}
+		messages = Arrays.copyOf(messages, messages.length);
+		if (parameters != null) {
+			for (int i=0; i<messages.length; i++) {
+				String originalMessage = messages[i];
+				String fulfilledMessage = originalMessage;
+				// fulfill the parameters
+				for (String[] parameter : parameters) {
+					String parameterName  = parameter[0];
+					String parameterValue = parameter[1];
+					if (parameterValue != null) {
+						fulfilledMessage = fulfilledMessage.replaceAll("\\{\\{" + parameterName + "\\}\\}", Matcher.quoteReplacement(parameterValue));
+					}
+				}
+				messages[i] = fulfilledMessage;
+			}
+		}
+		return messages;
+	}
+	
+	/** @see TestPhraseology#getPhrases(String, String[][]) */
+	protected String getPhrase(String phraseName, String[][] parameters) {
+		String[] messages = getPhrases(phraseName, parameters);
+		if (messages == null) {
+			return null;
+		} else {
+			return messages[0];
+		}
+	}
+	
+	/** @see TestPhraseology#getPhrases(String, String[][]) */
+	protected String getPhrase(String phraseName) {
+		return getPhrase(phraseName, null);
+	}
 
 	
 	/**************************
@@ -22,7 +84,7 @@ public abstract class IPhraseology {
 	**************************/
 	
 	public static IPhraseology getCarrierSpecificPhraseology(ESMSInParserCarrier carrier) {
-		return new TestPhraseology();
+		return new TestPhraseology(SHORT_CODE);
 	}
 
 	protected String getList(String[] elements, String pairSeparator, String lastPairSeparator) {
@@ -102,36 +164,31 @@ public abstract class IPhraseology {
 	// PLAYING
 	//////////
 	
-	protected String getHangDrawing(boolean drawHead, boolean drawLeftArm, boolean drawRightArm,
+	protected String getGallowsArt(boolean drawHead, boolean drawLeftArm, boolean drawRightArm,
 	                                boolean drawChest, boolean drawLeftLeg, boolean drawRightLeg) {
-		return "+-+\n" +
-		       "| " + (drawHead?"O":"") + "\n" +
-		       "|" + (drawLeftArm?"/":" ") + (drawChest?"|":" ") + (drawRightArm?"\\":"") + "\n" +
-		       "|" + (drawLeftLeg?"/":" ") + " " + (drawRightLeg?"\\":"") + "\n" +
-		       "|\n" +
-		       "====\n";
+		return getPhrase("gallowsArt", new String[][] {
+			{"head",     (drawHead?"O":"")},
+			{"leftArm",  (drawLeftArm?"/":" ")},
+			{"chest",    (drawChest?"|":" ")},
+			{"rightArm", (drawRightArm?"\\":"")},
+			{"leftLeg",  (drawLeftLeg?"/":" ")},
+			{"rightLeg", (drawRightLeg?"\\":"")},
+		});
 	}
 	
-	protected String getWinningDrawing() {
-		return "\\0/\n" +
-		       " |\n" +
-		       "/ \\\n";
+	protected String getWinningArt() {
+		return getPhrase("winningArt");
 	}
 	
-	protected String getLoosingDrawing() {
-		return "+-+\n" +
-		       "| x\n" +
-		       "|/|\\\n" +
-		       "|/ \\\n" +
-		       "====\n";
+	protected String getLosingArt() {
+		return getPhrase("losingArt");
 	}
 
 	
 	/** sent to the player who provided the word when the match starts -- when it is accepted by the opponent player */
 	public abstract String PLAYINGWordProvidingPlayerStart(String guessedWordSoFar, String wordGuessingPlayerNick);
 
-	/** sent back to the player who is attempting to guess the word when the match starts 
-	 * @param usedLetters TODO*/
+	/** sent back to the player who is attempting to guess the word when the match starts */
 	public abstract String PLAYINGWordGuessingPlayerStart(String guessedWordSoFar, String usedLetters);
 	
 	/** shows the state of the game play to the player attempting to guess the word */
@@ -150,8 +207,7 @@ public abstract class IPhraseology {
 	/** show to the word providing player when the word guessing player won the game */
 	public abstract String PLAYINGWinningMessageForWordProvidingPlayer(String wordGuessingPlayerNick);
 	
-	/** shown to the losing player, who tried to guess the word 
-	 * @param wordProvidingPlayerNick TODO*/
+	/** shown to the losing player, who tried to guess the word */
 	public abstract String PLAYINGLosingMessageForWordGuessingPlayer(String word, String wordProvidingPlayerNick);
 	
 	/** show to the word providing player when the word guessing player lost the game */
@@ -167,7 +223,6 @@ public abstract class IPhraseology {
 	// INVITING
 	///////////
 	
-	// TODO what if the user provide an unknown nickname or a wrong phone number?
 	/** shown when the game wants to ask the player for an opponent to be invited for a match */
 	public abstract String INVITINGAskOpponentNickOrPhone(String invitingPlayerNickname);
 
@@ -196,13 +251,10 @@ public abstract class IPhraseology {
 	/** used to notify that we were through when showing online players */
 	public abstract String LISTINGNoMorePlayers();
 
-
-	
 	
 	// PROVOKING
 	////////////
 	
-	// TODO what if 'destinationNick' is invalid?
 	/** presented to the user after he/she attempted to provoke someone, indicating the message was delivered */
 	public abstract String PROVOKINGDeliveryNotification(String destinationNick);
 
@@ -212,4 +264,11 @@ public abstract class IPhraseology {
 	/** presented to inform that the desired nickname was not found */
 	public abstract String PROVOKINGNickNotFound(String nickname);
 
+	
+	// PROVOKING
+	////////////
+	
+	/** presented to inform the subscription was canceled on the game platform */
+	public abstract String UNSUBSCRIBINGUnsubscriptionNotification();
+	
 }
