@@ -94,11 +94,5 @@ System.out.println("\n");
 			fail("Exception while processing message: "+e.getMessage());
 		}
 	}
-		
-//	public void setFullDB() {
-//		SetFullDB.setFullDB();
-//	}
-	
-
 	
 }

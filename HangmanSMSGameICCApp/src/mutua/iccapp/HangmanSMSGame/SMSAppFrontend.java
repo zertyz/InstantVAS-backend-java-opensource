@@ -45,7 +45,7 @@ public class SMSAppFrontend {
 		for (int i=0; i<response.length; i++) {
 			response[i][0] = observedResponses[i].getBillingType().toString();
 			response[i][1] = observedResponses[i].getPhone();
-			response[i][2] = observedResponses[i].getText();
+			response[i][2] = observedResponses[i].getText().replaceAll("\n", "<br/>");
 		}
 		return response;
 	}

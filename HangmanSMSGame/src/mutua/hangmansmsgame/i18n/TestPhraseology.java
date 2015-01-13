@@ -173,6 +173,7 @@ public class TestPhraseology extends IPhraseology {
 			{"shortCode",   shortCode},
 			{"word",        word},
 			{"luckyNumber", luckyNumber},
+			{"winningArt",  getWinningArt()},
 		});
 	}
 

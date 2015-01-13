@@ -122,6 +122,18 @@ public class CommandDetails {
 			return false;
 		}
 	}
+
+	/** Called to store a new match and assure both users exists on the database */
+	protected static int startNewMatch(MatchDto match) {
+		assureUserIsRegistered(match.getWordProvidingPlayerPhone());
+		assureUserIsRegistered(match.getWordGuessingPlayerPhone());
+		return matchDB.storeNewMatch(match);
+	}
+
+	/** Returns true if 'parameter' can represent a phone number, false if not */
+	public static boolean isParameterAPhoneNumber(String parameter) {
+		return parameter.matches("[0-9]+");
+	}
 	
 	/** 'playersInfo' is defined by IPhraseology.LISTINGShowPlayers */
 	protected static String[] getNewPresentedUsers(String[] presentedUsers, String[][] playersInfo) {
@@ -142,6 +154,9 @@ public class CommandDetails {
 		String[] unpresentedPhones = new String[lookAhead];
 		int unpresentedPhonesIndex = 0;
 		NEXT_PLAYER: for (int i=0; i<latestPlayerPhones.length; i++) {
+			if (!userDB.isUserOnRecord(latestPlayerPhones[i])) {
+				continue NEXT_PLAYER;
+			}
 			for (int j=0; j<presentedUsers.length; j++) {
 				if (latestPlayerPhones[i].equals(presentedUsers[j])) {
 					continue NEXT_PLAYER;
@@ -256,17 +271,26 @@ public class CommandDetails {
 	protected static CommandAnswerDto getNewCommandAnswerDto(SessionDto currentSession, CommandMessageDto commandMessage, ESTATES newNavigationState, ESessionParameters parameter, String parameterValue) {
 		return getNewCommandAnswerDto(currentSession, new CommandMessageDto[] {commandMessage}, newNavigationState, parameter, parameterValue);
 	}
+	
+	
+	// common response messages
+	///////////////////////////
+	
+	private static CommandAnswerDto getNickNotFoundMessage(SessionDto session, IPhraseology phrases, String nickname) {
+		return getNewCommandAnswerDto(session, new CommandMessageDto(phrases.PROVOKINGNickNotFound(nickname), EResponseMessageType.HELP));
+	}
 
 
 	// commands
 	///////////
+
 
 	public static final ICommandProcessor SHOW_WELCOME_MESSAGE = new ICommandProcessor() {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
 			CommandMessageDto commandResponse = new CommandMessageDto(phrases.INFOWelcome(),
 			                                                          EResponseMessageType.HELP);
-			return getNewCommandAnswerDto(session, commandResponse);
+			return getNewCommandAnswerDto(session, commandResponse, ESTATES.EXISTING_USER);
 		}
 	};
 	
@@ -279,6 +303,44 @@ public class CommandDetails {
 				commandResponses[i] = new CommandMessageDto(smsTexts[i], EResponseMessageType.HELP);
 			}
 			return getNewCommandAnswerDto(session, commandResponses);
+		}
+	};
+
+	/** Called when the user just wants to play, with any opponent */
+	public static final ICommandProcessor PLAY_WITH_RANDOM_USER_OR_BOT = new ICommandProcessor() {
+		@Override
+		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
+			String wordProvidingPlayerPhone = "1bot";
+			String wordProvidingPlayerNick  = "DomBot";
+			userDB.checkAvailabilityAndRecordNickname(wordProvidingPlayerPhone, wordProvidingPlayerNick);
+			
+			// start a new Match
+			HangmanGame game = new HangmanGame("chimpanzee", 6);
+			String serializedGameState = game.serializeGameState();
+			MatchDto match = new MatchDto(wordProvidingPlayerPhone, session.getPhone(), serializedGameState, System.currentTimeMillis(), EMatchStatus.ACTIVE);
+			int matchId = startNewMatch(match);
+			
+			CommandMessageDto wordGuessingPlayerMessage = new CommandMessageDto(phrases.PLAYINGWordGuessingPlayerStart(game.getGuessedWordSoFar(), game.getAttemptedLettersSoFar()),
+                                                                                EResponseMessageType.PLAYING);
+
+			sessionDB.setSession(session.getNewSessionDto(ESTATES.GUESSING_WORD.name(),
+				ESessionParameters.MATCH_ID,                      Integer.toString(matchId),
+				ESessionParameters.HANGMAN_SERIALIZED_GAME_STATE, serializedGameState));
+			return getNewCommandAnswerDto(session, wordGuessingPlayerMessage);
+		}
+	};
+
+	/** Called when the user provides the intention to invite someone and provide the parameter to reference that one.
+	 *  parameter 1: the phone number or nick name of the user */
+	public static final ICommandProcessor INVITE_NICK_OR_PHONE = new ICommandProcessor() {
+		@Override
+		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
+			String opponentPhoneNumberOrNickName = parameters[0];
+			if (isParameterAPhoneNumber(opponentPhoneNumberOrNickName)) {
+				return REGISTER_OPPONENT_PHONE.processCommand(session, carrier, parameters, phrases);
+			} else {
+				return REGISTER_OPPONENT_NICK.processCommand(session, carrier, parameters, phrases);
+			}
 		}
 	};
 
@@ -304,9 +366,23 @@ public class CommandDetails {
 	public static final ICommandProcessor REGISTER_OPPONENT_PHONE = new ICommandProcessor() {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
-			String opponentPhoneNumber = parameters[0];			
-//			System.out.println("Good! We now have a user to invite! " + opponentPhoneNumber);
+			String opponentPhoneNumber = parameters[0];
 			CommandMessageDto commandResponse = new CommandMessageDto(phrases.INVITINGAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation(opponentPhoneNumber),
+			                                                          EResponseMessageType.ACQUIRE_MATCH_INFORMATION);
+			return getNewCommandAnswerDto(session, commandResponse, ESTATES.ENTERING_MATCH_WORD_TO_PLAY,
+			                              ESessionParameters.OPPONENT_PHONE_NUMBER, opponentPhoneNumber);
+		}
+	};
+	
+	public static final ICommandProcessor REGISTER_OPPONENT_NICK = new ICommandProcessor() {
+		@Override
+		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
+			String opponentNickname    = parameters[0];
+			String opponentPhoneNumber = userDB.getUserPhoneNumber(opponentNickname);
+			if (opponentPhoneNumber == null) {
+				return getNickNotFoundMessage(session, phrases, opponentNickname);
+			}
+			CommandMessageDto commandResponse = new CommandMessageDto(phrases.INVITINGAskForAWordToStartAMatchBasedOnOpponentNickInvitation(opponentNickname),
 			                                                          EResponseMessageType.ACQUIRE_MATCH_INFORMATION);
 			return getNewCommandAnswerDto(session, commandResponse, ESTATES.ENTERING_MATCH_WORD_TO_PLAY,
 			                              ESessionParameters.OPPONENT_PHONE_NUMBER, opponentPhoneNumber);
@@ -331,7 +407,6 @@ public class CommandDetails {
 			HangmanGame game = new HangmanGame(wordToPlay, 6);
 			
 			// TODO a mensagem enviada ao convidado pode conter o telefone do proponente, caso o convite seja baseado em número de telefone, para facilitar a identificação do amigo proponente.
-//			System.out.println("Good! We now have a user to invite, " + opponentPlayerPhoneNumber + ", and a word to play: " + wordToPlay);
 			CommandMessageDto invitingPlayerMessage = new CommandMessageDto(phrases.INVITINGInvitationNotificationForInvitingPlayer(opponentPlayerNickName),
 			                                                                EResponseMessageType.ACQUIRE_MATCH_INFORMATION);
 			CommandMessageDto opponentPlayerMessage = new CommandMessageDto(opponentPlayerPhoneNumber, phrases.INVITINGInvitationNotificationForInvitedPlayer(invitingPlayerNickName),
@@ -356,16 +431,13 @@ public class CommandDetails {
 
 			// start a new Match
 			HangmanGame game  = new HangmanGame(serializedGameState);
-//			System.out.println("Now we are good to start a match! Users " + wordProvidingPlayerPhone + " and " + wordGuessingPlayerPhone + " are playing");
 			MatchDto match = new MatchDto(wordProvidingPlayerPhone, wordGuessingPlayerPhone, serializedGameState, System.currentTimeMillis(), EMatchStatus.ACTIVE);
-			int matchId = matchDB.storeNewMatch(match);
+			int matchId = startNewMatch(match);
 			
 			CommandMessageDto wordProvidingPlayerMessage = new CommandMessageDto(wordProvidingPlayerPhone, phrases.PLAYINGWordProvidingPlayerStart(game.getGuessedWordSoFar(), wordGuessingPlayerNick),
 			                                                                     EResponseMessageType.PLAYING);
 			CommandMessageDto wordGuessingPlayerMessage = new CommandMessageDto(phrases.PLAYINGWordGuessingPlayerStart(game.getGuessedWordSoFar(), game.getAttemptedLettersSoFar()),
                                                                                 EResponseMessageType.PLAYING);
-//			SessionDto opponentSession = new SessionDto(wordProvidingPlayerPhone, ESTATES.PLAYING.name());
-//			sessionDB.setSession(opponentSession);
 
 			return getNewCommandAnswerDto(session, new CommandMessageDto[] {wordProvidingPlayerMessage, wordGuessingPlayerMessage},
 			                              ESTATES.GUESSING_WORD, ESessionParameters.MATCH_ID, Integer.toString(matchId));
@@ -376,18 +448,16 @@ public class CommandDetails {
 	public static final ICommandProcessor SUGGEST_LETTER_OR_WORD = new ICommandProcessor() {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
-			String wordProvidingPlayerPhone = session.getParameterValue(ESessionParameters.OPPONENT_PHONE_NUMBER);
 			String wordGuessingPlayerPhone  = session.getPhone();
-			String wordProvidingPlayerNick  = userDB.getUserNickname(wordProvidingPlayerPhone);
 			String wordGuessingPlayerNick   = userDB.getUserNickname(wordGuessingPlayerPhone);
 			int    matchId                  = Integer.parseInt(session.getParameterValue(ESessionParameters.MATCH_ID));
 			String suggestedLetter          = parameters[0];
 			String serializedGameState      = session.getParameterValue(ESessionParameters.HANGMAN_SERIALIZED_GAME_STATE);
 
-
-//			System.out.println("Now are continueing a match between users " + wordProvidingPlayerPhone + " and " + wordGuessingPlayerPhone + " with user state '" + serializedGameState + "'");
 			HangmanGame game  = new HangmanGame(serializedGameState);
 			MatchDto matchData = matchDB.retrieveMatch(matchId);
+			String wordProvidingPlayerPhone = matchData.getWordProvidingPlayerPhone();
+			String wordProvidingPlayerNick  = userDB.getUserNickname(wordProvidingPlayerPhone);
 			MatchDto newMatchData;
 			CommandAnswerDto answer;
 			
@@ -423,7 +493,7 @@ public class CommandDetails {
 						EResponseMessageType.PLAYING);
 					newMatchData = matchData.getNewMatch(EMatchStatus.CLOSED_WORD_GUESSED);
 					answer = getNewCommandAnswerDto(session, new CommandMessageDto[] {wordProvidingPlayerMessage, wordGuessingPlayerMessage},
-                                                    ESTATES.NEW_USER, ESessionParameters.HANGMAN_SERIALIZED_GAME_STATE, game.serializeGameState());
+                                                    ESTATES.EXISTING_USER, ESessionParameters.HANGMAN_SERIALIZED_GAME_STATE, game.serializeGameState());
 					break;
 				case LOST:
 					matchDB.updateMatchStatus(matchId, EMatchStatus.CLOSED_ATTEMPTS_EXCEEDED);
@@ -435,7 +505,7 @@ public class CommandDetails {
 						EResponseMessageType.PLAYING);
 					newMatchData = matchData.getNewMatch(EMatchStatus.CLOSED_ATTEMPTS_EXCEEDED);
 					answer = getNewCommandAnswerDto(session, new CommandMessageDto[] {wordProvidingPlayerMessage, wordGuessingPlayerMessage},
-                                                    ESTATES.NEW_USER, ESessionParameters.HANGMAN_SERIALIZED_GAME_STATE, game.serializeGameState());
+                                                    ESTATES.EXISTING_USER, ESessionParameters.HANGMAN_SERIALIZED_GAME_STATE, game.serializeGameState());
 					break;
 				default:
 					throw new RuntimeException("Don't know nothing about EHangmanGameState." + gameState);
@@ -459,7 +529,7 @@ public class CommandDetails {
 				CommandMessageDto chatMessage = new CommandMessageDto(targetPhoneNumber, phrases.PROVOKINGSendMessage(sourceNickname, chatText), EResponseMessageType.CHAT);
 				return getNewCommandAnswerDto(session, new CommandMessageDto[] {notificationMessage, chatMessage});
 			} else {
-				return getNewCommandAnswerDto(session, new CommandMessageDto(phrases.PROVOKINGNickNotFound(targetNickname), EResponseMessageType.HELP));
+				return getNickNotFoundMessage(session, phrases, targetNickname);
 			}
 		}
 	};

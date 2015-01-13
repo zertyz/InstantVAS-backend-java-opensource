@@ -59,18 +59,19 @@ public class CommandDetailsTests {
 		String[] presentedUsers;
 		int maxChars = testPhraseology.LISTINGShowPlayers(new String[][] {}).length() + 15;
 		tc.setUserDB(new String[][] {
-			{"21991234811", "Patata"},	
-			{"21991234812", "Patate"},	
-			{"21991234813", "Patati"},	
-			{"21991234814", "Patato"},	
-			{"21991234815", "Patatu"},	
+			{"21991234811", "Patata"},
+			{"21991234812", "Patate"},
+			{"21991234813", "Patati"},
+			{"21991234814", "Patato"},
+			{"21991234815", "Patatu"},
 		});
 		tc.setSessionDB(new String[][] {
-			{"21991234811", "NEW_USER"},	
-			{"21991234812", "NEW_USER"},	
-			{"21991234813", "NEW_USER"},	
-			{"21991234814", "NEW_USER"},	
-			{"21991234815", "NEW_USER"},	
+			{"21991234811", "NEW_USER"},
+			{"21991234812", "NEW_USER"},
+			{"21991234813", "NEW_USER"},
+			{"21991234814", "NEW_USER"},
+			{"21991234815", "NEW_USER"},
+			{"21991234816", "NEW_USER"},
 		});
 
 		presentedUsers = new String[] {};
@@ -107,6 +108,12 @@ public class CommandDetailsTests {
 		// rename to the same nick
 		CommandDetails.registerUserNickname(expectedUsersAndNicknames[0][0], "Dom");
 		assertEquals("Renaming to the same crowded nickname failed", "Dom", userDB.getUserNickname(expectedUsersAndNicknames[0][0]));
+	}
+	
+	@Test
+	public void isParameterAPhoneNumberTests() {
+		assertTrue("False negative while detecting if string is a phone number", CommandDetails.isParameterAPhoneNumber("21991234899"));
+		assertFalse("False positive while detecting if string is a phone number", CommandDetails.isParameterAPhoneNumber("ordinary string"));
 	}
 
 }

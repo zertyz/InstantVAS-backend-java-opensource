@@ -39,7 +39,9 @@ public class NavigationMap {
 		//////////////////////
 
 		START_INVITATION_PROCESS(CommandDetails.START_INVITATION_PROCESS),
+		INVITE_NICK_OR_PHONE(CommandDetails.INVITE_NICK_OR_PHONE),
 		REGISTER_OPPONENT_PHONE(CommandDetails.REGISTER_OPPONENT_PHONE),
+		REGISTER_OPPONENT_NICK(CommandDetails.REGISTER_OPPONENT_NICK),
 		REGISTER_MATCH_WORD(CommandDetails.REGISTER_MATCH_WORD),
 		ACCEPT_INVITATION(CommandDetails.ACCEPT_INVITATION),
 		
@@ -47,6 +49,7 @@ public class NavigationMap {
 		// playing commands
 		///////////////////
 		
+		PLAY_WITH_RANDOM_USER_OR_BOT(CommandDetails.PLAY_WITH_RANDOM_USER_OR_BOT),
 		SUGGEST_LETTER_OR_WORD(CommandDetails.SUGGEST_LETTER_OR_WORD),
 		
 		
@@ -106,10 +109,10 @@ public class NavigationMap {
 		NEW_USER(StateDetails.NEW_USER),
 		
 		
-//		// loop state for existing users
-//		////////////////////////////////
-//		
-//		MAIN_MENU(),
+		// loop state for existing users
+		////////////////////////////////
+		
+		EXISTING_USER(StateDetails.EXISTING_USER),
 		
 		
 		// invitation states

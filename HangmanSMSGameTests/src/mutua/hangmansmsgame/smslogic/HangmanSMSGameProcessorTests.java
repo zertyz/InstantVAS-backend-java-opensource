@@ -1,5 +1,6 @@
 package mutua.hangmansmsgame.smslogic;
 
+import mutua.hangmansmsgame.celltick.CelltickLiveScreenAPI;
 import mutua.hangmansmsgame.dal.DALFactory;
 import mutua.hangmansmsgame.dal.IUserDB;
 import mutua.hangmansmsgame.i18n.IPhraseology;
@@ -23,7 +24,13 @@ public class HangmanSMSGameProcessorTests {
 	
 	private TestCommons tc = new TestCommons();
 	IPhraseology testPhraseology = IPhraseology.getCarrierSpecificPhraseology(ESMSInParserCarrier.TEST_CARRIER);
+
 	
+    static {
+    	CelltickLiveScreenAPI.REGISTER_SUBSCRIBER_URL = null;
+    	CelltickLiveScreenAPI.REGISTER_SUBSCRIBER_URL = null;
+    }
+
 	
 	// databases
 	////////////
@@ -137,7 +144,21 @@ public class HangmanSMSGameProcessorTests {
 		tc.checkResponse("21998019167", "nick pAtRiCiA", "HANGMAN: Name registered: pAtRiCiA. Send LIST to 9714 to see online players. NICK [NEW NICK] to change your name.");
 		tc.checkResponse("21998019167", "list", "HardCodedNick(RJ/10). To play, send INVITE [NICK] to 9714; MORE for more players or PROFILE [NICK]");
 		
+		tc.checkResponse("21998019167", "ranking", "HardCodedNick(RJ/10). To play, send INVITE [NICK] to 9714; MORE for more players or PROFILE [NICK]");
+		
+		tc.checkResponse("21998019167", "invite HardCodedNick", "HANGMAN: Inviting HardCodedNick. Think of a word without special digits and send it now to 9714. After the invitation, you'll get a lucky number");
+		tc.checkResponse("21998019167", "Scriptogram", new String[] {
+			"HardCodedNick was invited to play with you. while you wait, you can provoke HardCodedNick by sending a message to 9714 (0.31+tax) or send SIGNUP to provoke for free how many times you want",
+			"HANGMAN: pAtRiCiA is inviting you for a hangman match. Do you accept? Send YES to 9714 or PROFILE to see pAtRiCiA information"});
+		
 		tc.checkResponse("21991234899", "unsubscribe", "You are now unsubscribed from the HANGMAN GAME and will no longer receive invitations to play nor lucky numbers. To join again, send HANGMAN to 9714");
+		
+		tc.checkResponse("21991234800", "forca", testPhraseology.INFOWelcome());
+		tc.checkResponse("21991234800", "forca", testPhraseology.PLAYINGWordGuessingPlayerStart("C-------EE", "CE"));
+		tc.checkResponse("21991234800", "a", new String[] {
+			testPhraseology.PLAYINGWordProvidingPlayerStatus(false, false, false, false, false, false, "C----A--EE", "a", "ACE", "4800"),
+			testPhraseology.PLAYINGWordGuessingPlayerStatus(false, false, false, false, false, false, "C----A--EE", "ACE"),
+		});
 	}
 	
 }

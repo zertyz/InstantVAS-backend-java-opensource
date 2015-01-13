@@ -64,6 +64,15 @@ public class SessionDto {
 		return new SessionDto(phone, newNavigationState);
 	}
 
+	public SessionDto getNewSessionDto(String newNavigationState,
+	                                   ESessionParameters parameter1, String parameter1Value,
+	                                   ESessionParameters parameter2, String parameter2Value) {
+		String[] newParameterValues = Arrays.copyOf(parameterValues, parameterValues.length);
+		newParameterValues[parameter1.ordinal()] = parameter1Value;
+		newParameterValues[parameter2.ordinal()] = parameter2Value;
+		return new SessionDto(phone, newNavigationState, newParameterValues);
+	}
+
 	public SessionDto getNewSessionDto(String newNavigationState, ESessionParameters parameter, String parameterValue) {
 		String[] newParameterValues = Arrays.copyOf(parameterValues, parameterValues.length);
 		newParameterValues[parameter.ordinal()] = parameterValue;
