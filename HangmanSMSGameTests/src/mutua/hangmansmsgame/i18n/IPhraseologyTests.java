@@ -50,6 +50,8 @@ class TPhrases extends IPhraseology {
 	public String PROVOKINGSendMessage(String sourceNick, String message) {return null;}
 	public String PROVOKINGNickNotFound(String nickname) {return null;}
 	public String UNSUBSCRIBINGUnsubscriptionNotification() {return null;}
+	public String INVITINGInvitationRefusalNotificationForInvitingPlayer(String invitedPlayerNickname) {return null;}
+	public String INVITINGInvitationRefusalNotificationForInvitedPlayer(String invitingPlayerNickname) {return null;}
 }
 
 public class IPhraseologyTests {

@@ -233,13 +233,19 @@ public abstract class IPhraseology {
 	public abstract String INVITINGAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation(String opponentPhoneNumber);
 
 	/** message to notify the inviting player that the invitation has been sent */
-	public abstract String INVITINGInvitationNotificationForInvitingPlayer(String invitedPlayerNickName);
+	public abstract String INVITINGInvitationNotificationForInvitingPlayer(String invitedPlayerNickname);
 	
 	/** message to notify the inviting player that the opponent took too long to reply and the match is cancelled */
-	public abstract String INVITINGTimeoutNotificationForInvitingPlayer(String invitedPlayerNickName, String suggestedNewPlayersNickName);
+	public abstract String INVITINGTimeoutNotificationForInvitingPlayer(String invitedPlayerNickname, String suggestedNewPlayersNickname);
 	
 	/** message to notify the invited player that someone wants to play a hangman match */
-	public abstract String INVITINGInvitationNotificationForInvitedPlayer(String invitingPlayerNickName);
+	public abstract String INVITINGInvitationNotificationForInvitedPlayer(String invitingPlayerNickname);
+	
+	/** message to notify the inviting player that the opponent refused the match */
+	public abstract String INVITINGInvitationRefusalNotificationForInvitingPlayer(String invitedPlayerNickname);
+
+	/** response to the invited player after he/she refused to play */
+	public abstract String INVITINGInvitationRefusalNotificationForInvitedPlayer(String invitingPlayerNickname);
 	
 
 	// LISTING PLAYERS
@@ -265,10 +271,10 @@ public abstract class IPhraseology {
 	public abstract String PROVOKINGNickNotFound(String nickname);
 
 	
-	// PROVOKING
-	////////////
+	// UNSUBSCRIPTION
+	/////////////////
 	
 	/** presented to inform the subscription was canceled on the game platform */
 	public abstract String UNSUBSCRIBINGUnsubscriptionNotification();
-	
+
 }

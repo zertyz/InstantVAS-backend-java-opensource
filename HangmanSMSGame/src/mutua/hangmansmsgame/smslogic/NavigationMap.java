@@ -28,6 +28,11 @@ public class NavigationMap {
 	public enum ECOMMANDS {
 
 
+		// special commands
+		///////////////////
+		
+		NO_ANSWER(CommandDetails.NO_ANSWER),
+
 		// help commands
 		////////////////
 		
@@ -44,6 +49,7 @@ public class NavigationMap {
 		REGISTER_OPPONENT_NICK(CommandDetails.REGISTER_OPPONENT_NICK),
 		REGISTER_MATCH_WORD(CommandDetails.REGISTER_MATCH_WORD),
 		ACCEPT_INVITATION(CommandDetails.ACCEPT_INVITATION),
+		REFUSE_INVITATION(CommandDetails.REFUSE_INVITATION),
 		
 		
 		// playing commands

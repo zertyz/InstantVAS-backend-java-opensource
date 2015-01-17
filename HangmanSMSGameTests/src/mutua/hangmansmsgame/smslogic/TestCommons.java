@@ -16,7 +16,7 @@ import mutua.smsout.dto.OutgoingSMSDto;
  * ================
  * (created by luiz, Feb 13, 2011)
  *
- * Result of a refactoring of the test classes
+ * Result of a refactor of the test classes
  */
 
 
@@ -46,6 +46,12 @@ public class TestCommons {
 	/**********************************
 	** DATABASE MANIPULATION METHODS **
 	**********************************/
+	
+	/** Reset all databases */
+	public void resetDatabases() {
+		userDB.reset();
+		sessionDB.reset();
+	}
 	
 	/** Reset and populate Users database. users := { {phone, nick}, ...} */
 	public void setUserDB(String[][] users) {

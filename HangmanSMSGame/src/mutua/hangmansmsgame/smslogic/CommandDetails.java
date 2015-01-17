@@ -37,6 +37,11 @@ import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 
 public class CommandDetails {
 	
+
+	// constants
+	////////////
+	
+	public static String DEFAULT_NICKNAME_PREFIX = "Guest";
 	
 	// databases
 	////////////
@@ -116,7 +121,7 @@ public class CommandDetails {
 		}
 		if (CelltickLiveScreenAPI.registerSubscriber(phone)) {
 			System.out.println("Hangman: registering user "+phone+" succeeded");
-			return registerUserNickname(phone, phone.substring(Math.max(phone.length()-4, 0)));
+			return registerUserNickname(phone, DEFAULT_NICKNAME_PREFIX + phone.substring(Math.max(phone.length()-4, 0)));
 		} else {
 			System.out.println("Hangman: registering user "+phone+" failed");
 			return false;
@@ -285,6 +290,13 @@ public class CommandDetails {
 	///////////
 
 
+	public static final ICommandProcessor NO_ANSWER = new ICommandProcessor() {
+		@Override
+		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
+			return null;
+		}
+	};
+
 	public static final ICommandProcessor SHOW_WELCOME_MESSAGE = new ICommandProcessor() {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
@@ -444,6 +456,27 @@ public class CommandDetails {
 		}
 	};
 
+	/** Called when the word guessing player answered NO to the invitation message he/she received to attend to a hangman match */
+	public static final ICommandProcessor REFUSE_INVITATION = new ICommandProcessor() {
+		@Override
+		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
+			String wordProvidingPlayerPhone = session.getParameterValue(ESessionParameters.OPPONENT_PHONE_NUMBER);
+			String wordGuessingPlayerPhone  = session.getPhone();
+			String wordProvidingPlayerNick  = userDB.getUserNickname(wordProvidingPlayerPhone);
+			String wordGuessingPlayerNick   = userDB.getUserNickname(wordGuessingPlayerPhone);
+			
+			// refuse match
+			CommandMessageDto wordProvidingPlayerMessage = new CommandMessageDto(wordProvidingPlayerPhone, phrases.INVITINGInvitationRefusalNotificationForInvitingPlayer(wordGuessingPlayerNick),
+			                                                                     EResponseMessageType.HELP);
+			CommandMessageDto wordGuessingPlayerMessage = new CommandMessageDto(phrases.INVITINGInvitationRefusalNotificationForInvitedPlayer(wordProvidingPlayerNick),
+			                                                                    EResponseMessageType.HELP);
+
+			return getNewCommandAnswerDto(session, new CommandMessageDto[] {wordProvidingPlayerMessage, wordGuessingPlayerMessage},
+			                              ESTATES.EXISTING_USER);
+		}
+	};
+
+
 	/** Called when the user is attempting to guess the word */
 	public static final ICommandProcessor SUGGEST_LETTER_OR_WORD = new ICommandProcessor() {
 		@Override
@@ -538,7 +571,7 @@ public class CommandDetails {
 	public static final ICommandProcessor SHOW_PROFILE = new ICommandProcessor() {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
-			String nickname = parameters[0];
+			String nickname = userDB.getCorrectlyCasedNickname(parameters[0]);
 			CommandMessageDto message = new CommandMessageDto(phrases.PROFILEView(nickname, getBrazillianPhoneState(session.getPhone()), 0), EResponseMessageType.PROFILE);
 			return getNewCommandAnswerDto(session, message);
 		}

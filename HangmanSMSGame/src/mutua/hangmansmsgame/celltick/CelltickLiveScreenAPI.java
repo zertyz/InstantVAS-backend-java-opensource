@@ -30,7 +30,9 @@ public class CelltickLiveScreenAPI {
 			String url = REGISTER_SUBSCRIBER_URL.replaceAll("%%MSISDN%%", phone);
 			String response = HTTPClientAdapter.requestGet(url, null, "UTF-8");
 			System.out.println("registerSubscriber --> " + url + "\n<-- '" + response + "'");
-			if (response.indexOf("<status><id>100</id>") != -1) {
+			if (response.indexOf("<id>100</id>") != -1) {
+				return true;
+			} else if (response.indexOf("<id>120</id>") != -1) {	// Already Registered
 				return true;
 			} else {
 				return false;
@@ -49,7 +51,9 @@ public class CelltickLiveScreenAPI {
 			String url = UNREGISTER_SUBSCRIBER_URL.replaceAll("%%MSISDN%%", phone);
 			String response = HTTPClientAdapter.requestGet(url, null, "UTF-8");
 			System.out.println("unregisterSubscriber --> " + url + "\n<-- '" + response + "'");
-			if (response.indexOf("<status><id>100</id>") != -1) {
+			if (response.indexOf("<id>100</id>") != -1) {	// OK
+				return true;
+			} else if (response.indexOf("<id>113</id>") != -1) {	// Packages not found for Subscriber
 				return true;
 			} else {
 				return false;

@@ -60,7 +60,9 @@ public class StateDetails {
 		START_INVITATION_PROCESS_COMMAND_PATTERNS,
 		UNSUBSCRIBE_COMMAND_PATTERNS,
 		new CommandPatternsDto(ECOMMANDS.SHOW_WELCOME_MESSAGE, new String[] {
-			".*"})
+			"FORCA", "JOGO", "HANGMAN", "PLAY"}),
+		new CommandPatternsDto(ECOMMANDS.NO_ANSWER, new String[] {
+			".*"}),
 	};
 	
 	public static final CommandPatternsDto[] EXISTING_USER = {
@@ -109,15 +111,18 @@ public class StateDetails {
 
 	public static final CommandPatternsDto[] ANSWERING_TO_INVITATION = {
 		SHOW_FULL_HELP_COMMAND_PATTERNS,
+		SHOW_PROFILE_COMMAND_PATTERNS,
+		DEFINE_NICK_COMMAND_PATTERNS,
+		LIST_USERS_COMMAND_PATTERNS,
+		PROVOKE_COMMAND_PATTERNS,
 		START_INVITATION_PROCESS_COMMAND_PATTERNS,
 		INVITE_NICK_OR_PHONE_COMMAND_PATTERNS,
 		PLAY_WITH_RANDOM_USER_OR_BOT_COMMAND_PATTERNS,
 		UNSUBSCRIBE_COMMAND_PATTERNS,
-		PROVOKE_COMMAND_PATTERNS,
 		new CommandPatternsDto(ECOMMANDS.ACCEPT_INVITATION, new String[] {
 			"YES"}),
-//		new CommandPatternsDto(ECOMMANDS.REFUSE_INVITATION, new String[] {
-//			"NO"}),
+		new CommandPatternsDto(ECOMMANDS.REFUSE_INVITATION, new String[] {
+			"NO"}),
 	};
 
 	public static final CommandPatternsDto[] GUESSING_WORD = {

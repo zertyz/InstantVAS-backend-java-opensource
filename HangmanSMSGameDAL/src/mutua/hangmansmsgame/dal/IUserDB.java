@@ -16,7 +16,10 @@ public interface IUserDB {
 	
 	/** Reset the database, for testing purposes */
 	void reset();
-	
+
+	/** Given a case insensitive nickname, return the correctly cased nickname, as it was registered */
+	String getCorrectlyCasedNickname(String nickname);
+
 	/** Retrieve the nickname for a user, based on it's 'phoneNumber' */
 	String getUserNickname(String phoneNumber);
 

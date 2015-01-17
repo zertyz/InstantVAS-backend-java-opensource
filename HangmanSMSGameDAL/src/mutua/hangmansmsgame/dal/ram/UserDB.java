@@ -27,17 +27,6 @@ public class UserDB implements IUserDB {
 	// AUXILIAR METHODS
 	///////////////////
 	
-	/** Returns the correctly cased nickname for a case insensitive nickname search, or null if nothing was found */
-	private String caseInsensitiveNicknameSearch(String caseInsensitiveNickname) {
-		String lowercaseNickname = caseInsensitiveNickname.toLowerCase();
-		for (String registeredNickname : phonesByNickname.keySet()) {
-			String lowercaseRegisteredNickname = registeredNickname.toLowerCase();
-			if (lowercaseRegisteredNickname.equals(lowercaseNickname)) {
-				return registeredNickname;
-			}
-		}
-		return null;
-	}
 	
 	
 	// IUserDB IMPLEMENTATION
@@ -50,13 +39,25 @@ public class UserDB implements IUserDB {
 	}
 
 	@Override
+	public String getCorrectlyCasedNickname(String nickname) {
+		String lowercaseNickname = nickname.toLowerCase();
+		for (String registeredNickname : phonesByNickname.keySet()) {
+			String lowercaseRegisteredNickname = registeredNickname.toLowerCase();
+			if (lowercaseRegisteredNickname.equals(lowercaseNickname)) {
+				return registeredNickname;
+			}
+		}
+		return null;
+	}
+
+	@Override
 	public String getUserNickname(String phoneNumber) {
 		return nicknamesByPhone.get(phoneNumber);
 	}
 
 	@Override
 	public String getUserPhoneNumber(String nickname) {
-		String registeredNickname = caseInsensitiveNicknameSearch(nickname);
+		String registeredNickname = getCorrectlyCasedNickname(nickname);
 		if (registeredNickname != null) {
 			String registeredPhone = phonesByNickname.get(registeredNickname);
 			return registeredPhone;
@@ -83,5 +84,6 @@ public class UserDB implements IUserDB {
 	public boolean isUserOnRecord(String phoneNumber) {
 		return nicknamesByPhone.containsKey(phoneNumber);
 	}
+
 
 }

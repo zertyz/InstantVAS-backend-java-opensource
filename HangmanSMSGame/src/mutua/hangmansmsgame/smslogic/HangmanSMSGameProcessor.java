@@ -168,18 +168,18 @@ public class HangmanSMSGameProcessor {
 			// execute
 			CommandAnswerDto commandResponse = invokeCommand(invocationHandler, userSession, incomingSMS);
 			
-			// set the user state
-			SessionDto newUserSession = commandResponse.getUserSession();
-			if (newUserSession != null) {
-				System.out.println("Setting new user session: " + newUserSession);
-				userSessionDB.setSession(newUserSession);
-			} else {
-				System.out.println("Not setting a new user session");
+			if (commandResponse != null) {
+				// set the user state
+				SessionDto newUserSession = commandResponse.getUserSession();
+				if (newUserSession != null) {
+					System.out.println("Setting new user session: " + newUserSession);
+					userSessionDB.setSession(newUserSession);
+				} else {
+					System.out.println("Not setting a new user session");
+				}
+				// route messages
+				routeMessages(commandResponse.getResponseMessages(), incomingSMS);
 			}
-			
-			// route messages
-			routeMessages(commandResponse.getResponseMessages(), incomingSMS);
-			
 		} else {
 			throw new RuntimeException("The incoming message '" + incomingText +
 			                           "', belonging to " +

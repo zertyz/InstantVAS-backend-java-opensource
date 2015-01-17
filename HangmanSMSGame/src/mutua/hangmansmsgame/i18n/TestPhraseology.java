@@ -30,30 +30,32 @@ public class TestPhraseology extends IPhraseology {
 		{"losingArt",                                                      "+-+\n| x\n|/|\\\n|/ \\\n====\n"},
 		{"playersList",                                                    "{{nick}} ({{state}}/{{numberOfLuckyNumbers}})"},
 		{"INFOWelcome",                                                    "Welcome to the HANGMAN game. Join and compete for prizes. Send HELP for free to {{shortCode}} to know the rules."},
-		{"INFOFullHelp",                                                   "1/3: You can play the HANGMAN game in 2 ways: guessing someone's word or inviting someone to play with your word",
-		                                                                   "2/3: You'll get 1 lucky number each word you guess. Whenever you invite a friend or user to play, you win another lucky number",
+		{"INFOFullHelp",                                                   "1/3: You can play the HANGMAN game in 2 ways: guessing someone's word or inviting someone to play with your word",
+		                                                                   "2/3: You'll get 1 lucky number each word you guess. Whenever you invite a friend or user to play, you win another lucky number",
 		                                                                   "3/3: Every week, 1 lucky number is selected to win the prize. Send an option to {{shortCode}}: (J)Play online; (C)Invite a friend or user; (R)anking; (A)Help"},
 		{"INFOWelcomeMenu",                                                "Pick an option. Send to {{shortCode}}: {{shortHelp}}"},
 		{"INFOCouldNotRegister",                                           "HANGMAN: You could not be registered at this time. Please try again later."},
 		{"PROFILEView",                                                    "HANGMAN: {{nick}}: Subscribed, {{state}}, {{numberOfLuckyNumbers}} lucky numbers. Send SIGNUP to provoke for free or INVITE {{nick}} for a match."},
-		{"PROFILEFullfillingAskNick",                                      "HANGMAN: To play with a friend, u need first to sign your name. Now send your name (8 letters or numbers max.) to {{shortCode}}"},
-		{"PROFILENickRegisteredNotification",                              "HANGMAN: Name registered: {{newNickname}}. Send LIST to {{shortCode}} to see online players. NICK [NEW NICK] to change your name."},
+		{"PROFILEFullfillingAskNick",                                      "HANGMAN: To play with a friend, u need first to sign your name. Now send your name (8 letters or numbers max.) to {{shortCode}}"},
+		{"PROFILENickRegisteredNotification",                              "HANGMAN: Name registered: {{newNickname}}. Send LIST to {{shortCode}} to see online players. NICK [NEW NICK] to change your name."},
 		{"PLAYINGWordProvidingPlayerStart",                                "Game started with {{wordGuessingPlayerNick}}.\n{{gallowsArt}}Send P {{wordGuessingPlayerNick}} MSG to give him/her clues"},
-		{"PLAYINGWordGuessingPlayerStart",                                 "{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nSend a letter, the complete word or END to cancel the game"},
-		{"PLAYINGWordGuessingPlayerStatus",                                "{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nSend a letter, the complete word or END to cancel the game"},
+		{"PLAYINGWordGuessingPlayerStart",                                 "{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nSend a letter, the complete word or END to cancel the game"},
+		{"PLAYINGWordGuessingPlayerStatus",                                "{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nSend a letter, the complete word or END to cancel the game"},
 		{"PLAYINGWordProvidingPlayerStatus",                               "{{nick}} guessed letter {{guessedLetter}}\n{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nSend P {{nick}} MSG to provoke him/her"},
-		{"PLAYINGWinningMessageForWordGuessingPlayer",                     "{{winningArt}}{{word}}! You got it! Here is your lucky number: {{luckyNumber}}. Send: J to play or A for help"},
+		{"PLAYINGWinningMessageForWordGuessingPlayer",                     "{{winningArt}}{{word}}! You got it! Here is your lucky number: {{luckyNumber}}. Send: J to play or A for help"},
 		{"PLAYINGWinningMessageForWordProvidingPlayer",                    "{{wordGuessingPlayerNick}} guessed your word! P {{wordGuessingPlayerNick}} MSG to provoke him/her or INVITE {{wordGuessingPlayerNick}} for a new match"},
 		{"PLAYINGLosingMessageForWordGuessingPlayer",                      "{{losingArt}}The word was {{word}}. Now challenge {{wordProvidingPlayerNick}}: send INVITE {{wordProvidingPlayerNick}} to {{shortCode}}"},
 		{"PLAYINGLosingMessageForWordProvidingPlayer",                     "Good one! {{wordGuessingPlayerNick}} wasn't able to guessed your word! P {{wordGuessingPlayerNick}} MSG to provoke him/her or INVITE {{wordGuessingPlayerNick}} for a new match"},
 		{"PLAYINGMatchGiveupNotificationForWordProvidingPlayer",           "{{wordGuessingPlayerNick}} cancelled the match. To find other users to play with, sent LIST to {{shortCode}}"},
 		{"PLAYINGMatchGiveupNotificationForWordGuessingPlayer",            "Your match with {{wordProvidingPlayerNick}} has been canceled. Send P {{wordProvidingPlayerNick}} MSG to talk to him/her or LIST to play with someone else"},
-		{"INVITINGAskOpponentNickOrPhone",                                 "HANGMAN: Name registered: {{invitingPlayerNickname}}. Send your friend's phone to {{shortCode}} or LIST to see online players. NICK [NEW NICK] to change your name."},
+		{"INVITINGAskOpponentNickOrPhone",                                 "HANGMAN: Name registered: {{invitingPlayerNickname}}. Send your friend's phone to {{shortCode}} or LIST to see online players. NICK [NEW NICK] to change your name."},
 		{"INVITINGAskForAWordToStartAMatchBasedOnOpponentNickInvitation",  "HANGMAN: Inviting {{opponentNickname}}. Think of a word without special digits and send it now to {{shortCode}}. After the invitation, you'll get a lucky number"},
 		{"INVITINGAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation", "HANGMAN: Your friend's phone: {{opponentPhoneNumber}}. Think of a word without special digits and send it now to {{shortCode}}. After the invitation, you'll get a lucky number"},
-		{"INVITINGInvitationNotificationForInvitingPlayer",                "{{invitedPlayerNickName}} was invited to play with you. while you wait, you can provoke {{invitedPlayerNickName}} by sending a message to {{shortCode}} (0.31+tax) or send SIGNUP to provoke for free how many times you want"},
-		{"INVITINGTimeoutNotificationForInvitingPlayer",                   "{{invitedPlayerNickName}} is taking too long to answer. However, a new player, {{suggestedNewPlayersNickName}}, is available. Play with {{suggestedNewPlayersNickName}}? Send YES to {{shortCode}}"},
-		{"INVITINGInvitationNotificationForInvitedPlayer",                 "HANGMAN: {{invitingPlayerNickName}} is inviting you for a hangman match. Do you accept? Send YES to {{shortCode}} or PROFILE to see {{invitingPlayerNickName}} information"},
+		{"INVITINGInvitationNotificationForInvitingPlayer",                "{{invitedPlayerNickname}} was invited to play with you. while you wait, you can provoke {{invitedPlayerNickname}} by sending a message to {{shortCode}} (0.31+tax) or send SIGNUP to provoke for free how many times you want"},
+		{"INVITINGTimeoutNotificationForInvitingPlayer",                   "{{invitedPlayerNickname}} is taking too long to answer. However, a new player, {{suggestedNewPlayersNickname}}, is available. Play with {{suggestedNewPlayersNickname}}? Send YES to {{shortCode}}"},
+		{"INVITINGInvitationNotificationForInvitedPlayer",                 "HANGMAN: {{invitingPlayerNickname}} is inviting you for a hangman match. Do you accept? Send YES to {{shortCode}} or PROFILE to see {{invitingPlayerNickname}} information"},
+		{"INVITINGInvitationRefusalNotificationForInvitingPlayer",         "{{invitedPlayerNickname}} refused your invitation to play. Send LIST to 9714 and pick someone else"},
+		{"INVITINGInvitationRefusalNotificationForInvitedPlayer",          "The invitation to play the Hangman Game made by {{invitingPlayerNickname}} was refused. Send LIST to {{shortCode}} to see online users"},
 		{"LISTINGShowPlayers",                                             "{{playersList}}. To play, send INVITE [NICK] to {{shortCode}}; MORE for more players or PROFILE [NICK]"},
 		{"LISTINGNoMorePlayers",                                           "There is no more online players to show. Send P [NICK] [MSG] to provoke or INVITE [PHONE] to invite a friend of yours to play the Hangman Game."},
 		{"PROVOKINGDeliveryNotification",                                  "Your message was sent to {{destinationNick}}. Wait for the answer or provoke other players sending P [NICK] [MSG] to {{shortCode}}. Send SIGNUP to provoke for free."},
@@ -244,27 +246,27 @@ public class TestPhraseology extends IPhraseology {
 	}
 
 	@Override
-	public String INVITINGInvitationNotificationForInvitingPlayer(String invitedPlayerNickName) {
+	public String INVITINGInvitationNotificationForInvitingPlayer(String invitedPlayerNickname) {
 		return getPhrase("INVITINGInvitationNotificationForInvitingPlayer", new String[][] {
 			{"shortCode",             shortCode},
-			{"invitedPlayerNickName", invitedPlayerNickName},
+			{"invitedPlayerNickname", invitedPlayerNickname},
 		});
 	}
 
 	@Override
-	public String INVITINGTimeoutNotificationForInvitingPlayer(String invitedPlayerNickName, String suggestedNewPlayersNickName) {
+	public String INVITINGTimeoutNotificationForInvitingPlayer(String invitedPlayerNickname, String suggestedNewPlayersNickname) {
 		return getPhrase("INVITINGTimeoutNotificationForInvitingPlayer", new String[][] {
 			{"shortCode",                   shortCode},
-			{"invitedPlayerNickName",       invitedPlayerNickName},
-			{"suggestedNewPlayersNickName", suggestedNewPlayersNickName},
+			{"invitedPlayerNickname",       invitedPlayerNickname},
+			{"suggestedNewPlayersNickname", suggestedNewPlayersNickname},
 		});
 	}
 
 	@Override
-	public String INVITINGInvitationNotificationForInvitedPlayer(String invitingPlayerNickName) {
+	public String INVITINGInvitationNotificationForInvitedPlayer(String invitingPlayerNickname) {
 		return getPhrase("INVITINGInvitationNotificationForInvitedPlayer", new String[][] {
 			{"shortCode",                   shortCode},
-			{"invitingPlayerNickName",      invitingPlayerNickName},
+			{"invitingPlayerNickname",      invitingPlayerNickname},
 		});
 	}
 
@@ -321,6 +323,22 @@ public class TestPhraseology extends IPhraseology {
 	public String UNSUBSCRIBINGUnsubscriptionNotification() {
 		return getPhrase("UNSUBSCRIBINGUnsubscriptionNotification", new String[][] {
 			{"shortCode", shortCode},
+		});
+	}
+
+	@Override
+	public String INVITINGInvitationRefusalNotificationForInvitingPlayer(String invitedPlayerNickname) {
+		return getPhrase("INVITINGInvitationRefusalNotificationForInvitingPlayer", new String[][] {
+			{"shortCode",             shortCode},
+			{"invitedPlayerNickname", invitedPlayerNickname},
+		});
+	}
+
+	@Override
+	public String INVITINGInvitationRefusalNotificationForInvitedPlayer(String invitingPlayerNickname) {
+		return getPhrase("INVITINGInvitationRefusalNotificationForInvitedPlayer", new String[][] {
+			{"shortCode",              shortCode},
+			{"invitingPlayerNickname", invitingPlayerNickname},
 		});
 	}
 

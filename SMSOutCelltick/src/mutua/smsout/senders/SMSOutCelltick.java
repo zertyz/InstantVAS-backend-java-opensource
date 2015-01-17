@@ -56,6 +56,7 @@ public class SMSOutCelltick extends SMSOutSender {
 		requestData.addParameter("account",   ACCOUNT);
 		requestData.addParameter("dlrmask",   "2");
 		requestData.addParameter("reportDLR", "0");
+		System.out.println(HTTPClientAdapter.toString(MT_URL, requestData));
 		String response = HTTPClientAdapter.requestGet(MT_URL, requestData, "UTF-8");
 		if (response.indexOf("Sent") != -1) {
 			return EOutgoingSMSAcceptionStatus.ACCEPTED;
