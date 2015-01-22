@@ -3,6 +3,12 @@ package mutua.hangmansmsgame.smslogic;
 import java.util.Arrays;
 import java.util.Hashtable;
 
+import static mutua.hangmansmsgame.config.Configuration.log;
+import static mutua.icc.instrumentation.HangmanSMSGameInstrumentationEvents.*;
+import static mutua.icc.instrumentation.HangmanSMSGameInstrumentationProperties.*;
+import static mutua.icc.instrumentation.DefaultInstrumentationEvents.*;
+import static mutua.icc.instrumentation.DefaultInstrumentationProperties.*;
+
 import mutua.hangmansmsgame.celltick.CelltickLiveScreenAPI;
 import mutua.hangmansmsgame.dal.DALFactory;
 import mutua.hangmansmsgame.dal.IMatchDB;
@@ -15,7 +21,6 @@ import mutua.hangmansmsgame.dal.dto.SessionDto.ESessionParameters;
 import mutua.hangmansmsgame.hangmangamelogic.HangmanGame;
 import mutua.hangmansmsgame.hangmangamelogic.HangmanGame.EHangmanGameStates;
 import mutua.hangmansmsgame.i18n.IPhraseology;
-import mutua.hangmansmsgame.i18n.TestPhraseology;
 import mutua.hangmansmsgame.smslogic.NavigationMap.ESTATES;
 import mutua.hangmansmsgame.smslogic.commands.ICommandProcessor;
 import mutua.hangmansmsgame.smslogic.commands.dto.CommandAnswerDto;
@@ -120,10 +125,10 @@ public class CommandDetails {
 			return true;
 		}
 		if (CelltickLiveScreenAPI.registerSubscriber(phone)) {
-			System.out.println("Hangman: registering user "+phone+" succeeded");
+			log.reportEvent(DIE_DEBUG, DIP_MSG, "Hangman: registering user "+phone+" succeeded");
 			return registerUserNickname(phone, DEFAULT_NICKNAME_PREFIX + phone.substring(Math.max(phone.length()-4, 0)));
 		} else {
-			System.out.println("Hangman: registering user "+phone+" failed");
+			log.reportEvent(DIE_DEBUG, DIP_MSG, "Hangman: registering user "+phone+" failed");
 			return false;
 		}
 	}

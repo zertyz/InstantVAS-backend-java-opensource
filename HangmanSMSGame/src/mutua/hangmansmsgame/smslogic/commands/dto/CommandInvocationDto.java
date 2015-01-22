@@ -1,5 +1,7 @@
 package mutua.hangmansmsgame.smslogic.commands.dto;
 
+import java.util.Arrays;
+
 import mutua.hangmansmsgame.smslogic.NavigationMap.ECOMMANDS;
 import mutua.hangmansmsgame.smslogic.commands.ICommandProcessor;
 	
@@ -36,4 +38,12 @@ public class CommandInvocationDto {
 		return parameters;
 	}
 
+	@Override
+	public String toString() {
+		return new StringBuffer().
+			append("command='").append(command.name()).append("',").
+			append("parameters={").append(Arrays.toString(parameters)).append("}").
+			toString();
+	}
+	
 }

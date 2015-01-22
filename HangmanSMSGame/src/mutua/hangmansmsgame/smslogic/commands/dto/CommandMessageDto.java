@@ -52,8 +52,10 @@ public class CommandMessageDto {
 
 	@Override
 	public String toString() {
-		return "CommandMessageDto [phone=" + phone + ", text=" + text
-				+ ", type=" + type + "]";
+		return new StringBuffer().
+			append("phone='").append(phone).append("', text='").append(text).
+			append(", type='").append(type.name()).append("'").
+			toString();
 	}
 	
 

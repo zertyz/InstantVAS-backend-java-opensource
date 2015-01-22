@@ -40,8 +40,10 @@ public class CommandAnswerDto {
 
 	@Override
 	public String toString() {
-		return "CommandAnswerDto [responseMessages=" + Arrays.toString(responseMessages) +
-		       ", userSession=" + sessionAfterCommandExecution + "]";
+		String userSession = (sessionAfterCommandExecution != null) ? sessionAfterCommandExecution.toString():"null";
+		return new StringBuffer().
+			append("userSession={").append(userSession).append("}, ").
+		    append("responseMessages=").append(Arrays.toString(responseMessages)).toString();
 	}
 	
 	

@@ -98,16 +98,15 @@ public class SessionDto {
 	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		sb.append("SessionDto [phone='").append(phone).append("', navigationState='");
-		sb.append(navigationState).append("', timestamp=");
-		sb.append(timestamp).append(", parameterValues={");
+		sb.append("phone='").append(phone).append("', navigationState='").
+		append(navigationState).append("', timestamp=").
+		append(timestamp).append(", parameterValues={");
 		for (int i=1; i<parameterValues.length; i++) {
 			sb.append(ESessionParameters.values()[i]).append('=');
 			sb.append("'").append(parameterValues[i]).append("'");
 			sb.append(i<parameterValues.length-1 ? "," : "");
 		}
-		sb.append("}]");
-		return sb.toString();
+		return sb.append("}").toString();
 	}
 	
 	

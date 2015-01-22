@@ -1,8 +1,15 @@
 package mutua.hangmansmsgame.smslogic;
 
 import java.util.ArrayList;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static mutua.hangmansmsgame.config.Configuration.log;
+import static mutua.icc.instrumentation.HangmanSMSGameInstrumentationEvents.*;
+import static mutua.icc.instrumentation.HangmanSMSGameInstrumentationProperties.*;
+import static mutua.icc.instrumentation.DefaultInstrumentationEvents.*;
+import static mutua.icc.instrumentation.DefaultInstrumentationProperties.*;
 
 import mutua.hangmansmsgame.dal.DALFactory;
 import mutua.hangmansmsgame.dal.ISessionDB;
@@ -113,6 +120,7 @@ public class HangmanSMSGameProcessor {
 		try {
 			ESMSInParserCarrier carrier = incomingSMS.getCarrier();
 			commandAnswer = commandProcessor.processCommand(userSession, carrier, parameters, IPhraseology.getCarrierSpecificPhraseology(carrier));
+			log.reportEvent(IE_ANSWER_FROM_COMMAND, IP_COMMAND_ANSWER, commandAnswer);
 		} catch (Throwable t) {
 			// in case of error...
 			//Instrumentation.reportSevereError("BlocosDeCarnaval: Error processing message '"+incoming_text+"' from phone '"+incoming_phone+"'", t);
@@ -155,7 +163,10 @@ public class HangmanSMSGameProcessor {
 			userSession = userSessionDB.getSession(incomingPhone);
 			// new user
 			if (userSession == null) {
+				log.reportEvent(IE_REQUEST_FROM_NEW_USER, IP_PHONE, incomingPhone);
 				userSession = new SessionDto(incomingPhone, "NEW_USER");
+			} else {
+				log.reportEvent(IE_REQUEST_FROM_EXISTING_USER, IP_PHONE, incomingPhone);
 			}
 		} catch (Exception e) {
 			throw new RuntimeException("Database comunication problem: cannot retrieve state for user '"+incomingPhone+"'", e);
@@ -165,6 +176,8 @@ public class HangmanSMSGameProcessor {
 		CommandInvocationDto invocationHandler = resolveInvocationHandler(ESTATES.valueOf(userSession.getNavigationState()), incomingText);
 		if (invocationHandler != null) {
 			
+			log.reportEvent(IE_PROCESSING_COMMAND, IP_COMMAND_INVOCATION, invocationHandler);
+			
 			// execute
 			CommandAnswerDto commandResponse = invokeCommand(invocationHandler, userSession, incomingSMS);
 			
@@ -172,10 +185,10 @@ public class HangmanSMSGameProcessor {
 				// set the user state
 				SessionDto newUserSession = commandResponse.getUserSession();
 				if (newUserSession != null) {
-					System.out.println("Setting new user session: " + newUserSession);
+					log.reportEvent(DIE_DEBUG, DIP_MSG, "Setting new user session: " + newUserSession);
 					userSessionDB.setSession(newUserSession);
 				} else {
-					System.out.println("Not setting a new user session");
+					log.reportEvent(DIE_DEBUG, DIP_MSG, "Not setting a new user session");
 				}
 				// route messages
 				routeMessages(commandResponse.getResponseMessages(), incomingSMS);
