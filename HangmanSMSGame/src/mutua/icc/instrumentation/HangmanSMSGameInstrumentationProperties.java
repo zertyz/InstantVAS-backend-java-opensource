@@ -16,26 +16,65 @@ import mutua.hangmansmsgame.smslogic.commands.dto.CommandInvocationDto;
  * @author luiz
  */
 
-public class HangmanSMSGameInstrumentationProperties {
+public enum HangmanSMSGameInstrumentationProperties implements IInstrumentableProperty {
+
 	
-	public static IInstrumentableProperty<String>               IP_PHONE                 = new IInstrumentableProperty<String>("phone", String.class);
+	IP_PHONE                 ("phone", String.class),
 	
-	public static IInstrumentableProperty<CommandInvocationDto> IP_COMMAND_INVOCATION    = new IInstrumentableProperty<CommandInvocationDto>("commandInvocationHandler", CommandInvocationDto.class) {
+	IP_COMMAND_INVOCATION    ("commandInvocationHandler", CommandInvocationDto.class) {
 		@Override
-		public void appendValueToLogLine(StringBuffer logLine, CommandInvocationDto commandInvocationHandler) {
+		public void appendSerializedValue(StringBuffer logLine, Object value) {
+			CommandInvocationDto commandInvocationHandler = (CommandInvocationDto)value;
 			logLine.append(commandInvocationHandler.toString());
 		}
-		
-	};
+	},
 	
-	public static IInstrumentableProperty<CommandDetails>       IP_COMMAND_DETAILS       = new IInstrumentableProperty<CommandDetails>("commandDetails", CommandDetails.class);
+	IP_COMMAND_DETAILS       ("commandDetails", CommandDetails.class),
 	
-	public static IInstrumentableProperty<CommandAnswerDto>     IP_COMMAND_ANSWER        = new IInstrumentableProperty<CommandAnswerDto>("commandAnswer", CommandAnswerDto.class) {
+	IP_COMMAND_ANSWER        ("commandAnswer", CommandAnswerDto.class) {
 		@Override
-		public void appendValueToLogLine(StringBuffer logLine, CommandAnswerDto commandAnswer) {
-		    logLine.append(commandAnswer.toString());
+		public void appendSerializedValue(StringBuffer logLine, Object value) {
+			CommandAnswerDto commandAnswer = (CommandAnswerDto)value;
+			logLine.append(commandAnswer.toString());
 		}
 	};
 
+	
+	;
+
+	
+	private String instrumentationPropertyName;
+	private Class<?> instrumentationPropertyType;
+	
+	
+	private HangmanSMSGameInstrumentationProperties(String instrumentationPropertyName, Class<?> instrumentationPropertyType) {
+		this.instrumentationPropertyName = instrumentationPropertyName;
+		this.instrumentationPropertyType = instrumentationPropertyType;
+	}
+
+	
+	// IInstrumentableProperty implementation
+	/////////////////////////////////////////
+	
+	@Override
+	public String getInstrumentationPropertyName() {
+		return instrumentationPropertyName;
+	}
+
+	
+	// ISerializationRule implementation
+	////////////////////////////////////
+	
+	@Override
+	public Class<?> getType() {
+		return instrumentationPropertyType;
+	}
+
+	@Override
+	public void appendSerializedValue(StringBuffer buffer, Object value) {
+		throw new RuntimeException("Serialization Rule '" + this.getClass().getName() +
+                                   "' didn't overrode 'appendSerializedValue' from " +
+                                   "'ISerializationRule' for type '" + instrumentationPropertyType);
+	}
 
 }

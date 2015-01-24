@@ -1,5 +1,7 @@
 package mutua.hangmansmsgame.smslogic;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Random;
 
 import mutua.hangmansmsgame.celltick.CelltickLiveScreenAPI;
@@ -8,13 +10,12 @@ import mutua.hangmansmsgame.dal.DALFactory;
 import mutua.hangmansmsgame.dal.IUserDB;
 import mutua.hangmansmsgame.hangmangamelogic.HangmanGame;
 import mutua.hangmansmsgame.i18n.IPhraseology;
+import mutua.icc.instrumentation.HangmanSMSGameInstrumentationEvents;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.icc.instrumentation.InstrumentationTestRequestProperty;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 /** <pre>
  * HangmanSMSGameProcessorTests.java
@@ -36,7 +37,7 @@ public class HangmanSMSGameProcessorTests {
     static {
     	CelltickLiveScreenAPI.REGISTER_SUBSCRIBER_URL = null;
     	CelltickLiveScreenAPI.REGISTER_SUBSCRIBER_URL = null;
-    	Configuration.log = new Instrumentation<InstrumentationTestRequestProperty, String>("HangmanSMSGameProcessorTests", new InstrumentationTestRequestProperty());
+    	Configuration.log = new Instrumentation<InstrumentationTestRequestProperty, String>("HangmanSMSGameProcessorTests", new InstrumentationTestRequestProperty("isThisTheTestName?"), HangmanSMSGameInstrumentationEvents.values());
     }
 
 	

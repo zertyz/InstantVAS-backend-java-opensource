@@ -15,14 +15,35 @@ import static mutua.icc.instrumentation.HangmanSMSGameInstrumentationProperties.
  * @author luiz
  */
 
-public class HangmanSMSGameInstrumentationEvents {
+public enum HangmanSMSGameInstrumentationEvents implements IInstrumentableEvent {
 	
-	public static IInstrumentableEvent IE_REQUEST_FROM_NEW_USER       = new IInstrumentableEvent("Request from new user", IP_PHONE);
-
-	public static IInstrumentableEvent IE_REQUEST_FROM_EXISTING_USER  = new IInstrumentableEvent("Request from existing user", IP_PHONE);
-
-	public static IInstrumentableEvent IE_PROCESSING_COMMAND          = new IInstrumentableEvent("Processing command", IP_COMMAND_INVOCATION);
 	
-	public static IInstrumentableEvent IE_ANSWER_FROM_COMMAND         = new IInstrumentableEvent("Answer from command", IP_COMMAND_ANSWER);
+	IE_REQUEST_FROM_NEW_USER       ("Request from new user",      IP_PHONE),
+	IE_REQUEST_FROM_EXISTING_USER  ("Request from existing user", IP_PHONE),
+	IE_PROCESSING_COMMAND          ("Processing command",         IP_COMMAND_INVOCATION),
+	IE_ANSWER_FROM_COMMAND         ("Answer from command",        IP_COMMAND_ANSWER),
+
+	
+	;
+	
+	
+	private InstrumentableEvent instrumentableEvent;
+	
+	private HangmanSMSGameInstrumentationEvents(String name, IInstrumentableProperty property) {
+		instrumentableEvent = new InstrumentableEvent(name, property);
+	}
+	
+	private HangmanSMSGameInstrumentationEvents(String name, IInstrumentableProperty property1, IInstrumentableProperty property2) {
+		instrumentableEvent = new InstrumentableEvent(name, property1, property2);
+	}
+	
+	private HangmanSMSGameInstrumentationEvents(String name) {
+		instrumentableEvent = new InstrumentableEvent(name);
+	}
+
+	@Override
+	public InstrumentableEvent getInstrumentableEvent() {
+		return instrumentableEvent;
+	}
 
 }

@@ -12,15 +12,27 @@ package mutua.icc.instrumentation;
  * @author luiz
  */
 
-public class InstrumentationTestRequestProperty extends IInstrumentableProperty<String> {
+public class InstrumentationTestRequestProperty implements IInstrumentableProperty {
 
-	public InstrumentationTestRequestProperty() {
-		super("testProcedure", String.class);
+	private String testName;
+	
+	public InstrumentationTestRequestProperty(String testName) {
+		this.testName = testName;
 	}
 
 	@Override
-	public void appendValueToLogLine(StringBuffer logLine, String value) {
-		logLine.append(value);
+	public String getInstrumentationPropertyName() {
+		return "testName";
+	}
+
+	@Override
+	public Class<?> getType() {
+		return testName.getClass();
+	}
+
+	@Override
+	public void appendSerializedValue(StringBuffer buffer, Object value) {
+		throw new RuntimeException("This serialization rule should not have been called since 'type' is a string");
 	}
 
 }
