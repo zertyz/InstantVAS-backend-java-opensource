@@ -1,15 +1,13 @@
 package mutua.hangmansmsgame.smslogic;
 
+import static mutua.hangmansmsgame.config.Configuration.*;
+import static mutua.icc.instrumentation.DefaultInstrumentationEvents.DIE_DEBUG;
+import static mutua.icc.instrumentation.DefaultInstrumentationProperties.DIP_MSG;
+
 import java.util.Arrays;
 import java.util.Hashtable;
 
-import static mutua.hangmansmsgame.config.Configuration.log;
-import static mutua.icc.instrumentation.HangmanSMSGameInstrumentationEvents.*;
-import static mutua.icc.instrumentation.HangmanSMSGameInstrumentationProperties.*;
-import static mutua.icc.instrumentation.DefaultInstrumentationEvents.*;
-import static mutua.icc.instrumentation.DefaultInstrumentationProperties.*;
-
-import mutua.hangmansmsgame.celltick.CelltickLiveScreenAPI;
+import mutua.hangmansmsgame.config.Configuration;
 import mutua.hangmansmsgame.dal.DALFactory;
 import mutua.hangmansmsgame.dal.IMatchDB;
 import mutua.hangmansmsgame.dal.ISessionDB;
@@ -27,6 +25,9 @@ import mutua.hangmansmsgame.smslogic.commands.dto.CommandAnswerDto;
 import mutua.hangmansmsgame.smslogic.commands.dto.CommandMessageDto;
 import mutua.hangmansmsgame.smslogic.commands.dto.CommandMessageDto.EResponseMessageType;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
+import mutua.subscriptionengine.SubscriptionEngine;
+import mutua.subscriptionengine.SubscriptionEngine.ESubscriptionOperationStatus;
+import mutua.subscriptionengine.TestableSubscriptionAPI;
 
 /** <pre>
  * CommandDetails.java
@@ -42,11 +43,6 @@ import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 
 public class CommandDetails {
 	
-
-	// constants
-	////////////
-	
-	public static String DEFAULT_NICKNAME_PREFIX = "Guest";
 	
 	// databases
 	////////////
@@ -121,10 +117,14 @@ public class CommandDetails {
 	
 	/** This is the point we may call Celltick APIs for registration */
 	protected static boolean assureUserIsRegistered(String phone) {
+
 		if (userDB.isUserOnRecord(phone)) {
 			return true;
 		}
-		if (CelltickLiveScreenAPI.registerSubscriber(phone)) {
+		
+		ESubscriptionOperationStatus subscriptionStatus = SUBSCRIPTION_ENGINE.subscribeUser(phone, SUBSCRIPTION_CHANNEL_NAME);
+		
+		if (subscriptionStatus == ESubscriptionOperationStatus.OK) {
 			log.reportEvent(DIE_DEBUG, DIP_MSG, "Hangman: registering user "+phone+" succeeded");
 			return registerUserNickname(phone, DEFAULT_NICKNAME_PREFIX + phone.substring(Math.max(phone.length()-4, 0)));
 		} else {
@@ -587,6 +587,7 @@ public class CommandDetails {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
 			String newNickname = parameters[0];
+			assureUserIsRegistered(session.getPhone());
 			userDB.checkAvailabilityAndRecordNickname(session.getPhone(), newNickname);
 			String registeredNickname = userDB.getUserNickname(session.getPhone());
 			CommandMessageDto message = new CommandMessageDto(phrases.PROFILENickRegisteredNotification(registeredNickname), EResponseMessageType.PROFILE);
@@ -634,7 +635,7 @@ public class CommandDetails {
 	public static final ICommandProcessor UNSUBSCRIBE = new ICommandProcessor() {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
-			CelltickLiveScreenAPI.unregisterSubscriber(session.getPhone());
+			SUBSCRIPTION_ENGINE.unsubscribeUser(session.getPhone(), SUBSCRIPTION_CHANNEL_NAME);
 			CommandMessageDto message = new CommandMessageDto(phrases.UNSUBSCRIBINGUnsubscriptionNotification(), EResponseMessageType.HELP);
 			return getNewCommandAnswerDto(session, message);
 		}

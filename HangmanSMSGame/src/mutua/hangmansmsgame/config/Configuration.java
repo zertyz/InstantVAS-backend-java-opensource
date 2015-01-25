@@ -1,6 +1,8 @@
 package mutua.hangmansmsgame.config;
 
 import mutua.icc.instrumentation.Instrumentation;
+import mutua.subscriptionengine.SubscriptionEngine;
+import mutua.subscriptionengine.TestableSubscriptionAPI;
 
 /** <pre>
  * Configuration.java
@@ -16,6 +18,15 @@ import mutua.icc.instrumentation.Instrumentation;
 
 public class Configuration {
 	
-	public static Instrumentation<?, ?> log;	// to be defined by the request receivers (servlet, console, tests, ...)
+	/** to be defined by the request receivers (servlet, console, tests, icc app, ...) */
+	public static Instrumentation<?, ?> log;
+	
+	/** also to be defined by the request receivers (servlet, console, tests, icc app, ...) */
+	public static SubscriptionEngine SUBSCRIPTION_ENGINE;
+	
+	public static String DEFAULT_NICKNAME_PREFIX    = "Guest";
+	public static String SUBSCRIPTION_CHANNEL_NAME  = "HangMan";
+	public static long   INVITATION_TIMEOUT_MILLIS = (1000*60)*20;
+
 
 }

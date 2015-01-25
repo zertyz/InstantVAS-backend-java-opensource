@@ -13,6 +13,7 @@ import mutua.icc.instrumentation.InstrumentationTestRequestProperty;
 import mutua.smsin.dto.IncomingSMSDto;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 import mutua.smsout.dto.OutgoingSMSDto;
+import mutua.subscriptionengine.TestableSubscriptionAPI;
 
 /** <pre>
  *  TestCommons.java
@@ -54,6 +55,7 @@ public class TestCommons {
 	public void resetDatabases() {
 		userDB.reset();
 		sessionDB.reset();
+		TestableSubscriptionAPI.reset();
 	}
 	
 	/** Reset and populate Users database. users := { {phone, nick}, ...} */
@@ -79,15 +81,11 @@ public class TestCommons {
 	** DIALOG VERIFICATION METHODS **
 	********************************/	
 	
-	public void checkResponse(String phone, String inputText, String expectedResponseText) {
-		checkResponse(phone, inputText, new String[] {expectedResponseText});
-	}
-	
-	public void checkResponse(String phone, String inputText, String[] expectedResponsesText) {
+	public void checkResponse(String phone, String inputText, String... expectedResponsesText) {
 		try {
 			IncomingSMSDto mo = new IncomingSMSDto(phone, inputText, TEST_CARRIER, "1234", "null");
 			Instrumentation<InstrumentationTestRequestProperty, String> log = (Instrumentation<InstrumentationTestRequestProperty, String>)Configuration.log;
-			log.reportRequestStart(Thread.currentThread().getStackTrace()[2].getMethodName());
+			log.reportRequestStart(Thread.currentThread().getStackTrace()[1].getMethodName());
 			processor.process(mo);
 			log.reportRequestFinish();
 			OutgoingSMSDto[] observedResponses = responseReceiver.getLastOutgoingSMSes();

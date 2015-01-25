@@ -1,7 +1,7 @@
 package mutua.hangmansmsgame.smslogic;
 
 import mutua.hangmansmsgame.smslogic.commands.ICommandProcessor;
-import mutua.hangmansmsgame.smslogic.commands.dto.CommandPatternsDto;
+import mutua.hangmansmsgame.smslogic.commands.dto.CommandTriggersDto;
 
 /** <pre>
  * NavigationMap.java
@@ -50,6 +50,7 @@ public class NavigationMap {
 		REGISTER_MATCH_WORD(CommandDetails.REGISTER_MATCH_WORD),
 		ACCEPT_INVITATION(CommandDetails.ACCEPT_INVITATION),
 		REFUSE_INVITATION(CommandDetails.REFUSE_INVITATION),
+		INVITATION_TIMEOUT(null),
 		
 		
 		// playing commands
@@ -142,13 +143,13 @@ public class NavigationMap {
 				
 		;
 		
-		private CommandPatternsDto[] commandPatterns;
+		private CommandTriggersDto[] commandPatterns;
 		
-		ESTATES(CommandPatternsDto[] commandPatterns) {
+		ESTATES(CommandTriggersDto[] commandPatterns) {
 			this.commandPatterns = commandPatterns;
 		}
 		
-		public CommandPatternsDto[] getCommandPatterns() {
+		public CommandTriggersDto[] getCommandPatterns() {
 			return commandPatterns;
 		}		
 		

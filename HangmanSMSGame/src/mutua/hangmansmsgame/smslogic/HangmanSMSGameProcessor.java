@@ -24,7 +24,7 @@ import mutua.hangmansmsgame.smslogic.commands.dto.CommandAnswerDto;
 import mutua.hangmansmsgame.smslogic.commands.dto.CommandInvocationDto;
 import mutua.hangmansmsgame.smslogic.commands.dto.CommandMessageDto;
 import mutua.hangmansmsgame.smslogic.commands.dto.CommandMessageDto.EResponseMessageType;
-import mutua.hangmansmsgame.smslogic.commands.dto.CommandPatternsDto;
+import mutua.hangmansmsgame.smslogic.commands.dto.CommandTriggersDto;
 import mutua.smsin.dto.IncomingSMSDto;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 
@@ -71,13 +71,12 @@ public class HangmanSMSGameProcessor {
 		mtDispatcher = new MessageDispatcher(defaultReceiver);
 	}
 	
-	/*
-	 *  from the available options (i.e., the commands that belongs to the current 'userState') determine which one of them
+	/** from the available options (i.e., the commands that belongs to the current 'userState') determine which one of them
 	 *  should process the 'incomingText' and build the object needed to issue the call
 	 */
 	protected CommandInvocationDto resolveInvocationHandler(ESTATES state, String incomingText) {
 		
-		CommandPatternsDto[] commandPatterns = state.getCommandPatterns();
+		CommandTriggersDto[] commandPatterns = state.getCommandPatterns();
 		// traverse all commands
 		for (int comandIndex=0; comandIndex<commandPatterns.length; comandIndex++) {
 			ECOMMANDS command = commandPatterns[comandIndex].getCommand();
