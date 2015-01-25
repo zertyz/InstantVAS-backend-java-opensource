@@ -3,10 +3,13 @@ package mutua.hangmansmsgame.smslogic;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import mutua.hangmansmsgame.config.Configuration;
 import mutua.hangmansmsgame.dal.DALFactory;
 import mutua.hangmansmsgame.dal.ISessionDB;
 import mutua.hangmansmsgame.dal.IUserDB;
 import mutua.hangmansmsgame.dal.dto.SessionDto;
+import mutua.icc.instrumentation.Instrumentation;
+import mutua.icc.instrumentation.InstrumentationTestRequestProperty;
 import mutua.smsin.dto.IncomingSMSDto;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 import mutua.smsout.dto.OutgoingSMSDto;
@@ -83,7 +86,10 @@ public class TestCommons {
 	public void checkResponse(String phone, String inputText, String[] expectedResponsesText) {
 		try {
 			IncomingSMSDto mo = new IncomingSMSDto(phone, inputText, TEST_CARRIER, "1234", "null");
+			Instrumentation<InstrumentationTestRequestProperty, String> log = (Instrumentation<InstrumentationTestRequestProperty, String>)Configuration.log;
+			log.reportRequestStart(Thread.currentThread().getStackTrace()[2].getMethodName());
 			processor.process(mo);
+			log.reportRequestFinish();
 			OutgoingSMSDto[] observedResponses = responseReceiver.getLastOutgoingSMSes();
 			boolean isNullityCorrect = ((expectedResponsesText == null) && (observedResponses == null)) ||
 			                           ((expectedResponsesText != null) && (observedResponses != null));

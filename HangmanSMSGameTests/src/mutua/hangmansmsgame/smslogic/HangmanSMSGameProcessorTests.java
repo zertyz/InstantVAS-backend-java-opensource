@@ -13,6 +13,9 @@ import mutua.hangmansmsgame.i18n.IPhraseology;
 import mutua.icc.instrumentation.HangmanSMSGameInstrumentationEvents;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.icc.instrumentation.InstrumentationTestRequestProperty;
+import mutua.icc.instrumentation.eventclients.InstrumentationProfilingEventsClient;
+import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
+import mutua.imi.IndirectMethodNotFoundException;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 
 import org.junit.Test;
@@ -38,6 +41,12 @@ public class HangmanSMSGameProcessorTests {
     	CelltickLiveScreenAPI.REGISTER_SUBSCRIBER_URL = null;
     	CelltickLiveScreenAPI.REGISTER_SUBSCRIBER_URL = null;
     	Configuration.log = new Instrumentation<InstrumentationTestRequestProperty, String>("HangmanSMSGameProcessorTests", new InstrumentationTestRequestProperty("isThisTheTestName?"), HangmanSMSGameInstrumentationEvents.values());
+    	try {
+        	InstrumentationProfilingEventsClient instrumentationProfilingEventsClient = new InstrumentationProfilingEventsClient(Configuration.log, EInstrumentationDataPours.CONSOLE);
+			Configuration.log.addInstrumentationPropagableEventsClient(instrumentationProfilingEventsClient);
+		} catch (IndirectMethodNotFoundException e) {
+			e.printStackTrace();
+		}
     }
 
 	
