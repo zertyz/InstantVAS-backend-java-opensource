@@ -21,8 +21,9 @@ public class SessionDto {
 
 	public enum ESessionParameters {
 
-		// playing state info
+		// playing states info
 		HANGMAN_SERIALIZED_GAME_STATE,
+		MATCH_BOT_NAME,
 		
 		// invitation to play info
 		OPPONENT_PHONE_NUMBER,

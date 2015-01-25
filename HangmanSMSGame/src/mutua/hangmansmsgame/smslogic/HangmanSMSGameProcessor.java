@@ -1,22 +1,29 @@
 package mutua.hangmansmsgame.smslogic;
 
-import java.util.ArrayList;
+import static mutua.hangmansmsgame.config.Configuration.log;
+import static mutua.icc.instrumentation.DefaultInstrumentationEvents.DIE_DEBUG;
+import static mutua.icc.instrumentation.DefaultInstrumentationProperties.DIP_MSG;
+import static mutua.icc.instrumentation.HangmanSMSGameInstrumentationEvents.IE_ANSWER_FROM_COMMAND;
+import static mutua.icc.instrumentation.HangmanSMSGameInstrumentationEvents.IE_PROCESSING_COMMAND;
+import static mutua.icc.instrumentation.HangmanSMSGameInstrumentationEvents.IE_REQUEST_FROM_EXISTING_USER;
+import static mutua.icc.instrumentation.HangmanSMSGameInstrumentationEvents.IE_REQUEST_FROM_NEW_USER;
+import static mutua.icc.instrumentation.HangmanSMSGameInstrumentationProperties.IP_COMMAND_ANSWER;
+import static mutua.icc.instrumentation.HangmanSMSGameInstrumentationProperties.IP_COMMAND_INVOCATION;
+import static mutua.icc.instrumentation.HangmanSMSGameInstrumentationProperties.IP_PHONE;
 
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static mutua.hangmansmsgame.config.Configuration.log;
-import static mutua.icc.instrumentation.HangmanSMSGameInstrumentationEvents.*;
-import static mutua.icc.instrumentation.HangmanSMSGameInstrumentationProperties.*;
-import static mutua.icc.instrumentation.DefaultInstrumentationEvents.*;
-import static mutua.icc.instrumentation.DefaultInstrumentationProperties.*;
-
+import mutua.events.EventClient;
+import mutua.events.annotations.EventConsumer;
 import mutua.hangmansmsgame.dal.DALFactory;
 import mutua.hangmansmsgame.dal.ISessionDB;
 import mutua.hangmansmsgame.dal.dto.SessionDto;
 import mutua.hangmansmsgame.dispatcher.IResponseReceiver;
 import mutua.hangmansmsgame.dispatcher.MessageDispatcher;
 import mutua.hangmansmsgame.i18n.IPhraseology;
+import mutua.hangmansmsgame.smslogic.HangmanSMSGameProcessor.EHangmanSMSGameEvents;
 import mutua.hangmansmsgame.smslogic.NavigationMap.ECOMMANDS;
 import mutua.hangmansmsgame.smslogic.NavigationMap.ESTATES;
 import mutua.hangmansmsgame.smslogic.commands.ICommandProcessor;
@@ -41,8 +48,15 @@ import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
  * @author luiz
  */
 
-public class HangmanSMSGameProcessor {
+public class HangmanSMSGameProcessor implements EventClient<EHangmanSMSGameEvents> {
 
+	
+	public enum EHangmanSMSGameEvents {
+		PROCESS_INCOMING_SMS,
+		PROCESS_PENDING_TIMEOUT_USERS,
+	}
+	
+	
 	// databases
 	////////////
 	
@@ -63,17 +77,14 @@ public class HangmanSMSGameProcessor {
 	** PROCESSING METHODS **
 	***********************/
 	
-	/*
-	 * Gets a processor instance which will deliver Output SMSes (MT's) to the 
-	 * provided 'interactionReceiver' MessageReceiver instance
-	 */
+	/** Gets a processor instance which will deliver Output SMSes (MT's) to the 
+	 * provided 'interactionReceiver' MessageReceiver instance */
 	public HangmanSMSGameProcessor(IResponseReceiver defaultReceiver) {
 		mtDispatcher = new MessageDispatcher(defaultReceiver);
 	}
 	
 	/** from the available options (i.e., the commands that belongs to the current 'userState') determine which one of them
-	 *  should process the 'incomingText' and build the object needed to issue the call
-	 */
+	 *  should process the 'incomingText' and build the object needed to issue the call */
 	protected CommandInvocationDto resolveInvocationHandler(ESTATES state, String incomingText) {
 		
 		CommandTriggersDto[] commandPatterns = state.getCommandPatterns();
@@ -107,17 +118,12 @@ public class HangmanSMSGameProcessor {
 		return null;
 	}
 	
-	/*
-	 *  invoke the command determined as the one to process the 'incomingSMS'
-	 */
-	protected CommandAnswerDto invokeCommand(CommandInvocationDto invocationHandler, SessionDto userSession, IncomingSMSDto incomingSMS) {
+	/** invoke the command determined as the one to process the 'incomingSMS' */
+	protected CommandAnswerDto invokeCommand(CommandInvocationDto invocationHandler, SessionDto userSession, String incomingPhone, ESMSInParserCarrier carrier) {
 		ICommandProcessor commandProcessor = invocationHandler.getCommandProcessor();
 		String[] parameters = invocationHandler.getParameters();
-		String incomingPhone = incomingSMS.getPhone();
-		String incomingText = incomingSMS.getText();
 		CommandAnswerDto commandAnswer;
 		try {
-			ESMSInParserCarrier carrier = incomingSMS.getCarrier();
 			commandAnswer = commandProcessor.processCommand(userSession, carrier, parameters, IPhraseology.getCarrierSpecificPhraseology(carrier));
 			log.reportEvent(IE_ANSWER_FROM_COMMAND, IP_COMMAND_ANSWER, commandAnswer);
 		} catch (Throwable t) {
@@ -132,9 +138,7 @@ public class HangmanSMSGameProcessor {
 		return commandAnswer;
 	}
 	
-	/*
-	 *  route the SMS response of a command to the appropriate dispatcher 
-	 */
+	/** route the SMS response of a command to the appropriate dispatcher */
 	protected void routeMessages(CommandMessageDto[] responseMessages, IncomingSMSDto incomingSMS) {
 		try {
 //			if ((response_messages != null) && (response_messages[0].getType() == EResponseMessageType.NEWS_INCENTIVE)) {
@@ -150,7 +154,18 @@ public class HangmanSMSGameProcessor {
 		}
 	}
 	
+	@EventConsumer({/*EHangmanSMSGameEvents.*/"PROCESS_PENDING_TIMEOUT_USERS"})
+	public void processTimeout() {
+		
+		// for each timeout pending user
+		// CommandInvocationDto invocationHandler = resolveTimeoutInvocationHandler
+		// get the session
+		// invoke command
+		// set the session
+		// route messages
+	}
 
+	@EventConsumer({/*EHangmanSMSGameEvents.*/"PROCESS_INCOMING_SMS"})
 	public void process(IncomingSMSDto incomingSMS) throws SMSProcessorException {
 		
 		String incomingPhone = incomingSMS.getPhone();
@@ -178,7 +193,7 @@ public class HangmanSMSGameProcessor {
 			log.reportEvent(IE_PROCESSING_COMMAND, IP_COMMAND_INVOCATION, invocationHandler);
 			
 			// execute
-			CommandAnswerDto commandResponse = invokeCommand(invocationHandler, userSession, incomingSMS);
+			CommandAnswerDto commandResponse = invokeCommand(invocationHandler, userSession, incomingSMS.getPhone(), incomingSMS.getCarrier());
 			
 			if (commandResponse != null) {
 				// set the user state

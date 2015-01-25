@@ -254,9 +254,7 @@ public class HangmanSMSGameProcessorTests {
 		
 		tc.checkResponse("21991234800", "forca", testPhraseology.INFOWelcome());
 		tc.checkResponse("21991234800", "forca", testPhraseology.PLAYINGWordGuessingPlayerStart("C-------EE", "CE"));
-		tc.checkResponse("21991234800", "a",
-			testPhraseology.PLAYINGWordProvidingPlayerStatus(false, false, false, false, false, false, "C----A--EE", "a", "ACE", "Guest4800"),
-			testPhraseology.PLAYINGWordGuessingPlayerStatus(false, false, false, false, false, false, "C----A--EE", "ACE"));
+		tc.checkResponse("21991234800", "a", testPhraseology.PLAYINGWordGuessingPlayerStatus(false, false, false, false, false, false, "C----A--EE", "ACE"));
 	}
 	
 	@Test

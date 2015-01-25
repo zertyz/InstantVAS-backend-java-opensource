@@ -80,9 +80,9 @@ public class StateDetails {
 	};
 	
 	public static final CommandTriggersDto[] ENTERING_OPPONENT_CONTACT_INFO = {
-		new CommandTriggersDto(ECOMMANDS.REGISTER_OPPONENT_PHONE, new String[] {
+		new CommandTriggersDto(ECOMMANDS.HOLD_OPPONENT_PHONE, new String[] {
 			"(\\d+)"}),
-		new CommandTriggersDto(ECOMMANDS.REGISTER_OPPONENT_NICK, new String[] {
+		new CommandTriggersDto(ECOMMANDS.HOLD_OPPONENT_NICK, new String[] {
 			"(^\\d.+)"}),
 		SHOW_FULL_HELP_COMMAND_PATTERNS,
 		SHOW_PROFILE_COMMAND_PATTERNS,
@@ -106,7 +106,7 @@ public class StateDetails {
 		INVITE_NICK_OR_PHONE_COMMAND_PATTERNS,
 		PLAY_WITH_RANDOM_USER_OR_BOT_COMMAND_PATTERNS,
 		UNSUBSCRIBE_COMMAND_PATTERNS,
-		new CommandTriggersDto(ECOMMANDS.REGISTER_MATCH_WORD, new String[] {"([^ ]+)"}),
+		new CommandTriggersDto(ECOMMANDS.HOLD_MATCH_WORD, new String[] {"([^ ]+)"}),
 		FALLBACK_HELP_COMMAND_PATTERNS
 	};
 
@@ -127,22 +127,38 @@ public class StateDetails {
 		new CommandTriggersDto(ECOMMANDS.INVITATION_TIMEOUT, Configuration.INVITATION_TIMEOUT_MILLIS),
 	};
 
-	public static final CommandTriggersDto[] GUESSING_WORD = {
+	public static final CommandTriggersDto[] GUESSING_HUMAN_WORD = {
 		SHOW_FULL_HELP_COMMAND_PATTERNS,
 		SHOW_PROFILE_COMMAND_PATTERNS,
 		DEFINE_NICK_COMMAND_PATTERNS,
 		LIST_USERS_COMMAND_PATTERNS,
 		PROVOKE_COMMAND_PATTERNS,
-		new CommandTriggersDto(ECOMMANDS.SUGGEST_LETTER_OR_WORD, new String[] {
+		new CommandTriggersDto(ECOMMANDS.SUGGEST_LETTER_OR_WORD_FOR_HUMAN, new String[] {
 			"(C)", "(J)"}),	// TODO fix the C conflict with 'START_INVITATION_PROCESS_COMMAND_PATTERNS'
 		START_INVITATION_PROCESS_COMMAND_PATTERNS,
 		INVITE_NICK_OR_PHONE_COMMAND_PATTERNS,
 		PLAY_WITH_RANDOM_USER_OR_BOT_COMMAND_PATTERNS,
 		UNSUBSCRIBE_COMMAND_PATTERNS,
-		new CommandTriggersDto(ECOMMANDS.SUGGEST_LETTER_OR_WORD, new String[] {
+		new CommandTriggersDto(ECOMMANDS.SUGGEST_LETTER_OR_WORD_FOR_HUMAN, new String[] {
 			"(.*)"})
 	};
 	
+	public static final CommandTriggersDto[] GUESSING_BOT_WORD = {
+		SHOW_FULL_HELP_COMMAND_PATTERNS,
+		SHOW_PROFILE_COMMAND_PATTERNS,
+		DEFINE_NICK_COMMAND_PATTERNS,
+		LIST_USERS_COMMAND_PATTERNS,
+		PROVOKE_COMMAND_PATTERNS,
+		new CommandTriggersDto(ECOMMANDS.SUGGEST_LETTER_OR_WORD_FOR_BOT, new String[] {
+			"(C)", "(J)"}),	// TODO fix the C conflict with 'START_INVITATION_PROCESS_COMMAND_PATTERNS'
+		START_INVITATION_PROCESS_COMMAND_PATTERNS,
+		INVITE_NICK_OR_PHONE_COMMAND_PATTERNS,
+		PLAY_WITH_RANDOM_USER_OR_BOT_COMMAND_PATTERNS,
+		UNSUBSCRIBE_COMMAND_PATTERNS,
+		new CommandTriggersDto(ECOMMANDS.SUGGEST_LETTER_OR_WORD_FOR_BOT, new String[] {
+			"(.*)"})
+	};
+
 	public static final CommandTriggersDto[] LISTING_USERS = {
 		new CommandTriggersDto(ECOMMANDS.LIST_MORE_USERS, new String[] {
 			"MAIS", "MORE", "\\+"}),
