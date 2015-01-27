@@ -24,21 +24,20 @@ import static mutua.icc.instrumentation.DefaultInstrumentationProperties.*;
 public class CelltickLiveScreenSubscriptionAPI extends SubscriptionEngine {
 	
 	
-	// configuration constants
-	//////////////////////////
-	
-	public static String REGISTER_SUBSCRIBER_URL   = "http://localhost:8082/celltick/wapAPI?action=subpkg&msisdn=%%MSISDN%%&pkgname=%%pkgname%%&charge=1";
-	public static String UNREGISTER_SUBSCRIBER_URL = "http://localhost:8082/celltick/wapAPI?action=unsubpkg&msisdn=%%MSISDN%%&pkgname=%%pkgname%%&charge=1";
+	private final String subscribeServiceUrl   /*= "http://localhost:8082/celltick/wapAPI?action=subpkg&msisdn=%%MSISDN%%&pkgname=%%pkgname%%&charge=1"*/;
+	private final String unsubscribeServiceUrl /*= "http://localhost:8082/celltick/wapAPI?action=unsubpkg&msisdn=%%MSISDN%%&pkgname=%%pkgname%%&charge=1"*/;
 
 
-	public CelltickLiveScreenSubscriptionAPI(Instrumentation<?, ?> log) {
+	public CelltickLiveScreenSubscriptionAPI(Instrumentation<?, ?> log, String subscribeServiceUrl, String unsubscribeServiceUrl) {
 		super(log);
+		this.subscribeServiceUrl   = subscribeServiceUrl;
+		this.unsubscribeServiceUrl = unsubscribeServiceUrl;
 	}
 
 	@Override
 	public ESubscriptionOperationStatus subscribeUser(String userPhone,	String channelName) {
-		String url = REGISTER_SUBSCRIBER_URL.replaceAll("%%MSISDN%%",  userPhone).
-		                                     replaceAll("%%pkgname%%", channelName);
+		String url = subscribeServiceUrl.replaceAll("%%MSISDN%%",  userPhone).
+		                                 replaceAll("%%pkgname%%", channelName);
 		try {
 			String response = HTTPClientAdapter.requestGet(url, null, "UTF-8");
 			if (response.indexOf("<id>100</id>") != -1) {
@@ -59,8 +58,8 @@ public class CelltickLiveScreenSubscriptionAPI extends SubscriptionEngine {
 
 	@Override
 	public EUnsubscriptionOperationStatus unsubscribeUser(String userPhone,	String channelName) {
-		String url = UNREGISTER_SUBSCRIBER_URL.replaceAll("%%MSISDN%%", userPhone).
-		                                       replaceAll("%%pkgname%%", channelName);
+		String url = unsubscribeServiceUrl.replaceAll("%%MSISDN%%", userPhone).
+		                                   replaceAll("%%pkgname%%", channelName);
 		try {
 			String response = HTTPClientAdapter.requestGet(url, null, "UTF-8");
 			if (response.indexOf("<id>100</id>") != -1) {

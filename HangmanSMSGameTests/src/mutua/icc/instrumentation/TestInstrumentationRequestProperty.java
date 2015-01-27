@@ -1,8 +1,8 @@
 package mutua.icc.instrumentation;
 
 /** <pre>
- * InstrumentationRequestProperty.java
- * ===================================
+ * TestInstrumentationRequestProperty.java
+ * =======================================
  * (created by luiz, Jan 21, 2015)
  *
  * Class that can log requests on the instrumentation framework
@@ -12,17 +12,17 @@ package mutua.icc.instrumentation;
  * @author luiz
  */
 
-public class InstrumentationTestRequestProperty implements IInstrumentableProperty {
+public class TestInstrumentationRequestProperty implements IInstrumentableProperty {
 
 	private String testName;
 	
-	public InstrumentationTestRequestProperty(String testName) {
+	public TestInstrumentationRequestProperty(String testName) {
 		this.testName = testName;
 	}
 
 	@Override
 	public String getInstrumentationPropertyName() {
-		return "testName";
+		return testName;
 	}
 
 	@Override

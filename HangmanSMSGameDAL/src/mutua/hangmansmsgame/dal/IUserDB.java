@@ -1,5 +1,7 @@
 package mutua.hangmansmsgame.dal;
 
+import java.sql.SQLException;
+
 /** <pre>
  * IUserDB.java
  * ============
@@ -15,25 +17,25 @@ package mutua.hangmansmsgame.dal;
 public interface IUserDB {
 	
 	/** Reset the database, for testing purposes */
-	void reset();
+	void reset() throws SQLException;
 
 	/** Given a case insensitive nickname, return the correctly cased nickname, as it was registered */
-	String getCorrectlyCasedNickname(String nickname);
+	String getCorrectlyCasedNickname(String nickname) throws SQLException;
 
 	/** Retrieve the nickname for a user, based on it's 'phoneNumber' */
-	String getUserNickname(String phoneNumber);
+	String getUserNickname(String phoneNumber) throws SQLException;
 
 	/** Retrieve the phone number for a user, based on it's case insensitive 'nickname', or null if
 	 *  none was found. */
-	String getUserPhoneNumber(String nickname);	
+	String getUserPhoneNumber(String nickname) throws SQLException;
 
 	/** Returns true if the provided case insensitive nickname was not being used by any record on 
 	 *  the database and could be, then, associated with the provided 'phoneNumber'. */
-	boolean checkAvailabilityAndRecordNickname(String phoneNumber, String nickname);
+	boolean checkAvailabilityAndRecordNickname(String phoneNumber, String nickname) throws SQLException;
 	
 	/** Returns whether we have a record or not for a specific user through it's phone number.
 	 *  If there isn't one, probably it is time to 'createUserRecord' */
-	boolean isUserOnRecord(String phoneNumber);
+	boolean isUserOnRecord(String phoneNumber) throws SQLException;
 
 //	/** Creates a record for a user, so the system may start interacting with it */
 //	void createUserRecord(String phoneNumber, String nickName);

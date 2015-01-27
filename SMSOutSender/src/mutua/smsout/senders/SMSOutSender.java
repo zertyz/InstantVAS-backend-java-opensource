@@ -2,7 +2,12 @@ package mutua.smsout.senders;
 
 import java.io.IOException;
 
+import mutua.icc.instrumentation.IInstrumentableEvent;
+import mutua.icc.instrumentation.IInstrumentableProperty;
+import mutua.icc.instrumentation.InstrumentableEvent;
+import mutua.icc.instrumentation.Instrumentation;
 import mutua.smsout.dto.OutgoingSMSDto;
+import static mutua.smsout.senders.ESMSOutSenderInstrumentationProperties.*;
 
 /** <pre>
  * SMSOutSender.java
@@ -20,8 +25,8 @@ import mutua.smsout.dto.OutgoingSMSDto;
  */
 
 public abstract class SMSOutSender {
-	
-	
+
+		
 	/** the unified reply codes given by the gateway when we attempt to send */
 	public enum EOutgoingSMSAcceptionStatus {
 		ACCEPTED,		// message was accepted and ready for processing
@@ -29,6 +34,8 @@ public abstract class SMSOutSender {
 		POSTPONED,		// message can't be processed now, please re-send later
 	}
 	
+
+	protected final Instrumentation<?, ?> log;
 
 	/** the name of the child class implementing this one -- for instrumentation */
 	private String childClassName;
@@ -44,11 +51,14 @@ public abstract class SMSOutSender {
 	
 	
 	/** constructor to be used by subclasses to provide instrumentation information */
-	protected SMSOutSender(String childClassName, String smsAppId, int numberOfRetryAttempts, long delayBetweenAttempts) {
+	protected SMSOutSender(Instrumentation<?, ?> log, String childClassName, String smsAppId, int numberOfRetryAttempts, long delayBetweenAttempts) {
 		this.childClassName        = childClassName;
 		this.smsAppId              = smsAppId;
 		this.numberOfRetryAttempts = numberOfRetryAttempts;
 		this.delayBetweenAttempts  = delayBetweenAttempts;
+		this.log = log;
+		log.addInstrumentableEvents(ESMSOutSenderInstrumentationEvents.values());
+
 	}
 
 	/** the actual sending method extensions should provide */
@@ -67,5 +77,86 @@ public abstract class SMSOutSender {
             }
 		}
         throw new RuntimeException(childClassName + " ("+smsAppId+"): Couldn't dispatch a message in 5 attempts");
+	}
+}
+
+
+//instrumentation events & properties
+//////////////////////////////////////
+
+enum ESMSOutSenderInstrumentationProperties implements IInstrumentableProperty {
+
+
+	REQUEST  ("request",  String.class),
+	RESPONSE ("response", String.class),
+	
+	
+	;
+	
+	
+	private String instrumentationPropertyName;
+	private Class<?> instrumentationPropertyType;
+	
+	
+	private ESMSOutSenderInstrumentationProperties(String instrumentationPropertyName, Class<?> instrumentationPropertyType) {
+		this.instrumentationPropertyName = instrumentationPropertyName;
+		this.instrumentationPropertyType = instrumentationPropertyType;
+	}
+	
+	
+	// IInstrumentableProperty implementation
+	/////////////////////////////////////////
+	
+	@Override
+	public String getInstrumentationPropertyName() {
+		return instrumentationPropertyName;
+	}
+	
+	
+	// ISerializationRule implementation
+	////////////////////////////////////
+	
+	@Override
+	public Class<?> getType() {
+		return instrumentationPropertyType;
+	}
+	
+	@Override
+	public void appendSerializedValue(StringBuffer buffer, Object value) {
+		throw new RuntimeException("Serialization Rule '" + this.getClass().getName() +
+		                           "' didn't overrode 'appendSerializedValue' from " +
+		                           "'ISerializationRule' for type '" + instrumentationPropertyType);
+	}
+	
+}
+
+enum ESMSOutSenderInstrumentationEvents implements IInstrumentableEvent {
+
+
+	SMSOUT_ACCEPTED  ("SMSOutSender.sending ACCEPTED",   REQUEST, RESPONSE),
+	SMSOUT_REJECTED  ("SMSOutSender.sending REJECTED",   REQUEST, RESPONSE),
+	SMSOUT_POSTPONED ("SMSOutSender.sending POSTPONED",  REQUEST, RESPONSE),
+	
+	
+	;
+	
+	
+	private InstrumentableEvent instrumentableEvent;
+	
+	private ESMSOutSenderInstrumentationEvents(String name, IInstrumentableProperty property) {
+		instrumentableEvent = new InstrumentableEvent(name, property);
+	}
+	
+	private ESMSOutSenderInstrumentationEvents(String name, IInstrumentableProperty property1, IInstrumentableProperty property2) {
+		instrumentableEvent = new InstrumentableEvent(name, property1, property2);
+	}
+	
+	private ESMSOutSenderInstrumentationEvents(String name) {
+		instrumentableEvent = new InstrumentableEvent(name);
+	}
+	
+	@Override
+	public InstrumentableEvent getInstrumentableEvent() {
+		return instrumentableEvent;
 	}
 }

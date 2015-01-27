@@ -7,6 +7,7 @@ import static mutua.hangmansmsgame.config.Configuration.log;
 import static mutua.icc.instrumentation.DefaultInstrumentationEvents.DIE_DEBUG;
 import static mutua.icc.instrumentation.DefaultInstrumentationProperties.DIP_MSG;
 
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Hashtable;
 
@@ -105,7 +106,7 @@ public class CommandDetails {
         }
 	}
 	
-	protected static boolean registerUserNickname(String phone, String nickname) {
+	protected static boolean registerUserNickname(String phone, String nickname) throws SQLException {
 		int count = 1;
 		String alternativeNick = nickname;
 		while (!userDB.checkAvailabilityAndRecordNickname(phone, alternativeNick)) {
@@ -116,7 +117,7 @@ public class CommandDetails {
 	}
 	
 	/** This is the point we may call Celltick APIs for registration */
-	protected static boolean assureUserIsRegistered(String phone) {
+	protected static boolean assureUserIsRegistered(String phone) throws SQLException {
 
 		if (userDB.isUserOnRecord(phone)) {
 			return true;
@@ -134,7 +135,7 @@ public class CommandDetails {
 	}
 
 	/** Called to store a new match and assure both users exists on the database */
-	protected static int startNewMatch(MatchDto match) {
+	protected static int startNewMatch(MatchDto match) throws SQLException {
 		assureUserIsRegistered(match.getWordProvidingPlayerPhone());
 		assureUserIsRegistered(match.getWordGuessingPlayerPhone());
 		return matchDB.storeNewMatch(match);
@@ -146,7 +147,7 @@ public class CommandDetails {
 	}
 	
 	/** 'playersInfo' is defined by IPhraseology.LISTINGShowPlayers */
-	protected static String[] getNewPresentedUsers(String[] presentedUsers, String[][] playersInfo) {
+	protected static String[] getNewPresentedUsers(String[] presentedUsers, String[][] playersInfo) throws SQLException {
 		String[] newPresentedUsers = new String[presentedUsers.length + playersInfo.length];
 		System.arraycopy(presentedUsers, 0, newPresentedUsers, 0, presentedUsers.length);
 		int newPresentedUsersIndex = presentedUsers.length;
@@ -158,7 +159,7 @@ public class CommandDetails {
 	}
 
 	/** Returns a 'playersInfo' structure to be used by IPhraseology.LISTINGShowPlayers */
-	protected static String[][] getPlayersInfoToPresentOnTheListCommandRespectingTheMaximumNumberOfCharacters(IPhraseology phrases, int maxChars, String[] presentedUsers) {
+	protected static String[][] getPlayersInfoToPresentOnTheListCommandRespectingTheMaximumNumberOfCharacters(IPhraseology phrases, int maxChars, String[] presentedUsers) throws SQLException {
 		int lookAhead = 10;
 		String[] latestPlayerPhones = sessionDB.getRecentlyUpdatedSessionPhoneNumbers(presentedUsers.length+lookAhead);
 		String[] unpresentedPhones = new String[lookAhead];
@@ -224,7 +225,7 @@ public class CommandDetails {
 	}
 	
 	/** to be called by the word guessing player, after the match has formed */
-	protected static MatchPlayersInfo getMatchPlayersInfo(MatchDto match) {
+	protected static MatchPlayersInfo getMatchPlayersInfo(MatchDto match) throws SQLException {
 		String wordProvidingPlayerPhone = match.getWordProvidingPlayerPhone();
 		String wordGuessingPlayerPhone  = match.getWordGuessingPlayerPhone();
 		String wordProvidingPlayerNick  = userDB.getUserNickname(wordProvidingPlayerPhone);
@@ -234,7 +235,7 @@ public class CommandDetails {
 	}
 
 	/** to be called by the word guessing player, before the match has formed */
-	protected static MatchPlayersInfo getMatchPlayersInfo(SessionDto currentSession) {
+	protected static MatchPlayersInfo getMatchPlayersInfo(SessionDto currentSession) throws SQLException {
 		String wordProvidingPlayerPhone = currentSession.getParameterValue(ESessionParameters.OPPONENT_PHONE_NUMBER);
 		String wordGuessingPlayerPhone  = currentSession.getPhone();
 		String wordProvidingPlayerNick  = userDB.getUserNickname(wordProvidingPlayerPhone);
@@ -245,7 +246,7 @@ public class CommandDetails {
 		
 	/** Implements rules like warning users that a match was cancelled by commands who would force the user from quitting the playing state (invite, list, ...),
 	 *  possibly issueing messages to both users and taking other actions as well. */
-	protected static CommandMessageDto[] applySessionTransitionRules(SessionDto currentSession, ESTATES newNavigationState) {
+	protected static CommandMessageDto[] applySessionTransitionRules(SessionDto currentSession, ESTATES newNavigationState) throws SQLException {
 		if (ESTATES.GUESSING_HUMAN_WORD.name().equals(currentSession.getNavigationState()) &&
 			(newNavigationState != ESTATES.GUESSING_HUMAN_WORD)) {
 			int matchId = Integer.parseInt(currentSession.getParameterValue(ESessionParameters.MATCH_ID));
@@ -265,20 +266,20 @@ public class CommandDetails {
 	}
 	
 	/** Get a new command answer, applying session transition rules */
-	protected static CommandAnswerDto getNewCommandAnswerDto(SessionDto currentSession, CommandMessageDto[] commandMessages, ESTATES newNavigationState, ESessionParameters parameter, String parameterValue) {
+	protected static CommandAnswerDto getNewCommandAnswerDto(SessionDto currentSession, CommandMessageDto[] commandMessages, ESTATES newNavigationState, ESessionParameters parameter, String parameterValue) throws SQLException {
 		CommandMessageDto[] transitionMessages = applySessionTransitionRules(currentSession, newNavigationState);
 		SessionDto newSession = currentSession.getNewSessionDto(newNavigationState.name(), parameter, parameterValue);
 		return new CommandAnswerDto(addCommandMessages(transitionMessages, commandMessages), newSession);
 	}
 	
 	/** Get a new command answer, applying session transition rules */
-	protected static CommandAnswerDto getNewCommandAnswerDto(SessionDto currentSession, CommandMessageDto[] commandMessages, ESTATES newNavigationState) {
+	protected static CommandAnswerDto getNewCommandAnswerDto(SessionDto currentSession, CommandMessageDto[] commandMessages, ESTATES newNavigationState) throws SQLException {
 		CommandMessageDto[] transitionMessages = applySessionTransitionRules(currentSession, newNavigationState);
 		SessionDto newSession = currentSession.getNewSessionDto(newNavigationState.name());
 		return new CommandAnswerDto(addCommandMessages(transitionMessages, commandMessages), newSession);
 	}
 
-	protected static CommandAnswerDto getNewCommandAnswerDto(SessionDto currentSession, CommandMessageDto[] commandMessages) {
+	protected static CommandAnswerDto getNewCommandAnswerDto(SessionDto currentSession, CommandMessageDto[] commandMessages) throws SQLException {
 		CommandMessageDto[] transitionMessages = applySessionTransitionRules(currentSession, null);
 		return new CommandAnswerDto(addCommandMessages(transitionMessages, commandMessages), null);
 	}
@@ -287,15 +288,15 @@ public class CommandDetails {
 	// overloads with a single command message
 	//////////////////////////////////////////
 	
-	protected static CommandAnswerDto getNewCommandAnswerDto(SessionDto currentSession, CommandMessageDto commandMessage) {
+	protected static CommandAnswerDto getNewCommandAnswerDto(SessionDto currentSession, CommandMessageDto commandMessage) throws SQLException {
 		return getNewCommandAnswerDto(currentSession, new CommandMessageDto[] {commandMessage});
 	}
 
-	protected static CommandAnswerDto getNewCommandAnswerDto(SessionDto currentSession, CommandMessageDto commandMessage, ESTATES newNavigationState) {
+	protected static CommandAnswerDto getNewCommandAnswerDto(SessionDto currentSession, CommandMessageDto commandMessage, ESTATES newNavigationState) throws SQLException {
 		return getNewCommandAnswerDto(currentSession, new CommandMessageDto[] {commandMessage}, newNavigationState);
 	}
 	
-	protected static CommandAnswerDto getNewCommandAnswerDto(SessionDto currentSession, CommandMessageDto commandMessage, ESTATES newNavigationState, ESessionParameters parameter, String parameterValue) {
+	protected static CommandAnswerDto getNewCommandAnswerDto(SessionDto currentSession, CommandMessageDto commandMessage, ESTATES newNavigationState, ESessionParameters parameter, String parameterValue) throws SQLException {
 		return getNewCommandAnswerDto(currentSession, new CommandMessageDto[] {commandMessage}, newNavigationState, parameter, parameterValue);
 	}
 	
@@ -303,7 +304,7 @@ public class CommandDetails {
 	// common response messages
 	///////////////////////////
 	
-	private static CommandAnswerDto getNickNotFoundMessage(SessionDto session, IPhraseology phrases, String nickname) {
+	private static CommandAnswerDto getNickNotFoundMessage(SessionDto session, IPhraseology phrases, String nickname) throws SQLException {
 		return getNewCommandAnswerDto(session, new CommandMessageDto(phrases.PROVOKINGNickNotFound(nickname), EResponseMessageType.HELP));
 	}
 
@@ -322,7 +323,7 @@ public class CommandDetails {
 
 	public static final ICommandProcessor SHOW_WELCOME_MESSAGE = new ICommandProcessor() {
 		@Override
-		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
+		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
 			CommandMessageDto commandResponse = new CommandMessageDto(phrases.INFOWelcome(),
 			                                                          EResponseMessageType.HELP);
 			return getNewCommandAnswerDto(session, commandResponse, ESTATES.EXISTING_USER);
@@ -331,7 +332,7 @@ public class CommandDetails {
 	
 	public static final ICommandProcessor SHOW_FULL_HELP_MESSAGE = new ICommandProcessor() {
 		@Override
-		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
+		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
 			String[] smsTexts = phrases.INFOFullHelp();
 			CommandMessageDto[] commandResponses = new CommandMessageDto[smsTexts.length];
 			for (int i=0; i<commandResponses.length; i++) {
@@ -344,7 +345,7 @@ public class CommandDetails {
 	/** Called when the user just wants to play, with any opponent */
 	public static final ICommandProcessor PLAY_WITH_RANDOM_USER_OR_BOT = new ICommandProcessor() {
 		@Override
-		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
+		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
 			String wordProvidingPlayerNick  = "DomBot";
 			
 			// start a new Match
@@ -365,7 +366,7 @@ public class CommandDetails {
 	 *  parameter 1: the phone number or nick name of the user */
 	public static final ICommandProcessor INVITE_NICK_OR_PHONE = new ICommandProcessor() {
 		@Override
-		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
+		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
 			String opponentPhoneNumberOrNickName = parameters[0];
 			if (isParameterAPhoneNumber(opponentPhoneNumberOrNickName)) {
 				return HOLD_OPPONENT_PHONE.processCommand(session, carrier, parameters, phrases);
@@ -377,7 +378,7 @@ public class CommandDetails {
 
 	public static final ICommandProcessor START_INVITATION_PROCESS = new ICommandProcessor() {
 		@Override
-		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
+		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
 			
 			CommandMessageDto commandResponse;
 			
@@ -396,7 +397,7 @@ public class CommandDetails {
 
 	public static final ICommandProcessor HOLD_OPPONENT_PHONE = new ICommandProcessor() {
 		@Override
-		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
+		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
 			String opponentPhoneNumber = parameters[0];
 			CommandMessageDto commandResponse = new CommandMessageDto(phrases.INVITINGAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation(opponentPhoneNumber),
 			                                                          EResponseMessageType.ACQUIRE_MATCH_INFORMATION);
@@ -407,7 +408,7 @@ public class CommandDetails {
 	
 	public static final ICommandProcessor HOLD_OPPONENT_NICK = new ICommandProcessor() {
 		@Override
-		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
+		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
 			String opponentNickname    = parameters[0];
 			String opponentPhoneNumber = userDB.getUserPhoneNumber(opponentNickname);
 			if (opponentPhoneNumber == null) {
@@ -422,7 +423,7 @@ public class CommandDetails {
 
 	public static final ICommandProcessor HOLD_MATCH_WORD = new ICommandProcessor() {
 		@Override
-		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
+		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
 			String opponentPlayerPhoneNumber = session.getParameterValue(ESessionParameters.OPPONENT_PHONE_NUMBER);
 			String invitingPlayerNickName    = userDB.getUserNickname(session.getPhone());
 			String wordToPlay                = parameters[0];
@@ -453,7 +454,7 @@ public class CommandDetails {
 	/** Called when the word guessing player answered YES to the invitation message he/she received to attend to a hangman match */
 	public static final ICommandProcessor ACCEPT_INVITATION = new ICommandProcessor() {
 		@Override
-		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
+		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
 			String serializedGameState      = session.getParameterValue(ESessionParameters.HANGMAN_SERIALIZED_GAME_STATE);
 			
 			MatchPlayersInfo matchPlayersInfo = getMatchPlayersInfo(session);
@@ -480,7 +481,7 @@ public class CommandDetails {
 	/** Called when the word guessing player answered NO to the invitation message he/she received to attend to a hangman match */
 	public static final ICommandProcessor REFUSE_INVITATION = new ICommandProcessor() {
 		@Override
-		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
+		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
 
 			MatchPlayersInfo matchPlayersInfo = getMatchPlayersInfo(session);
 			
@@ -502,7 +503,7 @@ public class CommandDetails {
 	/** Called when the user is attempting to guess a word provided by a human */
 	public static final ICommandProcessor SUGGEST_LETTER_OR_WORD_FOR_HUMAN = new ICommandProcessor() {
 		@Override
-		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
+		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
 			int    matchId                  = Integer.parseInt(session.getParameterValue(ESessionParameters.MATCH_ID));
 			String suggestedLetter          = parameters[0];
 			String serializedGameState      = session.getParameterValue(ESessionParameters.HANGMAN_SERIALIZED_GAME_STATE);
@@ -570,7 +571,7 @@ public class CommandDetails {
 	/** Called when the user is attempting to guess a word provided by a bot */
 	public static final ICommandProcessor SUGGEST_LETTER_OR_WORD_FOR_BOT = new ICommandProcessor() {
 		@Override
-		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
+		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
 			String suggestedLetter          = parameters[0];
 			String serializedGameState      = session.getParameterValue(ESessionParameters.HANGMAN_SERIALIZED_GAME_STATE);
 			String wordProvidingPlayerNick  = session.getParameterValue(ESessionParameters.MATCH_BOT_NAME);
@@ -618,7 +619,7 @@ public class CommandDetails {
 	/** Called when the user wants to send a chat message to another player */
 	public static final ICommandProcessor PROVOKE = new ICommandProcessor() {
 		@Override
-		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
+		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
 			String sourceNickname    = userDB.getUserNickname(session.getPhone());
 			String targetNickname    = parameters[0];
 			String targetPhoneNumber = userDB.getUserPhoneNumber(targetNickname);
@@ -636,7 +637,7 @@ public class CommandDetails {
 	/** Called when the user wants to see the profile of another user */
 	public static final ICommandProcessor SHOW_PROFILE = new ICommandProcessor() {
 		@Override
-		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
+		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
 			String nickname = userDB.getCorrectlyCasedNickname(parameters[0]);
 			CommandMessageDto message = new CommandMessageDto(phrases.PROFILEView(nickname, getBrazillianPhoneState(session.getPhone()), 0), EResponseMessageType.PROFILE);
 			return getNewCommandAnswerDto(session, message);
@@ -646,7 +647,7 @@ public class CommandDetails {
 	/** Called when the user wants to reset his/her profile nickname */
 	public static final ICommandProcessor DEFINE_NICK = new ICommandProcessor() {
 		@Override
-		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
+		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
 			String newNickname = parameters[0];
 			assureUserIsRegistered(session.getPhone());
 			userDB.checkAvailabilityAndRecordNickname(session.getPhone(), newNickname);
@@ -657,7 +658,7 @@ public class CommandDetails {
 	};
 	
 	
-	private static CommandAnswerDto performListCommand(SessionDto session,	ESMSInParserCarrier carrier, IPhraseology phrases, String[] presentedUsers) {
+	private static CommandAnswerDto performListCommand(SessionDto session,	ESMSInParserCarrier carrier, IPhraseology phrases, String[] presentedUsers) throws SQLException {
 		String[][] playersInfo = CommandDetails.getPlayersInfoToPresentOnTheListCommandRespectingTheMaximumNumberOfCharacters(phrases, carrier.getMaxMTChars(), presentedUsers);
 		CommandMessageDto message;
 		if (playersInfo == null) {
@@ -674,7 +675,7 @@ public class CommandDetails {
 	/** Called when the user wants to a list of users */
 	public static final ICommandProcessor LIST_USERS = new ICommandProcessor() {
 		@Override
-		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
+		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
 			String[] presentedUsers = {session.getPhone()};
 			return performListCommand(session, carrier, phrases, presentedUsers);
 		}
@@ -683,7 +684,7 @@ public class CommandDetails {
 	/** Called when the user is listing other users and wants to see more of them */
 	public static final ICommandProcessor LIST_MORE_USERS = new ICommandProcessor() {
 		@Override
-		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
+		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
 			String[] presentedUsers = desserializeStringArray(session.getParameterValue(ESessionParameters.PRESENTED_USERS), ";");
 			return performListCommand(session, carrier, phrases, presentedUsers);
 		}
@@ -692,7 +693,7 @@ public class CommandDetails {
 	/** Called when the user issues the "unsubscribe" command from an sms message */
 	public static final ICommandProcessor UNSUBSCRIBE = new ICommandProcessor() {
 		@Override
-		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
+		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
 			SUBSCRIPTION_ENGINE.unsubscribeUser(session.getPhone(), SUBSCRIPTION_CHANNEL_NAME);
 			CommandMessageDto message = new CommandMessageDto(phrases.UNSUBSCRIBINGUnsubscriptionNotification(), EResponseMessageType.HELP);
 			return getNewCommandAnswerDto(session, message);

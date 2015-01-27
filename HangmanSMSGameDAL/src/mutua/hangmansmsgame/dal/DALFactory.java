@@ -1,5 +1,10 @@
 package mutua.hangmansmsgame.dal;
 
+import java.sql.SQLException;
+
+import mutua.hangmansmsgame.dal.postgresql.HangmanSMSGamePostgreSQLAdapters;
+import adapters.PostgreSQLAdapter;
+
 /** <pre>
  * DALFactory.java
  * ================
@@ -17,23 +22,18 @@ public class DALFactory {
 	public enum EDataAccessLayers {RAM, POSTGRESQL}
 	
 	// configurable values
-	public static EDataAccessLayers DEFAULT_DAL = EDataAccessLayers.RAM;
+	public static EDataAccessLayers DEFAULT_DAL = EDataAccessLayers.POSTGRESQL;
 
-	private static final DALFactory[] instances;
-	
-	static {
-		// build the multiton instances
-		instances = new DALFactory[EDataAccessLayers.values().length];
-		instances[EDataAccessLayers.RAM.ordinal()]        = new DALFactory(EDataAccessLayers.RAM);
-		instances[EDataAccessLayers.POSTGRESQL.ordinal()] = new DALFactory(EDataAccessLayers.POSTGRESQL);
-	}
-	
+	// the multiton instances
+	private static final DALFactory[] instances = new DALFactory[EDataAccessLayers.values().length];
+
+	// the databases
 	private ISessionDB sessionDB;
 	private IUserDB    userDB;
 	private IMatchDB   matchDB;
 	
 	
-	private DALFactory(EDataAccessLayers dal) {
+	private DALFactory(EDataAccessLayers dal) throws SQLException {
 		
 		switch (dal) {
 			case RAM:
@@ -42,6 +42,7 @@ public class DALFactory {
 				matchDB   = new mutua.hangmansmsgame.dal.ram.MatchDB();
 				break;
 			case POSTGRESQL:
+				userDB    = new mutua.hangmansmsgame.dal.postgresql.UserDB();
 				break;
 			default:
 				throw new RuntimeException("Don't know how to build a '"+dal.name()+"' DAL instance");
@@ -49,12 +50,24 @@ public class DALFactory {
 		
 	}
 	
+	private static DALFactory getInstance(EDataAccessLayers dal) {
+		try {
+			if (instances[dal.ordinal()] == null) {
+				instances[dal.ordinal()] = new DALFactory(dal);
+			}
+			return instances[dal.ordinal()];
+		} catch (SQLException e) {
+			HangmanSMSGamePostgreSQLAdapters.log.reportThrowable(e, "Error while instantiating DALFactory '"+dal.name()+"'");
+			return null;
+		}
+	}
+	
 	
 	// SessionDB
 	////////////
 	
 	public static ISessionDB getSessionDB(EDataAccessLayers dal) {
-		return instances[dal.ordinal()].sessionDB;
+		return getInstance(dal).sessionDB;
 	}
 	
 	public static ISessionDB getSessionDB() {
@@ -66,7 +79,7 @@ public class DALFactory {
 	/////////
 	
 	public static IUserDB getUserDB(EDataAccessLayers dal) {
-		return instances[dal.ordinal()].userDB;
+		return getInstance(dal).userDB;
 	}
 	
 	public static IUserDB getUserDB() {
@@ -78,7 +91,7 @@ public class DALFactory {
 	//////////
 	
 	public static IMatchDB getMatchDB(EDataAccessLayers dal) {
-		return instances[dal.ordinal()].matchDB;
+		return getInstance(dal).matchDB;
 	}
 	
 	public static IMatchDB getMatchDB() {

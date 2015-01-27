@@ -6,13 +6,18 @@
 		<project>HangmanSMSGame</project>
 		<project>HangmanSMSGameDAL</project>
 		<project>HTTPClientAdapter</project>
+		<project>MutuaEvents</project>
 		<project>MutuaGPP2PCommunications</project>
 		<project>MutuaICCConfiguration</project>
 		<project>MutuaICCInstrumentation</project>
+		<project>MutuaIMILib</project>
+		<project>MutuaSerializationLib</project>
 		<project>SMSInCelltick</project>
-		<project>SMSOutCelltick</project>
 		<project>SMSInParser</project>
+		<project>SMSOutCelltick</project>
 		<project>SMSOutSender</project>
+		<project>SubscriptionEngine</project>
+		<project>SubscriptionEngineCelltick</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

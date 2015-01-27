@@ -3,13 +3,16 @@ package mutua.hangmansmsgame.smslogic;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import java.sql.SQLException;
+
 import mutua.hangmansmsgame.config.Configuration;
 import mutua.hangmansmsgame.dal.DALFactory;
 import mutua.hangmansmsgame.dal.ISessionDB;
 import mutua.hangmansmsgame.dal.IUserDB;
 import mutua.hangmansmsgame.dal.dto.SessionDto;
 import mutua.icc.instrumentation.Instrumentation;
-import mutua.icc.instrumentation.InstrumentationTestRequestProperty;
+import mutua.icc.instrumentation.TestInstrumentationRequestProperty;
 import mutua.smsin.dto.IncomingSMSDto;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 import mutua.smsout.dto.OutgoingSMSDto;
@@ -32,6 +35,8 @@ public class TestCommons {
 	
 	private TestResponseReceiver responseReceiver;
 	private HangmanSMSGameProcessor processor;
+	
+	private Instrumentation<TestInstrumentationRequestProperty, String> log = (Instrumentation<TestInstrumentationRequestProperty, String>)Configuration.log;
 
 
 	// databases
@@ -52,14 +57,14 @@ public class TestCommons {
 	**********************************/
 	
 	/** Reset all databases */
-	public void resetDatabases() {
+	public void resetDatabases() throws SQLException {
 		userDB.reset();
 		sessionDB.reset();
 		TestableSubscriptionAPI.reset();
 	}
 	
 	/** Reset and populate Users database. users := { {phone, nick}, ...} */
-	public void setUserDB(String[][] users) {
+	public void setUserDB(String[][] users) throws SQLException {
 		userDB.reset();
 		for (String[] userRecord : users) {
 			userDB.checkAvailabilityAndRecordNickname(userRecord[0], userRecord[1]);
@@ -84,7 +89,6 @@ public class TestCommons {
 	public void checkResponse(String phone, String inputText, String... expectedResponsesText) {
 		try {
 			IncomingSMSDto mo = new IncomingSMSDto(phone, inputText, TEST_CARRIER, "1234", "null");
-			Instrumentation<InstrumentationTestRequestProperty, String> log = (Instrumentation<InstrumentationTestRequestProperty, String>)Configuration.log;
 			log.reportRequestStart(Thread.currentThread().getStackTrace()[1].getMethodName());
 			processor.process(mo);
 			log.reportRequestFinish();

@@ -1,7 +1,14 @@
 package mutua.hangmansmsgame.i18n;
 
-import static org.junit.Assert.*;
-import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+import mutua.hangmansmsgame.config.Configuration;
+import mutua.hangmansmsgame.smslogic.HangmanSMSGameProcessorTests;
 
 import org.junit.Test;
 
@@ -18,9 +25,6 @@ import org.junit.Test;
  */
 
 class TPhrases extends IPhraseology {
-	public TPhrases(String[][] phrases) {
-		super(phrases);
-	}
 	public String INFOWelcome() {return null;}
 	public String INFOWelcomeMenu() {return null;}
 	public String[] INFOFullHelp() {return null;}
@@ -58,27 +62,43 @@ public class IPhraseologyTests {
 
 	@Test
 	public void testReadingMessagesFromAConfiguration() {
-		IPhraseology phrases = new TPhrases(new String[][] {
-			{"playersList", "{{nick}} ({{state}}/{{numberOfLuckyNumbers}})"},
-		});
-		String message = phrases.getPhrase("playersList", new String[][] {
-			{"nick",                 "Dom"},
-			{"state",                "RJ"},
-			{"numberOfLuckyNumbers", "97"},
-		});
-		assertEquals("Parameter substitution failed", "Dom (RJ/97)", message);
-		message = phrases.getPhrase("playersList", new String[][] {
-			{"nick",                 "\\"},
-			{"state",                "$"},
-			{"numberOfLuckyNumbers", "{}"},
-		});
-		assertEquals("Spacial symbols substitution failed", "\\ ($/{})", message);
-		message = phrases.getPhrase("playersList", new String[][] {
-			{"nick",                 null},
-			{"state",                null},
-			{"numberOfLuckyNumbers", null},
-		});
-		assertEquals("Null parameter values substitution failed", "{{nick}} ({{state}}/{{numberOfLuckyNumbers}})", message);
+		fail("fix these tests");
+//		IPhraseology phrases = new TPhrases(new String[][] {
+//			{"playersList", "{{nick}} ({{state}}/{{numberOfLuckyNumbers}})"},
+//		});
+//		String message = phrases.getPhrase("playersList", new String[][] {
+//			{"nick",                 "Dom"},
+//			{"state",                "RJ"},
+//			{"numberOfLuckyNumbers", "97"},
+//		});
+//		assertEquals("Parameter substitution failed", "Dom (RJ/97)", message);
+//		message = phrases.getPhrase("playersList", new String[][] {
+//			{"nick",                 "\\"},
+//			{"state",                "$"},
+//			{"numberOfLuckyNumbers", "{}"},
+//		});
+//		assertEquals("Spacial symbols substitution failed", "\\ ($/{})", message);
+//		message = phrases.getPhrase("playersList", new String[][] {
+//			{"nick",                 null},
+//			{"state",                null},
+//			{"numberOfLuckyNumbers", null},
+//		});
+//		assertEquals("Null parameter values substitution failed", "{{nick}} ({{state}}/{{numberOfLuckyNumbers}})", message);
 	}
+	
+	@Test
+	public void testConfigurationReflections() throws IllegalArgumentException, IllegalAccessException, IOException {
+		new HangmanSMSGameProcessorTests();	// force the initialization of 'Configuration.log'
+		String serializedFields = Configuration.serializeStaticFields(Configuration.class);
+		Configuration.desserializeStaticFields(Configuration.class, serializedFields);
+		String reserializedFields = Configuration.serializeStaticFields(Configuration.class);
+		assertEquals("Serialization/Desserialization of Configuration failed", serializedFields, reserializedFields);
+		String filePath = "/tmp/hangman.config";
+		FileOutputStream fout = new FileOutputStream(filePath);
+		fout.write(serializedFields.getBytes());
+		fout.close();
+		Configuration.loadFromFile(filePath);
+	}
+
 
 }

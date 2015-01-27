@@ -51,8 +51,6 @@ public class SMSInCelltick extends SMSInParser<HttpServletRequest, HttpServletRe
 		SMSOutCelltick.ACCOUNT  = account;
 		SMSOutCelltick.VALIDITY = validity;
 		SMSOutCelltick.SMSC     = smsc;
-		// TODO this should definitely not be here
-		SMSOutCelltick.shortCode= largeAccount;
 		
 		
 		ESMSInParserCarrier carrier = ESMSInParserCarrier.valueOf(carrierName.toUpperCase());

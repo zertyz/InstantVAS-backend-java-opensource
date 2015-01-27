@@ -1,17 +1,28 @@
 package mutua.iccapp.HangmanSMSGame;
 
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import mutua.hangmansmsgame.celltick.CelltickLiveScreenAPI;
+import mutua.events.DirectEventLink;
+import mutua.events.EventServer;
+import mutua.events.IEventLink;
+import mutua.hangmansmsgame.config.Configuration;
 import mutua.hangmansmsgame.smslogic.HangmanSMSGameProcessor;
+import mutua.hangmansmsgame.smslogic.HangmanSMSGameProcessor.EHangmanSMSGameEvents;
 import mutua.hangmansmsgame.smslogic.SMSProcessorException;
+import mutua.icc.instrumentation.HangmanSMSGameInstrumentationEvents;
+import mutua.icc.instrumentation.Instrumentation;
+import mutua.icc.instrumentation.eventclients.InstrumentationProfilingEventsClient;
+import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
+import mutua.imi.IndirectMethodNotFoundException;
 import mutua.smsin.dto.IncomingSMSDto;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 import mutua.smsout.dto.OutgoingSMSDto;
+import mutua.subscriptionengine.TestableSubscriptionAPI;
 
 /** <pre>
- *  SMSAppFrontend.java  --  $Id$
+ * SMSAppFrontend.java  --  $Id$
  * ===================
  * (created by luiz, Feb 4, 2011)
  *
@@ -19,27 +30,55 @@ import mutua.smsout.dto.OutgoingSMSDto;
  * 
  */
 
-public class SMSAppFrontend {
+public class SMSAppFrontend extends EventServer<EHangmanSMSGameEvents>{
+
 	
-    private static SimulationMessageReceiver simulationMessageReceiver = new SimulationMessageReceiver();
+	private static IEventLink<EHangmanSMSGameEvents> link = new DirectEventLink<EHangmanSMSGameEvents>(EHangmanSMSGameEvents.class);
+
+	private static SimulationMessageReceiver simulationMessageReceiver = new SimulationMessageReceiver();
     private static HangmanSMSGameProcessor processor = new HangmanSMSGameProcessor(simulationMessageReceiver);
+	private static Instrumentation<ICCAppInstrumentationRequestProperty, String> log;
     
     
     static {
-    	CelltickLiveScreenAPI.REGISTER_SUBSCRIBER_URL = null;
-    	CelltickLiveScreenAPI.REGISTER_SUBSCRIBER_URL = null;
+    	log = new Instrumentation<ICCAppInstrumentationRequestProperty, String>("HangmanSMSGameICCApp", new ICCAppInstrumentationRequestProperty("phone"), HangmanSMSGameInstrumentationEvents.values());
+    	try {
+        	InstrumentationProfilingEventsClient instrumentationProfilingEventsClient = new InstrumentationProfilingEventsClient(log, EInstrumentationDataPours.CONSOLE);
+			log.addInstrumentationPropagableEventsClient(instrumentationProfilingEventsClient);
+		} catch (IndirectMethodNotFoundException e) {
+			e.printStackTrace();
+		}
+    	Configuration.SUBSCRIPTION_ENGINE = new TestableSubscriptionAPI(log);
+    	Configuration.log = log;
+    	try {
+			Configuration.loadFromFile("/tmp/hangman.config");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
     }
 
     
-    public static String[][] process(String phone, String inputText, String carrier) {
-        IncomingSMSDto mo = new IncomingSMSDto(phone, inputText, ESMSInParserCarrier.valueOf(carrier), "1234", "null");
-        try {
-			processor.process(mo);
-		} catch (SMSProcessorException e) {
-			Logger.getLogger(HangmanSMSGameICCAppView.class.getName()).log(Level.SEVERE, null, e);
-			e.printStackTrace();
-			System.exit(1);
+    public SMSAppFrontend() {
+    	super(link);
+    	try {
+			addClient(processor);
+		} catch (IndirectMethodNotFoundException e) {
+			log.reportThrowable(e, "Error while adding EventClient to process SMSes");
 		}
+	}
+
+    public String[][] process(String phone, String inputText, String carrier) {
+        IncomingSMSDto mo = new IncomingSMSDto(phone, inputText, ESMSInParserCarrier.valueOf(carrier), "1234", "null");
+//        try {
+        	log.reportRequestStart(phone);
+        	dispatchNeedToBeConsumedEvent(EHangmanSMSGameEvents.PROCESS_INCOMING_SMS, mo);
+			//processor.process(mo);
+			log.reportRequestFinish();
+//		} catch (SMSProcessorException e) {
+//			Logger.getLogger(HangmanSMSGameICCAppView.class.getName()).log(Level.SEVERE, null, e);
+//			e.printStackTrace();
+//			System.exit(1);
+//		}
 		OutgoingSMSDto[] observedResponses = simulationMessageReceiver.getLastOutgoingSMSes();
 		String[][] response = new String[observedResponses.length][3];
 		for (int i=0; i<response.length; i++) {

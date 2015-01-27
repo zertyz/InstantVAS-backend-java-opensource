@@ -4,7 +4,6 @@
 
 package mutua.iccapp.HangmanSMSGame;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Hashtable;
@@ -25,6 +24,10 @@ import org.jdesktop.application.TaskMonitor;
  * The application's main frame.
  */
 public class HangmanSMSGameICCAppView extends FrameView {
+	
+	
+	private SMSAppFrontend smsFrontend = new SMSAppFrontend();
+	
 
     public HangmanSMSGameICCAppView(SingleFrameApplication app) {
         super(app);
@@ -1064,7 +1067,7 @@ public class HangmanSMSGameICCAppView extends FrameView {
             dateStr = DateTimeHelper.getSimpleDateStringFromMillis(System.currentTimeMillis());
             txt += "<br/><font color="+userColor+">&gt;&gt;&gt; <i>("+dateStr+") " + phone + "</i></font>: <b>" + inputText + "</b>";
             
-            String[][] MTs = SMSAppFrontend.process(phone, inputText, carrier);
+            String[][] MTs = smsFrontend.process(phone, inputText, carrier);
             
 			for (int i=0; i<MTs.length; i++) {
 				String outgoingBillingType = MTs[i][0];

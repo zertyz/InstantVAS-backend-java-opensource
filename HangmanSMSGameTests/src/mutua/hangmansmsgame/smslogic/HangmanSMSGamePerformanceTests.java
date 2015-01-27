@@ -1,6 +1,9 @@
 package mutua.hangmansmsgame.smslogic;
 
 import static org.junit.Assert.*;
+
+import java.sql.SQLException;
+
 import mutua.hangmansmsgame.dal.DALFactory;
 import mutua.hangmansmsgame.dal.IUserDB;
 
@@ -31,7 +34,7 @@ public class HangmanSMSGamePerformanceTests {
 
 
 	@Test
-	public void registerNicknamePerformanceTests() throws InterruptedException {
+	public void registerNicknamePerformanceTests() throws InterruptedException, SQLException {
 		int attempts = 1000;
 		long referenceStart = System.currentTimeMillis();
 		for (int i=0; i<attempts; i++) {

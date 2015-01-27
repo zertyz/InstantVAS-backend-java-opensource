@@ -1,0 +1,15 @@
+JDBCHelper
+==========
+
+This project belongs to the "helper" family of projects, whose intent is to unify how low-level
+tasks that, otherwhise, should be done in all projects.
+
+This JDBC client helper is implemented in a testable, rock solid and easier to use API.
+
+
+HISTORY:
+=======
+
+This project started as the "MysqlHelper" project in December, 2008 and later (june, 2010), was
+extended to the more general purpose "JDBCHelper" which additionally to providing the 'MySQLHelper'
+class also provided the 'SQLServerHelper' one.

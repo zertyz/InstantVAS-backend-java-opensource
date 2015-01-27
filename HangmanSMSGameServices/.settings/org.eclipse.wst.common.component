@@ -32,6 +32,21 @@
         <dependent-module archiveName="SMSOutCelltick.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/SMSOutCelltick/SMSOutCelltick">
             <dependency-type>uses</dependency-type>
         </dependent-module>
+        <dependent-module archiveName="MutuaEvents.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/MutuaEvents/MutuaEvents">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="SubscriptionEngine.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/SubscriptionEngine/SubscriptionEngine">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="MutuaIMILib.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/MutuaIMILib/MutuaIMILib">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="MutuaSerializationLib.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/MutuaSerializationLib/MutuaSerializationLib">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="SubscriptionEngineCelltick.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/SubscriptionEngineCelltick/SubscriptionEngineCelltick">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <property name="context-root" value="HangmanSMSGameServices"/>
         <property name="java-output-path" value="/HangmanSMSGameServices/build/classes"/>
         <property name="context-root" value="QuizTacaBandSMSQueueService"/>

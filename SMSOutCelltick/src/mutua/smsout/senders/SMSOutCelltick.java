@@ -4,7 +4,11 @@ import java.io.IOException;
 
 import adapters.HTTPClientAdapter;
 import adapters.dto.HTTPRequestDto;
+import mutua.icc.instrumentation.Instrumentation;
 import mutua.smsout.dto.OutgoingSMSDto;
+
+import static mutua.smsout.senders.ESMSOutSenderInstrumentationProperties.*;
+import static mutua.smsout.senders.ESMSOutSenderInstrumentationEvents.*;
 
 /** <pre>
  * SMSOutCelltick.java
@@ -22,22 +26,19 @@ public class SMSOutCelltick extends SMSOutSender {
 
 	
 	// CONFIGURATION
-	////////////////
-	
-	public static String MT_URL = "http://localhost:15001/cgi-bin/sendsms";
-	public static int    NUMBER_OF_RETRY_ATTEMPTS = 5;
-	public static long   DELAY_BETWEEN_ATTEMPTS   = 5000;
+	////////////////	
 	
 	public static String ACCOUNT;
 	public static String VALIDITY;
 	public static String SMSC;
-
-	// TODO fix this fix for the "we don't know the short code problem", removing the public and static and relying solo on the constructor passed info
-	public static String shortCode;
 	
-	public SMSOutCelltick(String smsAppId, String shortCode) {
-		super("SMSOutCelltick", smsAppId, NUMBER_OF_RETRY_ATTEMPTS, DELAY_BETWEEN_ATTEMPTS);
-		SMSOutCelltick.shortCode = shortCode;
+	private final String mtServiceUrl /*= "http://localhost:15001/cgi-bin/sendsms"*/;
+	private final String shortCode;
+
+	public SMSOutCelltick(Instrumentation<?, ?> log, String smsAppId, String shortCode, String mtServiceUrl, int numberOfRetryAttempts, long delayBetweenAttempts) {
+		super(log, "SMSOutCelltick", smsAppId, numberOfRetryAttempts, delayBetweenAttempts);
+		this.shortCode = shortCode;
+		this.mtServiceUrl = mtServiceUrl;
 	}
 
 	@Override
@@ -56,11 +57,12 @@ public class SMSOutCelltick extends SMSOutSender {
 		requestData.addParameter("account",   ACCOUNT);
 		requestData.addParameter("dlrmask",   "2");
 		requestData.addParameter("reportDLR", "0");
-		System.out.println(HTTPClientAdapter.toString(MT_URL, requestData));
-		String response = HTTPClientAdapter.requestGet(MT_URL, requestData, "UTF-8");
+		String response = HTTPClientAdapter.requestGet(mtServiceUrl, requestData, "UTF-8");
 		if (response.indexOf("Sent") != -1) {
+			log.reportEvent(SMSOUT_ACCEPTED, REQUEST, HTTPClientAdapter.toString(mtServiceUrl, requestData), RESPONSE, response);
 			return EOutgoingSMSAcceptionStatus.ACCEPTED;
 		} else {
+			log.reportEvent(SMSOUT_POSTPONED, REQUEST, HTTPClientAdapter.toString(mtServiceUrl, requestData), RESPONSE, response);
 			return EOutgoingSMSAcceptionStatus.POSTPONED;
 		}
 	}

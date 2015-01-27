@@ -2,6 +2,7 @@ package mutua.hangmansmsgame.smslogic;
 
 import static org.junit.Assert.assertEquals;
 
+import java.sql.SQLException;
 import java.util.Random;
 
 import mutua.hangmansmsgame.config.Configuration;
@@ -11,7 +12,7 @@ import mutua.hangmansmsgame.hangmangamelogic.HangmanGame;
 import mutua.hangmansmsgame.i18n.IPhraseology;
 import mutua.icc.instrumentation.HangmanSMSGameInstrumentationEvents;
 import mutua.icc.instrumentation.Instrumentation;
-import mutua.icc.instrumentation.InstrumentationTestRequestProperty;
+import mutua.icc.instrumentation.TestInstrumentationRequestProperty;
 import mutua.icc.instrumentation.eventclients.InstrumentationProfilingEventsClient;
 import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
 import mutua.imi.IndirectMethodNotFoundException;
@@ -38,7 +39,7 @@ public class HangmanSMSGameProcessorTests {
 
 	
     static {
-    	Configuration.log = new Instrumentation<InstrumentationTestRequestProperty, String>("HangmanSMSGameProcessorTests", new InstrumentationTestRequestProperty("isThisTheTestName?"), HangmanSMSGameInstrumentationEvents.values());
+    	Configuration.log = new Instrumentation<TestInstrumentationRequestProperty, String>("HangmanSMSGameProcessorTests", new TestInstrumentationRequestProperty("isThisTheTestName?"), HangmanSMSGameInstrumentationEvents.values());
     	try {
         	InstrumentationProfilingEventsClient instrumentationProfilingEventsClient = new InstrumentationProfilingEventsClient(Configuration.log, EInstrumentationDataPours.CONSOLE);
 			Configuration.log.addInstrumentationPropagableEventsClient(instrumentationProfilingEventsClient);
@@ -95,7 +96,7 @@ public class HangmanSMSGameProcessorTests {
     }
     
     /** for REGISTERED_USERs, send chat messages */
-    public void sendPrivateMessage(String fromPhone, String toNickname, String message) {
+    public void sendPrivateMessage(String fromPhone, String toNickname, String message) throws SQLException {
     	String fromNickname = userDB.getUserNickname(fromPhone);
 		tc.checkResponse(fromPhone, "P " + toNickname + " " + message,
 				testPhraseology.PROVOKINGDeliveryNotification(toNickname),
@@ -139,7 +140,7 @@ public class HangmanSMSGameProcessorTests {
     ///////////////////////////////////////////////////////
 
 	@Test
-	public void testUnrecognizedCommandSubtleties() {
+	public void testUnrecognizedCommandSubtleties() throws SQLException {
 		tc.resetDatabases();
 		
 		// ignore for NEW_USERs
@@ -155,7 +156,7 @@ public class HangmanSMSGameProcessorTests {
 	}
 	
 	@Test
-	public void testExternalUserInvitationPlayingPath() {
+	public void testExternalUserInvitationPlayingPath() throws SQLException {
 		String playerNickName = "HardCodedNick";
 		String guestNickname  = "haole";
 		
@@ -258,7 +259,7 @@ public class HangmanSMSGameProcessorTests {
 	}
 	
 	@Test
-	public void testAnswersToInvitation() {
+	public void testAnswersToInvitation() throws SQLException {
 		tc.resetDatabases();
 		invitePlayerForAMatch("21991234899", "Dom", "cacatua", "21998019167", "pAtY");
 		tc.checkResponse("21998019167", "profile DOM", "HANGMAN: Dom: Subscribed, RJ, 0 lucky numbers. Send SIGNUP to provoke for free or INVITE Dom for a match.");
@@ -268,7 +269,7 @@ public class HangmanSMSGameProcessorTests {
 	}
 	
 	@Test
-	public void testNicknameSubtleties() {
+	public void testNicknameSubtleties() throws SQLException {
 
 		tc.resetDatabases();
 		
@@ -284,7 +285,7 @@ public class HangmanSMSGameProcessorTests {
 	}
 	
 	@Test
-	public void testInviteRegisteredUserByPhone() {
+	public void testInviteRegisteredUserByPhone() throws SQLException {
 		tc.resetDatabases();
 		registerUser("21991234899", "dOm");
 		registerUser("21998019167", "PatY");		
@@ -293,7 +294,7 @@ public class HangmanSMSGameProcessorTests {
 	}
 	
 	@Test
-	public void testInvitedUserGoesOutOfAnsweringInvitationState() {
+	public void testInvitedUserGoesOutOfAnsweringInvitationState() throws SQLException {
 		tc.resetDatabases();
 		registerUser("21991234899", "DOm");
 		invitePlayerByPhone("21991234899", "21998019167");
@@ -308,7 +309,7 @@ public class HangmanSMSGameProcessorTests {
 	
 	@Test
 	/** This test takes multiple users gradually and randomly through some navigation states */
-	public void testMultipleStates() {
+	public void testMultipleStates() throws SQLException {
 		long startWordProvidingPlayerPhone       = 21991223999L;
 		String wordProvidingPlayerNicknameSuffix = "TestingDom";
 		long startWordGuessingPlayerPhone        = 21998018999L;

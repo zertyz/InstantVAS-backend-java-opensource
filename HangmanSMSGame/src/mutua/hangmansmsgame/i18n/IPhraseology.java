@@ -1,9 +1,10 @@
 package mutua.hangmansmsgame.i18n;
 
 import java.util.Arrays;
-import java.util.Hashtable;
 import java.util.regex.Matcher;
 
+import mutua.hangmansmsgame.config.Configuration;
+import static mutua.hangmansmsgame.config.Configuration.SHORT_CODE;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 
 /** <pre>
@@ -21,26 +22,62 @@ import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 public abstract class IPhraseology {
 	
 	
-	public static String SHORT_CODE = "9714";
-
-	
-	/** phrases_map := { ["phrase name"] = {message1, message2, ...}, ... } */
-	private Hashtable<String, String[]> phrasesMap;
-	
-	/** phrases := { {"phrase name", "phrase text"}, ... } */
-	protected IPhraseology(String[][] phrases) {
-		phrasesMap = new Hashtable<String, String[]>();
-		for (String[] phrase : phrases) {
-			String phraseName = phrase[0];
-			String[] messagesArray = Arrays.copyOfRange(phrase, 1, phrase.length);
-			phrasesMap.put(phraseName, messagesArray);
+	protected enum EPhraseNames {
+		shortHelp                                                     (Configuration.shortHelp),
+		gallowsArt                                                    (Configuration.gallowsArt),
+		winningArt                                                    (Configuration.winningArt),
+		losingArt                                                     (Configuration.losingArt),
+		playersList                                                   (Configuration.playersList),
+		INFOWelcome                                                   (Configuration.INFOWelcome),
+		INFOFullHelp                                                  (Configuration.INFOFullHelp),
+		INFOWelcomeMenu                                               (Configuration.INFOWelcomeMenu),
+		INFOCouldNotRegister                                          (Configuration.INFOCouldNotRegister),
+		PROFILEView                                                   (Configuration.PROFILEView),
+		PROFILEFullfillingAskNick                                     (Configuration.PROFILEFullfillingAskNick),
+		PROFILENickRegisteredNotification                             (Configuration.PROFILENickRegisteredNotification),
+		PLAYINGWordProvidingPlayerStart                               (Configuration.PLAYINGWordProvidingPlayerStart),
+		PLAYINGWordGuessingPlayerStart                                (Configuration.PLAYINGWordGuessingPlayerStart),
+		PLAYINGWordGuessingPlayerStatus                               (Configuration.PLAYINGWordGuessingPlayerStatus),
+		PLAYINGWordProvidingPlayerStatus                              (Configuration.PLAYINGWordProvidingPlayerStatus),
+		PLAYINGWinningMessageForWordGuessingPlayer                    (Configuration.PLAYINGWinningMessageForWordGuessingPlayer),
+		PLAYINGWinningMessageForWordProvidingPlayer                   (Configuration.PLAYINGWinningMessageForWordProvidingPlayer),
+		PLAYINGLosingMessageForWordGuessingPlayer                     (Configuration.PLAYINGLosingMessageForWordGuessingPlayer),
+		PLAYINGLosingMessageForWordProvidingPlayer                    (Configuration.PLAYINGLosingMessageForWordProvidingPlayer),
+		PLAYINGMatchGiveupNotificationForWordProvidingPlayer          (Configuration.PLAYINGMatchGiveupNotificationForWordProvidingPlayer),
+		PLAYINGMatchGiveupNotificationForWordGuessingPlayer           (Configuration.PLAYINGMatchGiveupNotificationForWordGuessingPlayer),
+		INVITINGAskOpponentNickOrPhone                                (Configuration.INVITINGAskOpponentNickOrPhone),
+		INVITINGAskForAWordToStartAMatchBasedOnOpponentNickInvitation (Configuration.INVITINGAskForAWordToStartAMatchBasedOnOpponentNickInvitation),
+		INVITINGAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation(Configuration.INVITINGAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation),
+		INVITINGInvitationNotificationForInvitingPlayer               (Configuration.INVITINGInvitationNotificationForInvitingPlayer),
+		INVITINGTimeoutNotificationForInvitingPlayer                  (Configuration.INVITINGTimeoutNotificationForInvitingPlayer),
+		INVITINGInvitationNotificationForInvitedPlayer                (Configuration.INVITINGInvitationNotificationForInvitedPlayer),
+		INVITINGInvitationRefusalNotificationForInvitingPlayer        (Configuration.INVITINGInvitationRefusalNotificationForInvitingPlayer),
+		INVITINGInvitationRefusalNotificationForInvitedPlayer         (Configuration.INVITINGInvitationRefusalNotificationForInvitedPlayer),
+		LISTINGShowPlayers                                            (Configuration.LISTINGShowPlayers),
+		LISTINGNoMorePlayers                                          (Configuration.LISTINGNoMorePlayers),
+		PROVOKINGDeliveryNotification                                 (Configuration.PROVOKINGDeliveryNotification),
+		PROVOKINGSendMessage                                          (Configuration.PROVOKINGSendMessage),
+		PROVOKINGNickNotFound                                         (Configuration.PROVOKINGNickNotFound),
+		UNSUBSCRIBINGUnsubscriptionNotification                       (Configuration.UNSUBSCRIBINGUnsubscriptionNotification),
+		
+		;
+		
+		private final String[] texts;
+		
+		private EPhraseNames(String[] texts) {
+			this.texts = texts;
+		}
+		
+		public String[] getTexts() {
+			return texts;
 		}
 	}
+
 	
-	/** retrieves the messages for the given 'phraseName', fulfilling all parameters, where
+	/** retrieves the messages for the given 'phrase', fulfilling all parameters, where
 	 *  'parameters' := { {"name", "value"}, ... }, or 'null' if 'phraseName' wasn't found */
-	protected String[] getPhrases(String phraseName, String[][] parameters) {
-		String[] messages = phrasesMap.get(phraseName);
+	protected String[] getPhrases(EPhraseNames phrase, String[][] parameters) {
+		String[] messages = phrase.getTexts();
 		if (messages == null) {
 			return null;
 		}
@@ -63,9 +100,9 @@ public abstract class IPhraseology {
 		return messages;
 	}
 	
-	/** @see TestPhraseology#getPhrases(String, String[][]) */
-	protected String getPhrase(String phraseName, String[][] parameters) {
-		String[] messages = getPhrases(phraseName, parameters);
+	/** @see IPhraseology#getPhrases(EPhraseNames, String[][]) */
+	protected String getPhrase(EPhraseNames phrase, String[][] parameters) {
+		String[] messages = getPhrases(phrase, parameters);
 		if (messages == null) {
 			return null;
 		} else {
@@ -73,9 +110,9 @@ public abstract class IPhraseology {
 		}
 	}
 	
-	/** @see TestPhraseology#getPhrases(String, String[][]) */
-	protected String getPhrase(String phraseName) {
-		return getPhrase(phraseName, null);
+	/** @see IPhraseology#getPhrases(EPhraseNames, String[][]) */
+	protected String getPhrase(EPhraseNames phrase) {
+		return getPhrase(phrase, null);
 	}
 
 	
@@ -166,7 +203,7 @@ public abstract class IPhraseology {
 	
 	protected String getGallowsArt(boolean drawHead, boolean drawLeftArm, boolean drawRightArm,
 	                                boolean drawChest, boolean drawLeftLeg, boolean drawRightLeg) {
-		return getPhrase("gallowsArt", new String[][] {
+		return getPhrase(EPhraseNames.gallowsArt, new String[][] {
 			{"head",     (drawHead?"O":"")},
 			{"leftArm",  (drawLeftArm?"/":" ")},
 			{"chest",    (drawChest?"|":" ")},
@@ -177,11 +214,11 @@ public abstract class IPhraseology {
 	}
 	
 	protected String getWinningArt() {
-		return getPhrase("winningArt");
+		return getPhrase(EPhraseNames.winningArt);
 	}
 	
 	protected String getLosingArt() {
-		return getPhrase("losingArt");
+		return getPhrase(EPhraseNames.losingArt);
 	}
 
 	

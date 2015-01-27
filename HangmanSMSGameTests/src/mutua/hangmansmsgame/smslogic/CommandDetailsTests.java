@@ -1,6 +1,9 @@
 package mutua.hangmansmsgame.smslogic;
 
 import static org.junit.Assert.*;
+
+import java.sql.SQLException;
+
 import mutua.hangmansmsgame.dal.DALFactory;
 import mutua.hangmansmsgame.dal.IUserDB;
 import mutua.hangmansmsgame.i18n.TestPhraseology;
@@ -55,7 +58,7 @@ public class CommandDetailsTests {
 	}
 	
 	@Test
-	public void getUsersListBreakingUnderTheMaximumNumberOfCharactersTest() {
+	public void getUsersListBreakingUnderTheMaximumNumberOfCharactersTest() throws SQLException {
 		String[] presentedUsers;
 		int maxChars = testPhraseology.LISTINGShowPlayers(new String[][] {}).length() + 15;
 		tc.setUserDB(new String[][] {
@@ -87,7 +90,7 @@ public class CommandDetailsTests {
 	}
 	
 	@Test
-	public void registerUserNicknameTests() {
+	public void registerUserNicknameTests() throws SQLException {
 		String[][] expectedUsersAndNicknames = {
 			{"21991234899", "Dom"},	
 			{"21991234891", "Dom1"},	

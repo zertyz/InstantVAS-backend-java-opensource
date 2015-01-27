@@ -2,6 +2,10 @@ package mutua.hangmansmsgame.dal;
 
 import static org.junit.Assert.*;
 
+import java.sql.SQLException;
+
+import mutua.hangmansmsgame.dal.config.Configuration;
+
 import org.junit.Test;
 
 /** <pre>
@@ -18,11 +22,11 @@ import org.junit.Test;
 
 public class IUserDBTests {
 	
-	private IUserDB userDB = DALFactory.getUserDB();
+	private IUserDB userDB = DALFactory.getUserDB(Configuration.DEFAULT_DAL);
 
 	
 	@Test
-	public void testSimpleUsage() {
+	public void testSimpleUsage() throws SQLException {
 		userDB.reset();
 		
 		// non existing user tests
