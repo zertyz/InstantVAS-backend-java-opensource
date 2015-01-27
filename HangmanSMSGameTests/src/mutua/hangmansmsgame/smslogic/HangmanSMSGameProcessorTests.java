@@ -5,21 +5,16 @@ import static org.junit.Assert.assertEquals;
 import java.sql.SQLException;
 import java.util.Random;
 
-import mutua.hangmansmsgame.config.Configuration;
 import mutua.hangmansmsgame.dal.DALFactory;
 import mutua.hangmansmsgame.dal.IUserDB;
+import mutua.hangmansmsgame.dal.DALFactory.EDataAccessLayers;
 import mutua.hangmansmsgame.hangmangamelogic.HangmanGame;
 import mutua.hangmansmsgame.i18n.IPhraseology;
-import mutua.icc.instrumentation.HangmanSMSGameInstrumentationEvents;
-import mutua.icc.instrumentation.Instrumentation;
-import mutua.icc.instrumentation.TestInstrumentationRequestProperty;
-import mutua.icc.instrumentation.eventclients.InstrumentationProfilingEventsClient;
-import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
-import mutua.imi.IndirectMethodNotFoundException;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
-import mutua.subscriptionengine.TestableSubscriptionAPI;
 
 import org.junit.Test;
+
+import config.Configuration;
 
 /** <pre>
  * HangmanSMSGameProcessorTests.java
@@ -36,24 +31,11 @@ public class HangmanSMSGameProcessorTests {
 	
 	private TestCommons tc = new TestCommons();
 	IPhraseology testPhraseology = IPhraseology.getCarrierSpecificPhraseology(ESMSInParserCarrier.TEST_CARRIER);
-
-	
-    static {
-    	Configuration.log = new Instrumentation<TestInstrumentationRequestProperty, String>("HangmanSMSGameProcessorTests", new TestInstrumentationRequestProperty("isThisTheTestName?"), HangmanSMSGameInstrumentationEvents.values());
-    	try {
-        	InstrumentationProfilingEventsClient instrumentationProfilingEventsClient = new InstrumentationProfilingEventsClient(Configuration.log, EInstrumentationDataPours.CONSOLE);
-			Configuration.log.addInstrumentationPropagableEventsClient(instrumentationProfilingEventsClient);
-		} catch (IndirectMethodNotFoundException e) {
-			e.printStackTrace();
-		}
-    	Configuration.SUBSCRIPTION_ENGINE = new TestableSubscriptionAPI(Configuration.log);
-    }
-
 	
 	// databases
 	////////////
     
-	private static IUserDB userDB = DALFactory.getUserDB();
+	private static IUserDB userDB = DALFactory.getUserDB(Configuration.DEFAULT_DAL);
 
 	
 	/*********************
@@ -322,7 +304,7 @@ public class HangmanSMSGameProcessorTests {
 		String wordGuessingPlayerNick;
 		
 		// stateTrackingData := { {wordProvidingPlayerPhone, wordProvidingPlayerNick, word, wordGuessingPlayerPhone, wordGuessingPlayerNick, state}, ... }
-		String[][] stateTrackingData = new String[1000][6];
+		String[][] stateTrackingData = new String[100][6];
 		
 		// build the state tracking structure
 		for (int i=0; i<stateTrackingData.length; i++) {

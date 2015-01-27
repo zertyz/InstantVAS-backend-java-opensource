@@ -42,7 +42,9 @@ public class DALFactory {
 				matchDB   = new mutua.hangmansmsgame.dal.ram.MatchDB();
 				break;
 			case POSTGRESQL:
+				sessionDB = new mutua.hangmansmsgame.dal.ram.SessionDB();
 				userDB    = new mutua.hangmansmsgame.dal.postgresql.UserDB();
+				matchDB   = new mutua.hangmansmsgame.dal.postgresql.MatchDB();
 				break;
 			default:
 				throw new RuntimeException("Don't know how to build a '"+dal.name()+"' DAL instance");

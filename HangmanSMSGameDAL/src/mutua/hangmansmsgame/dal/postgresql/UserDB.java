@@ -63,7 +63,7 @@ public class UserDB implements IUserDB {
 		}
 		PreparedProcedureInvocationDto procedure;
 		if (isUserOnRecord(phoneNumber)) {
-			procedure = new PreparedProcedureInvocationDto("UpdateUser");
+			procedure = new PreparedProcedureInvocationDto("UpdateNick");
 		} else {
 			procedure = new PreparedProcedureInvocationDto("InsertUser");
 		}
@@ -76,6 +76,26 @@ public class UserDB implements IUserDB {
 	@Override
 	public boolean isUserOnRecord(String phoneNumber) throws SQLException {
 		return getUserNickname(phoneNumber) != null;
+	}
+
+	@Override
+	public boolean isUserSubscribed(String phoneNumber) throws SQLException {
+		PreparedProcedureInvocationDto procedure = new PreparedProcedureInvocationDto("SelectSubscriptionByPhone");
+		procedure.addParameter("PHONE", phoneNumber);
+		Boolean rawResult = (Boolean)dba.invokeScalarProcedure(procedure);
+		if (rawResult == null) {
+			return false;
+		} else {
+			return (boolean)rawResult;
+		}
+	}
+
+	@Override
+	public void setSubscribed(String phoneNumber, boolean subscribed) throws SQLException {
+		PreparedProcedureInvocationDto procedure = new PreparedProcedureInvocationDto("UpdateSubscriptionByPhone");
+		procedure.addParameter("SUBSCRIBED", subscribed);
+		procedure.addParameter("PHONE", phoneNumber);
+		dba.invokeUpdateProcedure(procedure);
 	}
 
 }

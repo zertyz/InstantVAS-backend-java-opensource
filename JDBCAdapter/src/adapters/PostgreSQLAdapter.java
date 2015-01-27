@@ -27,7 +27,7 @@ public abstract class PostgreSQLAdapter extends JDBCAdapter {
 
 
 	public PostgreSQLAdapter(Instrumentation<?, ?> log, String[][] preparedProceduresDefinitions) throws SQLException {
-		super(log, org.postgresql.Driver.class, preparedProceduresDefinitions);
+		super(log, new org.postgresql.Driver().getClass(), preparedProceduresDefinitions);
 	}
 	
 	@Override

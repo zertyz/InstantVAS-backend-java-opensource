@@ -22,6 +22,7 @@ import org.junit.Test;
 
 public class IUserDBTests {
 	
+	
 	private IUserDB userDB = DALFactory.getUserDB(Configuration.DEFAULT_DAL);
 
 	
@@ -45,6 +46,13 @@ public class IUserDBTests {
 		// check availability
 		assertFalse("Failed to prevent two users from sharing the same case insensitive nickname", userDB.checkAvailabilityAndRecordNickname("21998019167", "dom"));
 		assertTrue("Failed to detect & allow the same user to \"change\" his own nickname to the same case insensitive value", userDB.checkAvailabilityAndRecordNickname("21991234899", "DoM"));
+		
+		// subscription
+		assertFalse("Failed to consider the default value for 'subscribed' as false", userDB.isUserSubscribed("21991234899"));
+		assertFalse("Failed to consider the 'subscribed' of an inexistent user as false", userDB.isUserSubscribed("21____"));
+		userDB.setSubscribed("21991234899", true);
+		assertTrue("Failed register user subscription", userDB.isUserSubscribed("21991234899"));
+		userDB.setSubscribed("21aabababb", true);
 		
 	}
 

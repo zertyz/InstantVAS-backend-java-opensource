@@ -6,10 +6,12 @@ import static org.junit.Assert.fail;
 
 import java.sql.SQLException;
 
-import mutua.hangmansmsgame.config.Configuration;
+import config.Configuration;
+import static config.Configuration.log;
 import mutua.hangmansmsgame.dal.DALFactory;
 import mutua.hangmansmsgame.dal.ISessionDB;
 import mutua.hangmansmsgame.dal.IUserDB;
+import mutua.hangmansmsgame.dal.DALFactory.EDataAccessLayers;
 import mutua.hangmansmsgame.dal.dto.SessionDto;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.icc.instrumentation.TestInstrumentationRequestProperty;
@@ -35,15 +37,13 @@ public class TestCommons {
 	
 	private TestResponseReceiver responseReceiver;
 	private HangmanSMSGameProcessor processor;
-	
-	private Instrumentation<TestInstrumentationRequestProperty, String> log = (Instrumentation<TestInstrumentationRequestProperty, String>)Configuration.log;
 
 
 	// databases
 	////////////
 	
-	private static IUserDB    userDB    = DALFactory.getUserDB();
-	private static ISessionDB sessionDB = DALFactory.getSessionDB();
+	private static IUserDB    userDB    = DALFactory.getUserDB(Configuration.DEFAULT_DAL);
+	private static ISessionDB sessionDB = DALFactory.getSessionDB(Configuration.DEFAULT_DAL);
 
 	
 	public TestCommons() {

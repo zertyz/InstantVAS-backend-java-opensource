@@ -37,7 +37,10 @@ public interface IUserDB {
 	 *  If there isn't one, probably it is time to 'createUserRecord' */
 	boolean isUserOnRecord(String phoneNumber) throws SQLException;
 
-//	/** Creates a record for a user, so the system may start interacting with it */
-//	void createUserRecord(String phoneNumber, String nickName);
+	/** Returns true if the user is registered as a subscriber */
+	boolean isUserSubscribed(String phoneNumber) throws SQLException;
+	
+	/** Sets the 'subscribed' state for the user */
+	void setSubscribed(String phoneNumber, boolean subscribed) throws SQLException;
 
 }

@@ -1,5 +1,6 @@
 package mutua.hangmansmsgame.dal.ram;
 
+import java.sql.SQLException;
 import java.util.Hashtable;
 
 import mutua.hangmansmsgame.dal.IUserDB;
@@ -9,7 +10,7 @@ import mutua.hangmansmsgame.dal.IUserDB;
  * ===========
  * (created by luiz, Jan 3, 2015)
  *
- * Implements a RAM version of 'IUserDB'
+ * Implements the RAM version of 'IUserDB'
  *
  * @see IUserDB
  * @version $Id$
@@ -22,6 +23,8 @@ public class UserDB implements IUserDB {
 	private static Hashtable<String, String> nicknamesByPhone = new Hashtable<String, String>();
 	/** phonesByNickname := {[nickname] = "phone", ...} */
 	private static Hashtable<String, String> phonesByNickname = new Hashtable<String, String>();
+	/** subscriptionsByPhone := {[phone] = "nickname", ...} */
+	private static Hashtable<String, Boolean> subscriptionsByPhone = new Hashtable<String, Boolean>();
 	
 	
 	// AUXILIAR METHODS
@@ -36,6 +39,7 @@ public class UserDB implements IUserDB {
 	public void reset() {
 		nicknamesByPhone.clear();
 		phonesByNickname.clear();
+		subscriptionsByPhone.clear();
 	}
 
 	@Override
@@ -74,7 +78,6 @@ public class UserDB implements IUserDB {
 			return false;
 		}
 		
-		// TODO test updating the nickname and leaving no tracks
 		nicknamesByPhone.put(phoneNumber, nickname);
 		phonesByNickname.put(nickname, phoneNumber);
 		return true;
@@ -83,6 +86,19 @@ public class UserDB implements IUserDB {
 	@Override
 	public boolean isUserOnRecord(String phoneNumber) {
 		return nicknamesByPhone.containsKey(phoneNumber);
+	}
+
+	@Override
+	public boolean isUserSubscribed(String phoneNumber) {
+		if (!subscriptionsByPhone.containsKey(phoneNumber)) {
+			return false;
+		}
+		return subscriptionsByPhone.get(phoneNumber);
+	}
+
+	@Override
+	public void setSubscribed(String phoneNumber, boolean subscribed) {
+		subscriptionsByPhone.put(phoneNumber, subscribed);
 	}
 
 

@@ -336,6 +336,20 @@ public abstract class JDBCAdapter {
 		}
 	}
 	
+	/** executes a query (typically via SELECT statement) that will return a single row, with some number of fields
+	/*  in it, which the order is known -- possibly via SELECT a, b, c... clause */
+	public Object[] invokeRowProcedure(PreparedProcedureInvocationDto invocation) throws SQLException {
+		checkConnections();
+		PreparedStatement ps = preparedProcedures.buildPreparedStatement(invocation, connection);
+		Object[][] result = getArrayFromQueryExecution(ps);
+		ps.close();
+		if ((result == null) || (result.length == 0)) {
+			return null;
+		} else {
+			return result[0];
+		}
+	}
+	
 	/** executes a query (typically via SELECT statement) that will return a virtual table that can be contained into RAM -- that is, has a
 	/*  few and foreseeable amount of elements -- possibly using the LIMIT clause */
 	public Object[][] invokeArrayProcedure(PreparedProcedureInvocationDto invocation) throws SQLException {

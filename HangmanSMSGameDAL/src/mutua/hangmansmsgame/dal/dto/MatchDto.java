@@ -47,6 +47,14 @@ public class MatchDto {
 		return wordGuessingPlayerPhone;
 	}
 	
+	public String getSerializedGame() {
+		return serializedGame;
+	}
+	
+	public long getMatchStartMillis() {
+		return matchStartMillis;
+	}
+
 	public EMatchStatus getStatus() {
 		return status;
 	}
@@ -54,5 +62,16 @@ public class MatchDto {
 	public MatchDto getNewMatch(EMatchStatus status) {
 		return new MatchDto(wordProvidingPlayerPhone, wordGuessingPlayerPhone, serializedGame, matchStartMillis, status);
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		MatchDto anotherMatch = (MatchDto)obj;
+		return wordProvidingPlayerPhone.equals(anotherMatch.wordProvidingPlayerPhone) &&
+		       wordGuessingPlayerPhone.equals(anotherMatch.wordGuessingPlayerPhone) &&
+		       serializedGame.equals(anotherMatch.serializedGame) &&
+		       (matchStartMillis == anotherMatch.matchStartMillis) &&
+		       (status == anotherMatch.status);
+	}
+
 	
 }

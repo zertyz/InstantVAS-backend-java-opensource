@@ -18,6 +18,7 @@
 		<project>SMSOutSender</project>
 		<project>SubscriptionEngine</project>
 		<project>SubscriptionEngineCelltick</project>
+		<project>JDBCAdapter</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -6,8 +6,11 @@ import java.sql.SQLException;
 
 import mutua.hangmansmsgame.dal.DALFactory;
 import mutua.hangmansmsgame.dal.IUserDB;
+import mutua.hangmansmsgame.dal.DALFactory.EDataAccessLayers;
 
 import org.junit.Test;
+
+import config.Configuration;
 
 /** <pre>
  * HangmanSMSGamePerformanceTests.java
@@ -30,12 +33,15 @@ public class HangmanSMSGamePerformanceTests {
 	// databases
 	////////////
     
-	private static IUserDB userDB = DALFactory.getUserDB();
+	private static IUserDB userDB = DALFactory.getUserDB(Configuration.DEFAULT_DAL);
 
 
 	@Test
 	public void registerNicknamePerformanceTests() throws InterruptedException, SQLException {
-		int attempts = 1000;
+
+		tc.resetDatabases();
+		
+		int attempts = 100;
 		long referenceStart = System.currentTimeMillis();
 		for (int i=0; i<attempts; i++) {
 			CommandDetails.registerUserNickname("t"+i, "nick"+i+"_");
@@ -43,7 +49,7 @@ public class HangmanSMSGamePerformanceTests {
 		long targetStart = System.currentTimeMillis();
 		long referenceElapsed = targetStart - referenceStart;
 		for (int i=0; i<attempts; i++) {
-			CommandDetails.registerUserNickname("t2"+i, "nick"+i+"_");
+			CommandDetails.registerUserNickname("t2"+i, "nick2"+i+"_");
 		}
 		long targetElapsed = System.currentTimeMillis() - targetStart;
 		System.out.println(referenceElapsed + "\t" + ((double)referenceElapsed)/((double)attempts));

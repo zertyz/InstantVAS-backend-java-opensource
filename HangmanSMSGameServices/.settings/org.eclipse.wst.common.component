@@ -47,6 +47,9 @@
         <dependent-module archiveName="SubscriptionEngineCelltick.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/SubscriptionEngineCelltick/SubscriptionEngineCelltick">
             <dependency-type>uses</dependency-type>
         </dependent-module>
+        <dependent-module archiveName="JDBCAdapter.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/JDBCAdapter/JDBCAdapter">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <property name="context-root" value="HangmanSMSGameServices"/>
         <property name="java-output-path" value="/HangmanSMSGameServices/build/classes"/>
         <property name="context-root" value="QuizTacaBandSMSQueueService"/>

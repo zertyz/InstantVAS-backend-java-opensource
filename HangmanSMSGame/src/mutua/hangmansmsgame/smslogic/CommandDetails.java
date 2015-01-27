@@ -106,7 +106,7 @@ public class CommandDetails {
         }
 	}
 	
-	protected static boolean registerUserNickname(String phone, String nickname) throws SQLException {
+	public static boolean registerUserNickname(String phone, String nickname) throws SQLException {
 		int count = 1;
 		String alternativeNick = nickname;
 		while (!userDB.checkAvailabilityAndRecordNickname(phone, alternativeNick)) {
@@ -117,17 +117,22 @@ public class CommandDetails {
 	}
 	
 	/** This is the point we may call Celltick APIs for registration */
-	protected static boolean assureUserIsRegistered(String phone) throws SQLException {
+	public static boolean assureUserIsRegistered(String phone) throws SQLException {
 
-		if (userDB.isUserOnRecord(phone)) {
+		if (userDB.isUserSubscribed(phone)) {
 			return true;
 		}
 		
 		ESubscriptionOperationStatus subscriptionStatus = SUBSCRIPTION_ENGINE.subscribeUser(phone, SUBSCRIPTION_CHANNEL_NAME);
 		
-		if (subscriptionStatus == ESubscriptionOperationStatus.OK) {
-			log.reportEvent(DIE_DEBUG, DIP_MSG, "Hangman: registering user "+phone+" succeeded");
-			return registerUserNickname(phone, DEFAULT_NICKNAME_PREFIX + phone.substring(Math.max(phone.length()-4, 0)));
+		if ((subscriptionStatus == ESubscriptionOperationStatus.OK) ||
+			(subscriptionStatus == ESubscriptionOperationStatus.ALREADY_SUBSCRIBED)) {
+			if (!userDB.isUserOnRecord(phone)) {
+				log.reportEvent(DIE_DEBUG, DIP_MSG, "Hangman: registering user "+phone+" succeeded");
+				registerUserNickname(phone, DEFAULT_NICKNAME_PREFIX + phone.substring(Math.max(phone.length()-4, 0)));
+			}
+			userDB.setSubscribed(phone, true);
+			return true;
 		} else {
 			log.reportEvent(DIE_DEBUG, DIP_MSG, "Hangman: registering user "+phone+" failed");
 			return false;
@@ -695,6 +700,7 @@ public class CommandDetails {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
 			SUBSCRIPTION_ENGINE.unsubscribeUser(session.getPhone(), SUBSCRIPTION_CHANNEL_NAME);
+			userDB.setSubscribed(session.getPhone(), false);
 			CommandMessageDto message = new CommandMessageDto(phrases.UNSUBSCRIBINGUnsubscriptionNotification(), EResponseMessageType.HELP);
 			return getNewCommandAnswerDto(session, message);
 		}

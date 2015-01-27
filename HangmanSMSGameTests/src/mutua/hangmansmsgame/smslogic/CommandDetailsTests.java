@@ -6,9 +6,12 @@ import java.sql.SQLException;
 
 import mutua.hangmansmsgame.dal.DALFactory;
 import mutua.hangmansmsgame.dal.IUserDB;
+import mutua.hangmansmsgame.dal.DALFactory.EDataAccessLayers;
 import mutua.hangmansmsgame.i18n.TestPhraseology;
 
 import org.junit.Test;
+
+import config.Configuration;
 
 /** <pre>
  * CommandDetailsTests.java
@@ -32,7 +35,7 @@ public class CommandDetailsTests {
 	// databases
 	////////////
 	
-	private IUserDB userDB = DALFactory.getUserDB();
+	private IUserDB userDB = DALFactory.getUserDB(Configuration.DEFAULT_DAL);
 
 
 	/**********

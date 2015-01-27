@@ -47,6 +47,8 @@ public class Configuration {
 		}
     	
     	// set the vars
+    	///////////////
+    	
     	HangmanSMSGamePostgreSQLAdapters.log = log;
 		HangmanSMSGamePostgreSQLAdapters.HOSTNAME = POSTGRESQL_CONNECTION_HOSTNAME;
 		HangmanSMSGamePostgreSQLAdapters.PORT     = POSTGRESQL_CONNECTION_PORT;
