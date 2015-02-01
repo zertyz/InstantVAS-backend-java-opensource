@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context>
+	<Parameter name="hangmanSMSGameConfigFileName" value="/tmp/hangman.config" override="false"/>
+</Context>

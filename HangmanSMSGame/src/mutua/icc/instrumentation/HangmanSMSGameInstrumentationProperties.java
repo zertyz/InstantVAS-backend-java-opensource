@@ -19,18 +19,6 @@ import mutua.hangmansmsgame.smslogic.commands.dto.CommandInvocationDto;
 public enum HangmanSMSGameInstrumentationProperties implements IInstrumentableProperty {
 
 
-	// configuration
-	////////////////
-	
-	IP_CONFIGURATION_FIELD_NAME               ("fieldName", String.class),
-	IP_CONFIGURATION_STRING_FIELD_VALUE       ("value",     String.class),
-	IP_CONFIGURATION_NUMBER_FIELD_VALUE       ("value",     long.class),
-	IP_CONFIGURATION_STRING_ARRAY_FIELD_VALUE ("values",    String[].class),
-	
-	
-	// sms application
-	//////////////////
-	
 	IP_PHONE                 ("phone", String.class),
 	
 	IP_COMMAND_INVOCATION    ("commandInvocationHandler", CommandInvocationDto.class) {

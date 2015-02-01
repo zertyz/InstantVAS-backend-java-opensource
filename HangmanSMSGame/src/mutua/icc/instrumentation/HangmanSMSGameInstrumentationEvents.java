@@ -17,17 +17,6 @@ import static mutua.icc.instrumentation.HangmanSMSGameInstrumentationProperties.
 
 public enum HangmanSMSGameInstrumentationEvents implements IInstrumentableEvent {
 
-
-	// configuration
-	////////////////
-	
-	IE_CONFIGURING_STRING_PROPERTY       ("Configuring STRING property",       IP_CONFIGURATION_FIELD_NAME, IP_CONFIGURATION_STRING_FIELD_VALUE),
-	IE_CONFIGURING_NUMBER_PROPERTY       ("Configuring NUMBER property",       IP_CONFIGURATION_FIELD_NAME, IP_CONFIGURATION_NUMBER_FIELD_VALUE),
-	IE_CONFIGURING_STRING_ARRAY_PROPERTY ("Configuring STRING ARRAY property", IP_CONFIGURATION_FIELD_NAME, IP_CONFIGURATION_STRING_ARRAY_FIELD_VALUE),
-
-
-	// sms application
-	//////////////////
 	
 	IE_REQUEST_FROM_NEW_USER       ("Request from new user",      IP_PHONE),
 	IE_REQUEST_FROM_EXISTING_USER  ("Request from existing user", IP_PHONE),

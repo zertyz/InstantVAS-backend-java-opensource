@@ -25,12 +25,13 @@ public class HangmanHTTPInstrumentationRequestProperty implements IInstrumentabl
 
 	@Override
 	public Class<?> getType() {
-		return HttpServletRequest.class;
+		return org.apache.catalina.connector.RequestFacade.class;
 	}
 
 	@Override
 	public void appendSerializedValue(StringBuffer buffer, Object value) {
-//		buffer.add()
+		HttpServletRequest request = (HttpServletRequest)value;
+		buffer.append("queryString='").append(request.getQueryString()).append("'");
 	}
 
 }

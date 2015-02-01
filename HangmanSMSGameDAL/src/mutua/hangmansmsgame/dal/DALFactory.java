@@ -3,7 +3,7 @@ package mutua.hangmansmsgame.dal;
 import java.sql.SQLException;
 
 import mutua.hangmansmsgame.dal.postgresql.HangmanSMSGamePostgreSQLAdapters;
-import adapters.PostgreSQLAdapter;
+import mutua.icc.configuration.annotations.ConfigurableElement;
 
 /** <pre>
  * DALFactory.java
@@ -21,8 +21,16 @@ public class DALFactory {
 
 	public enum EDataAccessLayers {RAM, POSTGRESQL}
 	
+	
 	// configurable values
+	//////////////////////
+	
+	@ConfigurableElement("The desired data access handler for all hangman databases")
 	public static EDataAccessLayers DEFAULT_DAL = EDataAccessLayers.POSTGRESQL;
+	
+	@ConfigurableElement("The desired data access handler for the hangman sessions database -- using RAM possibly will increase performance at the cost of losing sections on application restart")
+	public static EDataAccessLayers DEFAULT_SESSIONS_DAL = DEFAULT_DAL;
+	
 
 	// the multiton instances
 	private static final DALFactory[] instances = new DALFactory[EDataAccessLayers.values().length];

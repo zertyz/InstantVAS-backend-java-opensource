@@ -11,6 +11,8 @@ import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
 import mutua.imi.IndirectMethodNotFoundException;
 import mutua.subscriptionengine.TestableSubscriptionAPI;
 
+import static mutua.hangmansmsgame.config.Configuration.log;
+
 /** <pre>
  * Configuration.java
  * ==================
@@ -25,24 +27,15 @@ import mutua.subscriptionengine.TestableSubscriptionAPI;
 
 public class Configuration {
 
-	public static final Instrumentation<TestInstrumentationRequestProperty, String> log;
-	
-	public static EDataAccessLayers DEFAULT_DAL = EDataAccessLayers.POSTGRESQL;
+	public static EDataAccessLayers DEFAULT_DAL = EDataAccessLayers.RAM;
 
 	static {
-		log = new Instrumentation<TestInstrumentationRequestProperty, String>("HangmanSMSGameProcessorTests", new TestInstrumentationRequestProperty(), HangmanSMSGameInstrumentationEvents.values());
-    	try {
-        	InstrumentationProfilingEventsClient instrumentationProfilingEventsClient = new InstrumentationProfilingEventsClient(log, EInstrumentationDataPours.CONSOLE);
-			log.addInstrumentationPropagableEventsClient(instrumentationProfilingEventsClient);
-		} catch (IndirectMethodNotFoundException e) {
-			e.printStackTrace();
-		}
-    	
     	// set the vars
-    	mutua.hangmansmsgame.config.Configuration.log = log;
     	mutua.hangmansmsgame.config.Configuration.SUBSCRIPTION_ENGINE = new TestableSubscriptionAPI(log);
     	HangmanSMSGamePostgreSQLAdapters.log = log;
     	DALFactory.DEFAULT_DAL = DEFAULT_DAL;
+    	
+    	mutua.hangmansmsgame.config.Configuration.applyConfiguration();
 	}
 
 }

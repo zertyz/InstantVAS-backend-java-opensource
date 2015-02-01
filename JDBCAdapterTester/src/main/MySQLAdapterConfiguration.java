@@ -20,7 +20,7 @@ public class MySQLAdapterConfiguration extends MySQLAdapter {
 	///////////////////////
 	
 	static {
-		MySQLAdapter.DEBUG_QUERIES = true;
+		MySQLAdapter.SHOULD_DEBUG_QUERIES = true;
 	}
 
 	private MySQLAdapterConfiguration(String[][] preparedProceduresDefinitions) throws SQLException {

@@ -8,6 +8,7 @@ import mutua.events.DirectEventLink;
 import mutua.events.EventServer;
 import mutua.events.IEventLink;
 import mutua.hangmansmsgame.config.Configuration;
+import mutua.hangmansmsgame.dal.DALFactory.EDataAccessLayers;
 import mutua.hangmansmsgame.smslogic.HangmanSMSGameProcessor;
 import mutua.hangmansmsgame.smslogic.HangmanSMSGameProcessor.EHangmanSMSGameEvents;
 import mutua.hangmansmsgame.smslogic.SMSProcessorException;
@@ -33,11 +34,11 @@ import mutua.subscriptionengine.TestableSubscriptionAPI;
 public class SMSAppFrontend extends EventServer<EHangmanSMSGameEvents>{
 
 	
-	private static IEventLink<EHangmanSMSGameEvents> link = new DirectEventLink<EHangmanSMSGameEvents>(EHangmanSMSGameEvents.class);
-
-	private static SimulationMessageReceiver simulationMessageReceiver = new SimulationMessageReceiver();
-    private static HangmanSMSGameProcessor processor = new HangmanSMSGameProcessor(simulationMessageReceiver);
 	private static Instrumentation<ICCAppInstrumentationRequestProperty, String> log;
+
+	private static IEventLink<EHangmanSMSGameEvents> link = new DirectEventLink<EHangmanSMSGameEvents>(EHangmanSMSGameEvents.class);
+	private SimulationMessageReceiver simulationMessageReceiver = new SimulationMessageReceiver();
+    private HangmanSMSGameProcessor processor = new HangmanSMSGameProcessor(simulationMessageReceiver);
     
     
     static {
@@ -49,9 +50,11 @@ public class SMSAppFrontend extends EventServer<EHangmanSMSGameEvents>{
 			e.printStackTrace();
 		}
     	Configuration.SUBSCRIPTION_ENGINE = new TestableSubscriptionAPI(log);
-    	Configuration.log = log;
+    	Configuration.DATA_ACCESS_LAYER          = EDataAccessLayers.RAM;
+    	Configuration.SESSIONS_DATA_ACCESS_LAYER = EDataAccessLayers.RAM;
     	try {
-			Configuration.loadFromFile("/tmp/hangman.config");
+			//Configuration.loadFromFile("/tmp/hangman.config");
+    		Configuration.applyConfiguration();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

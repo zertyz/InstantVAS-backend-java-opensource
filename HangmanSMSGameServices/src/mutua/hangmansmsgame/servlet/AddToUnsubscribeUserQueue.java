@@ -1,5 +1,7 @@
 package mutua.hangmansmsgame.servlet;
 
+import static config.WebAppConfiguration.log;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
@@ -19,25 +21,27 @@ public class AddToUnsubscribeUserQueue extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
        
-	private static IUserDB    userDB    = DALFactory.getUserDB();
-	private static ISessionDB sessionDB = DALFactory.getSessionDB();
+	private static IUserDB    userDB    = DALFactory.getUserDB(Configuration.DATA_ACCESS_LAYER);
+	private static ISessionDB sessionDB = DALFactory.getSessionDB(Configuration.SESSIONS_DATA_ACCESS_LAYER);
 
 	protected void process(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		log.reportRequestStart(request.getQueryString());
 		PrintWriter out = response.getWriter();
 		try {
 			String phone = request.getParameter("MSISDN");
 			if (!userDB.isUserSubscribed(phone)) {
-				System.out.println("Hangman: received an api unregistration request for " + phone + ": not registered");
+				log.reportDebug("Hangman: received an api unregistration request for " + phone + ": not registered");
 			} else {
 				userDB.setSubscribed(phone, false);
 				sessionDB.setSession(new SessionDto(phone, "NEW_USER"));
-				System.out.println("Hangman: received an api unregistration request for " + phone + ": unregistration complete");
+				log.reportDebug("Hangman: received an api unregistration request for " + phone + ": unregistration complete");
 			}
 			out.print("ACCEPTED");
 		} catch (SQLException e) {
-			Configuration.log.reportThrowable(e, "Error while unsubscribing user from the web");
+			log.reportThrowable(e, "Error while unsubscribing user from the web");
 			out.print("FAILED");
 		}
+		log.reportRequestFinish();
 	}
 	
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

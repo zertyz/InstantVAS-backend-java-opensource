@@ -1,0 +1,191 @@
+package config;
+
+import java.sql.SQLException;
+
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import mutua.events.DirectEventLink;
+import mutua.events.IEventLink;
+import mutua.events.PostgreSQLQueueEventLink;
+import mutua.events.QueueEventLink;
+import mutua.events.postgresql.QueuesPostgreSQLAdapter;
+import mutua.hangmansmsgame.HangmanHTTPInstrumentationRequestProperty;
+import mutua.hangmansmsgame.HangmanSMSGameServicesInstrumentationEvents;
+import mutua.hangmansmsgame.MOSMSesQueueDataBureau;
+import mutua.hangmansmsgame.MTSMSesQueueDataBureau;
+import mutua.hangmansmsgame.config.Configuration;
+import mutua.hangmansmsgame.smslogic.HangmanSMSGameProcessor.EHangmanSMSGameEvents;
+import mutua.icc.configuration.ConfigurationManager;
+import mutua.icc.configuration.annotations.ConfigurableElement;
+import mutua.icc.instrumentation.HangmanSMSGameInstrumentationEvents;
+import mutua.icc.instrumentation.Instrumentation;
+import mutua.icc.instrumentation.eventclients.InstrumentationProfilingEventsClient;
+import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
+import mutua.imi.IndirectMethodNotFoundException;
+import mutua.smsin.parsers.SMSInCelltick;
+import mutua.smsin.parsers.SMSInParser;
+import mutua.subscriptionengine.CelltickLiveScreenSubscriptionAPI;
+
+/** <pre>
+ * WebAppConfiguration.java
+ * ========================
+ * (created by luiz, Jan 29, 2015)
+ *
+ * Defines common configuration variables for the application
+ *
+ * @see RelatedClass(es)
+ * @version $Id$
+ * @author luiz
+ */
+
+public class WebAppConfiguration {
+
+
+	// LOG
+	//////
+	public static Instrumentation<HangmanHTTPInstrumentationRequestProperty, String> log;
+	
+	
+	
+	// MO
+	/////
+	
+	public static SMSInParser<HttpServletRequest, HttpServletResponse>  smsParser = new SMSInCelltick(Configuration.APPID);
+
+	
+	// MO QUEUE
+	///////////
+	
+	public enum EQueueStrategy {DIRECT, RAM, LOG_FILE, POSTGRESQL};
+	
+	public static IEventLink<EHangmanSMSGameEvents>  gameMOProducerAndConsumerLink;
+		
+	@ConfigurableElement("Specifies what queue driver should be used to buffer incoming SMS (MOs) -- DIRECT means the messages will processed directly, on the same request thread and without any buffer; RAM means the producers and consumers must be running on the same machine and on the same process")
+	public static EQueueStrategy MO_QUEUE_STRATEGY = EQueueStrategy.POSTGRESQL;
+	@ConfigurableElement("The maximum number of entries when using 'RAM' for 'MO_QUEUE_STRATEGY'")
+	public static int    MO_RAM_QUEUE_CAPACITY             = 1000;
+	@ConfigurableElement("The directory were to store log files when using 'LOG_FILE' for 'MO_QUEUE_STRATEGY'")
+	public static String MO_RAM_QUEUE_LOG_FILES_DIRECTORY  = "";
+	@ConfigurableElement("The amount of milliseconds the consumer manager should wait between queries for new queue entries to process. Set to 0 to rely on the internal notification mechanisms and only when queue producers and consumers are running on the same machine and on the same process.")
+	public static long   MO_FILE_QUEUE_POOLING_TIME  = 0;
+	@ConfigurableElement(sameAs="mutua.events.PostgreSQLQueueEventLink.QUEUE_POOLING_TIME")
+	public static long   MO_POSTGRESQL_QUEUE_POOLING_TIME  = 0;
+	@ConfigurableElement(sameAs="mutua.events.PostgreSQLQueueEventLink.QUEUE_NUMBER_OF_WORKER_THREADS")
+	public static int    MO_QUEUE_NUMBER_OF_WORKER_THREADS = 10;
+
+	
+	public static IEventLink<EHangmanSMSGameEvents>  gameMTProducerAndConsumerLink;
+
+	@ConfigurableElement("Specifies what queue driver should be used to buffer outgoing SMS (MTs) -- DIRECT means the messages will processed directly, on the same request thread and without any buffer; RAM means the producers and consumers must be running on the same machine and on the same process")
+	public static EQueueStrategy MT_QUEUE_STRATEGY = EQueueStrategy.DIRECT;
+	@ConfigurableElement("The maximum number of entries when using 'RAM' for 'MT_QUEUE_STRATEGY'")
+	public static int    MT_RAM_QUEUE_CAPACITY             = 1000;
+	@ConfigurableElement("The directory were to store log files when using 'LOG_FILE' for 'MT_QUEUE_STRATEGY'")
+	public static String MT_RAM_QUEUE_LOG_FILES_DIRECTORY  = "";
+	@ConfigurableElement("The amount of milliseconds the consumer manager should wait between queries for new queue entries to process. Set to 0 to rely on the internal notification mechanisms and only when queue producers and consumers are running on the same machine and on the same process.")
+	public static long   MT_FILE_QUEUE_POOLING_TIME  = 0;
+	@ConfigurableElement(sameAs="mutua.events.PostgreSQLQueueEventLink.QUEUE_POOLING_TIME")
+	public static long   MT_POSTGRESQL_QUEUE_POOLING_TIME  = 0;
+	@ConfigurableElement(sameAs="mutua.events.PostgreSQLQueueEventLink.QUEUE_NUMBER_OF_WORKER_THREADS")
+	public static int    MT_QUEUE_NUMBER_OF_WORKER_THREADS = 10;
+
+
+
+	
+	static {
+    	log = new Instrumentation<HangmanHTTPInstrumentationRequestProperty, String>(Configuration.APPID, new HangmanHTTPInstrumentationRequestProperty(), HangmanSMSGameServicesInstrumentationEvents.values());
+    	log.addInstrumentableEvents(HangmanSMSGameInstrumentationEvents.values());
+    	try {
+        	InstrumentationProfilingEventsClient instrumentationProfilingEventsClient = new InstrumentationProfilingEventsClient(log, EInstrumentationDataPours.CONSOLE);
+			log.addInstrumentationPropagableEventsClient(instrumentationProfilingEventsClient);
+		} catch (IndirectMethodNotFoundException e) {
+			e.printStackTrace();
+		}
+    	Configuration.SUBSCRIPTION_ENGINE = new CelltickLiveScreenSubscriptionAPI(log, Configuration.SUBSCRIBE_SERVICE_URL, Configuration.UNSUBSCRIBE_SERVICE_URL);
+    	try {
+//    		// Obtain our environment naming context
+//    		Context initCtx = new InitialContext();
+//    		Context envCtx = (Context) initCtx.lookup("java:comp/env");
+//
+//    		// Look up our data source
+//    		String configFileName = (String)envCtx.lookup("hangmanSMSGameConfigFileName");
+    		String configFileName = "/tmp/hangman.config";
+    		log.reportDebug("Attempting to read configuration file from '"+configFileName+"'");
+    		ConfigurationManager cm = new ConfigurationManager(log, WebAppConfiguration.class, Configuration.class);
+    		//cm.saveToFile(configFileName);
+    		cm.loadFromFile(configFileName);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+    	
+    	applyConfiguration();
+    	Configuration.applyConfiguration();
+    	
+    	
+    	// QUEUES
+    	/////////
+
+    	// MO
+    	switch (MO_QUEUE_STRATEGY) {
+			case DIRECT:
+				log.reportDebug("Creating a 'DirectEventLink' MO event handling mechanism");
+				gameMOProducerAndConsumerLink = new DirectEventLink<EHangmanSMSGameEvents>(EHangmanSMSGameEvents.class);
+				break;
+    		case POSTGRESQL:
+				try {
+					log.reportDebug("Creating a 'PostgreSQLQueueEventLink' MO event handling mechanism");
+					gameMOProducerAndConsumerLink = new PostgreSQLQueueEventLink<EHangmanSMSGameEvents>(EHangmanSMSGameEvents.class, "MOSMSes", new MOSMSesQueueDataBureau());
+	    			break;
+				} catch (SQLException e) {
+					log.reportThrowable(e, "Error creating the 'PostgreSQLQueueEventLink' MO queue. Falling back to 'RAM' queue strategy");
+				}
+    		case RAM:
+				log.reportDebug("Creating a 'QueueEventLink' MO event handling mechanism");
+    			gameMOProducerAndConsumerLink = new QueueEventLink<EHangmanSMSGameEvents>(EHangmanSMSGameEvents.class, MO_RAM_QUEUE_CAPACITY, MO_QUEUE_NUMBER_OF_WORKER_THREADS);
+    			break;
+    		default:
+    			throw new RuntimeException("Don't know nothing about '"+MO_QUEUE_STRATEGY+"' MO queue strategy");
+    	}
+
+    	// MT
+    	switch (MT_QUEUE_STRATEGY) {
+			case DIRECT:
+				log.reportDebug("Creating a 'DirectEventLink' MT event handling mechanism");
+				gameMTProducerAndConsumerLink = new DirectEventLink<EHangmanSMSGameEvents>(EHangmanSMSGameEvents.class);
+				break;
+    		case POSTGRESQL:
+				try {
+					log.reportDebug("Creating a 'PostgreSQLQueueEventLink' MT event handling mechanism");
+					gameMTProducerAndConsumerLink = new PostgreSQLQueueEventLink<EHangmanSMSGameEvents>(EHangmanSMSGameEvents.class, "MTSMSes", new MTSMSesQueueDataBureau());
+	    			break;
+				} catch (SQLException e) {
+					log.reportThrowable(e, "Error creating the 'PostgreSQLQueueEventLink' MT queue. Falling back to 'RAM' queue strategy");
+				}
+    		case RAM:
+				log.reportDebug("Creating a 'QueueEventLink' MT event handling mechanism");
+    			gameMTProducerAndConsumerLink = new QueueEventLink<EHangmanSMSGameEvents>(EHangmanSMSGameEvents.class, MT_RAM_QUEUE_CAPACITY, MT_QUEUE_NUMBER_OF_WORKER_THREADS);
+    			break;
+    		default:
+    			throw new RuntimeException("Don't know nothing about '"+MT_QUEUE_STRATEGY+"' MT queue strategy");
+    	}
+
+    }
+	
+	public static void applyConfiguration() {
+		
+		// PostgreSQL queues
+		////////////////////
+		
+		PostgreSQLQueueEventLink.QUEUE_POOLING_TIME             = MO_POSTGRESQL_QUEUE_POOLING_TIME;
+		PostgreSQLQueueEventLink.QUEUE_NUMBER_OF_WORKER_THREADS = MO_QUEUE_NUMBER_OF_WORKER_THREADS;
+		QueuesPostgreSQLAdapter.log      = log; 
+		QueuesPostgreSQLAdapter.HOSTNAME = Configuration.POSTGRESQL_CONNECTION_HOSTNAME;
+		QueuesPostgreSQLAdapter.PORT     = Configuration.POSTGRESQL_CONNECTION_PORT;
+		QueuesPostgreSQLAdapter.DATABASE = Configuration.POSTGRESQL_CONNECTION_DATABASE_NAME;
+		QueuesPostgreSQLAdapter.USER     = Configuration.POSTGRESQL_CONNECTION_USER;
+		QueuesPostgreSQLAdapter.PASSWORD = Configuration.POSTGRESQL_CONNECTION_PASSWORD;
+	}
+
+}

@@ -168,6 +168,8 @@ public class HangmanSMSGameProcessor implements EventClient<EHangmanSMSGameEvent
 	@EventConsumer({/*EHangmanSMSGameEvents.*/"PROCESS_INCOMING_SMS"})
 	public void process(IncomingSMSDto incomingSMS) throws SMSProcessorException {
 		
+		log.reportRequestStart(incomingSMS.getPhone());
+		
 		String incomingPhone = incomingSMS.getPhone();
 		String incomingText = incomingSMS.getText();
 		
@@ -206,6 +208,8 @@ public class HangmanSMSGameProcessor implements EventClient<EHangmanSMSGameEvent
 				}
 				// route messages
 				routeMessages(commandResponse.getResponseMessages(), incomingSMS);
+				
+				log.reportRequestFinish();
 			}
 		} else {
 			throw new RuntimeException("The incoming message '" + incomingText +

@@ -6,7 +6,9 @@
 		<project>HangmanSMSGame</project>
 		<project>HangmanSMSGameDAL</project>
 		<project>HTTPClientAdapter</project>
+		<project>JDBCAdapter</project>
 		<project>MutuaEvents</project>
+		<project>MutuaEventsAdditionalEventLinks</project>
 		<project>MutuaGPP2PCommunications</project>
 		<project>MutuaICCConfiguration</project>
 		<project>MutuaICCInstrumentation</project>
@@ -18,7 +20,7 @@
 		<project>SMSOutSender</project>
 		<project>SubscriptionEngine</project>
 		<project>SubscriptionEngineCelltick</project>
-		<project>JDBCAdapter</project>
+		<project>ReportDataCollector</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

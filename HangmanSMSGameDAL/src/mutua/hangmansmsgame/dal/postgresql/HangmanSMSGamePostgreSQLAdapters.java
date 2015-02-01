@@ -1,6 +1,7 @@
 package mutua.hangmansmsgame.dal.postgresql;
 import java.sql.SQLException;
 
+import mutua.icc.configuration.annotations.ConfigurableElement;
 import mutua.icc.instrumentation.Instrumentation;
 import adapters.JDBCAdapter;
 import adapters.PostgreSQLAdapter;
@@ -20,15 +21,26 @@ import adapters.PostgreSQLAdapter;
 
 public class HangmanSMSGamePostgreSQLAdapters extends PostgreSQLAdapter {
 	
-	public static Instrumentation<?, ?> log;
 	
+	// configuration
+	////////////////
+	
+	@ConfigurableElement("The application's instrumentation instance to be used to log PostgreSQL database events")
+	public static Instrumentation<?, ?> log;
+
+	@ConfigurableElement("Hostname (or IP) of the PostgreSQL server")
 	public static String HOSTNAME;
+	@ConfigurableElement("Connection port for the PostgreSQL server")
 	public static int    PORT;
+	@ConfigurableElement("The PostgreSQL database with the application's data scope")
 	public static String DATABASE;
+	@ConfigurableElement("The PostgreSQL user name to access 'DATABASE' -- note: administrative rights, such as the creation of tables, might be necessary")
 	public static String USER;
+	@ConfigurableElement("The PostgreSQL plain text password for 'USER'")
 	public static String PASSWORD;
 
-	public HangmanSMSGamePostgreSQLAdapters(Instrumentation<?, ?> log, String[][] preparedProceduresDefinitions) throws SQLException {
+	
+	private HangmanSMSGamePostgreSQLAdapters(Instrumentation<?, ?> log, String[][] preparedProceduresDefinitions) throws SQLException {
 		super(log, preparedProceduresDefinitions);
 	}
 

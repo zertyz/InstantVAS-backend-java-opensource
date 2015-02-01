@@ -85,20 +85,5 @@ public class IPhraseologyTests {
 //		});
 //		assertEquals("Null parameter values substitution failed", "{{nick}} ({{state}}/{{numberOfLuckyNumbers}})", message);
 	}
-	
-	@Test
-	public void testConfigurationReflections() throws IllegalArgumentException, IllegalAccessException, IOException {
-		new HangmanSMSGameProcessorTests();	// force the initialization of 'Configuration.log'
-		String serializedFields = Configuration.serializeStaticFields(Configuration.class);
-		Configuration.desserializeStaticFields(Configuration.class, serializedFields);
-		String reserializedFields = Configuration.serializeStaticFields(Configuration.class);
-		assertEquals("Serialization/Desserialization of Configuration failed", serializedFields, reserializedFields);
-		String filePath = "/tmp/hangman.config";
-		FileOutputStream fout = new FileOutputStream(filePath);
-		fout.write(serializedFields.getBytes());
-		fout.close();
-		Configuration.loadFromFile(filePath);
-	}
-
 
 }

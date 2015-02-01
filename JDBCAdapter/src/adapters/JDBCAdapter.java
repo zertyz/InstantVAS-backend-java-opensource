@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 
+import mutua.icc.configuration.annotations.ConfigurableElement;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.icc.instrumentation.JDBCAdapterInstrumentationEvents;
 import adapters.dto.PreparedProcedureInvocationDto;
@@ -38,7 +39,9 @@ public abstract class JDBCAdapter {
 	
 	// configuration
 	////////////////
-	public static boolean DEBUG_QUERIES = true;
+	
+	@ConfigurableElement("Whether or not to show SQL queries sent to the database server")
+	public static boolean SHOULD_DEBUG_QUERIES = true;
 	
 	// to be defined in the 'getCredentials' method
 	protected String HOSTNAME;

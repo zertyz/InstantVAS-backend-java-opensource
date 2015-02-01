@@ -6,19 +6,15 @@ import static org.junit.Assert.fail;
 
 import java.sql.SQLException;
 
-import config.Configuration;
-import static config.Configuration.log;
 import mutua.hangmansmsgame.dal.DALFactory;
 import mutua.hangmansmsgame.dal.ISessionDB;
 import mutua.hangmansmsgame.dal.IUserDB;
-import mutua.hangmansmsgame.dal.DALFactory.EDataAccessLayers;
 import mutua.hangmansmsgame.dal.dto.SessionDto;
-import mutua.icc.instrumentation.Instrumentation;
-import mutua.icc.instrumentation.TestInstrumentationRequestProperty;
 import mutua.smsin.dto.IncomingSMSDto;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 import mutua.smsout.dto.OutgoingSMSDto;
 import mutua.subscriptionengine.TestableSubscriptionAPI;
+import config.Configuration;
 
 /** <pre>
  *  TestCommons.java
@@ -89,20 +85,20 @@ public class TestCommons {
 	public void checkResponse(String phone, String inputText, String... expectedResponsesText) {
 		try {
 			IncomingSMSDto mo = new IncomingSMSDto(phone, inputText, TEST_CARRIER, "1234", "null");
-			log.reportRequestStart(Thread.currentThread().getStackTrace()[1].getMethodName());
+//			log.reportRequestStart(Thread.currentThread().getStackTrace()[1].getMethodName());
 			processor.process(mo);
-			log.reportRequestFinish();
+//			log.reportRequestFinish();
 			OutgoingSMSDto[] observedResponses = responseReceiver.getLastOutgoingSMSes();
 			boolean isNullityCorrect = ((expectedResponsesText == null) && (observedResponses == null)) ||
 			                           ((expectedResponsesText != null) && (observedResponses != null));
 			assertTrue("The 'expectedResponseText' nullity isn't the same as 'observedResponses's", isNullityCorrect);
-System.out.print("#"+phone+";"+inputText+";");
+//System.out.print("#"+phone+";"+inputText+";");
 			String[] observedResponsesText = new String[observedResponses.length];
 			for (int i=0; i<observedResponses.length; i++) {
-System.out.print(observedResponses[i].getPhone()+";"+observedResponses[i].getText().replaceAll("\n", "\\\\n")+";");
+//System.out.print(observedResponses[i].getPhone()+";"+observedResponses[i].getText().replaceAll("\n", "\\\\n")+";");
 				observedResponsesText[i] = observedResponses[i].getText();
 			}
-System.out.println("\n");
+//System.out.println("\n");
 			assertArrayEquals("This command generated the wrong messages", expectedResponsesText, observedResponsesText);
 		} catch (SMSProcessorException e) {
 			fail("Exception while processing message: "+e.getMessage());

@@ -8,7 +8,7 @@ import java.util.ArrayList;
  * =========================================
  * (created by luiz, Jan 26, 2015)
  *
- * Defines the available properties to participate on instrumentation events
+ * Defines the available properties that can participate on instrumentation events
  *
  * @see JDBCAdapterInstrumentationEvents
  * @version $Id$

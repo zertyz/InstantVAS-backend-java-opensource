@@ -20,7 +20,7 @@ public class SQLServerAdapterConfiguration extends SQLServerAdapter {
 	///////////////////////////
 	
 	static {
-		SQLServerAdapter.DEBUG_QUERIES = true;
+		SQLServerAdapter.SHOULD_DEBUG_QUERIES = true;
 	}
 
 	private SQLServerAdapterConfiguration(String[][] preparedProceduresDefinitions) throws SQLException {

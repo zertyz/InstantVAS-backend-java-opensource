@@ -4,8 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import javax.security.auth.login.Configuration;
-
+import mutua.icc.configuration.annotations.ConfigurableElement;
 import mutua.icc.instrumentation.Instrumentation;
 
 /** <pre>
@@ -22,8 +21,11 @@ import mutua.icc.instrumentation.Instrumentation;
 
 public abstract class PostgreSQLAdapter extends JDBCAdapter {
 
-	// driver configuration
-	protected static String  CONNECTION_PROPERTIES = "characterEncoding=UTF8&characterSetResults=UTF8&autoReconnect=true&connectTimeout=10000&socketTimeout=10000";
+	// configuration
+	////////////////
+	
+	@ConfigurableElement("Additional URL parameters for PostgreSQL JDBC driver connection properties")
+	public static String  CONNECTION_PROPERTIES = "characterEncoding=UTF8&characterSetResults=UTF8&autoReconnect=true&connectTimeout=10000&socketTimeout=10000";
 
 
 	public PostgreSQLAdapter(Instrumentation<?, ?> log, String[][] preparedProceduresDefinitions) throws SQLException {
@@ -41,6 +43,7 @@ public abstract class PostgreSQLAdapter extends JDBCAdapter {
 	}
 	
 	@Override
+	/** For postgreSQL, a different strategy is used to "drop" the database -- drop all tables instead */
 	protected String getDropDatabaseCommand() {
 		String statements = "";		
 		String[][] tableDefinitions = getTableDefinitions();
@@ -54,14 +57,7 @@ public abstract class PostgreSQLAdapter extends JDBCAdapter {
 
 	@Override
 	protected Connection createAdministrativeConnection() throws SQLException {
-		if (true) return createDatabaseConnection();	// disable administrative connections
-		String url = "jdbc:postgresql://" + HOSTNAME + ":"+PORT+"/?" +
-		             CONNECTION_PROPERTIES; 
-
-		System.out.println("PostgreSQLAdapter: Attempting to connect: "+url+" with USER='"+USER+"' and PASSWORD='"+PASSWORD+"'");
-		return DriverManager.getConnection(url,
-		                                   USER,
-		                                   PASSWORD);
+		return createDatabaseConnection();	// it seems it is impossible to connect to PostgreSQL without a database
 	}
 
 	@Override

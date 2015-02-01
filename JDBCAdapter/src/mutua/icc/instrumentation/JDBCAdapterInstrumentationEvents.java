@@ -25,6 +25,7 @@ public enum JDBCAdapterInstrumentationEvents implements IInstrumentableEvent {
 	
 	
 	// communications
+	/////////////////
 	
 	IE_DATABASE_QUERY ("Database Query", IP_SQL_TEMPLATE, IP_SQL_TEMPLATE_PARAMETERS),
 

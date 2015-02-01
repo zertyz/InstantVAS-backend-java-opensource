@@ -25,7 +25,7 @@ public class PostgreSQLAdapterConfiguration extends PostgreSQLAdapter {
 	////////////////////////////
 	
 	static {
-		MySQLAdapter.DEBUG_QUERIES = true;
+		MySQLAdapter.SHOULD_DEBUG_QUERIES = true;
 	}
 
 	private PostgreSQLAdapterConfiguration(String[][] preparedProceduresDefinitions) throws SQLException {
