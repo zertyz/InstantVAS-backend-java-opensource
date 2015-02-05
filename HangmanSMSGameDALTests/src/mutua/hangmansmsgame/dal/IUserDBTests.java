@@ -54,6 +54,10 @@ public class IUserDBTests {
 		assertTrue("Failed register user subscription", userDB.isUserSubscribed("21991234899"));
 		userDB.setSubscribed("21aabababb", true);
 		
+		// last bot word
+		assertEquals("First bot word should be the first index of a Java array: 0", 0, userDB.getAndIncrementNextBotWord("21991234899"));
+		assertEquals("Second bot word should be the second index of a Java array, and so on...", 1, userDB.getAndIncrementNextBotWord("21991234899"));
+		
 	}
 
 }

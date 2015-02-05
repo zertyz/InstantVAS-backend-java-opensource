@@ -64,15 +64,10 @@ public class MessageDispatcher {
 		}
 	}
 	 
-	/**
-	 * Translates an internal message object into an external message object
-	 * applying the billing rules and respecting the convention:
-	 * null phones in destination messages mean they are addressed
-	 * to the originating user
-	 * @param incomingSMS
-	 * @param internalResponseMessage
-	 * @return
-	 */
+	/** Translates an internal message object into an external message object
+	 *  applying the billing rules and respecting the convention:
+	 *  null phones in destination messages mean they are addressed
+	 *  to the originating user */
 	private OutgoingSMSDto translateResponseMessage(IncomingSMSDto incomingSMS,	CommandMessageDto internalResponseMessage) {
 		String phone = internalResponseMessage.getPhone();
 		String text  = internalResponseMessage.getText();
@@ -81,7 +76,7 @@ public class MessageDispatcher {
 		if (phone == null) {
 			phone = incomingSMS.getPhone();
 		}
-		OutgoingSMSDto externalMessage = new OutgoingSMSDto(phone, text, billingType);
+		OutgoingSMSDto externalMessage = new OutgoingSMSDto(incomingSMS.getMoId(), phone, text, billingType);
 
 		return externalMessage;
 	}
@@ -94,14 +89,10 @@ public class MessageDispatcher {
 		this.receiver = receiver;
 	}
 
-	/**
-	 * Dispatches messages generated in the system to a receiver able to forward it to their destination
-	 * @param internalMessages
-	 * @param incomingSms
-	 */
+	/** Dispatches messages generated in the system to a receiver able to forward it to their destination */
 	public void dispatchMessage(CommandMessageDto[] internalMessages, IncomingSMSDto incomingSms) throws SQLException {
 		OutgoingSMSDto externalMessage;
-		for (int i = 0; i < internalMessages.length; i++) {
+		for (int i=0; i<internalMessages.length; i++) {
 			externalMessage = translateResponseMessage(incomingSms, internalMessages[i]);
 			receiver.onMessage(externalMessage, incomingSms);
 		}

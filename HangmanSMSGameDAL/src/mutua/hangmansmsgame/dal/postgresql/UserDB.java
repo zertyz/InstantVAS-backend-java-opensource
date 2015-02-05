@@ -98,4 +98,12 @@ public class UserDB implements IUserDB {
 		dba.invokeUpdateProcedure(procedure);
 	}
 
+	@Override
+	public int getAndIncrementNextBotWord(String phoneNumber) throws SQLException {
+		PreparedProcedureInvocationDto procedure = new PreparedProcedureInvocationDto("IncrementNextBotWordByPhone");
+		procedure.addParameter("PHONE", phoneNumber);
+		int nextBotWord = (Integer)dba.invokeScalarProcedure(procedure);
+		return nextBotWord;
+	}
+
 }

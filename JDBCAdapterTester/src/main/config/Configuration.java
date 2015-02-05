@@ -25,9 +25,10 @@ public class Configuration {
 	public static final Instrumentation<DefaultInstrumentationProperties, String> log;
 	
 	static {
-		log = new Instrumentation<DefaultInstrumentationProperties, String>("JDBCAdapterTester", DIP_MSG, JDBCAdapterInstrumentationEvents.values());
+		log = new Instrumentation<DefaultInstrumentationProperties, String>("JDBCAdapterTester", DIP_MSG,
+				EInstrumentationDataPours.CONSOLE, null, JDBCAdapterInstrumentationEvents.values());
     	try {
-        	InstrumentationProfilingEventsClient instrumentationProfilingEventsClient = new InstrumentationProfilingEventsClient(log, EInstrumentationDataPours.CONSOLE);
+        	InstrumentationProfilingEventsClient instrumentationProfilingEventsClient = new InstrumentationProfilingEventsClient(log, EInstrumentationDataPours.CONSOLE, null);
 			log.addInstrumentationPropagableEventsClient(instrumentationProfilingEventsClient);
 		} catch (IndirectMethodNotFoundException e) {
 			e.printStackTrace();

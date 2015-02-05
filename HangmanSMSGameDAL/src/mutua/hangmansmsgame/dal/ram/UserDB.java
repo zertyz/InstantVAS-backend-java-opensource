@@ -25,6 +25,8 @@ public class UserDB implements IUserDB {
 	private static Hashtable<String, String> phonesByNickname = new Hashtable<String, String>();
 	/** subscriptionsByPhone := {[phone] = "nickname", ...} */
 	private static Hashtable<String, Boolean> subscriptionsByPhone = new Hashtable<String, Boolean>();
+	/** nextBotWordByPhone := {[phone] = nextBotWord, ...} */
+	private static Hashtable<String, Integer> nextBotWordByPhone = new Hashtable<String, Integer>();
 	
 	
 	// AUXILIAR METHODS
@@ -40,6 +42,7 @@ public class UserDB implements IUserDB {
 		nicknamesByPhone.clear();
 		phonesByNickname.clear();
 		subscriptionsByPhone.clear();
+		nextBotWordByPhone.clear();
 	}
 
 	@Override
@@ -99,6 +102,18 @@ public class UserDB implements IUserDB {
 	@Override
 	public void setSubscribed(String phoneNumber, boolean subscribed) {
 		subscriptionsByPhone.put(phoneNumber, subscribed);
+	}
+
+	@Override
+	public int getAndIncrementNextBotWord(String phoneNumber) {
+		int nextBotWord = 0;
+		int returnValue;
+		if (nextBotWordByPhone.containsKey(phoneNumber)) {
+			nextBotWord = nextBotWordByPhone.get(phoneNumber);
+		}
+		returnValue = nextBotWord++;
+		nextBotWordByPhone.put(phoneNumber, nextBotWord);
+		return returnValue;
 	}
 
 

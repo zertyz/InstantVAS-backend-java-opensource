@@ -38,8 +38,8 @@ public class AddToUnsubscribeUserQueue extends HttpServlet {
 			}
 			out.print("ACCEPTED");
 		} catch (SQLException e) {
-			log.reportThrowable(e, "Error while unsubscribing user from the web");
 			out.print("FAILED");
+			log.reportThrowable(e, "Error while unsubscribing user from the web");
 		}
 		log.reportRequestFinish();
 	}

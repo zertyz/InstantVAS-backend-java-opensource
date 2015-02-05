@@ -13,17 +13,21 @@ import mutua.events.QueueEventLink;
 import mutua.events.postgresql.QueuesPostgreSQLAdapter;
 import mutua.hangmansmsgame.HangmanHTTPInstrumentationRequestProperty;
 import mutua.hangmansmsgame.HangmanSMSGameServicesInstrumentationEvents;
+import mutua.hangmansmsgame.HangmanSMSGameServicesInstrumentationProperties;
 import mutua.hangmansmsgame.MOSMSesQueueDataBureau;
 import mutua.hangmansmsgame.MTSMSesQueueDataBureau;
 import mutua.hangmansmsgame.config.Configuration;
 import mutua.hangmansmsgame.smslogic.HangmanSMSGameProcessor.EHangmanSMSGameEvents;
 import mutua.icc.configuration.ConfigurationManager;
 import mutua.icc.configuration.annotations.ConfigurableElement;
+import mutua.icc.instrumentation.DefaultInstrumentationProperties;
 import mutua.icc.instrumentation.HangmanSMSGameInstrumentationEvents;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.icc.instrumentation.eventclients.InstrumentationProfilingEventsClient;
 import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
 import mutua.imi.IndirectMethodNotFoundException;
+import mutua.smsin.dto.IncomingSMSDto;
+import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 import mutua.smsin.parsers.SMSInCelltick;
 import mutua.smsin.parsers.SMSInParser;
 import mutua.subscriptionengine.CelltickLiveScreenSubscriptionAPI;
@@ -43,8 +47,10 @@ import mutua.subscriptionengine.CelltickLiveScreenSubscriptionAPI;
 public class WebAppConfiguration {
 
 
-	// LOG
-	//////
+	// LOGGING
+	//////////
+
+	public static Instrumentation<DefaultInstrumentationProperties, String> configurationLog;
 	public static Instrumentation<HangmanHTTPInstrumentationRequestProperty, String> log;
 	
 	
@@ -92,19 +98,9 @@ public class WebAppConfiguration {
 	public static int    MT_QUEUE_NUMBER_OF_WORKER_THREADS = 10;
 
 
-
-	
-	static {
-    	log = new Instrumentation<HangmanHTTPInstrumentationRequestProperty, String>(Configuration.APPID, new HangmanHTTPInstrumentationRequestProperty(), HangmanSMSGameServicesInstrumentationEvents.values());
-    	log.addInstrumentableEvents(HangmanSMSGameInstrumentationEvents.values());
-    	try {
-        	InstrumentationProfilingEventsClient instrumentationProfilingEventsClient = new InstrumentationProfilingEventsClient(log, EInstrumentationDataPours.CONSOLE);
-			log.addInstrumentationPropagableEventsClient(instrumentationProfilingEventsClient);
-		} catch (IndirectMethodNotFoundException e) {
-			e.printStackTrace();
-		}
-    	Configuration.SUBSCRIPTION_ENGINE = new CelltickLiveScreenSubscriptionAPI(log, Configuration.SUBSCRIBE_SERVICE_URL, Configuration.UNSUBSCRIBE_SERVICE_URL);
-    	try {
+	public static void loadConfiguration() {
+		
+		try {
 //    		// Obtain our environment naming context
 //    		Context initCtx = new InitialContext();
 //    		Context envCtx = (Context) initCtx.lookup("java:comp/env");
@@ -112,18 +108,40 @@ public class WebAppConfiguration {
 //    		// Look up our data source
 //    		String configFileName = (String)envCtx.lookup("hangmanSMSGameConfigFileName");
     		String configFileName = "/tmp/hangman.config";
-    		log.reportDebug("Attempting to read configuration file from '"+configFileName+"'");
-    		ConfigurationManager cm = new ConfigurationManager(log, WebAppConfiguration.class, Configuration.class);
+    		configurationLog.reportRequestStart("Attempting to read configuration file from '"+configFileName+"'");
+    		ConfigurationManager cm = new ConfigurationManager(configurationLog, WebAppConfiguration.class, Configuration.class);
     		//cm.saveToFile(configFileName);
     		cm.loadFromFile(configFileName);
+    		configurationLog.reportRequestFinish();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
     	
+		
+    	// LOGS
+    	///////
+    	
+    	try {
+        	log = new Instrumentation<HangmanHTTPInstrumentationRequestProperty, String>(Configuration.APPID + " WEB", new HangmanHTTPInstrumentationRequestProperty(),
+        			Configuration.LOG_STRATEGY, Configuration.LOG_WEBAPP_FILE_PATH, HangmanSMSGameServicesInstrumentationEvents.values());
+        	InstrumentationProfilingEventsClient instrumentationProfilingEventsClient = new InstrumentationProfilingEventsClient(log,
+        			Configuration.LOG_STRATEGY, Configuration.LOG_WEBAPP_FILE_PATH);
+			log.addInstrumentationPropagableEventsClient(instrumentationProfilingEventsClient);
+	    	Configuration.SUBSCRIPTION_ENGINE = new CelltickLiveScreenSubscriptionAPI(log, Configuration.SUBSCRIBE_SERVICE_URL, Configuration.UNSUBSCRIBE_SERVICE_URL);
+		} catch (IndirectMethodNotFoundException e) {
+			e.printStackTrace();
+		}
+
+    	
     	applyConfiguration();
-    	Configuration.applyConfiguration();
-    	
-    	
+    	try {
+			Configuration.applyConfiguration();
+		} catch (Throwable t) {
+			t.printStackTrace();
+			configurationLog.reportThrowable(t, "Error applying Configuration");
+		}
+
+
     	// QUEUES
     	/////////
 
@@ -173,7 +191,7 @@ public class WebAppConfiguration {
 
     }
 	
-	public static void applyConfiguration() {
+	private static void applyConfiguration() {
 		
 		// PostgreSQL queues
 		////////////////////
@@ -186,6 +204,15 @@ public class WebAppConfiguration {
 		QueuesPostgreSQLAdapter.DATABASE = Configuration.POSTGRESQL_CONNECTION_DATABASE_NAME;
 		QueuesPostgreSQLAdapter.USER     = Configuration.POSTGRESQL_CONNECTION_USER;
 		QueuesPostgreSQLAdapter.PASSWORD = Configuration.POSTGRESQL_CONNECTION_PASSWORD;
+	}
+
+
+	static {
+
+		// by this time, before reading the configuration, we can only log to console
+		configurationLog = new Instrumentation<DefaultInstrumentationProperties, String>(Configuration.APPID+"Configuration", DefaultInstrumentationProperties.DIP_MSG, EInstrumentationDataPours.CONSOLE, null);
+		
+		loadConfiguration();
 	}
 
 }

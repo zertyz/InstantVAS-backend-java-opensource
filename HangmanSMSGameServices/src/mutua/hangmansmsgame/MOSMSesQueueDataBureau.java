@@ -32,12 +32,12 @@ public class MOSMSesQueueDataBureau extends IDatabaseQueueDataBureau<EHangmanSMS
 	}
 
 	@Override
-	public IndirectMethodInvocationInfo<EHangmanSMSGameEvents> desserializeQueueEntry(Object[] databaseRow) {
+	public IndirectMethodInvocationInfo<EHangmanSMSGameEvents> desserializeQueueEntry(int moId, Object[] databaseRow) {
 		String carrier = (String)databaseRow[1];
 		String phone   = (String)databaseRow[2];
 		String text    = (String)databaseRow[3];
-		IncomingSMSDto mo = new IncomingSMSDto(phone, text, ESMSInParserCarrier.valueOf(carrier), Configuration.SHORT_CODE, "-1");
-		IndirectMethodInvocationInfo<EHangmanSMSGameEvents> entry = new IndirectMethodInvocationInfo<EHangmanSMSGameEvents>(EHangmanSMSGameEvents.PROCESS_INCOMING_SMS, mo);
+		IncomingSMSDto mo = new IncomingSMSDto(moId, phone, text, ESMSInParserCarrier.valueOf(carrier), Configuration.SHORT_CODE);
+		IndirectMethodInvocationInfo<EHangmanSMSGameEvents> entry = new IndirectMethodInvocationInfo<EHangmanSMSGameEvents>(EHangmanSMSGameEvents.INTERACTIVE_REQUEST, mo);
 		return entry;
 	}
 
@@ -47,7 +47,7 @@ public class MOSMSesQueueDataBureau extends IDatabaseQueueDataBureau<EHangmanSMS
 	}
 
 	@Override
-	public String getFieldListForFetchQueueElementById() {
+	public String getQueueElementFieldList() {
 		return "methodId, carrier, phone, text";
 	}
 

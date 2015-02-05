@@ -30,7 +30,7 @@ public class StateDetails {
 	private static final CommandTriggersDto SHOW_FULL_HELP_COMMAND_PATTERNS =
 		new CommandTriggersDto(ECOMMANDS.SHOW_FULL_HELP_MESSAGE, new String[] {"AJUDA", "HELP"});
 	private static final CommandTriggersDto SHOW_PROFILE_COMMAND_PATTERNS =
-		new CommandTriggersDto(ECOMMANDS.SHOW_PROFILE, new String[] {"PROFILE (.*)"});
+		new CommandTriggersDto(ECOMMANDS.SHOW_PROFILE, new String[] {"PROFILE (.*)", "PROFILE"});
 	private static final CommandTriggersDto DEFINE_NICK_COMMAND_PATTERNS =
 		new CommandTriggersDto(ECOMMANDS.DEFINE_NICK, new String[] {"NICK (.*)"});
 	private static final CommandTriggersDto LIST_USERS_COMMAND_PATTERNS =
@@ -76,7 +76,8 @@ public class StateDetails {
 		INVITE_NICK_OR_PHONE_COMMAND_PATTERNS,
 		PLAY_WITH_RANDOM_USER_OR_BOT_COMMAND_PATTERNS,
 		UNSUBSCRIBE_COMMAND_PATTERNS,
-		FALLBACK_HELP_COMMAND_PATTERNS,
+		new CommandTriggersDto(ECOMMANDS.NO_ANSWER, new String[] {
+			".*"}),
 	};
 	
 	public static final CommandTriggersDto[] ENTERING_OPPONENT_CONTACT_INFO = {
@@ -128,33 +129,37 @@ public class StateDetails {
 	};
 
 	public static final CommandTriggersDto[] GUESSING_HUMAN_WORD = {
+		new CommandTriggersDto(ECOMMANDS.SUGGEST_LETTER_OR_WORD_FOR_HUMAN, new String[] {
+			"([A-Z])"}),	// ignore any other command patter that recognizes only a letter -- C, J, R, ...
 		SHOW_FULL_HELP_COMMAND_PATTERNS,
 		SHOW_PROFILE_COMMAND_PATTERNS,
 		DEFINE_NICK_COMMAND_PATTERNS,
 		LIST_USERS_COMMAND_PATTERNS,
 		PROVOKE_COMMAND_PATTERNS,
-		new CommandTriggersDto(ECOMMANDS.SUGGEST_LETTER_OR_WORD_FOR_HUMAN, new String[] {
-			"(C)", "(J)"}),	// TODO fix the C conflict with 'START_INVITATION_PROCESS_COMMAND_PATTERNS'
 		START_INVITATION_PROCESS_COMMAND_PATTERNS,
 		INVITE_NICK_OR_PHONE_COMMAND_PATTERNS,
 		PLAY_WITH_RANDOM_USER_OR_BOT_COMMAND_PATTERNS,
 		UNSUBSCRIBE_COMMAND_PATTERNS,
+		new CommandTriggersDto(ECOMMANDS.CANCEL_HUMAN_GAME, new String[] {
+			"END"}),
 		new CommandTriggersDto(ECOMMANDS.SUGGEST_LETTER_OR_WORD_FOR_HUMAN, new String[] {
 			"(.*)"})
 	};
 	
 	public static final CommandTriggersDto[] GUESSING_BOT_WORD = {
+		new CommandTriggersDto(ECOMMANDS.SUGGEST_LETTER_OR_WORD_FOR_BOT, new String[] {
+			"([A-Z])"}),	// ignore any other command patter that recognizes only a letter -- C, J, R, ...
 		SHOW_FULL_HELP_COMMAND_PATTERNS,
 		SHOW_PROFILE_COMMAND_PATTERNS,
 		DEFINE_NICK_COMMAND_PATTERNS,
 		LIST_USERS_COMMAND_PATTERNS,
 		PROVOKE_COMMAND_PATTERNS,
-		new CommandTriggersDto(ECOMMANDS.SUGGEST_LETTER_OR_WORD_FOR_BOT, new String[] {
-			"(C)", "(J)"}),	// TODO fix the C conflict with 'START_INVITATION_PROCESS_COMMAND_PATTERNS'
 		START_INVITATION_PROCESS_COMMAND_PATTERNS,
 		INVITE_NICK_OR_PHONE_COMMAND_PATTERNS,
 		PLAY_WITH_RANDOM_USER_OR_BOT_COMMAND_PATTERNS,
 		UNSUBSCRIBE_COMMAND_PATTERNS,
+		new CommandTriggersDto(ECOMMANDS.CANCEL_BOT_GAME, new String[] {
+			"END"}),
 		new CommandTriggersDto(ECOMMANDS.SUGGEST_LETTER_OR_WORD_FOR_BOT, new String[] {
 			"(.*)"})
 	};

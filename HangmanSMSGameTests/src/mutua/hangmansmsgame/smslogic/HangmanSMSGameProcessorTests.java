@@ -1,13 +1,12 @@
 package mutua.hangmansmsgame.smslogic;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.sql.SQLException;
 import java.util.Random;
 
 import mutua.hangmansmsgame.dal.DALFactory;
 import mutua.hangmansmsgame.dal.IUserDB;
-import mutua.hangmansmsgame.dal.DALFactory.EDataAccessLayers;
 import mutua.hangmansmsgame.hangmangamelogic.HangmanGame;
 import mutua.hangmansmsgame.i18n.IPhraseology;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
@@ -44,8 +43,14 @@ public class HangmanSMSGameProcessorTests {
     
     /** for NEW_USERs, register a new player's 'phone' and give it the provided 'nickname' */
     public void registerUser(String phone, String nickname) {
-    	tc.checkResponse(phone, "forca",        testPhraseology.INFOWelcome());
+    	tc.checkResponse(phone, "forca",            testPhraseology.INFOWelcome());
 		tc.checkResponse(phone, "nick " + nickname, testPhraseology.PROFILENickRegisteredNotification(nickname));
+    }
+    
+    /** for EXISTING_USERs, send 'play' to start playing with a bot */
+    public void playWithBot(String phone, String expectedWord) {
+    	HangmanGame game = new HangmanGame(expectedWord, 6);
+    	tc.checkResponse(phone, "play", testPhraseology.PLAYINGWordGuessingPlayerStart(game.getGuessedWordSoFar(), game.getAttemptedLettersSoFar()));
     }
     
     /** for EXISTING_USERs, send the 'invite' by nickname command from the word providing to the word guessing already registered players */
@@ -99,12 +104,12 @@ public class HangmanSMSGameProcessorTests {
     	invitePlayerByNick(wordProvidingPlayerPhone, wordGuessingPlayerNick);
 
 		// provide the word
-    	sendWordToBeGuessed(wordProvidingPlayerPhone, wordProvidingPlayerNick, wordGuessingPlayerPhone, wordGuessingPlayerNick);
+    	sendWordToBeGuessed(wordProvidingPlayerPhone, wordProvidingPlayerNick, word, wordGuessingPlayerNick);
     }
     
     /** for NEW_USERS, start a match between them */
-    public void startAAMatch(String wordProvidingPlayerPhone, String wordProvidingPlayerNick, String word,
-                             String wordGuessingPlayerPhone, String wordGuessingPlayerNick) {
+    public void startAPlayerMatch(String wordProvidingPlayerPhone, String wordProvidingPlayerNick, String word,
+                                  String wordGuessingPlayerPhone, String wordGuessingPlayerNick) {
 		
     	// invite
     	invitePlayerForAMatch(wordProvidingPlayerPhone, wordProvidingPlayerNick, word, wordGuessingPlayerPhone, wordGuessingPlayerNick);
@@ -112,29 +117,87 @@ public class HangmanSMSGameProcessorTests {
     	// accept
     	acceptInvitation(wordGuessingPlayerPhone, word, wordGuessingPlayerNick);		
     }
+    
+    /** for a NEW_USER, start a match with a bot */
+    public void startABotMatch(String phone, String nick, String expectedWord) {
+		registerUser(phone, nick);
+		playWithBot(phone, expectedWord);
+    }
 	
 	
 	/*********************
 	** USUAL PATH TESTS **
 	*********************/
 	
-	// SCENARIO: the first message being sent to the system
-    ///////////////////////////////////////////////////////
-
 	@Test
 	public void testUnrecognizedCommandSubtleties() throws SQLException {
 		tc.resetDatabases();
 		
-		// ignore for NEW_USERs
+		// ignore unknown commands for NEW_USERs
 		tc.checkResponse("21991234899", "HJKS");
 
-		// answer something for EXISTING_USERs
+		// ... and for EXISTING_USERs
 		registerUser("21991234899", "Dom");
-		tc.checkResponse("21991234899", "HJKS",
+		tc.checkResponse("21991234899", "HJKS");
+
+		// only known commands should work
+		tc.checkResponse("21991234899", "HELP",
 			"1/3: You can play the HANGMAN game in 2 ways: guessing someone's word or inviting someone to play with your word",
 			"2/3: You'll get 1 lucky number each word you guess. Whenever you invite a friend or user to play, you win another lucky number",
 			"3/3: Every week, 1 lucky number is selected to win the prize. Send an option to 9714: (J)Play online; (C)Invite a friend or user; (R)anking; (A)Help");
 		
+	}
+	
+	@Test
+	public void testUserRegistrationSubtleties() throws SQLException {
+		tc.resetDatabases();
+		
+		tc.checkResponse("21998019167", "hangman", testPhraseology.INFOWelcome());
+		assertFalse("Just saying hello to the game should not register the player", userDB.isUserSubscribed("21998019167"));
+		
+		tc.checkResponse("21998019167", "help", testPhraseology.INFOFullHelp());
+		assertFalse("Asking for help should also not register the player", userDB.isUserSubscribed("21998019167"));
+		
+		tc.checkResponse("21998019167", "play", testPhraseology.PLAYINGWordGuessingPlayerStart("C-------EE", "CE"));
+		assertTrue("When starting a match, the registration should be done", userDB.isUserSubscribed("21998019167"));
+
+		registerUser("21991234899", "dOM");
+		assertTrue("After setting a custom the nickname, the player should be registered", userDB.isUserSubscribed("21991234899"));
+		
+		startAPlayerMatch("111111", "user", "guesswhat", "222222", "invited");
+		assertTrue("After accepting the invitation, the invited player should be registered", userDB.isUserSubscribed("222222"));
+
+		String wordProvidingPlayerPhone = "333333";
+		String wordProvidingPlayerNick  = "inviter";
+		String word                     = "guessagain";
+		String wordGuessingPlayerPhone  = "444444";
+		String wordGuessingPlayerNick   = "Guest4444";
+    	registerUser(wordProvidingPlayerPhone, wordProvidingPlayerNick);
+    	invitePlayerByPhone(wordProvidingPlayerPhone, wordGuessingPlayerPhone);
+    	sendWordToBeGuessed(wordProvidingPlayerPhone, wordProvidingPlayerNick, word, wordGuessingPlayerNick);
+		assertFalse("The invited user must not be registered until he/she accepts the match", userDB.isUserSubscribed("444444"));
+		tc.checkResponse(wordGuessingPlayerPhone, "no",
+				testPhraseology.INVITINGInvitationRefusalNotificationForInvitingPlayer(wordGuessingPlayerNick),
+				testPhraseology.INVITINGInvitationRefusalNotificationForInvitedPlayer(wordProvidingPlayerNick));
+		assertFalse("The invited user must definitly not be registered after he/she refused invitation to the game", userDB.isUserSubscribed("444444"));
+		
+	}
+	
+	@Test
+	public void testEndGameSubtleties() throws SQLException {
+		tc.resetDatabases();
+		
+		// test ending a match with another player
+		startAPlayerMatch("111111", "AllOne", "OneMotherFucker", "22222", "AllTwo");
+		tc.checkResponse("22222", "end",
+			testPhraseology.PLAYINGMatchGiveupNotificationForWordProvidingPlayer("AllTwo"),
+			testPhraseology.PLAYINGMatchGiveupNotificationForWordGuessingPlayer("AllOne"));
+		tc.checkResponse("22222", "x");		// test fall back to 'EXISTING_USER' state, where only known commands are answered
+		
+		// test ending a match with a bot
+		startABotMatch("21991234899", "DOM", "CHIMPANZEE");
+		tc.checkResponse("21991234899", "end", testPhraseology.PLAYINGMatchGiveupNotificationForWordGuessingPlayer("DomBot"));
+		tc.checkResponse("21991234899", "x");		// test the fall back to 'EXISTING_USER' state, where only known commands are answered
 	}
 	
 	@Test
@@ -224,6 +287,7 @@ public class HangmanSMSGameProcessorTests {
 		
 		tc.checkResponse("21998019167", "profile haole", "HANGMAN: haole: Subscribed, RJ, 0 lucky numbers. Send SIGNUP to provoke for free or INVITE haole for a match.");
 		tc.checkResponse("21998019167", "nick pAtRiCiA", "HANGMAN: Name registered: pAtRiCiA. Send LIST to 9714 to see online players. NICK [NEW NICK] to change your name.");
+		// TODO testar extensivamente o comando list em cenário de muitos usuários registrados pois eu recebi uma exception de index out of bounds que ainda não consegui reproduzir
 		tc.checkResponse("21998019167", "list", "HardCodedNick(RJ/10). To play, send INVITE [NICK] to 9714; MORE for more players or PROFILE [NICK]");
 		
 		tc.checkResponse("21998019167", "ranking", "HardCodedNick(RJ/10). To play, send INVITE [NICK] to 9714; MORE for more players or PROFILE [NICK]");
@@ -254,6 +318,67 @@ public class HangmanSMSGameProcessorTests {
 		tc.checkResponse("21998019167", "no",
 			"pAtY refused your invitation to play. Send LIST to 9714 and pick someone else",
 			"The invitation to play the Hangman Game made by Dom was refused. Send LIST to 9714 to see online users");
+	}
+	
+	@Test
+	public void testProfileCommand() throws SQLException {
+		tc.resetDatabases();
+		
+		// check profile for players
+		invitePlayerForAMatch("21991234899", "dOM", "abracadabra", "11998019167", "spATY");
+		tc.checkResponse("11998019167", "profile",       "HANGMAN: dOM: Subscribed, RJ, 0 lucky numbers. Send SIGNUP to provoke for free or INVITE dOM for a match.");
+		tc.checkResponse("21991234899", "profile SPaty", "HANGMAN: spATY: Subscribed, SP, 0 lucky numbers. Send SIGNUP to provoke for free or INVITE spATY for a match.");
+		
+		// check bot profile
+		tc.checkResponse("11998019167", "profile dombot", "No player with nickname 'dombot' was found. Maybe he/she changed it? Send LIST to 9714 to see online players");
+	}
+	
+	@Test
+	public void testCycleThroughBotWords() throws SQLException {
+		tc.resetDatabases();
+
+		registerUser("21991234899", "DOM");
+
+		// test cycle through words
+		for (String botWord : mutua.hangmansmsgame.config.Configuration.BOT_WORDS) {
+			playWithBot("21991234899", botWord);
+		}
+
+		// test the recycle
+		for (String botWord : mutua.hangmansmsgame.config.Configuration.BOT_WORDS) {
+			playWithBot("21991234899", botWord);
+		}
+
+	}
+	
+	@Test
+	public void testAllLettersWhenGuessingWords() throws SQLException {
+		char[] attemptedLetters = {
+			'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i', 'J', 'j', 'K',
+			'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'Q', 'q', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u',
+			'V', 'v', 'W', 'w', 'X', 'x', 'Y', 'y', 'Z', 'z',	
+		};
+		String unguessableWord = "AZCDEFGHIJKL9MNOPQRSTUVWXYB";
+		String usedLetters;
+		
+		tc.resetDatabases();
+		
+		// test playing with a human letters recognition
+		startAPlayerMatch("21991234899", "dom", unguessableWord, "21998019167", "paty");
+		usedLetters = "AB";
+		for (char letter : attemptedLetters) {
+			String sLetter = Character.toString(letter);
+			if (usedLetters.indexOf(sLetter.toUpperCase()) == -1) {
+				usedLetters += sLetter.toUpperCase();
+			}
+			String unguessableWordSoFar = unguessableWord.replaceAll("[^"+usedLetters+"]", "-");
+			tc.checkResponse("21998019167", sLetter,
+			                 testPhraseology.PLAYINGWordProvidingPlayerStatus(false, false, false, false, false, false, unguessableWordSoFar, sLetter, usedLetters, "paty"),
+			                 testPhraseology.PLAYINGWordGuessingPlayerStatus (false, false, false, false, false, false, unguessableWordSoFar, usedLetters));
+		}
+		
+		// test playing with a bot letters recognition
+		// TODO do the same as for humans... should allow setting bot words on the fly
 	}
 	
 	@Test
@@ -290,10 +415,53 @@ public class HangmanSMSGameProcessorTests {
 		                                      "DOm(RJ/10). To play, send INVITE [NICK] to 9714; MORE for more players or PROFILE [NICK]");
 	}
 	
+	@Test
+	public void testPlayingWithMyselfBehavior() throws SQLException {
+		String wordProvidingPlayerPhone = "21991234899";
+		String wordProvidingPlayerNick  = "Dom";
+		String word = "ICannotPlayWithMyself";
+		String wordGuessingPlayerPhone  = wordProvidingPlayerPhone;
+		String wordGuessingPlayerNick   = wordProvidingPlayerNick;
+
+		// attempting to play with myself by nickname must be like attempting to play with a non existing user
+		tc.resetDatabases();
+    	registerUser(wordProvidingPlayerPhone, wordProvidingPlayerNick);
+    	tc.checkResponse(wordProvidingPlayerPhone, "invite "+wordProvidingPlayerNick, testPhraseology.PROVOKINGNickNotFound(wordProvidingPlayerNick));
+		
+		// but attempting to play with myself via phone number must go well
+		tc.resetDatabases();
+    	registerUser(wordProvidingPlayerPhone, wordProvidingPlayerNick);
+    	invitePlayerByPhone(wordProvidingPlayerPhone, wordGuessingPlayerPhone);
+    	sendWordToBeGuessed(wordProvidingPlayerPhone, wordProvidingPlayerNick, word, wordGuessingPlayerNick);
+		acceptInvitation(wordGuessingPlayerPhone, word, wordGuessingPlayerNick);
+	}
+	
 	
 	/*************************
 	** HIGH INTENSITY TESTS **
 	*************************/
+	
+	@Test
+	public void testNicknameStress() throws SQLException {
+		int numberOfUsers = 104;
+		String basePhone  = "11111";
+		String baseNickname = "Dom";
+		String expectedNick = baseNickname + numberOfUsers;
+		String expectedPatyNick = "pAtY";
+		
+		tc.resetDatabases();
+
+		for (int i=0; i<numberOfUsers; i++) {
+	    	tc.checkResponse(basePhone+i, "forca",                testPhraseology.INFOWelcome());
+			tc.checkResponse(basePhone+i, "nick " + baseNickname, testPhraseology.PROFILENickRegisteredNotification((i>0)?(baseNickname+i):(baseNickname)));
+		}
+    	tc.checkResponse("21991234899", "forca",                testPhraseology.INFOWelcome());
+		tc.checkResponse("21991234899", "nick " + baseNickname, testPhraseology.PROFILENickRegisteredNotification(expectedNick));
+		
+		
+		registerUser    ("21998019167", "CaCaTuA");
+		tc.checkResponse("21998019167", "nick " + expectedPatyNick, testPhraseology.PROFILENickRegisteredNotification(expectedPatyNick));
+	}
 	
 	@Test
 	/** This test takes multiple users gradually and randomly through some navigation states */

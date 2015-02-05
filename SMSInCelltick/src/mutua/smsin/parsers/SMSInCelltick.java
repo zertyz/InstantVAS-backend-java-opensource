@@ -35,10 +35,10 @@ public class SMSInCelltick extends SMSInParser<HttpServletRequest, HttpServletRe
 		String msisdn       = request.getParameter("MSISDN");
 		String carrierName  = request.getParameter("CARRIER_NAME");
 		String largeAccount = request.getParameter("LA");
-		String moId         = request.getParameter("MO_ID");
+		String originalMoId = request.getParameter("MO_ID");
 		String text         = request.getParameter("TEXT");
 		
-		if ((msisdn == null) || (carrierName == null) || (largeAccount == null) || (moId == null) || (text == null)) {
+		if ((msisdn == null) || (carrierName == null) || (largeAccount == null) || (originalMoId == null) || (text == null)) {
 			return null;
 		}
 		
@@ -58,7 +58,7 @@ public class SMSInCelltick extends SMSInParser<HttpServletRequest, HttpServletRe
 			carrier = ESMSInParserCarrier.UNKNOWN;	// probably will make 'sendReply' return 'REJECTED'
 		}
 		
-		return new IncomingSMSDto(msisdn, text, carrier, largeAccount, moId);
+		return new IncomingSMSDto(originalMoId, msisdn, text, carrier, largeAccount);
 	}
 
 	@Override

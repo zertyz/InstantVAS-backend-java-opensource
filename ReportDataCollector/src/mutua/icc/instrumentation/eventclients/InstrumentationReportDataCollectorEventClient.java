@@ -1,5 +1,6 @@
 package mutua.icc.instrumentation.eventclients;
 
+import java.io.IOException;
 import java.util.Hashtable;
 
 import mutua.events.annotations.EventListener;
@@ -12,7 +13,6 @@ import mutua.icc.instrumentation.dto.InstrumentationEventDto;
 import mutua.icc.instrumentation.pour.IInstrumentationPour;
 import mutua.icc.instrumentation.pour.PourFactory;
 import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
-
 import static mutua.icc.instrumentation.eventclients.EReportDataCollectorInstrumentationEvents.*;
 import static mutua.icc.instrumentation.eventclients.EReportDataCollectorInstrumentationProperties.*;
 
@@ -35,10 +35,10 @@ public class InstrumentationReportDataCollectorEventClient implements Instrument
 	private final Hashtable<IInstrumentableEvent, Integer> eventsOfInterest;
 	
 	
-	public InstrumentationReportDataCollectorEventClient(Instrumentation<?, ?> log, EInstrumentationDataPours pourType,
+	public InstrumentationReportDataCollectorEventClient(Instrumentation<?, ?> log, EInstrumentationDataPours pourType, String descriptorReference,
 	                                                     IInstrumentableEvent... eventsOfInterest) {
 		this.log  = log;
-		this.pour = PourFactory.getInstrumentationPour(pourType, EReportDataCollectorInstrumentationProperties.values());
+		this.pour = PourFactory.getInstrumentationPour(pourType, descriptorReference, EReportDataCollectorInstrumentationProperties.values());
 		this.eventsOfInterest = new Hashtable<IInstrumentableEvent, Integer>();
 		for (IInstrumentableEvent eventOfInterest : eventsOfInterest) {
 			this.eventsOfInterest.put(eventOfInterest, 1);
@@ -46,7 +46,7 @@ public class InstrumentationReportDataCollectorEventClient implements Instrument
 	}
 
 	@EventListener({"APPLICATION_INSTRUMENTATION_EVENT"})
-	public void handleApplicationInstrumentationEventNotification(InstrumentationEventDto applicationEvent) {
+	public void handleApplicationInstrumentationEventNotification(InstrumentationEventDto applicationEvent) throws IOException {
 		InstrumentableEvent instrumentableEvent = applicationEvent.getEvent();
 		String applicationName = applicationEvent.getApplicationName();
 		Thread currentThread = Thread.currentThread();

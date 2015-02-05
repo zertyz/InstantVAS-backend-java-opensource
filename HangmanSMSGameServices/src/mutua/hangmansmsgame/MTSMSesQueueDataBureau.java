@@ -28,32 +28,35 @@ public class MTSMSesQueueDataBureau extends	IDatabaseQueueDataBureau<EHangmanSMS
 	@Override
 	public void serializeQueueEntry(IndirectMethodInvocationInfo<EHangmanSMSGameEvents> entry, PreparedProcedureInvocationDto preparedProcedure) throws PreparedProcedureException {
 		OutgoingSMSDto mt = (OutgoingSMSDto)entry.getParameters()[0];
+		preparedProcedure.addParameter("MO_ID",   mt.getMoId());
 		preparedProcedure.addParameter("PHONE",   mt.getPhone());
 		preparedProcedure.addParameter("TEXT",    mt.getText());
 	}
 
 	@Override
-	public IndirectMethodInvocationInfo<EHangmanSMSGameEvents> desserializeQueueEntry(Object[] databaseRow) {
-		String phone   = (String)databaseRow[1];
-		String text    = (String)databaseRow[2];
-		OutgoingSMSDto mt = new OutgoingSMSDto(phone, text, EBillingType.FREE);
-		IndirectMethodInvocationInfo<EHangmanSMSGameEvents> entry = new IndirectMethodInvocationInfo<EHangmanSMSGameEvents>(EHangmanSMSGameEvents.PROCESS_INCOMING_SMS, mt);
+	public IndirectMethodInvocationInfo<EHangmanSMSGameEvents> desserializeQueueEntry(int eventId, Object[] databaseRow) {
+		int    moId    = (Integer)databaseRow[1];
+		String phone   = (String)databaseRow[2];
+		String text    = (String)databaseRow[3];
+		OutgoingSMSDto mt = new OutgoingSMSDto(moId, phone, text, EBillingType.FREE);
+		IndirectMethodInvocationInfo<EHangmanSMSGameEvents> entry = new IndirectMethodInvocationInfo<EHangmanSMSGameEvents>(EHangmanSMSGameEvents.INTERACTIVE_REQUEST, mt);
 		return entry;
 	}
 
 	@Override
 	public String getValuesExpressionForInsertNewQueueElementQuery() {
-		return "${METHOD_ID}, ${PHONE}, ${TEXT}";
+		return "${METHOD_ID}, ${MO_ID}, ${PHONE}, ${TEXT}";
 	}
 
 	@Override
-	public String getFieldListForFetchQueueElementById() {
-		return "methodId, phone, text";
+	public String getQueueElementFieldList() {
+		return "methodId, moId, phone, text";
 	}
 
 	@Override
 	public String getFieldsCreationLine() {
-		return 	"phone     VARCHAR(15) NOT NULL, " +
-				"text      VARCHAR(511) NOT NULL, ";
+		return "moId      INTEGER      NOT NULL, " +
+		       "phone     VARCHAR(15)  NOT NULL, " +
+		       "text      VARCHAR(511) NOT NULL, ";
 	}
 }

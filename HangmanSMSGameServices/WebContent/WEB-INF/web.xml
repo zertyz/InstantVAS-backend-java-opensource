@@ -124,4 +124,19 @@
     <servlet-name>AddToUnsubscribeUserQueue</servlet-name>
     <url-pattern>/AddToUnsubscribeUserQueue</url-pattern>
   </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>ReloadConfiguration</display-name>
+    <servlet-name>ReloadConfiguration</servlet-name>
+    <servlet-class>mutua.hangmansmsgame.servlet.ReloadConfiguration</servlet-class>
+    <init-param>
+      <description></description>
+      <param-name>AUTHENTICATION_TOKEN</param-name>
+      <param-value></param-value>
+    </init-param>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ReloadConfiguration</servlet-name>
+    <url-pattern>/ReloadConfiguration</url-pattern>
+  </servlet-mapping>
 </web-app>

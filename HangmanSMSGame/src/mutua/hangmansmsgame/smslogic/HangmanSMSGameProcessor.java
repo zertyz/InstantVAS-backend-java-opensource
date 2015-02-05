@@ -52,8 +52,8 @@ public class HangmanSMSGameProcessor implements EventClient<EHangmanSMSGameEvent
 
 	
 	public enum EHangmanSMSGameEvents {
-		PROCESS_INCOMING_SMS,
-		PROCESS_PENDING_TIMEOUT_USERS,
+		INTERACTIVE_REQUEST,
+		TIMEOUT_EVENT,
 	}
 	
 	
@@ -130,6 +130,7 @@ public class HangmanSMSGameProcessor implements EventClient<EHangmanSMSGameEvent
 			// in case of error...
 			//Instrumentation.reportSevereError("BlocosDeCarnaval: Error processing message '"+incoming_text+"' from phone '"+incoming_phone+"'", t);
 			t.printStackTrace();
+			log.reportThrowable(t, "Error processing command {"+invocationHandler.toString()+"} for userPhone {"+incomingPhone+"}");
 			CommandMessageDto message = new CommandMessageDto(incomingPhone,
 				"Desculpe o transtorno mas sua mensagem nao pode ser processada agora. Por favor, tente novamente mais tarde",
 				EResponseMessageType.ERROR);
@@ -154,7 +155,7 @@ public class HangmanSMSGameProcessor implements EventClient<EHangmanSMSGameEvent
 		}
 	}
 	
-	@EventConsumer({/*EHangmanSMSGameEvents.*/"PROCESS_PENDING_TIMEOUT_USERS"})
+	@EventConsumer({/*EHangmanSMSGameEvents.*/"TIMEOUT_EVENT"})
 	public void processTimeout() {
 		
 		// for each timeout pending user
@@ -165,7 +166,7 @@ public class HangmanSMSGameProcessor implements EventClient<EHangmanSMSGameEvent
 		// route messages
 	}
 
-	@EventConsumer({/*EHangmanSMSGameEvents.*/"PROCESS_INCOMING_SMS"})
+	@EventConsumer({/*EHangmanSMSGameEvents.*/"INTERACTIVE_REQUEST"})
 	public void process(IncomingSMSDto incomingSMS) throws SMSProcessorException {
 		
 		log.reportRequestStart(incomingSMS.getPhone());

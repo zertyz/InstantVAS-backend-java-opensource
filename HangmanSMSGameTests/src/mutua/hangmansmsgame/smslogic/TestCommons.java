@@ -1,10 +1,9 @@
 package mutua.hangmansmsgame.smslogic;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.sql.SQLException;
+import java.util.Random;
 
 import mutua.hangmansmsgame.dal.DALFactory;
 import mutua.hangmansmsgame.dal.ISessionDB;
@@ -82,23 +81,24 @@ public class TestCommons {
 	** DIALOG VERIFICATION METHODS **
 	********************************/	
 	
+	private Random rnd = new Random();
 	public void checkResponse(String phone, String inputText, String... expectedResponsesText) {
 		try {
-			IncomingSMSDto mo = new IncomingSMSDto(phone, inputText, TEST_CARRIER, "1234", "null");
-//			log.reportRequestStart(Thread.currentThread().getStackTrace()[1].getMethodName());
+			int moId = rnd.nextInt();
+			IncomingSMSDto mo = new IncomingSMSDto(moId, phone, inputText, TEST_CARRIER, "1234");
 			processor.process(mo);
-//			log.reportRequestFinish();
 			OutgoingSMSDto[] observedResponses = responseReceiver.getLastOutgoingSMSes();
 			boolean isNullityCorrect = ((expectedResponsesText == null) && (observedResponses == null)) ||
 			                           ((expectedResponsesText != null) && (observedResponses != null));
 			assertTrue("The 'expectedResponseText' nullity isn't the same as 'observedResponses's", isNullityCorrect);
-//System.out.print("#"+phone+";"+inputText+";");
+System.out.print("#"+phone+";"+inputText+";");
 			String[] observedResponsesText = new String[observedResponses.length];
 			for (int i=0; i<observedResponses.length; i++) {
-//System.out.print(observedResponses[i].getPhone()+";"+observedResponses[i].getText().replaceAll("\n", "\\\\n")+";");
+System.out.print(observedResponses[i].getPhone()+";"+observedResponses[i].getText().replaceAll("\n", "\\\\n")+";");
 				observedResponsesText[i] = observedResponses[i].getText();
+				assertEquals("'moId' inconsistency", moId, observedResponses[i].getMoId());
 			}
-//System.out.println("\n");
+System.out.println("\n");
 			assertArrayEquals("This command generated the wrong messages", expectedResponsesText, observedResponsesText);
 		} catch (SMSProcessorException e) {
 			fail("Exception while processing message: "+e.getMessage());

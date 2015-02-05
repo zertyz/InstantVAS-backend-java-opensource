@@ -24,21 +24,24 @@ public class AddToSubscribeUserQueue extends HttpServlet {
 	
 	private static final long serialVersionUID = 1L;
 	
+	private static IUserDB userDB = DALFactory.getUserDB(Configuration.DATA_ACCESS_LAYER);
+	
 	protected void process(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		log.reportRequestStart(request.getQueryString());
 		PrintWriter out = response.getWriter();
 		try {
 			String phone = request.getParameter("MSISDN");
-			CommandDetails.registerUserNickname(phone, "Webby");
-			if (CommandDetails.assureUserIsRegistered(phone)) {
+			CommandDetails.assureUserHasANickname(phone);
+			if (!userDB.isUserSubscribed(phone)) {
+				userDB.setSubscribed(phone, true);
 				log.reportDebug("Hangman: received an api registration request for " + phone + ": registration complete");
 			} else {
 				log.reportDebug("Hangman: received an api registration request for " + phone + ": already registered");
 			}
 			out.print("ACCEPTED");
 		} catch (SQLException e) {
-			log.reportThrowable(e, "Error while subscribing user from the web");
 			out.print("FAILED");
+			log.reportThrowable(e, "Error while subscribing user from the web");
 		}
 		log.reportRequestFinish();
 	}

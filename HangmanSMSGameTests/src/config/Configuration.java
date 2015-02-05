@@ -10,7 +10,6 @@ import mutua.icc.instrumentation.eventclients.InstrumentationProfilingEventsClie
 import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
 import mutua.imi.IndirectMethodNotFoundException;
 import mutua.subscriptionengine.TestableSubscriptionAPI;
-
 import static mutua.hangmansmsgame.config.Configuration.log;
 
 /** <pre>
@@ -31,11 +30,19 @@ public class Configuration {
 
 	static {
     	// set the vars
-    	mutua.hangmansmsgame.config.Configuration.SUBSCRIPTION_ENGINE = new TestableSubscriptionAPI(log);
-    	HangmanSMSGamePostgreSQLAdapters.log = log;
+    	mutua.hangmansmsgame.config.Configuration.DATA_ACCESS_LAYER = DEFAULT_DAL;
+    	mutua.hangmansmsgame.config.Configuration.SESSIONS_DATA_ACCESS_LAYER = DEFAULT_DAL;
     	DALFactory.DEFAULT_DAL = DEFAULT_DAL;
     	
-    	mutua.hangmansmsgame.config.Configuration.applyConfiguration();
+    	try {
+			mutua.hangmansmsgame.config.Configuration.applyConfiguration();
+		} catch (Throwable t) {
+			t.printStackTrace();
+			log.reportThrowable(t, "Error applying Configuration");
+		}
+
+    	mutua.hangmansmsgame.config.Configuration.SUBSCRIPTION_ENGINE = new TestableSubscriptionAPI(log);
+    	HangmanSMSGamePostgreSQLAdapters.log = log;
 	}
 
 }

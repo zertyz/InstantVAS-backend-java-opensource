@@ -16,19 +16,27 @@ import java.util.Arrays;
 
 public class IncomingSMSDto /*implements ILoggableRequest*/ {
 
-    /**
-     *  The carriers where incoming messages originates and where outgoing messages should be routed to
-     */
+    /** The carriers where incoming messages originates and where outgoing messages should be routed to */
     public enum ESMSInParserCarrier {
-	    TIM(159),
-	    VIVO(139),
-	    CLARO(160),
-	    OI(150),				// verificar
-	    NEXTEL(150),			// verificar
-	    CTBC(150),				// verificar
-	    SERCOMTEL(150),			// verificar
-	    TEST_CARRIER(150),
-	    UNKNOWN(150),
+//	    TIM(159),
+//	    VIVO(139),
+//	    CLARO(160),
+//	    OI(150),				// verificar
+//	    NEXTEL(150),			// verificar
+//	    CTBC(150),				// verificar
+//	    SERCOMTEL(150),			// verificar
+//	    TEST_CARRIER(150),
+//	    UNKNOWN(150),
+    	// celtick parameters
+    	TIM(134),
+	    VIVO(134),
+	    CLARO(134),
+	    OI(134),
+	    NEXTEL(134),
+	    CTBC(134),
+	    SERCOMTEL(134),
+	    TEST_CARRIER(134),
+	    UNKNOWN(134),
 
         ;
 
@@ -43,31 +51,39 @@ public class IncomingSMSDto /*implements ILoggableRequest*/ {
         }
     }
 
-    private final String phone;
-    private final String text;
-    private final ESMSInParserCarrier carrier;
-    private final String largeAccount;
-    private final String messageId;
-    private final String[][] extraParameters;
+    private int    moId;
+    private String phone;
+    private String text;
+    private ESMSInParserCarrier carrier;
+    private String largeAccount;
+    private String originalMoId;
+    private String[][] extraParameters;
 
 
-    /**
-     * Constructs a representation of an MO (incoming sms). The optional 'extra_parameters' is defined as:
-     * extra_parameters := {{parameter_1_name, parameter_1_value}, ..., {parameter_n_name, parameter_n_value}}
-     */
-    public IncomingSMSDto(String phone, String text, ESMSInParserCarrier carrier, String largeAccount, String messageId, String[][] extraParameters) {
-        this.phone = phone;
-        this.text = text;
-        this.carrier = carrier;
-        this.largeAccount = largeAccount;
-        this.messageId = messageId;
+    /** Constructs a representation of an MO (incoming sms). The optional 'extra_parameters' is defined as:
+     *  extra_parameters := {{parameter_1_name, parameter_1_value}, ..., {parameter_n_name, parameter_n_value}} */
+    public IncomingSMSDto(int moId, String phone, String text, ESMSInParserCarrier carrier, String largeAccount, String[][] extraParameters) {
+        this.moId            = moId;
+        this.phone           = phone;
+        this.text            = text;
+        this.carrier         = carrier;
+        this.largeAccount    = largeAccount;
+        this.originalMoId    = null;
         this.extraParameters = extraParameters;
     }
-
-    public IncomingSMSDto(String phone, String text, ESMSInParserCarrier carrier, String largeAccount, String messageId) {
-        this(phone, text, carrier, largeAccount, messageId, null);
+    
+    public IncomingSMSDto(String originalMoId, String phone, String text, ESMSInParserCarrier carrier, String largeAccount) {
+    	this(-1, phone, text, carrier, largeAccount);
+    	this.originalMoId = originalMoId;
     }
 
+    public IncomingSMSDto(int moId, String phone, String text, ESMSInParserCarrier carrier, String largeAccount) {
+        this(moId, phone, text, carrier, largeAccount, null);
+    }
+
+    public int getMoId() {
+        return moId;
+    }
 
     public String getPhone() {
         return phone;
@@ -84,9 +100,9 @@ public class IncomingSMSDto /*implements ILoggableRequest*/ {
     public String getLargeAccount() {
         return largeAccount;
     }
-
-    public String getMessageId() {
-        return messageId;
+    
+    public String getOriginalMoId() {
+    	return originalMoId;
     }
 
     public String getExtraParameter(String parameterName) {
@@ -105,60 +121,13 @@ public class IncomingSMSDto /*implements ILoggableRequest*/ {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof IncomingSMSDto) {
-        	IncomingSMSDto other = (IncomingSMSDto)obj;
-        	return this.phone.equals(other.phone) &&
-        	       this.text.equals(other.text) && 
-        	       this.carrier.equals(other.carrier) &&
-        	       this.largeAccount.equals(other.largeAccount) &&
-        	       this.messageId.equals(other.messageId) &&
-        	       Arrays.equals(this.extraParameters, other.extraParameters);
-        } else {
-            return false;
-        }
-    }
-
-    @Override
     public String toString() {
         return new StringBuffer("phone='").
         	append(phone).append("', text='").append(text).append("', carrier=").
         	append(carrier.name()).append(", largeAccount=").
-        	append(largeAccount).append(", messageId='").append(messageId).
+        	append(largeAccount).append(", messageId='").append(moId).
         	append("', extraParameters=").append(Arrays.toString(extraParameters)).
             toString();
     }
-
-
-
-//  /************************************
-//  ** ILoggableRequest IMPLEMENTATION ** 
-//  ************************************/
-//
-//  public void buildRequestDetails(StringBuffer request_details) {
-//          String[][] extra_parameters = getExtraParameters();
-//          request_details.append("phone='");
-//          request_details.append(getPhone());
-//          request_details.append("', text='");
-//          request_details.append(getText());
-//          request_details.append("', carrier='");
-//          request_details.append(getCarrierId());
-//          request_details.append("', la='");
-//          request_details.append(getLargeAccount());
-//          if (extra_parameters != null) {
-//                  for (int i=0; i<extra_parameters.length; i++) {
-//                          String parameter_name  = extra_parameters[i][0];
-//                          String parameter_value = extra_parameters[i][1]; 
-//                          request_details.append("', ");
-//                          request_details.append(parameter_name);
-//                          request_details.append("='");
-//                          request_details.append(parameter_value);
-//                          request_details.append("'");
-//                  }
-//          }
-//          request_details.append(", id='");
-//          request_details.append(getMessageId());
-//          request_details.append("'");
-//  }
 
 }

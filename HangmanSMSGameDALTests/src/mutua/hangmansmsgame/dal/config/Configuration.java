@@ -38,7 +38,8 @@ public class Configuration {
 
 	
 	static {
-		log = new Instrumentation<DefaultInstrumentationProperties, String>("HangmanSMSGameDALTests", DIP_MSG, JDBCAdapterInstrumentationEvents.values());
+		log = new Instrumentation<DefaultInstrumentationProperties, String>("HangmanSMSGameDALTests", DIP_MSG,
+				EInstrumentationDataPours.CONSOLE, "/tmp/coco", JDBCAdapterInstrumentationEvents.values());
     	try {
         	InstrumentationProfilingEventsClient instrumentationProfilingEventsClient = new InstrumentationProfilingEventsClient(log, EInstrumentationDataPours.CONSOLE);
 			log.addInstrumentationPropagableEventsClient(instrumentationProfilingEventsClient);
@@ -56,7 +57,8 @@ public class Configuration {
 		HangmanSMSGamePostgreSQLAdapters.USER     = POSTGRESQL_CONNECTION_USER;
 		HangmanSMSGamePostgreSQLAdapters.PASSWORD = POSTGRESQL_CONNECTION_PASSWORD;
 
-    	DALFactory.DEFAULT_DAL = DEFAULT_DAL;
+    	DALFactory.DEFAULT_DAL          = DEFAULT_DAL;
+    	DALFactory.DEFAULT_SESSIONS_DAL = DEFAULT_DAL;
 	}
 	
 }

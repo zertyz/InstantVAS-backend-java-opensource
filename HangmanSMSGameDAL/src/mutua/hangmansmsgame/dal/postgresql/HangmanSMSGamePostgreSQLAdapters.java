@@ -53,11 +53,12 @@ public class HangmanSMSGamePostgreSQLAdapters extends PostgreSQLAdapter {
 	protected String[][] getTableDefinitions() {
 		return new String[][] {
 			{"Users", "CREATE TABLE Users(" +
-			          "userId     SERIAL   NOT NULL PRIMARY KEY, " +
-			          "phone      VARCHAR(15) NOT NULL UNIQUE, " +
-			          "nick       VARCHAR(15) NOT NULL UNIQUE, " +
-			          "subscribed BOOLEAN, " +
-			          "ts         TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"},
+			          "userId      SERIAL   NOT NULL PRIMARY KEY, " +
+			          "phone       VARCHAR(15) NOT NULL UNIQUE,   " +
+			          "nick        VARCHAR(15) NOT NULL UNIQUE,   " +
+			          "subscribed  BOOLEAN,                       " +
+			          "nextBotWord INTEGER     DEFAULT -1,        " +
+			          "ts          TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"},
 			{"Match", "CREATE TABLE Match(" +
 			          "matchId                  SERIAL      NOT NULL PRIMARY KEY, " +
 			          "wordProvidingPlayerPhone VARCHAR(15) NOT NULL, " +
@@ -65,7 +66,7 @@ public class HangmanSMSGamePostgreSQLAdapters extends PostgreSQLAdapter {
 			          "serializedGame           VARCHAR(64) NOT NULL, " +
 			          "matchStartMillis         BIGINT      NOT NULL, " +
 			          "status                   VARCHAR(32) NOT NULL, " +
-			          "ts         TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"},
+			          "ts                       TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"},
 		};
 	}
 	
@@ -75,14 +76,15 @@ public class HangmanSMSGamePostgreSQLAdapters extends PostgreSQLAdapter {
 	
 	public static JDBCAdapter getUserDBAdapter() throws SQLException {
 		return new HangmanSMSGamePostgreSQLAdapters(log, new String[][] {
-			{"ResetTable",                "DELETE FROM Users"},
-			{"SelectPhoneByNick",         "SELECT phone FROM Users WHERE LOWER(nick)=LOWER(${NICK})"},
-			{"SelectCorrectlyCasedNick",  "SELECT nick  FROM Users WHERE LOWER(nick)=LOWER(${NICK})"},
-			{"SelectNickByPhone",         "SELECT nick  FROM Users WHERE phone=${PHONE}"},
-			{"InsertUser",                "INSERT INTO Users(phone, nick) VALUES(${PHONE}, ${NICK})"},
-			{"UpdateNick",                "UPDATE Users SET nick=${NICK} WHERE phone=${PHONE}"},
-			{"UpdateSubscriptionByPhone", "UPDATE Users SET subscribed=${SUBSCRIBED} WHERE phone=${PHONE}"},
-			{"SelectSubscriptionByPhone", "SELECT subscribed FROM Users WHERE phone=${PHONE}"},
+			{"ResetTable",                  "DELETE FROM Users"},
+			{"SelectPhoneByNick",           "SELECT phone FROM Users WHERE LOWER(nick)=LOWER(${NICK})"},
+			{"SelectCorrectlyCasedNick",    "SELECT nick  FROM Users WHERE LOWER(nick)=LOWER(${NICK})"},
+			{"SelectNickByPhone",           "SELECT nick  FROM Users WHERE phone=${PHONE}"},
+			{"InsertUser",                  "INSERT INTO Users(phone, nick) VALUES(${PHONE}, ${NICK})"},
+			{"UpdateNick",                  "UPDATE Users SET nick=${NICK} WHERE phone=${PHONE}"},
+			{"UpdateSubscriptionByPhone",   "UPDATE Users SET subscribed=${SUBSCRIBED} WHERE phone=${PHONE}"},
+			{"SelectSubscriptionByPhone",   "SELECT subscribed FROM Users WHERE phone=${PHONE}"},
+			{"IncrementNextBotWordByPhone", "UPDATE Users SET nextBotWord=nextBotWord+1 WHERE phone=${PHONE} RETURNING nextBotWord"},
 		});
 	}
 

@@ -1,9 +1,5 @@
 package mutua.iccapp.HangmanSMSGame;
 
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import mutua.events.DirectEventLink;
 import mutua.events.EventServer;
 import mutua.events.IEventLink;
@@ -11,7 +7,6 @@ import mutua.hangmansmsgame.config.Configuration;
 import mutua.hangmansmsgame.dal.DALFactory.EDataAccessLayers;
 import mutua.hangmansmsgame.smslogic.HangmanSMSGameProcessor;
 import mutua.hangmansmsgame.smslogic.HangmanSMSGameProcessor.EHangmanSMSGameEvents;
-import mutua.hangmansmsgame.smslogic.SMSProcessorException;
 import mutua.icc.instrumentation.HangmanSMSGameInstrumentationEvents;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.icc.instrumentation.eventclients.InstrumentationProfilingEventsClient;
@@ -42,9 +37,10 @@ public class SMSAppFrontend extends EventServer<EHangmanSMSGameEvents>{
     
     
     static {
-    	log = new Instrumentation<ICCAppInstrumentationRequestProperty, String>("HangmanSMSGameICCApp", new ICCAppInstrumentationRequestProperty("phone"), HangmanSMSGameInstrumentationEvents.values());
+    	log = new Instrumentation<ICCAppInstrumentationRequestProperty, String>("HangmanSMSGameICCApp", new ICCAppInstrumentationRequestProperty("phone"),
+    			EInstrumentationDataPours.CONSOLE, null, HangmanSMSGameInstrumentationEvents.values());
     	try {
-        	InstrumentationProfilingEventsClient instrumentationProfilingEventsClient = new InstrumentationProfilingEventsClient(log, EInstrumentationDataPours.CONSOLE);
+        	InstrumentationProfilingEventsClient instrumentationProfilingEventsClient = new InstrumentationProfilingEventsClient(log, EInstrumentationDataPours.CONSOLE, null);
 			log.addInstrumentationPropagableEventsClient(instrumentationProfilingEventsClient);
 		} catch (IndirectMethodNotFoundException e) {
 			e.printStackTrace();
@@ -71,10 +67,10 @@ public class SMSAppFrontend extends EventServer<EHangmanSMSGameEvents>{
 	}
 
     public String[][] process(String phone, String inputText, String carrier) {
-        IncomingSMSDto mo = new IncomingSMSDto(phone, inputText, ESMSInParserCarrier.valueOf(carrier), "1234", "null");
+        IncomingSMSDto mo = new IncomingSMSDto(-1, phone, inputText, ESMSInParserCarrier.valueOf(carrier), "1234");
 //        try {
         	log.reportRequestStart(phone);
-        	dispatchNeedToBeConsumedEvent(EHangmanSMSGameEvents.PROCESS_INCOMING_SMS, mo);
+        	dispatchNeedToBeConsumedEvent(EHangmanSMSGameEvents.INTERACTIVE_REQUEST, mo);
 			//processor.process(mo);
 			log.reportRequestFinish();
 //		} catch (SMSProcessorException e) {

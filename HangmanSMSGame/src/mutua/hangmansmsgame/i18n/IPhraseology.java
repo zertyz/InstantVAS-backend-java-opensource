@@ -22,49 +22,55 @@ import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 public abstract class IPhraseology {
 	
 	
-	protected enum EPhraseNames {
-		shortHelp                                                     (Configuration.shortHelp),
-		gallowsArt                                                    (Configuration.gallowsArt),
-		winningArt                                                    (Configuration.winningArt),
-		losingArt                                                     (Configuration.losingArt),
-		playersList                                                   (Configuration.playersList),
-		INFOWelcome                                                   (Configuration.INFOWelcome),
-		INFOFullHelp                                                  (Configuration.INFOFullHelp),
-		INFOWelcomeMenu                                               (Configuration.INFOWelcomeMenu),
-		INFOCouldNotRegister                                          (Configuration.INFOCouldNotRegister),
-		PROFILEView                                                   (Configuration.PROFILEView),
-		PROFILEFullfillingAskNick                                     (Configuration.PROFILEFullfillingAskNick),
-		PROFILENickRegisteredNotification                             (Configuration.PROFILENickRegisteredNotification),
-		PLAYINGWordProvidingPlayerStart                               (Configuration.PLAYINGWordProvidingPlayerStart),
-		PLAYINGWordGuessingPlayerStart                                (Configuration.PLAYINGWordGuessingPlayerStart),
-		PLAYINGWordGuessingPlayerStatus                               (Configuration.PLAYINGWordGuessingPlayerStatus),
-		PLAYINGWordProvidingPlayerStatus                              (Configuration.PLAYINGWordProvidingPlayerStatus),
-		PLAYINGWinningMessageForWordGuessingPlayer                    (Configuration.PLAYINGWinningMessageForWordGuessingPlayer),
-		PLAYINGWinningMessageForWordProvidingPlayer                   (Configuration.PLAYINGWinningMessageForWordProvidingPlayer),
-		PLAYINGLosingMessageForWordGuessingPlayer                     (Configuration.PLAYINGLosingMessageForWordGuessingPlayer),
-		PLAYINGLosingMessageForWordProvidingPlayer                    (Configuration.PLAYINGLosingMessageForWordProvidingPlayer),
-		PLAYINGMatchGiveupNotificationForWordProvidingPlayer          (Configuration.PLAYINGMatchGiveupNotificationForWordProvidingPlayer),
-		PLAYINGMatchGiveupNotificationForWordGuessingPlayer           (Configuration.PLAYINGMatchGiveupNotificationForWordGuessingPlayer),
-		INVITINGAskOpponentNickOrPhone                                (Configuration.INVITINGAskOpponentNickOrPhone),
-		INVITINGAskForAWordToStartAMatchBasedOnOpponentNickInvitation (Configuration.INVITINGAskForAWordToStartAMatchBasedOnOpponentNickInvitation),
-		INVITINGAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation(Configuration.INVITINGAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation),
-		INVITINGInvitationNotificationForInvitingPlayer               (Configuration.INVITINGInvitationNotificationForInvitingPlayer),
-		INVITINGTimeoutNotificationForInvitingPlayer                  (Configuration.INVITINGTimeoutNotificationForInvitingPlayer),
-		INVITINGInvitationNotificationForInvitedPlayer                (Configuration.INVITINGInvitationNotificationForInvitedPlayer),
-		INVITINGInvitationRefusalNotificationForInvitingPlayer        (Configuration.INVITINGInvitationRefusalNotificationForInvitingPlayer),
-		INVITINGInvitationRefusalNotificationForInvitedPlayer         (Configuration.INVITINGInvitationRefusalNotificationForInvitedPlayer),
-		LISTINGShowPlayers                                            (Configuration.LISTINGShowPlayers),
-		LISTINGNoMorePlayers                                          (Configuration.LISTINGNoMorePlayers),
-		PROVOKINGDeliveryNotification                                 (Configuration.PROVOKINGDeliveryNotification),
-		PROVOKINGSendMessage                                          (Configuration.PROVOKINGSendMessage),
-		PROVOKINGNickNotFound                                         (Configuration.PROVOKINGNickNotFound),
-		UNSUBSCRIBINGUnsubscriptionNotification                       (Configuration.UNSUBSCRIBINGUnsubscriptionNotification),
+	public enum EPhraseNames {
+		shortHelp                                                     ("(J) Play online; (C) Invite a friend or user; (R)anking; (A)Help"),
+		gallowsArt                                                    ("+-+\n| {{head}}\n|{{leftArm}}{{chest}}{{rightArm}}\n|{{leftLeg}} {{rightLeg}}\n|\n====\n"),
+		winningArt                                                    ("\\0/\n |\n/ \\\n"),
+		losingArt                                                     ("+-+\n| x\n|/|\\\n|/ \\\n====\n"),
+		playersList                                                   ("{{nick}} ({{state}}/{{numberOfLuckyNumbers}})"),
+		INFOWelcome                                                   ("Welcome to the HANGMAN game. Join and compete for prizes. Send HELP for free to {{shortCode}} to know the rules."),
+		INFOFullHelp                                                  ("You can play the HANGMAN game in 2 ways: guessing someone's word or inviting someone to play with your word " +
+		                                                               "You'll get 1 lucky number each word you guess. Whenever you invite a friend or user to play, you win another lucky number " +
+		                                                               "Every week, 1 lucky number is selected to win the prize. Send an option to {{shortCode}}: (J)Play online; (C)Invite a friend or user; (R)anking; (A)Help"),
+		INFOWelcomeMenu                                               ("Pick an option. Send to {{shortCode}}: {{shortHelp}}"),
+		INFOCouldNotRegister                                          ("HANGMAN: You could not be registered at this time. Please try again later."),
+		PROFILEView                                                   ("HANGMAN: {{nick}}: Subscribed, {{state}}, {{numberOfLuckyNumbers}} lucky numbers. Send SIGNUP to provoke for free or INVITE {{nick}} for a match."),
+		PROFILEFullfillingAskNick                                     ("HANGMAN: To play with a friend, u need first to sign your name. Now send your name (8 letters or numbers max.) to {{shortCode}}"),
+		PROFILENickRegisteredNotification                             ("HANGMAN: Name registered: {{newNickname}}. Send LIST to {{shortCode}} to see online players. NICK [NEW NICK] to change your name."),
+		PLAYINGWordProvidingPlayerStart                               ("Game started with {{wordGuessingPlayerNick}}.\n{{gallowsArt}}Send P {{wordGuessingPlayerNick}} MSG to give him/her clues"),
+		PLAYINGWordGuessingPlayerStart                                ("{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nSend a letter, the complete word or END to cancel the game"),
+		PLAYINGWordGuessingPlayerStatus                               ("{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nSend a letter, the complete word or END to cancel the game"),
+		PLAYINGWordProvidingPlayerStatus                              ("{{nick}} guessed letter {{guessedLetter}}\n{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nSend P {{nick}} MSG to provoke him/her"),
+		PLAYINGWinningMessageForWordGuessingPlayer                    ("{{winningArt}}{{word}}! You got it! Here is your lucky number: {{luckyNumber}}. Send: J to play or A for help"),
+		PLAYINGWinningMessageForWordProvidingPlayer                   ("{{wordGuessingPlayerNick}} guessed your word! P {{wordGuessingPlayerNick}} MSG to provoke him/her or INVITE {{wordGuessingPlayerNick}} for a new match"),
+		PLAYINGLosingMessageForWordGuessingPlayer                     ("{{losingArt}}The word was {{word}}. Now challenge {{wordProvidingPlayerNick}}: send INVITE {{wordProvidingPlayerNick}} to {{shortCode}}"),
+		PLAYINGLosingMessageForWordProvidingPlayer                    ("Good one! {{wordGuessingPlayerNick}} wasn't able to guessed your word! P {{wordGuessingPlayerNick}} MSG to provoke him/her or INVITE {{wordGuessingPlayerNick}} for a new match"),
+		PLAYINGMatchGiveupNotificationForWordProvidingPlayer          ("{{wordGuessingPlayerNick}} cancelled the match. To find other users to play with, sent LIST to {{shortCode}}"),
+		PLAYINGMatchGiveupNotificationForWordGuessingPlayer           ("Your match with {{wordProvidingPlayerNick}} has been canceled. Send P {{wordProvidingPlayerNick}} MSG to talk to him/her or LIST to play with someone else"),
+		INVITINGAskOpponentNickOrPhone                                ("HANGMAN: Name registered: {{invitingPlayerNickname}}. Send your friend's phone to {{shortCode}} or LIST to see online players. NICK [NEW NICK] to change your name."),
+		INVITINGAskForAWordToStartAMatchBasedOnOpponentNickInvitation ("HANGMAN: Inviting {{opponentNickname}}. Think of a word without special digits and send it now to {{shortCode}}. After the invitation, you'll get a lucky number"),
+		INVITINGAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation("HANGMAN: Your friend's phone: {{opponentPhoneNumber}}. Think of a word without special digits and send it now to {{shortCode}}. After the invitation, you'll get a lucky number"),
+		INVITINGInvitationNotificationForInvitingPlayer               ("{{invitedPlayerNickname}} was invited to play with you. while you wait, you can provoke {{invitedPlayerNickname}} by sending a message to {{shortCode}} (0.31+tax) or send SIGNUP to provoke for free how many times you want"),
+		INVITINGTimeoutNotificationForInvitingPlayer                  ("{{invitedPlayerNickname}} is taking too long to answer. However, a new player, {{suggestedNewPlayersNickname}}, is available. Play with {{suggestedNewPlayersNickname}}? Send YES to {{shortCode}}"),
+		INVITINGInvitationNotificationForInvitedPlayer                ("HANGMAN: {{invitingPlayerNickname}} is inviting you for a hangman match. Do you accept? Send YES to {{shortCode}} or PROFILE to see {{invitingPlayerNickname}} information"),
+		INVITINGInvitationRefusalNotificationForInvitingPlayer        ("{{invitedPlayerNickname}} refused your invitation to play. Send LIST to 9714 and pick someone else"),
+		INVITINGInvitationRefusalNotificationForInvitedPlayer         ("The invitation to play the Hangman Game made by {{invitingPlayerNickname}} was refused. Send LIST to {{shortCode}} to see online users"),
+		LISTINGShowPlayers                                            ("{{playersList}}. To play, send INVITE [NICK] to {{shortCode}}; MORE for more players or PROFILE [NICK]"),
+		LISTINGNoMorePlayers                                          ("There are no more online players to show. Send P [NICK] [MSG] to provoke or INVITE [PHONE] to invite a friend of yours to play the Hangman Game."),
+		PROVOKINGDeliveryNotification                                 ("Your message was sent to {{destinationNick}}. Wait for the answer or provoke other players sending P [NICK] [MSG] to {{shortCode}}. Send SIGNUP to provoke for free."),
+		PROVOKINGSendMessage                                          ("{{sourceNick}}: {{message}} - Answer by sending P {{sourceNick}} [MSG] to {{shortCode}}"),
+		PROVOKINGNickNotFound                                         ("No player with nickname '{{nickname}}' was found. Maybe he/she changed it? Send LIST to {{shortCode}} to see online players"),
+		UNSUBSCRIBINGUnsubscriptionNotification                       ("You are now unsubscribed from the HANGMAN GAME and will no longer receive invitations to play nor lucky numbers. To join again, send HANGMAN to {{shortCode}}"),
 		
 		;
 		
-		private final String[] texts;
+		private String[] texts;
 		
-		private EPhraseNames(String[] texts) {
+		private EPhraseNames(String... texts) {
+			this.texts = texts;
+		}
+		
+		public void setTexts(String[] texts) {
 			this.texts = texts;
 		}
 		

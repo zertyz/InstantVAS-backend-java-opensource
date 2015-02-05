@@ -43,4 +43,7 @@ public interface IUserDB {
 	/** Sets the 'subscribed' state for the user */
 	void setSubscribed(String phoneNumber, boolean subscribed) throws SQLException;
 
+	/** Get & increment the next bot word pointer for the user specified by 'phoneNumber' */
+	int getAndIncrementNextBotWord(String phoneNumber) throws SQLException;
+
 }

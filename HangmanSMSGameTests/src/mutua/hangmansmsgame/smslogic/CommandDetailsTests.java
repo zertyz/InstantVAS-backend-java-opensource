@@ -70,6 +70,16 @@ public class CommandDetailsTests {
 			{"21991234813", "Patati"},
 			{"21991234814", "Patato"},
 			{"21991234815", "Patatu"},
+			{"21991234821", "Pateta"},
+			{"21991234822", "Patete"},
+			{"21991234823", "Pateti"},
+			{"21991234824", "Pateto"},
+			{"21991234825", "Patetu"},
+			{"21991234831", "Patita"},
+			{"21991234832", "Patite"},
+			{"21991234833", "Patiti"},
+			{"21991234834", "Patito"},
+			{"21991234835", "Patitu"},
 		});
 		tc.setSessionDB(new String[][] {
 			{"21991234811", "NEW_USER"},
@@ -77,7 +87,16 @@ public class CommandDetailsTests {
 			{"21991234813", "NEW_USER"},
 			{"21991234814", "NEW_USER"},
 			{"21991234815", "NEW_USER"},
-			{"21991234816", "NEW_USER"},
+			{"21991234821", "NEW_USER"},
+			{"21991234822", "NEW_USER"},
+			{"21991234823", "NEW_USER"},
+			{"21991234824", "NEW_USER"},
+			{"21991234825", "NEW_USER"},
+			{"21991234831", "NEW_USER"},
+			{"21991234832", "NEW_USER"},
+			{"21991234833", "NEW_USER"},
+			{"21991234834", "NEW_USER"},
+			{"21991234835", "NEW_USER"},
 		});
 
 		presentedUsers = new String[] {};
@@ -89,7 +108,6 @@ public class CommandDetailsTests {
 			presentedUsers = CommandDetails.getNewPresentedUsers(presentedUsers, playersInfo);
 			System.out.println(testPhraseology.LISTINGShowPlayers(playersInfo));
 		}
-//		CommandDetails.getUsersListBreakingUnderTheMaximumNumberOfCharacters(testPhraseology, maxChars, presentedUsers)
 	}
 	
 	@Test

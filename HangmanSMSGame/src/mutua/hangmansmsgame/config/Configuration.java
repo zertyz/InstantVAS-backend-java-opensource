@@ -1,22 +1,26 @@
 package mutua.hangmansmsgame.config;
 
+import static mutua.icc.instrumentation.HangmanSMSGameInstrumentationEvents.IE_REQUEST_FROM_EXISTING_USER;
+import static mutua.icc.instrumentation.HangmanSMSGameInstrumentationEvents.IE_REQUEST_FROM_NEW_USER;
+
+import java.lang.reflect.Field;
+
 import mutua.hangmansmsgame.dal.DALFactory;
 import mutua.hangmansmsgame.dal.DALFactory.EDataAccessLayers;
 import mutua.hangmansmsgame.dal.postgresql.HangmanSMSGamePostgreSQLAdapters;
+import mutua.hangmansmsgame.i18n.IPhraseology.EPhraseNames;
 import mutua.icc.configuration.annotations.ConfigurableElement;
 import mutua.icc.instrumentation.HangmanSMSGameInstrumentationEvents;
 import mutua.icc.instrumentation.HangmanSMSGameInstrumentationProperties;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.icc.instrumentation.eventclients.InstrumentationProfilingEventsClient;
 import mutua.icc.instrumentation.eventclients.InstrumentationReportDataCollectorEventClient;
-import mutua.icc.instrumentation.pour.PourFactory;
 import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
 import mutua.imi.IndirectMethodNotFoundException;
 import mutua.subscriptionengine.SubscriptionEngine;
 import adapters.HTTPClientAdapter;
 import adapters.JDBCAdapter;
 import adapters.PostgreSQLAdapter;
-import static mutua.icc.instrumentation.HangmanSMSGameInstrumentationEvents.*;
 
 /** <pre>
  * Configuration.java
@@ -129,93 +133,87 @@ public class Configuration {
 	///////////
 	
 	@ConfigurableElement("")
-	public static String[] shortHelp                                                      = {"(J) Play online; (C) Invite a friend or user; (R)anking; (A)Help"};
+	public static String[] shortHelp                                                      = EPhraseNames.shortHelp.getTexts();
 	@ConfigurableElement("")
-	public static String[] gallowsArt                                                     = {"+-+\n| {{head}}\n|{{leftArm}}{{chest}}{{rightArm}}\n|{{leftLeg}} {{rightLeg}}\n|\n====\n"};
+	public static String[] gallowsArt                                                     = EPhraseNames.gallowsArt.getTexts();
 	@ConfigurableElement("")
-	public static String[] winningArt                                                     = {"\\0/\n |\n/ \\\n"};
+	public static String[] winningArt                                                     = EPhraseNames.winningArt.getTexts();
 	@ConfigurableElement("")
-	public static String[] losingArt                                                      = {"+-+\n| x\n|/|\\\n|/ \\\n====\n"};
+	public static String[] losingArt                                                      = EPhraseNames.losingArt.getTexts();
 	@ConfigurableElement("")
-	public static String[] playersList                                                    = {"{{nick}} ({{state}}/{{numberOfLuckyNumbers}})"};
+	public static String[] playersList                                                    = EPhraseNames.playersList.getTexts();
 	@ConfigurableElement("")
-	public static String[] INFOWelcome                                                    = {"Welcome to the HANGMAN game. Join and compete for prizes. Send HELP for free to {{shortCode}} to know the rules."};
+	public static String[] INFOWelcome                                                    = EPhraseNames.INFOWelcome.getTexts();
 	@ConfigurableElement("")
-	public static String[] INFOFullHelp                                                   = {"1/3: You can play the HANGMAN game in 2 ways: guessing someone's word or inviting someone to play with your word",
-	                                                                                         "2/3: You'll get 1 lucky number each word you guess. Whenever you invite a friend or user to play, you win another lucky number",
-	                                                                                         "3/3: Every week, 1 lucky number is selected to win the prize. Send an option to {{shortCode}}: (J)Play online; (C)Invite a friend or user; (R)anking; (A)Help"};
+	public static String[] INFOFullHelp                                                   = EPhraseNames.INFOFullHelp.getTexts();
 	@ConfigurableElement("")
-	public static String[] INFOWelcomeMenu                                                = {"Pick an option. Send to {{shortCode}}: {{shortHelp}}"};
+	public static String[] INFOWelcomeMenu                                                = EPhraseNames.INFOWelcomeMenu.getTexts();
 	@ConfigurableElement("")
-	public static String[] INFOCouldNotRegister                                           = {"HANGMAN: You could not be registered at this time. Please try again later."};
+	public static String[] INFOCouldNotRegister                                           = EPhraseNames.INFOCouldNotRegister.getTexts();
 	@ConfigurableElement("")
-	public static String[] PROFILEView                                                    = {"HANGMAN: {{nick}}: Subscribed, {{state}}, {{numberOfLuckyNumbers}} lucky numbers. Send SIGNUP to provoke for free or INVITE {{nick}} for a match."};
+	public static String[] PROFILEView                                                    = EPhraseNames.PROFILEView.getTexts();
 	@ConfigurableElement("")
-	public static String[] PROFILEFullfillingAskNick                                      = {"HANGMAN: To play with a friend, u need first to sign your name. Now send your name (8 letters or numbers max.) to {{shortCode}}"};
+	public static String[] PROFILEFullfillingAskNick                                      = EPhraseNames.PROFILEFullfillingAskNick.getTexts();
 	@ConfigurableElement("")
-	public static String[] PROFILENickRegisteredNotification                              = {"HANGMAN: Name registered: {{newNickname}}. Send LIST to {{shortCode}} to see online players. NICK [NEW NICK] to change your name."};
+	public static String[] PROFILENickRegisteredNotification                              = EPhraseNames.PROFILENickRegisteredNotification.getTexts();
 	@ConfigurableElement("")
-	public static String[] PLAYINGWordProvidingPlayerStart                                = {"Game started with {{wordGuessingPlayerNick}}.\n{{gallowsArt}}Send P {{wordGuessingPlayerNick}} MSG to give him/her clues"};
+	public static String[] PLAYINGWordProvidingPlayerStart                                = EPhraseNames.PLAYINGWordProvidingPlayerStart.getTexts();
 	@ConfigurableElement("")
-	public static String[] PLAYINGWordGuessingPlayerStart                                 = {"{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nSend a letter, the complete word or END to cancel the game"};
+	public static String[] PLAYINGWordGuessingPlayerStart                                 = EPhraseNames.PLAYINGWordGuessingPlayerStart.getTexts();
 	@ConfigurableElement("")
-	public static String[] PLAYINGWordGuessingPlayerStatus                                = {"{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nSend a letter, the complete word or END to cancel the game"};
+	public static String[] PLAYINGWordGuessingPlayerStatus                                = EPhraseNames.PLAYINGWordGuessingPlayerStatus.getTexts();
 	@ConfigurableElement("")
-	public static String[] PLAYINGWordProvidingPlayerStatus                               = {"{{nick}} guessed letter {{guessedLetter}}\n{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nSend P {{nick}} MSG to provoke him/her"};
+	public static String[] PLAYINGWordProvidingPlayerStatus                               = EPhraseNames.PLAYINGWordProvidingPlayerStatus.getTexts();
 	@ConfigurableElement("")
-	public static String[] PLAYINGWinningMessageForWordGuessingPlayer                     = {"{{winningArt}}{{word}}! You got it! Here is your lucky number: {{luckyNumber}}. Send: J to play or A for help"};
+	public static String[] PLAYINGWinningMessageForWordGuessingPlayer                     = EPhraseNames.PLAYINGWinningMessageForWordGuessingPlayer.getTexts();
 	@ConfigurableElement("")
-	public static String[] PLAYINGWinningMessageForWordProvidingPlayer                    = {"{{wordGuessingPlayerNick}} guessed your word! P {{wordGuessingPlayerNick}} MSG to provoke him/her or INVITE {{wordGuessingPlayerNick}} for a new match"};
+	public static String[] PLAYINGWinningMessageForWordProvidingPlayer                    = EPhraseNames.PLAYINGWinningMessageForWordProvidingPlayer.getTexts();
 	@ConfigurableElement("")
-	public static String[] PLAYINGLosingMessageForWordGuessingPlayer                      = {"{{losingArt}}The word was {{word}}. Now challenge {{wordProvidingPlayerNick}}: send INVITE {{wordProvidingPlayerNick}} to {{shortCode}}"};
+	public static String[] PLAYINGLosingMessageForWordGuessingPlayer                      = EPhraseNames.PLAYINGLosingMessageForWordGuessingPlayer.getTexts();
 	@ConfigurableElement("")
-	public static String[] PLAYINGLosingMessageForWordProvidingPlayer                     = {"Good one! {{wordGuessingPlayerNick}} wasn't able to guessed your word! P {{wordGuessingPlayerNick}} MSG to provoke him/her or INVITE {{wordGuessingPlayerNick}} for a new match"};
+	public static String[] PLAYINGLosingMessageForWordProvidingPlayer                     = EPhraseNames.PLAYINGLosingMessageForWordProvidingPlayer.getTexts();
 	@ConfigurableElement("")
-	public static String[] PLAYINGMatchGiveupNotificationForWordProvidingPlayer           = {"{{wordGuessingPlayerNick}} cancelled the match. To find other users to play with, sent LIST to {{shortCode}}"};
+	public static String[] PLAYINGMatchGiveupNotificationForWordProvidingPlayer           = EPhraseNames.PLAYINGMatchGiveupNotificationForWordProvidingPlayer.getTexts();
 	@ConfigurableElement("")
-	public static String[] PLAYINGMatchGiveupNotificationForWordGuessingPlayer            = {"Your match with {{wordProvidingPlayerNick}} has been canceled. Send P {{wordProvidingPlayerNick}} MSG to talk to him/her or LIST to play with someone else"};
+	public static String[] PLAYINGMatchGiveupNotificationForWordGuessingPlayer            = EPhraseNames.PLAYINGMatchGiveupNotificationForWordGuessingPlayer.getTexts();
 	@ConfigurableElement("")
-	public static String[] INVITINGAskOpponentNickOrPhone                                 = {"HANGMAN: Name registered: {{invitingPlayerNickname}}. Send your friend's phone to {{shortCode}} or LIST to see online players. NICK [NEW NICK] to change your name."};
+	public static String[] INVITINGAskOpponentNickOrPhone                                 = EPhraseNames.INVITINGAskOpponentNickOrPhone.getTexts();
 	@ConfigurableElement("")
-	public static String[] INVITINGAskForAWordToStartAMatchBasedOnOpponentNickInvitation  = {"HANGMAN: Inviting {{opponentNickname}}. Think of a word without special digits and send it now to {{shortCode}}. After the invitation, you'll get a lucky number"};
+	public static String[] INVITINGAskForAWordToStartAMatchBasedOnOpponentNickInvitation  = EPhraseNames.INVITINGAskForAWordToStartAMatchBasedOnOpponentNickInvitation.getTexts();
 	@ConfigurableElement("")
-	public static String[] INVITINGAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation = {"HANGMAN: Your friend's phone: {{opponentPhoneNumber}}. Think of a word without special digits and send it now to {{shortCode}}. After the invitation, you'll get a lucky number"};
+	public static String[] INVITINGAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation = EPhraseNames.INVITINGAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation.getTexts();
 	@ConfigurableElement("")
-	public static String[] INVITINGInvitationNotificationForInvitingPlayer                = {"{{invitedPlayerNickname}} was invited to play with you. while you wait, you can provoke {{invitedPlayerNickname}} by sending a message to {{shortCode}} (0.31+tax) or send SIGNUP to provoke for free how many times you want"};
+	public static String[] INVITINGInvitationNotificationForInvitingPlayer                = EPhraseNames.INVITINGInvitationNotificationForInvitingPlayer.getTexts();
 	@ConfigurableElement("")
-	public static String[] INVITINGTimeoutNotificationForInvitingPlayer                   = {"{{invitedPlayerNickname}} is taking too long to answer. However, a new player, {{suggestedNewPlayersNickname}}, is available. Play with {{suggestedNewPlayersNickname}}? Send YES to {{shortCode}}"};
+	public static String[] INVITINGTimeoutNotificationForInvitingPlayer                   = EPhraseNames.INVITINGTimeoutNotificationForInvitingPlayer.getTexts();
 	@ConfigurableElement("")
-	public static String[] INVITINGInvitationNotificationForInvitedPlayer                 = {"HANGMAN: {{invitingPlayerNickname}} is inviting you for a hangman match. Do you accept? Send YES to {{shortCode}} or PROFILE to see {{invitingPlayerNickname}} information"};
+	public static String[] INVITINGInvitationNotificationForInvitedPlayer                 = EPhraseNames.INVITINGInvitationNotificationForInvitedPlayer.getTexts();
 	@ConfigurableElement("")
-	public static String[] INVITINGInvitationRefusalNotificationForInvitingPlayer         = {"{{invitedPlayerNickname}} refused your invitation to play. Send LIST to 9714 and pick someone else"};
+	public static String[] INVITINGInvitationRefusalNotificationForInvitingPlayer         = EPhraseNames.INVITINGInvitationRefusalNotificationForInvitingPlayer.getTexts();
 	@ConfigurableElement("")
-	public static String[] INVITINGInvitationRefusalNotificationForInvitedPlayer          = {"The invitation to play the Hangman Game made by {{invitingPlayerNickname}} was refused. Send LIST to {{shortCode}} to see online users"};
+	public static String[] INVITINGInvitationRefusalNotificationForInvitedPlayer          = EPhraseNames.INVITINGInvitationRefusalNotificationForInvitedPlayer.getTexts();
 	@ConfigurableElement("")
-	public static String[] LISTINGShowPlayers                                             = {"{{playersList}}. To play, send INVITE [NICK] to {{shortCode}}; MORE for more players or PROFILE [NICK]"};
+	public static String[] LISTINGShowPlayers                                             = EPhraseNames.LISTINGShowPlayers.getTexts();
 	@ConfigurableElement("")
-	public static String[] LISTINGNoMorePlayers                                           = {"There is no more online players to show. Send P [NICK] [MSG] to provoke or INVITE [PHONE] to invite a friend of yours to play the Hangman Game."};
+	public static String[] LISTINGNoMorePlayers                                           = EPhraseNames.LISTINGNoMorePlayers.getTexts();
 	@ConfigurableElement("")
-	public static String[] PROVOKINGDeliveryNotification                                  = {"Your message was sent to {{destinationNick}}. Wait for the answer or provoke other players sending P [NICK] [MSG] to {{shortCode}}. Send SIGNUP to provoke for free."};
+	public static String[] PROVOKINGDeliveryNotification                                  = EPhraseNames.PROVOKINGDeliveryNotification.getTexts();
 	@ConfigurableElement("")
-	public static String[] PROVOKINGSendMessage                                           = {"{{sourceNick}}: {{message}} - Answer by sending P {{sourceNick}} [MSG] to {{shortCode}}"};
+	public static String[] PROVOKINGSendMessage                                           = EPhraseNames.PROVOKINGSendMessage.getTexts();
 	@ConfigurableElement("")
-	public static String[] PROVOKINGNickNotFound                                          = {"No player with nickname '{{nickname}}' was found. Maybe he/she changed it? Send LIST to {{shortCode}} to see online players"};
+	public static String[] PROVOKINGNickNotFound                                          = EPhraseNames.PROVOKINGNickNotFound.getTexts();
 	@ConfigurableElement("")
-	public static String[] UNSUBSCRIBINGUnsubscriptionNotification                        = {"You are now unsubscribed from the HANGMAN GAME and will no longer receive invitations to play nor lucky numbers. To join again, send HANGMAN to {{shortCode}}"};
+	public static String[] UNSUBSCRIBINGUnsubscriptionNotification                        = EPhraseNames.UNSUBSCRIBINGUnsubscriptionNotification.getTexts();
 
 	
-	///////
-	
-	static {
-		applyConfiguration();
-	}
-	
-	public static void applyConfiguration() {
+	public static void applyConfiguration() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
 		
 		if (log == null) try {
-			log = new Instrumentation<HangmanSMSGameInstrumentationProperties, String>(APPID, HangmanSMSGameInstrumentationProperties.IP_PHONE, HangmanSMSGameInstrumentationEvents.values());
-        	InstrumentationProfilingEventsClient          instrumentationProfilingEventsClient           = new InstrumentationProfilingEventsClient(log, EInstrumentationDataPours.CONSOLE);
-        	InstrumentationReportDataCollectorEventClient instrumentationReportDataCollectorEventsClient = new InstrumentationReportDataCollectorEventClient(log, EInstrumentationDataPours.CONSOLE,
+			log = new Instrumentation<HangmanSMSGameInstrumentationProperties, String>(APPID + " Logic", HangmanSMSGameInstrumentationProperties.IP_PHONE,
+					LOG_STRATEGY, LOG_HANGMAN_FILE_PATH, HangmanSMSGameInstrumentationEvents.values());
+        	InstrumentationProfilingEventsClient          instrumentationProfilingEventsClient           = new InstrumentationProfilingEventsClient(log, LOG_STRATEGY, LOG_HANGMAN_FILE_PATH);
+        	InstrumentationReportDataCollectorEventClient instrumentationReportDataCollectorEventsClient = new InstrumentationReportDataCollectorEventClient(log,
+        			REPORT_DATA_COLLECTOR_STRATEGY, POSTGRESQL_CONNECTION_HOSTNAME+";"+POSTGRESQL_CONNECTION_PORT+";"+POSTGRESQL_CONNECTION_DATABASE_NAME+";"+POSTGRESQL_CONNECTION_USER+";"+POSTGRESQL_CONNECTION_PASSWORD,
 					IE_REQUEST_FROM_NEW_USER.getInstrumentableEvent(), IE_REQUEST_FROM_EXISTING_USER.getInstrumentableEvent());
 			log.addInstrumentationPropagableEventsClient(instrumentationProfilingEventsClient);
 			log.addInstrumentationPropagableEventsClient(instrumentationReportDataCollectorEventsClient);
@@ -238,39 +236,13 @@ public class Configuration {
 		HangmanSMSGamePostgreSQLAdapters.USER     = POSTGRESQL_CONNECTION_USER;
 		HangmanSMSGamePostgreSQLAdapters.PASSWORD = POSTGRESQL_CONNECTION_PASSWORD;
 		
-		switch (REPORT_DATA_COLLECTOR_STRATEGY) {
-			case NETWORK:
-				log.reportDebug("Creating a NETWORK for REPORT_DATA_COLLECTOR_STRATEGY -- not implemented. Falling back...");
-			case COMPRESSED_ROLLING_FILE:
-				log.reportDebug("Creating a COMPRESSED_ROLLING_FILE for REPORT_DATA_COLLECTOR_STRATEGY -- not implemented. Falling back...");
-			case ROLLING_FILE:
-				log.reportDebug("Creating a ROLLING_FILE for REPORT_DATA_COLLECTOR_STRATEGY -- not implemented. Falling back...");
-			case POSTGRESQL_DATABASE:
-				log.reportDebug("Error creating a POSTGRESQL_DATABASE for REPORT_DATA_COLLECTOR_STRATEGY -- Falling back...");
-			case CONSOLE:
-				log.reportDebug("Creating a CONSOLE for REPORT_DATA_COLLECTOR_STRATEGY");
-				break;
-			default:
-				throw new RuntimeException("Don't know '"+REPORT_DATA_COLLECTOR_STRATEGY.name()+"' REPORT_DATA_COLLECTOR_STRATEGY");
+		// set phrases
+		for (EPhraseNames i18nPhrase : EPhraseNames.values()) {
+			Field configurationPhrase = Configuration.class.getField(i18nPhrase.name());
+			String[] texts = (String[])configurationPhrase.get(null);
+			i18nPhrase.setTexts(texts);
 		}
 		
-		switch (LOG_STRATEGY) {
-		case NETWORK:
-			log.reportDebug("Creating a NETWORK for LOG_STRATEGY -- not implemented. Falling back...");
-		case COMPRESSED_ROLLING_FILE:
-			log.reportDebug("Creating a COMPRESSED_ROLLING_FILE for LOG_STRATEGY -- not implemented. Falling back...");
-		case ROLLING_FILE:
-			log.reportDebug("Creating a ROLLING_FILE for LOG_STRATEGY -- not implemented. Falling back...");
-		case POSTGRESQL_DATABASE:
-			log.reportDebug("Error creating a POSTGRESQL_DATABASE for LOG_STRATEGY -- Falling back...");
-		case CONSOLE:
-			log.reportDebug("Creating a CONSOLE for LOG_STRATEGY");
-			break;
-		default:
-			throw new RuntimeException("Don't know '"+LOG_STRATEGY.name()+"' LOG_STRATEGY");
-	}
-
 	}
 
 }
-

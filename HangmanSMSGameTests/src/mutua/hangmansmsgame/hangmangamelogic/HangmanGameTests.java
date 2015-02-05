@@ -88,5 +88,16 @@ public class HangmanGameTests {
 		serializedGame = game.serializeGameState();
 		System.out.println("Restarting game with state '"+serializedGame+"'");
 	}
+	
+	@Test
+	public void testUnusualWord() {
+		String word = "12345anywordABCDEFGHIJKLMNOPQRSTUVWXYZ67890";
+		int totalNumberOfWrongTries = 1;
+		HangmanGame game = new HangmanGame(word, totalNumberOfWrongTries);
+		game.suggestLetter('x');
+		assertEquals("Wrong game state", EHangmanGameStates.PLAYING, game.getGameState());
+		assertEquals("Wrong attempted letters so far", "X", game.getAttemptedLettersSoFar());
+		assertEquals("Wrong guessed word so far", word.replaceAll("[^01Xx]", "-"), game.getGuessedWordSoFar());
+	}
 
 }

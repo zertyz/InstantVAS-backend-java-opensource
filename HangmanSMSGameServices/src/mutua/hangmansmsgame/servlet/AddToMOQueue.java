@@ -41,10 +41,6 @@ import static mutua.hangmansmsgame.HangmanSMSGameServicesInstrumentationProperti
 import static mutua.hangmansmsgame.HangmanSMSGameServicesInstrumentationEvents.*;
 
 
-/************
-** SERVLET **
-************/
-
 public class AddToMOQueue extends HttpServlet {
 	
 	private static final long serialVersionUID = 1L;
@@ -62,7 +58,6 @@ public class AddToMOQueue extends HttpServlet {
 	*******************************************************************************************************************************************/
 	
 	static {
-		System.out.println("PORRA!!");
 		new WebAppConfiguration();
 	}
 
@@ -85,11 +80,11 @@ public class AddToMOQueue extends HttpServlet {
 		} else {
 			try {
 				gameMOProducer.addToMOQueue(mo);
-				smsParser.sendReply(ESMSInParserSMSAcceptionStatus.ACCEPTED, response);
 				log.reportEvent(IE_MESSAGE_ACCEPTED, IP_MO_MESSAGE, mo);
+				smsParser.sendReply(ESMSInParserSMSAcceptionStatus.ACCEPTED, response);
 			} catch (Throwable t) {
-				log.reportThrowable(t, "Error detected while attempting to add an MO to the queue");
 				smsParser.sendReply(ESMSInParserSMSAcceptionStatus.POSTPONED, response);
+				log.reportThrowable(t, "Error detected while attempting to add an MO to the queue");
 			}
 				
 		}
@@ -124,7 +119,7 @@ class MTProducer extends EventServer<EHangmanSMSGameEvents> implements IResponse
 
 	@Override
 	public void onMessage(OutgoingSMSDto outgoingMessage, IncomingSMSDto incomingMessage) {
-		dispatchConsumableEvent(EHangmanSMSGameEvents.PROCESS_INCOMING_SMS, outgoingMessage);
+		dispatchConsumableEvent(EHangmanSMSGameEvents.INTERACTIVE_REQUEST, outgoingMessage);
 	}
 	
 }
@@ -135,7 +130,7 @@ class MTConsumer implements EventClient<EHangmanSMSGameEvents> {
 			Configuration.log, Configuration.APPID + " interaction", Configuration.SHORT_CODE, Configuration.MT_SERVICE_URL,
 			Configuration.MT_SERVICE_NUMBER_OF_RETRY_ATTEMPTS, Configuration.MT_SERVICE_DELAY_BETWEEN_ATTEMPTS);
 	
-	@EventConsumer("PROCESS_INCOMING_SMS")
+	@EventConsumer("INTERACTIVE_REQUEST")
 	public void sendMT(OutgoingSMSDto mt) {
 		log.reportDebug("sending interactive SMS -- " + mt);
 		try {
@@ -160,6 +155,6 @@ class MOProducer extends EventServer<EHangmanSMSGameEvents> {
 	}
 	
 	public void addToMOQueue(IncomingSMSDto mo) {
-		dispatchNeedToBeConsumedEvent(EHangmanSMSGameEvents.PROCESS_INCOMING_SMS, mo);
+		dispatchNeedToBeConsumedEvent(EHangmanSMSGameEvents.INTERACTIVE_REQUEST, mo);
 	}
 }

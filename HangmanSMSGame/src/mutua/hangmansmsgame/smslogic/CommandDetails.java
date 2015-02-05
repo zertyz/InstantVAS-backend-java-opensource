@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Hashtable;
 
+import mutua.hangmansmsgame.config.Configuration;
 import mutua.hangmansmsgame.dal.DALFactory;
 import mutua.hangmansmsgame.dal.IMatchDB;
 import mutua.hangmansmsgame.dal.ISessionDB;
@@ -106,14 +107,20 @@ public class CommandDetails {
         }
 	}
 	
-	public static boolean registerUserNickname(String phone, String nickname) throws SQLException {
+	public static void registerUserNickname(String phone, String nickname) throws SQLException {
 		int count = 1;
 		String alternativeNick = nickname;
 		while (!userDB.checkAvailabilityAndRecordNickname(phone, alternativeNick)) {
 			alternativeNick = nickname + count;
 			count++;
 		}
-		return true;
+	}
+
+	/** formalizes the default nickname registration rule */
+	public static void assureUserHasANickname(String phone) throws SQLException {
+		if (!userDB.isUserSubscribed(phone)) {
+			registerUserNickname(phone, DEFAULT_NICKNAME_PREFIX + phone.substring(Math.max(phone.length()-4, 0)));
+		}
 	}
 	
 	/** This is the point we may call Celltick APIs for registration */
@@ -129,7 +136,7 @@ public class CommandDetails {
 			(subscriptionStatus == ESubscriptionOperationStatus.ALREADY_SUBSCRIBED)) {
 			if (!userDB.isUserOnRecord(phone)) {
 				log.reportEvent(DIE_DEBUG, DIP_MSG, "Hangman: registering user "+phone+" succeeded");
-				registerUserNickname(phone, DEFAULT_NICKNAME_PREFIX + phone.substring(Math.max(phone.length()-4, 0)));
+				assureUserHasANickname(phone);
 			}
 			userDB.setSubscribed(phone, true);
 			return true;
@@ -354,7 +361,10 @@ public class CommandDetails {
 			String wordProvidingPlayerNick  = "DomBot";
 			
 			// start a new Match
-			HangmanGame game = new HangmanGame("chimpanzee", 6);
+			assureUserIsRegistered(session.getPhone());
+			int botWordIndex = userDB.getAndIncrementNextBotWord(session.getPhone());
+			botWordIndex = botWordIndex % Configuration.BOT_WORDS.length;
+			HangmanGame game = new HangmanGame(Configuration.BOT_WORDS[botWordIndex], 6);
 			String serializedGameState = game.serializeGameState();
 			
 			CommandMessageDto wordGuessingPlayerMessage = new CommandMessageDto(phrases.PLAYINGWordGuessingPlayerStart(game.getGuessedWordSoFar(), game.getAttemptedLettersSoFar()),
@@ -416,7 +426,7 @@ public class CommandDetails {
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
 			String opponentNickname    = parameters[0];
 			String opponentPhoneNumber = userDB.getUserPhoneNumber(opponentNickname);
-			if (opponentPhoneNumber == null) {
+			if ((opponentPhoneNumber == null) || (session.getPhone().equals(opponentPhoneNumber))) {
 				return getNickNotFoundMessage(session, phrases, opponentNickname);
 			}
 			CommandMessageDto commandResponse = new CommandMessageDto(phrases.INVITINGAskForAWordToStartAMatchBasedOnOpponentNickInvitation(opponentNickname),
@@ -433,12 +443,7 @@ public class CommandDetails {
 			String invitingPlayerNickName    = userDB.getUserNickname(session.getPhone());
 			String wordToPlay                = parameters[0];
 			
-			// if the invited player could not be registered
-			if (!assureUserIsRegistered(opponentPlayerPhoneNumber)) {
-				return getNewCommandAnswerDto(session,
-					new CommandMessageDto(phrases.INFOCouldNotRegister(), EResponseMessageType.HELP));
-			}
-			
+			assureUserHasANickname(opponentPlayerPhoneNumber);			
 			String opponentPlayerNickName = userDB.getUserNickname(opponentPlayerPhoneNumber);
 
 			HangmanGame game = new HangmanGame(wordToPlay, 6);
@@ -464,6 +469,20 @@ public class CommandDetails {
 			
 			MatchPlayersInfo matchPlayersInfo = getMatchPlayersInfo(session);
 
+			// if the invited player could not be registered
+			if (!assureUserIsRegistered(session.getPhone())) {
+				CommandMessageDto wordProvidingPlayerMessage = new CommandMessageDto(
+						matchPlayersInfo.wordProvidingPlayerPhone,
+						phrases.INVITINGInvitationRefusalNotificationForInvitingPlayer(matchPlayersInfo.wordGuessingPlayerNick),
+				        EResponseMessageType.HELP);
+				CommandMessageDto wordGuessingPlayerMessage = new CommandMessageDto(
+						phrases.INFOCouldNotRegister(),
+	                    EResponseMessageType.HELP);
+
+				return getNewCommandAnswerDto(session, new CommandMessageDto[] {wordProvidingPlayerMessage, wordGuessingPlayerMessage},
+				                              ESTATES.NEW_USER);
+			}
+			
 			// start a new Match
 			HangmanGame game  = new HangmanGame(serializedGameState);
 			MatchDto match = new MatchDto(matchPlayersInfo.wordProvidingPlayerPhone, matchPlayersInfo.wordGuessingPlayerPhone,
@@ -620,6 +639,25 @@ public class CommandDetails {
 		}
 	};
 
+	/** Respond to the 'END' command issued by the word guessing player when playing with a human */
+	public static final ICommandProcessor CANCEL_HUMAN_GAME = new ICommandProcessor() {
+		@Override
+		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
+			return getNewCommandAnswerDto(session, (CommandMessageDto[])null, ESTATES.EXISTING_USER);
+		}
+	};
+
+	/** Respond to the 'END' command issued by the word guessing player when playing with a bot */
+	public static final ICommandProcessor CANCEL_BOT_GAME = new ICommandProcessor() {
+		@Override
+		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
+			String botNick    = session.getParameterValue(ESessionParameters.MATCH_BOT_NAME);
+			
+			return getNewCommandAnswerDto(session,
+				new CommandMessageDto(phrases.PLAYINGMatchGiveupNotificationForWordGuessingPlayer(botNick), EResponseMessageType.HELP),
+				ESTATES.EXISTING_USER);
+		}
+	};
 
 	/** Called when the user wants to send a chat message to another player */
 	public static final ICommandProcessor PROVOKE = new ICommandProcessor() {
@@ -639,12 +677,41 @@ public class CommandDetails {
 		}
 	};
 	
-	/** Called when the user wants to see the profile of another user */
+	/** Called when the user wants to see the profile of another user -- receives the optional parameter: user nickname */
 	public static final ICommandProcessor SHOW_PROFILE = new ICommandProcessor() {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
-			String nickname = userDB.getCorrectlyCasedNickname(parameters[0]);
-			CommandMessageDto message = new CommandMessageDto(phrases.PROFILEView(nickname, getBrazillianPhoneState(session.getPhone()), 0), EResponseMessageType.PROFILE);
+			String desiredUserNickname = null;
+			String desiredUserPhone    = null;
+			// responds to "PROFILE [NICK]" command
+			if (parameters.length == 1) {
+				desiredUserNickname = userDB.getCorrectlyCasedNickname(parameters[0]);
+				if (desiredUserNickname != null) {
+					desiredUserPhone    = userDB.getUserPhoneNumber(desiredUserNickname);
+				}
+			} else {
+				// responds to "PROFILE" command without arguments. Try to get the opponent nick from the session variables
+				String matchBotName;
+				String sMatchId;
+				if ((matchBotName = session.getParameterValue(ESessionParameters.MATCH_BOT_NAME)) != null) {
+					return null;	// do nothing for bots, by now
+				} else if ((sMatchId = session.getParameterValue(ESessionParameters.MATCH_ID)) != null) {
+					MatchDto match = matchDB.retrieveMatch(Integer.parseInt(sMatchId));
+					desiredUserPhone = match.getWordProvidingPlayerPhone();
+				} else if ((desiredUserPhone = session.getParameterValue(ESessionParameters.OPPONENT_PHONE_NUMBER)) != null) {
+					// just setting opponentPhoneNumber is ok by now
+				} else {
+					return null;
+				}
+				desiredUserNickname = userDB.getUserNickname(desiredUserPhone);
+			}
+			// return the results
+			CommandMessageDto message;
+			if ((desiredUserNickname != null) && (desiredUserPhone != null)) { 
+				message = new CommandMessageDto(phrases.PROFILEView(desiredUserNickname, getBrazillianPhoneState(desiredUserPhone), 0), EResponseMessageType.PROFILE);
+			} else {
+				message = new CommandMessageDto(phrases.PROVOKINGNickNotFound(parameters[0]), EResponseMessageType.PROFILE);
+			}
 			return getNewCommandAnswerDto(session, message);
 		}
 	};
@@ -655,7 +722,7 @@ public class CommandDetails {
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
 			String newNickname = parameters[0];
 			assureUserIsRegistered(session.getPhone());
-			userDB.checkAvailabilityAndRecordNickname(session.getPhone(), newNickname);
+			registerUserNickname(session.getPhone(), newNickname);
 			String registeredNickname = userDB.getUserNickname(session.getPhone());
 			CommandMessageDto message = new CommandMessageDto(phrases.PROFILENickRegisteredNotification(registeredNickname), EResponseMessageType.PROFILE);
 			return getNewCommandAnswerDto(session, message);
@@ -664,7 +731,7 @@ public class CommandDetails {
 	
 	
 	private static CommandAnswerDto performListCommand(SessionDto session,	ESMSInParserCarrier carrier, IPhraseology phrases, String[] presentedUsers) throws SQLException {
-		String[][] playersInfo = CommandDetails.getPlayersInfoToPresentOnTheListCommandRespectingTheMaximumNumberOfCharacters(phrases, carrier.getMaxMTChars(), presentedUsers);
+		String[][] playersInfo = CommandDetails.getPlayersInfoToPresentOnTheListCommandRespectingTheMaximumNumberOfCharacters(phrases, carrier.getMaxMTChars()*3, presentedUsers);
 		CommandMessageDto message;
 		if (playersInfo == null) {
 			message = new CommandMessageDto(phrases.LISTINGNoMorePlayers(), EResponseMessageType.PROFILE);
