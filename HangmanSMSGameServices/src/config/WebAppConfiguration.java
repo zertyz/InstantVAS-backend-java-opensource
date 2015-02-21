@@ -110,7 +110,7 @@ public class WebAppConfiguration {
     		String configFileName = "/tmp/hangman.config";
     		configurationLog.reportRequestStart("Attempting to read configuration file from '"+configFileName+"'");
     		ConfigurationManager cm = new ConfigurationManager(configurationLog, WebAppConfiguration.class, Configuration.class);
-    		//cm.saveToFile(configFileName);
+//    		cm.saveToFile(configFileName);		// to activate file write, please go to 'AddToMOQueue#doGet', since the class loading for 'CommandDetails' will fail at this point, due to 'log' being null at this point -- and this will leave some comments blank
     		cm.loadFromFile(configFileName);
     		configurationLog.reportRequestFinish();
 		} catch (Exception e) {

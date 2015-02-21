@@ -10,6 +10,7 @@ import static mutua.icc.instrumentation.DefaultInstrumentationProperties.DIP_MSG
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.Random;
 
 import mutua.hangmansmsgame.config.Configuration;
 import mutua.hangmansmsgame.dal.DALFactory;
@@ -28,6 +29,7 @@ import mutua.hangmansmsgame.smslogic.commands.ICommandProcessor;
 import mutua.hangmansmsgame.smslogic.commands.dto.CommandAnswerDto;
 import mutua.hangmansmsgame.smslogic.commands.dto.CommandMessageDto;
 import mutua.hangmansmsgame.smslogic.commands.dto.CommandMessageDto.EResponseMessageType;
+import mutua.icc.configuration.annotations.ConfigurableElement;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 import mutua.subscriptionengine.SubscriptionEngine.ESubscriptionOperationStatus;
 
@@ -325,7 +327,7 @@ public class CommandDetails {
 	///////////
 
 
-	/** Generates a 'CommandAnswerDto' with 0 messages to be sent */
+	@ConfigurableElement("Generates a 'CommandAnswerDto' with 0 messages to be sent. Receives no parameters. Activated when an unrecognized message is sent from a 'NEW_USER'")
 	public static final ICommandProcessor NO_ANSWER = new ICommandProcessor() {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) {
@@ -333,15 +335,26 @@ public class CommandDetails {
 		}
 	};
 
+	@ConfigurableElement("Activated for 'NEW_USER's, when we receive words like HANGMAN or FORCA")
 	public static final ICommandProcessor SHOW_WELCOME_MESSAGE = new ICommandProcessor() {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
-			CommandMessageDto commandResponse = new CommandMessageDto(phrases.INFOWelcome(),
-			                                                          EResponseMessageType.HELP);
-			return getNewCommandAnswerDto(session, commandResponse, ESTATES.EXISTING_USER);
+			
+			CommandMessageDto commandResponse;
+			
+			if (assureUserIsRegistered(session.getPhone())) {
+				commandResponse = new CommandMessageDto(phrases.INFOWelcome(),
+				                                        EResponseMessageType.HELP);
+				return getNewCommandAnswerDto(session, commandResponse, ESTATES.EXISTING_USER);
+			} else {
+				commandResponse = new CommandMessageDto(phrases.INFOCouldNotRegister(), EResponseMessageType.HELP);
+				return getNewCommandAnswerDto(session, commandResponse);
+			}
+
 		}
 	};
 	
+	@ConfigurableElement("The help command. No args.")
 	public static final ICommandProcessor SHOW_FULL_HELP_MESSAGE = new ICommandProcessor() {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
@@ -354,11 +367,12 @@ public class CommandDetails {
 		}
 	};
 
-	/** Called when the user just wants to play, with any opponent */
+	@ConfigurableElement("Called when the user just wants to play -- with any opponent. No args")
 	public static final ICommandProcessor PLAY_WITH_RANDOM_USER_OR_BOT = new ICommandProcessor() {
+		private Random rnd = new Random(System.currentTimeMillis());
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
-			String wordProvidingPlayerNick  = "DomBot";
+			String wordProvidingPlayerNick  = Configuration.BOT_USERS[rnd.nextInt(Configuration.BOT_USERS.length)];
 			
 			// start a new Match
 			assureUserIsRegistered(session.getPhone());
@@ -377,8 +391,7 @@ public class CommandDetails {
 		}
 	};
 
-	/** Called when the user provides the intention to invite someone and provide the parameter to reference that one.
-	 *  parameter 1: the phone number or nick name of the user */
+	@ConfigurableElement("Starts the invitation process with an argument. parameter 1: the phone number or nick name of the user")
 	public static final ICommandProcessor INVITE_NICK_OR_PHONE = new ICommandProcessor() {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
@@ -391,6 +404,7 @@ public class CommandDetails {
 		}
 	};
 
+	@ConfigurableElement("Starts the invitation process without any arguments")
 	public static final ICommandProcessor START_INVITATION_PROCESS = new ICommandProcessor() {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
@@ -410,6 +424,7 @@ public class CommandDetails {
 		}
 	};
 
+	@ConfigurableElement("Command to take note of the opponent phone number when inviting someone. Parameter 1: a phone number")
 	public static final ICommandProcessor HOLD_OPPONENT_PHONE = new ICommandProcessor() {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
@@ -421,6 +436,7 @@ public class CommandDetails {
 		}
 	};
 	
+	@ConfigurableElement("Command to take note of the opponent nick when inviting someone. Parameter 1: a nick name")
 	public static final ICommandProcessor HOLD_OPPONENT_NICK = new ICommandProcessor() {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
@@ -436,6 +452,7 @@ public class CommandDetails {
 		}
 	};
 
+	@ConfigurableElement("Command to take note of the word to play, when inviting someone. Parameter 1: a word")
 	public static final ICommandProcessor HOLD_MATCH_WORD = new ICommandProcessor() {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
@@ -447,6 +464,11 @@ public class CommandDetails {
 			String opponentPlayerNickName = userDB.getUserNickname(opponentPlayerPhoneNumber);
 
 			HangmanGame game = new HangmanGame(wordToPlay, 6);
+			
+			if ((!wordToPlay.matches("[A-Za-z]+")) || (game.getGameState() == EHangmanGameStates.WON)) {
+				CommandMessageDto commandResponse = new CommandMessageDto(phrases.INVITINGNotAGoodWord(game.getWord()), EResponseMessageType.HELP);
+				return getNewCommandAnswerDto(session, commandResponse);
+			}
 			
 			// TODO a mensagem enviada ao convidado pode conter o telefone do proponente, caso o convite seja baseado em número de telefone, para facilitar a identificação do amigo proponente.
 			CommandMessageDto invitingPlayerMessage = new CommandMessageDto(phrases.INVITINGInvitationNotificationForInvitingPlayer(opponentPlayerNickName),
@@ -461,7 +483,7 @@ public class CommandDetails {
 		}
 	};
 
-	/** Called when the word guessing player answered YES to the invitation message he/she received to attend to a hangman match */
+	@ConfigurableElement("Command for when the word guessing player answers YES to the invitation message he/she received to attend to a hangman match")
 	public static final ICommandProcessor ACCEPT_INVITATION = new ICommandProcessor() {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
@@ -502,7 +524,7 @@ public class CommandDetails {
 		}
 	};
 
-	/** Called when the word guessing player answered NO to the invitation message he/she received to attend to a hangman match */
+	@ConfigurableElement("Command for when the word guessing player answers NO to the invitation message he/she received to attend to a hangman match")
 	public static final ICommandProcessor REFUSE_INVITATION = new ICommandProcessor() {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
@@ -524,7 +546,7 @@ public class CommandDetails {
 	};
 
 
-	/** Called when the user is attempting to guess a word provided by a human */
+	@ConfigurableElement("Command executed when the user is attempting to guess a word provided by a human. Parameter 1: the suggested letter or word")
 	public static final ICommandProcessor SUGGEST_LETTER_OR_WORD_FOR_HUMAN = new ICommandProcessor() {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
@@ -592,7 +614,7 @@ public class CommandDetails {
 		}
 	};
 	
-	/** Called when the user is attempting to guess a word provided by a bot */
+	@ConfigurableElement("Command called when the user is attempting to guess a word provided by a bot. Parameter 1: the letter or word")
 	public static final ICommandProcessor SUGGEST_LETTER_OR_WORD_FOR_BOT = new ICommandProcessor() {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
@@ -639,7 +661,7 @@ public class CommandDetails {
 		}
 	};
 
-	/** Respond to the 'END' command issued by the word guessing player when playing with a human */
+	@ConfigurableElement("Responds to the 'END' command issued by the word guessing player when playing with a human")
 	public static final ICommandProcessor CANCEL_HUMAN_GAME = new ICommandProcessor() {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
@@ -647,7 +669,7 @@ public class CommandDetails {
 		}
 	};
 
-	/** Respond to the 'END' command issued by the word guessing player when playing with a bot */
+	@ConfigurableElement("Responds to the 'END' command issued by the word guessing player when playing with a bot")
 	public static final ICommandProcessor CANCEL_BOT_GAME = new ICommandProcessor() {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
@@ -659,7 +681,7 @@ public class CommandDetails {
 		}
 	};
 
-	/** Called when the user wants to send a chat message to another player */
+	@ConfigurableElement("Called when the user wants to send a chat message to another player. Parameters: 1: the target nickname, 2: the message")
 	public static final ICommandProcessor PROVOKE = new ICommandProcessor() {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
@@ -677,7 +699,7 @@ public class CommandDetails {
 		}
 	};
 	
-	/** Called when the user wants to see the profile of another user -- receives the optional parameter: user nickname */
+	@ConfigurableElement("Command called when the user wants to see the profile of another user -- receives the optional parameter: user nickname")
 	public static final ICommandProcessor SHOW_PROFILE = new ICommandProcessor() {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
@@ -716,7 +738,7 @@ public class CommandDetails {
 		}
 	};
 	
-	/** Called when the user wants to reset his/her profile nickname */
+	@ConfigurableElement("Command called when the user wants to reset his/her profile nickname. Parameter 1: the new nick")
 	public static final ICommandProcessor DEFINE_NICK = new ICommandProcessor() {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
@@ -744,7 +766,7 @@ public class CommandDetails {
 	}
 
 
-	/** Called when the user wants to a list of users */
+	@ConfigurableElement("Command called when the user wants to see a list of online users")
 	public static final ICommandProcessor LIST_USERS = new ICommandProcessor() {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
@@ -753,7 +775,7 @@ public class CommandDetails {
 		}
 	};
 	
-	/** Called when the user is listing other users and wants to see more of them */
+	@ConfigurableElement("Command called when the user is listing online users and wants to see more of them")
 	public static final ICommandProcessor LIST_MORE_USERS = new ICommandProcessor() {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
@@ -762,7 +784,7 @@ public class CommandDetails {
 		}
 	};
 	
-	/** Called when the user issues the "unsubscribe" command from an sms message */
+	@ConfigurableElement("Command called when the user wants to have his subscription cancelled from the game")
 	public static final ICommandProcessor UNSUBSCRIBE = new ICommandProcessor() {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
@@ -788,6 +810,5 @@ class MatchPlayersInfo {
 		this.wordGuessingPlayerPhone  = wordGuessingPlayerPhone;
 		this.wordProvidingPlayerNick  = wordProvidingPlayerNick;
 		this.wordGuessingPlayerNick   = wordGuessingPlayerNick;
-	}
-	
+	}	
 }

@@ -226,6 +226,16 @@ public class TestPhraseology extends IPhraseology {
 			{"invitingPlayerNickname",      invitingPlayerNickname},
 		});
 	}
+	
+	@Override
+	public String INVITINGNotAGoodWord(String word) {
+		return getPhrase(EPhraseNames.INVITINGNotAGoodWord, new String[][] {
+			{"shortCode", shortCode},
+			{"word",      word},
+		});
+	}
+
+
 
 	@Override
 	public String LISTINGShowPlayers(String[][] playersInfo) {
@@ -298,5 +308,6 @@ public class TestPhraseology extends IPhraseology {
 			{"invitingPlayerNickname", invitingPlayerNickname},
 		});
 	}
+
 
 }

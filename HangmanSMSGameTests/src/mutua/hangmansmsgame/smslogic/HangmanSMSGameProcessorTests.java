@@ -1,7 +1,10 @@
 package mutua.hangmansmsgame.smslogic;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
+import java.lang.reflect.Field;
 import java.sql.SQLException;
 import java.util.Random;
 
@@ -142,9 +145,9 @@ public class HangmanSMSGameProcessorTests {
 
 		// only known commands should work
 		tc.checkResponse("21991234899", "HELP",
-			"1/3: You can play the HANGMAN game in 2 ways: guessing someone's word or inviting someone to play with your word",
-			"2/3: You'll get 1 lucky number each word you guess. Whenever you invite a friend or user to play, you win another lucky number",
-			"3/3: Every week, 1 lucky number is selected to win the prize. Send an option to 9714: (J)Play online; (C)Invite a friend or user; (R)anking; (A)Help");
+			"You can play the HANGMAN game in 2 ways: guessing someone's word or inviting someone to play with your word " +
+			"You'll get 1 lucky number each word you guess. Whenever you invite a friend or user to play, you win another lucky number " +
+			"Every week, 1 lucky number is selected to win the prize. Send an option to 9714: (J)Play online; (C)Invite a friend or user; (R)anking; (A)Help");
 		
 	}
 	
@@ -152,21 +155,25 @@ public class HangmanSMSGameProcessorTests {
 	public void testUserRegistrationSubtleties() throws SQLException {
 		tc.resetDatabases();
 		
-		tc.checkResponse("21998019167", "hangman", testPhraseology.INFOWelcome());
-		assertFalse("Just saying hello to the game should not register the player", userDB.isUserSubscribed("21998019167"));
+		tc.checkResponse("21998019166", "hangman", testPhraseology.INFOWelcome());
+		assertTrue("Just saying hello to the game should register the player", userDB.isUserSubscribed("21998019166"));
 		
 		tc.checkResponse("21998019167", "help", testPhraseology.INFOFullHelp());
-		assertFalse("Asking for help should also not register the player", userDB.isUserSubscribed("21998019167"));
-		
-		tc.checkResponse("21998019167", "play", testPhraseology.PLAYINGWordGuessingPlayerStart("C-------EE", "CE"));
-		assertTrue("When starting a match, the registration should be done", userDB.isUserSubscribed("21998019167"));
+		assertFalse("Asking for help should not register the player", userDB.isUserSubscribed("21998019167"));
+
+// this is now a useless test since we register the user right on the "NEW_USER" state. Can be deleted after some air time validates the rule
+//		tc.checkResponse("21998019167", "play", testPhraseology.PLAYINGWordGuessingPlayerStart("C-------EE", "CE"));
+//		assertTrue("When starting a match, the registration should be done", userDB.isUserSubscribed("21998019167"));
 
 		registerUser("21991234899", "dOM");
 		assertTrue("After setting a custom the nickname, the player should be registered", userDB.isUserSubscribed("21991234899"));
 		
-		startAPlayerMatch("111111", "user", "guesswhat", "222222", "invited");
+		registerUser("111111", "user");
+		invitePlayerByPhone("111111", "222222");
+		sendWordToBeGuessed("111111", "user", "guesswhat", "Guest2222");
+		acceptInvitation("222222", "guesswhat", "Guest2222");
 		assertTrue("After accepting the invitation, the invited player should be registered", userDB.isUserSubscribed("222222"));
-
+		
 		String wordProvidingPlayerPhone = "333333";
 		String wordProvidingPlayerNick  = "inviter";
 		String word                     = "guessagain";
@@ -201,6 +208,16 @@ public class HangmanSMSGameProcessorTests {
 	}
 	
 	@Test
+	public void testWordSelectionSubtleties() throws SQLException {
+		tc.resetDatabases();
+		
+		registerUser("21991234899", "donna");
+		invitePlayerByPhone("21991234899", "21998019167");
+		tc.checkResponse("21991234899", "caca123", testPhraseology.INVITINGNotAGoodWord("CACA123"));	// non letter characters
+		tc.checkResponse("21991234899", "coco", testPhraseology.INVITINGNotAGoodWord("COCO"));			// unplayable word
+	}
+	
+	@Test
 	public void testExternalUserInvitationPlayingPath() throws SQLException {
 		String playerNickName = "HardCodedNick";
 		String guestNickname  = "haole";
@@ -209,9 +226,9 @@ public class HangmanSMSGameProcessorTests {
 		
 		tc.checkResponse("21991234899", "Forca", "Welcome to the HANGMAN game. Join and compete for prizes. Send HELP for free to 9714 to know the rules.");
 		tc.checkResponse("21991234899", "AJUDA",
-			"1/3: You can play the HANGMAN game in 2 ways: guessing someone's word or inviting someone to play with your word",
-			"2/3: You'll get 1 lucky number each word you guess. Whenever you invite a friend or user to play, you win another lucky number",
-			"3/3: Every week, 1 lucky number is selected to win the prize. Send an option to 9714: (J)Play online; (C)Invite a friend or user; (R)anking; (A)Help");
+			"You can play the HANGMAN game in 2 ways: guessing someone's word or inviting someone to play with your word " +
+			"You'll get 1 lucky number each word you guess. Whenever you invite a friend or user to play, you win another lucky number " +
+			"Every week, 1 lucky number is selected to win the prize. Send an option to 9714: (J)Play online; (C)Invite a friend or user; (R)anking; (A)Help");
 		tc.checkResponse("21991234899", "nick HardCodedNick", "HANGMAN: Name registered: HardCodedNick. Send LIST to 9714 to see online players. NICK [NEW NICK] to change your name.");
 		tc.checkResponse("21998019167", "nick haole", "HANGMAN: Name registered: haole. Send LIST to 9714 to see online players. NICK [NEW NICK] to change your name.");
 		tc.checkResponse("21991234899", "C", "HANGMAN: Name registered: " + playerNickName + ". Send your friend's phone to 9714 or LIST to see online players. NICK [NEW NICK] to change your name.");
@@ -358,23 +375,30 @@ public class HangmanSMSGameProcessorTests {
 			'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'Q', 'q', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u',
 			'V', 'v', 'W', 'w', 'X', 'x', 'Y', 'y', 'Z', 'z',	
 		};
-		String unguessableWord = "AZCDEFGHIJKL9MNOPQRSTUVWXYB";
+		String hardWord = "AZCDEFGHIJKLMNOPQRSTUVWXYB";
 		String usedLetters;
 		
 		tc.resetDatabases();
 		
 		// test playing with a human letters recognition
-		startAPlayerMatch("21991234899", "dom", unguessableWord, "21998019167", "paty");
+		startAPlayerMatch("21991234899", "dom", hardWord, "21998019167", "paty");
 		usedLetters = "AB";
 		for (char letter : attemptedLetters) {
 			String sLetter = Character.toString(letter);
 			if (usedLetters.indexOf(sLetter.toUpperCase()) == -1) {
 				usedLetters += sLetter.toUpperCase();
 			}
-			String unguessableWordSoFar = unguessableWord.replaceAll("[^"+usedLetters+"]", "-");
-			tc.checkResponse("21998019167", sLetter,
-			                 testPhraseology.PLAYINGWordProvidingPlayerStatus(false, false, false, false, false, false, unguessableWordSoFar, sLetter, usedLetters, "paty"),
-			                 testPhraseology.PLAYINGWordGuessingPlayerStatus (false, false, false, false, false, false, unguessableWordSoFar, usedLetters));
+			String hardWordSoFar = hardWord.replaceAll("[^"+usedLetters+"]", "-");
+			if (hardWordSoFar.equals(hardWord)) {
+				tc.checkResponse("21998019167", sLetter,
+		                         testPhraseology.PLAYINGWinningMessageForWordProvidingPlayer("paty"),
+		                         testPhraseology.PLAYINGWinningMessageForWordGuessingPlayer (hardWord, "xx.xx.xx.xx"));
+				break;
+			} else {
+				tc.checkResponse("21998019167", sLetter,
+				                 testPhraseology.PLAYINGWordProvidingPlayerStatus(false, false, false, false, false, false, hardWordSoFar, sLetter, usedLetters, "paty"),
+				                 testPhraseology.PLAYINGWordGuessingPlayerStatus (false, false, false, false, false, false, hardWordSoFar, usedLetters));
+			}
 		}
 		
 		// test playing with a bot letters recognition
@@ -407,7 +431,22 @@ public class HangmanSMSGameProcessorTests {
 	}
 	
 	@Test
-	public void testInvitedUserGoesOutOfAnsweringInvitationState() throws SQLException {
+	public void testInvitedUserGoesOutOfAnsweringInvitationState() throws SQLException, ClassNotFoundException, SecurityException, NoSuchFieldException {
+	
+		String commentReferenceField = "mutua.hangmansmsgame.smslogic.CommandDetails.NO_ANSWER";
+		
+		String className = commentReferenceField.replaceAll("(.*)\\.(.*)", "$1");
+		String fieldName = commentReferenceField.replaceAll("(.*)\\.(.*)", "$2");
+		
+		System.out.println("className='"+className+"'");
+		System.out.println("fieldName='"+fieldName+"'");
+
+		Class<?> c = getClass().forName(className);
+		Field f = c.getDeclaredField(fieldName);
+//		for (Field f : c.getDeclaredFields()) {
+			System.out.println("Field '"+f.getName()+"'");
+//		}
+		
 		tc.resetDatabases();
 		registerUser("21991234899", "DOm");
 		invitePlayerByPhone("21991234899", "21998019167");

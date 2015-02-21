@@ -9,6 +9,7 @@ import mutua.hangmansmsgame.dal.DALFactory;
 import mutua.hangmansmsgame.dal.DALFactory.EDataAccessLayers;
 import mutua.hangmansmsgame.dal.postgresql.HangmanSMSGamePostgreSQLAdapters;
 import mutua.hangmansmsgame.i18n.IPhraseology.EPhraseNames;
+import mutua.hangmansmsgame.smslogic.StateDetails.ECommandPatterns;
 import mutua.icc.configuration.annotations.ConfigurableElement;
 import mutua.icc.instrumentation.HangmanSMSGameInstrumentationEvents;
 import mutua.icc.instrumentation.HangmanSMSGameInstrumentationProperties;
@@ -42,6 +43,7 @@ public class Configuration {
 	/** also to be defined by the request receivers (servlet, console, tests, icc app, ...) */
 	public static SubscriptionEngine SUBSCRIPTION_ENGINE;
 
+	
 	// Integration services
 	///////////////////////
 
@@ -53,9 +55,9 @@ public class Configuration {
 	public static String SUBSCRIPTION_CHANNEL_NAME           = "HangMan";
 	@ConfigurableElement("")
 	public static String MT_SERVICE_URL                      = "http://localhost:15001/cgi-bin/sendsms";
-	@ConfigurableElement("This is the original text")
+	@ConfigurableElement("the number of times 'sendMessage' will attempt to send the message before reporting it as unsendable")
 	public static int    MT_SERVICE_NUMBER_OF_RETRY_ATTEMPTS = 5;
-	@ConfigurableElement(sameAs="mutua.hangmansmsgame.config.Configuration.MT_SERVICE_NUMBER_OF_RETRY_ATTEMPTS")
+	@ConfigurableElement("the number of milliseconds 'sendMessage' will wait between retry attempts")
 	public static long   MT_SERVICE_DELAY_BETWEEN_ATTEMPTS   = 5000;
 
 	
@@ -64,6 +66,7 @@ public class Configuration {
 	// TODO DataAccessLayer específico p/ sessions
 	
 	// TODO criar includes p/ permitir a inclusão de i18n.international e i18n.brazil com frases, comandos, bots e palavras
+
 	
 	// HTTPClientAdapter
 	////////////////////
@@ -78,54 +81,58 @@ public class Configuration {
 	//////////////
 	
 	@ConfigurableElement(sameAs="mutua.hangmansmsgame.dal.DALFactory.DEFAULT_DAL")
-	public static EDataAccessLayers  DATA_ACCESS_LAYER          = EDataAccessLayers.RAM;
+	public static EDataAccessLayers  DATA_ACCESS_LAYER             = EDataAccessLayers.RAM;
 	@ConfigurableElement(sameAs="mutua.hangmansmsgame.dal.DALFactory.DEFAULT_SESSIONS_DAL")
-	public static EDataAccessLayers  SESSIONS_DATA_ACCESS_LAYER = DATA_ACCESS_LAYER;
-	@ConfigurableElement("")
-	public static String  POSTGRESQL_CONNECTION_HOSTNAME      = "zertyz.heliohost.org";
-	@ConfigurableElement("")
-	public static int     POSTGRESQL_CONNECTION_PORT          = 5432;
-	@ConfigurableElement("")
-	public static String  POSTGRESQL_CONNECTION_DATABASE_NAME = "zertyz_spikes";
-	@ConfigurableElement("")
-	public static String  POSTGRESQL_CONNECTION_USER          = "zertyz_user";
-	@ConfigurableElement("")
-	public static String  POSTGRESQL_CONNECTION_PASSWORD      = "spikes";
+	public static EDataAccessLayers  SESSIONS_DATA_ACCESS_LAYER    = DATA_ACCESS_LAYER;
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.dal.postgresql.HangmanSMSGamePostgreSQLAdapters.HOSTNAME")
+	public static String  POSTGRESQL_CONNECTION_HOSTNAME           = "zertyz.heliohost.org";
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.dal.postgresql.HangmanSMSGamePostgreSQLAdapters.PORT")
+	public static int     POSTGRESQL_CONNECTION_PORT               = 5432;
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.dal.postgresql.HangmanSMSGamePostgreSQLAdapters.DATABASE")
+	public static String  POSTGRESQL_CONNECTION_DATABASE_NAME      = "zertyz_spikes";
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.dal.postgresql.HangmanSMSGamePostgreSQLAdapters.USER")
+	public static String  POSTGRESQL_CONNECTION_USER               = "zertyz_user";
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.dal.postgresql.HangmanSMSGamePostgreSQLAdapters.PASSWORD")
+	public static String  POSTGRESQL_CONNECTION_PASSWORD           = "spikes";
 	@ConfigurableElement(sameAs="adapters.PostgreSQLAdapter.CONNECTION_PROPERTIES")
-	public static String  POSTGRES_CONNECTION_PROPERTIES    = PostgreSQLAdapter.CONNECTION_PROPERTIES;
+	public static String  POSTGRESQL_CONNECTION_PROPERTIES         = PostgreSQLAdapter.CONNECTION_PROPERTIES;
+	@ConfigurableElement(sameAs="adapters.PostgreSQLAdapter.ALLOW_DATABASE_ADMINISTRATION")
+	public static boolean POSTGRESQL_ALLOW_DATABASE_ADMINISTRATION = PostgreSQLAdapter.ALLOW_DATABASE_ADMINISTRATION;
 	@ConfigurableElement(sameAs="adapters.JDBCAdapter.SHOULD_DEBUG_QUERIES")
-	public static Boolean POSTGRESQL_SHOULD_DEBUG_QUERIES   = JDBCAdapter.SHOULD_DEBUG_QUERIES;
+	public static boolean POSTGRESQL_SHOULD_DEBUG_QUERIES          = JDBCAdapter.SHOULD_DEBUG_QUERIES;
 
 	
 	// SMS Framework parameters
 	///////////////////////////
 	
-	/** empty string means console. They may share the same file */
 	@ConfigurableElement("Where to store report data")
 	public static EInstrumentationDataPours REPORT_DATA_COLLECTOR_STRATEGY = EInstrumentationDataPours.POSTGRESQL_DATABASE;
 	@ConfigurableElement("Where to store log data")
-	public static EInstrumentationDataPours LOG_STRATEGY                      = EInstrumentationDataPours.CONSOLE;
+	public static EInstrumentationDataPours LOG_STRATEGY                   = EInstrumentationDataPours.CONSOLE;
 	@ConfigurableElement("File name to log Hangman Logic logs")
-	public static String LOG_HANGMAN_FILE_PATH             = "";
+	public static String LOG_HANGMAN_FILE_PATH                             = "";
 	@ConfigurableElement("File name to log Hangman Web / Integration logs")
-	public static String LOG_WEBAPP_FILE_PATH              = "";
+	public static String LOG_WEBAPP_FILE_PATH                              = "";
 	@ConfigurableElement("The name of the Hangman Game, as shown in the logs")
-	public static String APPID                             = "HANGMAN";
+	public static String APPID                                             = "HANGMAN";
 	@ConfigurableElement("The short code of the Hangman Game")
-	public static String SHORT_CODE                        = "9714";
+	public static String SHORT_CODE                                        = "9714";
 
 	
 	// SMS Application parameters
 	/////////////////////////////
 	
-	@ConfigurableElement("")
+	@ConfigurableElement("Default prefix for invited & new users -- The suffix are the last 4 phone number digits")
 	public static String DEFAULT_NICKNAME_PREFIX    = "Guest";
-	@ConfigurableElement("")
-	public static long   INVITATION_TIMEOUT_MILLIS  = (1000*60)*20;
 	
-	@ConfigurableElement("")
+	@ConfigurableElement("Words to cycle through when playing with the computer")
 	public static String[] BOT_WORDS = {
 		"CHIMPANZEE", "AGREGATE", "TWEEZERS",
+	};
+	
+	@ConfigurableElement("Bot names -- should be backed by real user names in order for chat & invitation to work properly")
+	public static String[] BOT_USERS = {
+		"DomBot",
 	};
 
 
@@ -142,68 +149,119 @@ public class Configuration {
 	public static String[] losingArt                                                      = EPhraseNames.losingArt.getTexts();
 	@ConfigurableElement("")
 	public static String[] playersList                                                    = EPhraseNames.playersList.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.INFOWelcome")
 	public static String[] INFOWelcome                                                    = EPhraseNames.INFOWelcome.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.INFOFullHelp")
 	public static String[] INFOFullHelp                                                   = EPhraseNames.INFOFullHelp.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.INFOWelcomeMenu")
 	public static String[] INFOWelcomeMenu                                                = EPhraseNames.INFOWelcomeMenu.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.INFOCouldNotRegister")
 	public static String[] INFOCouldNotRegister                                           = EPhraseNames.INFOCouldNotRegister.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.PROFILEView")
 	public static String[] PROFILEView                                                    = EPhraseNames.PROFILEView.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.PROFILEFullfillingAskNick")
 	public static String[] PROFILEFullfillingAskNick                                      = EPhraseNames.PROFILEFullfillingAskNick.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.PROFILENickRegisteredNotification")
 	public static String[] PROFILENickRegisteredNotification                              = EPhraseNames.PROFILENickRegisteredNotification.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.PLAYINGWordProvidingPlayerStart")
 	public static String[] PLAYINGWordProvidingPlayerStart                                = EPhraseNames.PLAYINGWordProvidingPlayerStart.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.PLAYINGWordGuessingPlayerStart")
 	public static String[] PLAYINGWordGuessingPlayerStart                                 = EPhraseNames.PLAYINGWordGuessingPlayerStart.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.PLAYINGWordGuessingPlayerStatus")
 	public static String[] PLAYINGWordGuessingPlayerStatus                                = EPhraseNames.PLAYINGWordGuessingPlayerStatus.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.PLAYINGWordProvidingPlayerStatus")
 	public static String[] PLAYINGWordProvidingPlayerStatus                               = EPhraseNames.PLAYINGWordProvidingPlayerStatus.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.PLAYINGWinningMessageForWordGuessingPlayer")
 	public static String[] PLAYINGWinningMessageForWordGuessingPlayer                     = EPhraseNames.PLAYINGWinningMessageForWordGuessingPlayer.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.PLAYINGWinningMessageForWordProvidingPlayer")
 	public static String[] PLAYINGWinningMessageForWordProvidingPlayer                    = EPhraseNames.PLAYINGWinningMessageForWordProvidingPlayer.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.PLAYINGLosingMessageForWordGuessingPlayer")
 	public static String[] PLAYINGLosingMessageForWordGuessingPlayer                      = EPhraseNames.PLAYINGLosingMessageForWordGuessingPlayer.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.PLAYINGLosingMessageForWordProvidingPlayer")
 	public static String[] PLAYINGLosingMessageForWordProvidingPlayer                     = EPhraseNames.PLAYINGLosingMessageForWordProvidingPlayer.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.PLAYINGMatchGiveupNotificationForWordProvidingPlayer")
 	public static String[] PLAYINGMatchGiveupNotificationForWordProvidingPlayer           = EPhraseNames.PLAYINGMatchGiveupNotificationForWordProvidingPlayer.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.PLAYINGMatchGiveupNotificationForWordGuessingPlayer")
 	public static String[] PLAYINGMatchGiveupNotificationForWordGuessingPlayer            = EPhraseNames.PLAYINGMatchGiveupNotificationForWordGuessingPlayer.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.INVITINGAskOpponentNickOrPhone")
 	public static String[] INVITINGAskOpponentNickOrPhone                                 = EPhraseNames.INVITINGAskOpponentNickOrPhone.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.INVITINGAskForAWordToStartAMatchBasedOnOpponentNickInvitation")
 	public static String[] INVITINGAskForAWordToStartAMatchBasedOnOpponentNickInvitation  = EPhraseNames.INVITINGAskForAWordToStartAMatchBasedOnOpponentNickInvitation.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.INVITINGAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation")
 	public static String[] INVITINGAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation = EPhraseNames.INVITINGAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.INVITINGInvitationNotificationForInvitingPlayer")
 	public static String[] INVITINGInvitationNotificationForInvitingPlayer                = EPhraseNames.INVITINGInvitationNotificationForInvitingPlayer.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.INVITINGTimeoutNotificationForInvitingPlayer")
 	public static String[] INVITINGTimeoutNotificationForInvitingPlayer                   = EPhraseNames.INVITINGTimeoutNotificationForInvitingPlayer.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.INVITINGInvitationNotificationForInvitedPlayer")
 	public static String[] INVITINGInvitationNotificationForInvitedPlayer                 = EPhraseNames.INVITINGInvitationNotificationForInvitedPlayer.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.INVITINGInvitationRefusalNotificationForInvitingPlayer")
 	public static String[] INVITINGInvitationRefusalNotificationForInvitingPlayer         = EPhraseNames.INVITINGInvitationRefusalNotificationForInvitingPlayer.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.INVITINGInvitationRefusalNotificationForInvitedPlayer")
 	public static String[] INVITINGInvitationRefusalNotificationForInvitedPlayer          = EPhraseNames.INVITINGInvitationRefusalNotificationForInvitedPlayer.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.INVITINGNotAGoodWord")
+	public static String[] INVITINGNotAGoodWord                                           = EPhraseNames.INVITINGNotAGoodWord.getTexts();
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.LISTINGShowPlayers")
 	public static String[] LISTINGShowPlayers                                             = EPhraseNames.LISTINGShowPlayers.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.LISTINGNoMorePlayers")
 	public static String[] LISTINGNoMorePlayers                                           = EPhraseNames.LISTINGNoMorePlayers.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.PROVOKINGDeliveryNotification")
 	public static String[] PROVOKINGDeliveryNotification                                  = EPhraseNames.PROVOKINGDeliveryNotification.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.PROVOKINGSendMessage")
 	public static String[] PROVOKINGSendMessage                                           = EPhraseNames.PROVOKINGSendMessage.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.PROVOKINGNickNotFound")
 	public static String[] PROVOKINGNickNotFound                                          = EPhraseNames.PROVOKINGNickNotFound.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.UNSUBSCRIBINGUnsubscriptionNotification")
 	public static String[] UNSUBSCRIBINGUnsubscriptionNotification                        = EPhraseNames.UNSUBSCRIBINGUnsubscriptionNotification.getTexts();
+	
+	
+	// command patterns
+	///////////////////
+	
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.SHOW_FULL_HELP_MESSAGE")
+	public static String[] SHOW_FULL_HELP_MESSAGE           = ECommandPatterns.SHOW_FULL_HELP_MESSAGE           .getRegularExpressions(); 
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.SHOW_PROFILE")
+	public static String[] SHOW_PROFILE                     = ECommandPatterns.SHOW_PROFILE                     .getRegularExpressions(); 
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.DEFINE_NICK")
+	public static String[] DEFINE_NICK                      = ECommandPatterns.DEFINE_NICK                      .getRegularExpressions(); 
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.LIST_USERS")
+	public static String[] LIST_USERS                       = ECommandPatterns.LIST_USERS                       .getRegularExpressions(); 
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.PROVOKE")
+	public static String[] PROVOKE                          = ECommandPatterns.PROVOKE                          .getRegularExpressions(); 
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.START_INVITATION_PROCESS")
+	public static String[] START_INVITATION_PROCESS         = ECommandPatterns.START_INVITATION_PROCESS         .getRegularExpressions(); 
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.INVITE_NICK_OR_PHONE")
+	public static String[] INVITE_NICK_OR_PHONE             = ECommandPatterns.INVITE_NICK_OR_PHONE             .getRegularExpressions(); 
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.PLAY_WITH_RANDOM_USER_OR_BOT")
+	public static String[] PLAY_WITH_RANDOM_USER_OR_BOT     = ECommandPatterns.PLAY_WITH_RANDOM_USER_OR_BOT     .getRegularExpressions(); 
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.UNSUBSCRIBE")
+	public static String[] UNSUBSCRIBE                      = ECommandPatterns.UNSUBSCRIBE                      .getRegularExpressions(); 
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.SHOW_WELCOME_MESSAGE")
+	public static String[] SHOW_WELCOME_MESSAGE             = ECommandPatterns.SHOW_WELCOME_MESSAGE             .getRegularExpressions(); 
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.NO_ANSWER")
+	public static String[] NO_ANSWER                        = ECommandPatterns.NO_ANSWER                        .getRegularExpressions(); 
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.HOLD_OPPONENT_PHONE")
+	public static String[] HOLD_OPPONENT_PHONE              = ECommandPatterns.HOLD_OPPONENT_PHONE              .getRegularExpressions(); 
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.HOLD_OPPONENT_NICK")
+	public static String[] HOLD_OPPONENT_NICK               = ECommandPatterns.HOLD_OPPONENT_NICK               .getRegularExpressions(); 
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.HOLD_MATCH_WORD")
+	public static String[] HOLD_MATCH_WORD                  = ECommandPatterns.HOLD_MATCH_WORD                  .getRegularExpressions(); 
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.ACCEPT_INVITATION")
+	public static String[] ACCEPT_INVITATION                = ECommandPatterns.ACCEPT_INVITATION                .getRegularExpressions(); 
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.REFUSE_INVITATION")
+	public static String[] REFUSE_INVITATION                = ECommandPatterns.REFUSE_INVITATION                .getRegularExpressions(); 
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.INVITATION_TIMEOUT")
+	public static long     INVITATION_TIMEOUT               = ECommandPatterns.INVITATION_TIMEOUT               .getTimeout(); 
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.SUGGEST_LETTER_OR_WORD_FOR_HUMAN")
+	public static String[] SUGGEST_LETTER_OR_WORD_FOR_HUMAN = ECommandPatterns.SUGGEST_LETTER_OR_WORD_FOR_HUMAN .getRegularExpressions(); 
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.CANCEL_HUMAN_GAME")
+	public static String[] CANCEL_HUMAN_GAME                = ECommandPatterns.CANCEL_HUMAN_GAME                .getRegularExpressions(); 
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.SUGGEST_LETTER_OR_WORD_FOR_BOT")
+	public static String[] SUGGEST_LETTER_OR_WORD_FOR_BOT   = ECommandPatterns.SUGGEST_LETTER_OR_WORD_FOR_BOT   .getRegularExpressions(); 
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.CANCEL_BOT_GAME")
+	public static String[] CANCEL_BOT_GAME                  = ECommandPatterns.CANCEL_BOT_GAME                  .getRegularExpressions(); 
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.LIST_MORE_USERS")
+	public static String[] LIST_MORE_USERS                  = ECommandPatterns.LIST_MORE_USERS                  .getRegularExpressions();
 
 	
 	public static void applyConfiguration() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
@@ -224,8 +282,9 @@ public class Configuration {
 		HTTPClientAdapter.CONNECTION_TIMEOUT = HTTP_CONNECTION_TIMEOUT_MILLIS;
 		HTTPClientAdapter.READ_TIMEOUT       = HTTP_READ_TIMEOUT_MILLIS;
 
-		JDBCAdapter.SHOULD_DEBUG_QUERIES        = POSTGRESQL_SHOULD_DEBUG_QUERIES;
-		PostgreSQLAdapter.CONNECTION_PROPERTIES = POSTGRES_CONNECTION_PROPERTIES;
+		JDBCAdapter.SHOULD_DEBUG_QUERIES                = POSTGRESQL_SHOULD_DEBUG_QUERIES;
+		PostgreSQLAdapter.CONNECTION_PROPERTIES         = POSTGRESQL_CONNECTION_PROPERTIES;
+		PostgreSQLAdapter.ALLOW_DATABASE_ADMINISTRATION = POSTGRESQL_ALLOW_DATABASE_ADMINISTRATION;
 
 		DALFactory.DEFAULT_DAL          = DATA_ACCESS_LAYER;
 		DALFactory.DEFAULT_SESSIONS_DAL = SESSIONS_DATA_ACCESS_LAYER;
@@ -242,6 +301,20 @@ public class Configuration {
 			String[] texts = (String[])configurationPhrase.get(null);
 			i18nPhrase.setTexts(texts);
 		}
+		
+		// set command patterns
+		for (ECommandPatterns commandPatterns : ECommandPatterns.values()) {
+			Field configurationPattern = Configuration.class.getField(commandPatterns.name());
+			// command patterns can be from two types: long, if specifying a timeout; String[] when specifying a regular expression list
+			if (configurationPattern.getType() == Long.TYPE) {
+				long timeout = (Long)configurationPattern.get(null);
+				commandPatterns.setTimeout(timeout);
+			} else {
+				String[] regularExpressions = (String[])configurationPattern.get(null);
+				commandPatterns.setRegularExpressions(regularExpressions);
+			}
+		}
+		
 		
 	}
 

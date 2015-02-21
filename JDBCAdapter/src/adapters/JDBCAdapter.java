@@ -72,7 +72,7 @@ public abstract class JDBCAdapter {
 	private void assureDatabaseIsOk() throws SQLException {
 		Connection con = createAdministrativeConnection();
 		if (con == null) {
-			log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "Specialized 'JDBCAdapter' class '"+getClass().getName()+"' states it doesn't handle database administration features");
+			log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "Specialized 'JDBCAdapter' class '"+getClass().getName()+"' states it won't handle database administration features -- therefore we are not going to check if the database '"+DATABASE_NAME+"' exists");
 			return;
 		}
 		Statement stm = con.createStatement();
@@ -99,6 +99,10 @@ public abstract class JDBCAdapter {
 	// verifies that the appropriate tables exist, creating if needed
 	private void assureTablesAreOk() throws SQLException {
 		String[][] tableDefinitions = getTableDefinitions();
+		if (tableDefinitions == null) {
+			log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "Specialized 'JDBCAdapter' class '"+getClass().getName()+"' states it won't handle table administration features -- therefore we are not going to check if the needed tables exist");
+			return;
+		}
 		Connection con = createDatabaseConnection();
 		Statement stm = con.createStatement();
 		Object[][] tables = getArrayFromQueryExecution(con, getShowTablesCommand());

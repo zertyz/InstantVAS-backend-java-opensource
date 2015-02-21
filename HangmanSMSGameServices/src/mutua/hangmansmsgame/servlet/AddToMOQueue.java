@@ -20,6 +20,7 @@ import mutua.hangmansmsgame.config.Configuration;
 import mutua.hangmansmsgame.dispatcher.IResponseReceiver;
 import mutua.hangmansmsgame.smslogic.HangmanSMSGameProcessor;
 import mutua.hangmansmsgame.smslogic.HangmanSMSGameProcessor.EHangmanSMSGameEvents;
+import mutua.icc.configuration.ConfigurationManager;
 import mutua.icc.instrumentation.HangmanSMSGameInstrumentationEvents;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.icc.instrumentation.eventclients.InstrumentationProfilingEventsClient;
@@ -93,6 +94,14 @@ public class AddToMOQueue extends HttpServlet {
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		process(request, response);
+
+		// uncomment to write a brand new configuration file
+//		try {
+//			ConfigurationManager cm = new ConfigurationManager(configurationLog, WebAppConfiguration.class, Configuration.class);
+//			cm.saveToFile("/tmp/hangman.config");
+//		} catch (Throwable t) {
+//			t.printStackTrace();
+//		}
 	}
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

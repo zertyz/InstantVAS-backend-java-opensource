@@ -96,10 +96,13 @@ public class SMSOutCelltick extends SMSOutSender {
 			}
 		}
 		
-		String udh   = Integer.toString(getNextSMSCount() % 256);
+		String CSMSHexReferenceNumber = toHex(getNextSMSCount() % 256);
+		String hexTotal               = toHex(SMSes.length);
 		String total = Integer.toString(SMSes.length);
 		// send concatenated SMS
 		for (int i=0; i<SMSes.length; i++) {
+			String hexPartNumber = toHex(i+1);
+			String udh           = "%05%00%03%"+CSMSHexReferenceNumber+"%"+hexTotal+"%"+hexPartNumber;
 			HTTPRequestDto requestData = new HTTPRequestDto();
 			requestData.addParameter("udh",       udh);
 			requestData.addParameter("coding",    "1");
@@ -127,5 +130,13 @@ public class SMSOutCelltick extends SMSOutSender {
 		return EOutgoingSMSAcceptionStatus.ACCEPTED;
 		
 	}
-
+	
+	private static String toHex(int n) {
+		String hex = Integer.toHexString(n).toUpperCase();
+		if ((hex.length() % 2) == 1) {
+			return "0" + hex;
+		} else {
+			return hex;
+		}
+	}
 }

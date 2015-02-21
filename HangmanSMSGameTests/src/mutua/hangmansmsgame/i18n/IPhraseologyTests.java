@@ -48,6 +48,7 @@ class TPhrases extends IPhraseology {
 	public String INVITINGInvitationNotificationForInvitingPlayer(String invitedPlayerNickName) {return null;}
 	public String INVITINGTimeoutNotificationForInvitingPlayer(String invitedPlayerNickName, String suggestedNewPlayersNickName) {return null;}
 	public String INVITINGInvitationNotificationForInvitedPlayer(String invitingPlayerNickName) {return null;}
+	public String INVITINGNotAGoodWord(String word) {return null;}
 	public String LISTINGShowPlayers(String[][] playersInfo) {return null;}
 	public String LISTINGNoMorePlayers() {return null;}
 	public String PROVOKINGDeliveryNotification(String destinationNick) {return null;}

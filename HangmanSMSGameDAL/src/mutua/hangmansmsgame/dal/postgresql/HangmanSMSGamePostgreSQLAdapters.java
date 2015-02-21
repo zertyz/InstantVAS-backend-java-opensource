@@ -51,6 +51,9 @@ public class HangmanSMSGamePostgreSQLAdapters extends PostgreSQLAdapter {
 
 	@Override
 	protected String[][] getTableDefinitions() {
+		if (!ALLOW_DATABASE_ADMINISTRATION) {
+			return null;
+		}
 		return new String[][] {
 			{"Users", "CREATE TABLE Users(" +
 			          "userId      SERIAL   NOT NULL PRIMARY KEY, " +

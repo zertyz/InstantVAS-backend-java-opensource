@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 
 import mutua.hangmansmsgame.config.Configuration;
+import mutua.icc.configuration.annotations.ConfigurableElement;
 import static mutua.hangmansmsgame.config.Configuration.SHORT_CODE;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 
@@ -23,6 +24,7 @@ public abstract class IPhraseology {
 	
 	
 	public enum EPhraseNames {
+		
 		shortHelp                                                     ("(J) Play online; (C) Invite a friend or user; (R)anking; (A)Help"),
 		gallowsArt                                                    ("+-+\n| {{head}}\n|{{leftArm}}{{chest}}{{rightArm}}\n|{{leftLeg}} {{rightLeg}}\n|\n====\n"),
 		winningArt                                                    ("\\0/\n |\n/ \\\n"),
@@ -55,6 +57,7 @@ public abstract class IPhraseology {
 		INVITINGInvitationNotificationForInvitedPlayer                ("HANGMAN: {{invitingPlayerNickname}} is inviting you for a hangman match. Do you accept? Send YES to {{shortCode}} or PROFILE to see {{invitingPlayerNickname}} information"),
 		INVITINGInvitationRefusalNotificationForInvitingPlayer        ("{{invitedPlayerNickname}} refused your invitation to play. Send LIST to 9714 and pick someone else"),
 		INVITINGInvitationRefusalNotificationForInvitedPlayer         ("The invitation to play the Hangman Game made by {{invitingPlayerNickname}} was refused. Send LIST to {{shortCode}} to see online users"),
+		INVITINGNotAGoodWord                                          ("You selected '{{word}}'. This is possily not a good word. Please think of one only with A-Z letters, without accents, digits, ponctuation or any other special characters and send it to {{shortCode}}"),
 		LISTINGShowPlayers                                            ("{{playersList}}. To play, send INVITE [NICK] to {{shortCode}}; MORE for more players or PROFILE [NICK]"),
 		LISTINGNoMorePlayers                                          ("There are no more online players to show. Send P [NICK] [MSG] to provoke or INVITE [PHONE] to invite a friend of yours to play the Hangman Game."),
 		PROVOKINGDeliveryNotification                                 ("Your message was sent to {{destinationNick}}. Wait for the answer or provoke other players sending P [NICK] [MSG] to {{shortCode}}. Send SIGNUP to provoke for free."),
@@ -176,16 +179,16 @@ public abstract class IPhraseology {
 	// INFO
 	////////
 	
-	/** shown in response to the first interaction the user has with the game */
+	@ConfigurableElement("shown in response to the first interaction the user has with the game")
 	public abstract String INFOWelcome();
 	
-	/** menu shown to new users */
+	@ConfigurableElement("menu shown to new users")
 	public abstract String INFOWelcomeMenu();
 
-	/** shown when the user request the help / instructions */
+	@ConfigurableElement("shown when the user request the help / instructions")
 	public abstract String[] INFOFullHelp();
 	
-	/** shown when it is not possible to register the user on the registration APIs */
+	@ConfigurableElement("shown when it is not possible to register the user on the registration APIs")
 	public abstract String INFOCouldNotRegister();
 
 
@@ -194,13 +197,13 @@ public abstract class IPhraseology {
 	// PROFILE
 	//////////
 	
-	/** shown when a user wants to view the profile of another user */
+	@ConfigurableElement("shown when a user wants to view the profile of another user")
 	public abstract String PROFILEView(String nick, String state, int numberOfLuckyNumbers);
 
-	/** shown when the game asks the player to choose a nickname */
+	@ConfigurableElement("shown when the game asks the player to choose a nickname")
 	public abstract String PROFILEFullfillingAskNick();
 
-	/** present the user information regarding the confirmation of his nickname registration */
+	@ConfigurableElement("present the user information regarding the confirmation of his nickname registration")
 	public abstract String PROFILENickRegisteredNotification(String newNickname);
 
 	
@@ -228,96 +231,99 @@ public abstract class IPhraseology {
 	}
 
 	
-	/** sent to the player who provided the word when the match starts -- when it is accepted by the opponent player */
+	@ConfigurableElement("sent to the player who provided the word when the match starts -- when it is accepted by the opponent player")
 	public abstract String PLAYINGWordProvidingPlayerStart(String guessedWordSoFar, String wordGuessingPlayerNick);
 
-	/** sent back to the player who is attempting to guess the word when the match starts */
+	@ConfigurableElement("sent back to the player who is attempting to guess the word when the match starts")
 	public abstract String PLAYINGWordGuessingPlayerStart(String guessedWordSoFar, String usedLetters);
 	
-	/** shows the state of the game play to the player attempting to guess the word */
+	@ConfigurableElement("shows the state of the game play to the player attempting to guess the word")
 	public abstract String PLAYINGWordGuessingPlayerStatus(boolean drawHead, boolean drawLeftArm, boolean drawRightArm,
                                                            boolean drawChest, boolean drawLeftLeg, boolean drawRightLeg,
                                                            String guessedWordSoFar, String usedLetters);
 	
-	/** shows the state of the game play to the player who provided the word */
+	@ConfigurableElement("shows the state of the game play to the player who provided the word")
 	public abstract String PLAYINGWordProvidingPlayerStatus(boolean drawHead, boolean drawLeftArm, boolean drawRightArm,
 	                                                        boolean drawChest, boolean drawLeftLeg, boolean drawRightLeg,
 	                                                        String guessedWordSoFar, String guessedLetter, String usedLetters, String nick);
 	
-	/** shown to the winning player, who tried to guess the word */
+	@ConfigurableElement("shown to the winning player, who tried to guess the word")
 	public abstract String PLAYINGWinningMessageForWordGuessingPlayer(String word, String luckyNumber);
 	
-	/** show to the word providing player when the word guessing player won the game */
+	@ConfigurableElement("show to the word providing player when the word guessing player won the game")
 	public abstract String PLAYINGWinningMessageForWordProvidingPlayer(String wordGuessingPlayerNick);
 	
-	/** shown to the losing player, who tried to guess the word */
+	@ConfigurableElement("shown to the losing player, who tried to guess the word")
 	public abstract String PLAYINGLosingMessageForWordGuessingPlayer(String word, String wordProvidingPlayerNick);
 	
-	/** show to the word providing player when the word guessing player lost the game */
+	@ConfigurableElement("show to the word providing player when the word guessing player lost the game")
 	public abstract String PLAYINGLosingMessageForWordProvidingPlayer(String wordGuessingPlayerNick);
 
-	/** sent to inform the word providing player that the opponent has taken actions that lead to a match give up */
+	@ConfigurableElement("sent to inform the word providing player that the opponent has taken actions that lead to a match give up")
 	public abstract String PLAYINGMatchGiveupNotificationForWordProvidingPlayer(String wordGuessingPlayerNick);
 
-	/** sent to inform the word guessing player that his actions lead to a match give up */
+	@ConfigurableElement("sent to inform the word guessing player that his actions lead to a match give up")
 	public abstract String PLAYINGMatchGiveupNotificationForWordGuessingPlayer(String wordProvidingPlayerNick);
 
 	
 	// INVITING
 	///////////
 	
-	/** shown when the game wants to ask the player for an opponent to be invited for a match */
+	@ConfigurableElement("shown when the game wants to ask the player for an opponent to be invited for a match")
 	public abstract String INVITINGAskOpponentNickOrPhone(String invitingPlayerNickname);
 
-	/** shown when the game asks the user for a word to start a match with an invited player, for which the nick name was provided */
+	@ConfigurableElement("shown when the game asks the user for a word to start a match with an invited player, for which the nick name was provided")
 	public abstract String INVITINGAskForAWordToStartAMatchBasedOnOpponentNickInvitation(String opponentNickname);
 
-	/** shown when the game asks the user for a word to start a match with an invited player, for which the phone number was provided */
+	@ConfigurableElement("shown when the game asks the user for a word to start a match with an invited player, for which the phone number was provided")
 	public abstract String INVITINGAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation(String opponentPhoneNumber);
 
-	/** message to notify the inviting player that the invitation has been sent */
+	@ConfigurableElement("message to notify the inviting player that the invitation has been sent")
 	public abstract String INVITINGInvitationNotificationForInvitingPlayer(String invitedPlayerNickname);
 	
-	/** message to notify the inviting player that the opponent took too long to reply and the match is cancelled */
+	@ConfigurableElement("message to notify the inviting player that the opponent took too long to reply and the match is cancelled")
 	public abstract String INVITINGTimeoutNotificationForInvitingPlayer(String invitedPlayerNickname, String suggestedNewPlayersNickname);
 	
-	/** message to notify the invited player that someone wants to play a hangman match */
+	@ConfigurableElement("message to notify the invited player that someone wants to play a hangman match")
 	public abstract String INVITINGInvitationNotificationForInvitedPlayer(String invitingPlayerNickname);
 	
-	/** message to notify the inviting player that the opponent refused the match */
+	@ConfigurableElement("message to notify the inviting player that the opponent refused the match")
 	public abstract String INVITINGInvitationRefusalNotificationForInvitingPlayer(String invitedPlayerNickname);
 
-	/** response to the invited player after he/she refused to play */
+	@ConfigurableElement("response to the invited player after he/she refused to play")
 	public abstract String INVITINGInvitationRefusalNotificationForInvitedPlayer(String invitingPlayerNickname);
+	
+	@ConfigurableElement("response to the inviting player when he/she picks a word refused by the game")
+	public abstract String INVITINGNotAGoodWord(String word);
 	
 
 	// LISTING PLAYERS
 	//////////////////
 	
-	/** shows a list of players. 'playersInfo' := { {nick, estate, number of lucky numbers received}, ... } */
+	@ConfigurableElement("shows a list of players. 'playersInfo' := { {nick, estate, number of lucky numbers received}, ... }")
 	public abstract String LISTINGShowPlayers(String[][] playersInfo);
 
-	/** used to notify that we were through when showing online players */
+	@ConfigurableElement("used to notify that we were through when showing online players")
 	public abstract String LISTINGNoMorePlayers();
 
 	
 	// PROVOKING
 	////////////
 	
-	/** presented to the user after he/she attempted to provoke someone, indicating the message was delivered */
+	@ConfigurableElement("presented to the user after he/she attempted to provoke someone, indicating the message was delivered")
 	public abstract String PROVOKINGDeliveryNotification(String destinationNick);
 
-	/** the message sent to the destination user when he is being provoked by someone */
+	@ConfigurableElement("the message sent to the destination user when he is being provoked by someone")
 	public abstract String PROVOKINGSendMessage(String sourceNick, String message);
 
-	/** presented to inform that the desired nickname was not found */
+	@ConfigurableElement("presented to inform that the desired nickname was not found")
 	public abstract String PROVOKINGNickNotFound(String nickname);
 
 	
 	// UNSUBSCRIPTION
 	/////////////////
 	
-	/** presented to inform the subscription was canceled on the game platform */
+	@ConfigurableElement("presented to inform the subscription was canceled on the game platform")
 	public abstract String UNSUBSCRIBINGUnsubscriptionNotification();
 
 }
