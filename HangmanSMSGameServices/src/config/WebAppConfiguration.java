@@ -68,7 +68,7 @@ public class WebAppConfiguration {
 	
 	public static IEventLink<EHangmanSMSGameEvents>  gameMOProducerAndConsumerLink;
 		
-	@ConfigurableElement("Specifies what queue driver should be used to buffer incoming SMS (MOs) -- DIRECT means the messages will processed directly, on the same request thread and without any buffer; RAM means the producers and consumers must be running on the same machine and on the same process")
+	@ConfigurableElement("Specifies what queue driver should be used to buffer incoming SMS (MOs) -- DIRECT means the messages will be processed directly, on the same request thread and without any buffer; RAM means the producers and consumers must be running on the same machine and on the same process")
 	public static EQueueStrategy MO_QUEUE_STRATEGY = EQueueStrategy.POSTGRESQL;
 	@ConfigurableElement("The maximum number of entries when using 'RAM' for 'MO_QUEUE_STRATEGY'")
 	public static int    MO_RAM_QUEUE_CAPACITY             = 1000;
@@ -84,7 +84,7 @@ public class WebAppConfiguration {
 	
 	public static IEventLink<EHangmanSMSGameEvents>  gameMTProducerAndConsumerLink;
 
-	@ConfigurableElement("Specifies what queue driver should be used to buffer outgoing SMS (MTs) -- DIRECT means the messages will processed directly, on the same request thread and without any buffer; RAM means the producers and consumers must be running on the same machine and on the same process")
+	@ConfigurableElement("Specifies what queue driver should be used to buffer outgoing SMS (MTs) -- DIRECT means the messages will be processed directly, on the same request thread and without any buffer; RAM means the producers and consumers must be running on the same machine and on the same process")
 	public static EQueueStrategy MT_QUEUE_STRATEGY = EQueueStrategy.DIRECT;
 	@ConfigurableElement("The maximum number of entries when using 'RAM' for 'MT_QUEUE_STRATEGY'")
 	public static int    MT_RAM_QUEUE_CAPACITY             = 1000;
@@ -107,7 +107,7 @@ public class WebAppConfiguration {
 //
 //    		// Look up our data source
 //    		String configFileName = (String)envCtx.lookup("hangmanSMSGameConfigFileName");
-    		String configFileName = "/tmp/hangman.config";
+    		String configFileName = "/Celltick/app/etc/hangman.config";
     		configurationLog.reportRequestStart("Attempting to read configuration file from '"+configFileName+"'");
     		ConfigurationManager cm = new ConfigurationManager(configurationLog, WebAppConfiguration.class, Configuration.class);
 //    		cm.saveToFile(configFileName);		// to activate file write, please go to 'AddToMOQueue#doGet', since the class loading for 'CommandDetails' will fail at this point, due to 'log' being null at this point -- and this will leave some comments blank

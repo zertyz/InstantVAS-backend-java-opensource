@@ -104,7 +104,7 @@ public class SMSOutCelltick extends SMSOutSender {
 			String hexPartNumber = toHex(i+1);
 			String udh           = "%05%00%03%"+CSMSHexReferenceNumber+"%"+hexTotal+"%"+hexPartNumber;
 			HTTPRequestDto requestData = new HTTPRequestDto();
-			requestData.addParameter("udh",       udh);
+			requestData.addEncodedParameter("udh", udh);
 			requestData.addParameter("coding",    "1");
 			requestData.addParameter("subAct",    Integer.toString(i+1));
 			requestData.addParameter("total",     total);

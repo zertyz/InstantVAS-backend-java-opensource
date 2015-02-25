@@ -35,6 +35,16 @@ public class TestPhraseology extends IPhraseology {
 	public String INFOWelcome() {
 		return getPhrase(EPhraseNames.INFOWelcome, new String[][] {{"shortCode", shortCode}});
 	}
+	
+	@Override
+	public String INFOFallbackNewUsersHelp() {
+		return getPhrase(EPhraseNames.INFOFallbackNewUsersHelp, new String[][] {{"shortCode", shortCode}});
+	}
+
+	@Override
+	public String INFOFallbackExistingUsersHelp() {
+		return getPhrase(EPhraseNames.INFOFallbackExistingUsersHelp, new String[][] {{"shortCode", shortCode}});
+	}
 
 	@Override
 	public String[] INFOFullHelp() {
@@ -308,6 +318,5 @@ public class TestPhraseology extends IPhraseology {
 			{"invitingPlayerNickname", invitingPlayerNickname},
 		});
 	}
-
 
 }

@@ -9,6 +9,7 @@ import mutua.hangmansmsgame.dal.DALFactory;
 import mutua.hangmansmsgame.dal.DALFactory.EDataAccessLayers;
 import mutua.hangmansmsgame.dal.postgresql.HangmanSMSGamePostgreSQLAdapters;
 import mutua.hangmansmsgame.i18n.IPhraseology.EPhraseNames;
+import mutua.hangmansmsgame.smslogic.StateDetails;
 import mutua.hangmansmsgame.smslogic.StateDetails.ECommandPatterns;
 import mutua.icc.configuration.annotations.ConfigurableElement;
 import mutua.icc.instrumentation.HangmanSMSGameInstrumentationEvents;
@@ -151,6 +152,10 @@ public class Configuration {
 	public static String[] playersList                                                    = EPhraseNames.playersList.getTexts();
 	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.INFOWelcome")
 	public static String[] INFOWelcome                                                    = EPhraseNames.INFOWelcome.getTexts();
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.INFOFallbackNewUsersHelp")
+	public static String[] INFOFallbackNewUsersHelp                                       = EPhraseNames.INFOFallbackNewUsersHelp.getTexts();
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.INFOFallbackExistingUsersHelp")
+	public static String[] INFOFallbackExistingUsersHelp                                  = EPhraseNames.INFOFallbackExistingUsersHelp.getTexts();
 	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.INFOFullHelp")
 	public static String[] INFOFullHelp                                                   = EPhraseNames.INFOFullHelp.getTexts();
 	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.INFOWelcomeMenu")
@@ -218,50 +223,56 @@ public class Configuration {
 	// command patterns
 	///////////////////
 	
+	// a nice tool to test the patterns: http://www.regexplanet.com/advanced/java/index.html
+	
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.SHOW_FALLBACK_NEW_USERS_HELP")
+	public static String[] SHOW_FALLBACK_NEW_USERS_HELP      = ECommandPatterns.SHOW_FALLBACK_NEW_USERS_HELP     .getRegularExpressions(); 
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.SHOW_FALLBACK_EXISTING_USERS_HELP")
+	public static String[] SHOW_FALLBACK_EXISTING_USERS_HELP = ECommandPatterns.SHOW_FALLBACK_EXISTING_USERS_HELP.getRegularExpressions(); 
 	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.SHOW_FULL_HELP_MESSAGE")
-	public static String[] SHOW_FULL_HELP_MESSAGE           = ECommandPatterns.SHOW_FULL_HELP_MESSAGE           .getRegularExpressions(); 
+	public static String[] SHOW_FULL_HELP_MESSAGE            = ECommandPatterns.SHOW_FULL_HELP_MESSAGE           .getRegularExpressions(); 
 	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.SHOW_PROFILE")
-	public static String[] SHOW_PROFILE                     = ECommandPatterns.SHOW_PROFILE                     .getRegularExpressions(); 
+	public static String[] SHOW_PROFILE                      = ECommandPatterns.SHOW_PROFILE                     .getRegularExpressions(); 
 	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.DEFINE_NICK")
-	public static String[] DEFINE_NICK                      = ECommandPatterns.DEFINE_NICK                      .getRegularExpressions(); 
+	public static String[] DEFINE_NICK                       = ECommandPatterns.DEFINE_NICK                      .getRegularExpressions(); 
 	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.LIST_USERS")
-	public static String[] LIST_USERS                       = ECommandPatterns.LIST_USERS                       .getRegularExpressions(); 
+	public static String[] LIST_USERS                        = ECommandPatterns.LIST_USERS                       .getRegularExpressions(); 
 	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.PROVOKE")
-	public static String[] PROVOKE                          = ECommandPatterns.PROVOKE                          .getRegularExpressions(); 
+	public static String[] PROVOKE                           = ECommandPatterns.PROVOKE                          .getRegularExpressions(); 
 	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.START_INVITATION_PROCESS")
-	public static String[] START_INVITATION_PROCESS         = ECommandPatterns.START_INVITATION_PROCESS         .getRegularExpressions(); 
+	public static String[] START_INVITATION_PROCESS          = ECommandPatterns.START_INVITATION_PROCESS         .getRegularExpressions(); 
 	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.INVITE_NICK_OR_PHONE")
-	public static String[] INVITE_NICK_OR_PHONE             = ECommandPatterns.INVITE_NICK_OR_PHONE             .getRegularExpressions(); 
+	public static String[] INVITE_NICK_OR_PHONE              = ECommandPatterns.INVITE_NICK_OR_PHONE             .getRegularExpressions(); 
 	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.PLAY_WITH_RANDOM_USER_OR_BOT")
-	public static String[] PLAY_WITH_RANDOM_USER_OR_BOT     = ECommandPatterns.PLAY_WITH_RANDOM_USER_OR_BOT     .getRegularExpressions(); 
+	public static String[] PLAY_WITH_RANDOM_USER_OR_BOT      = ECommandPatterns.PLAY_WITH_RANDOM_USER_OR_BOT     .getRegularExpressions(); 
 	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.UNSUBSCRIBE")
-	public static String[] UNSUBSCRIBE                      = ECommandPatterns.UNSUBSCRIBE                      .getRegularExpressions(); 
+	public static String[] UNSUBSCRIBE                       = ECommandPatterns.UNSUBSCRIBE                      .getRegularExpressions(); 
 	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.SHOW_WELCOME_MESSAGE")
-	public static String[] SHOW_WELCOME_MESSAGE             = ECommandPatterns.SHOW_WELCOME_MESSAGE             .getRegularExpressions(); 
+	public static String[] SHOW_WELCOME_MESSAGE              = ECommandPatterns.SHOW_WELCOME_MESSAGE             .getRegularExpressions(); 
 	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.NO_ANSWER")
-	public static String[] NO_ANSWER                        = ECommandPatterns.NO_ANSWER                        .getRegularExpressions(); 
+	public static String[] NO_ANSWER                         = ECommandPatterns.NO_ANSWER                        .getRegularExpressions(); 
 	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.HOLD_OPPONENT_PHONE")
-	public static String[] HOLD_OPPONENT_PHONE              = ECommandPatterns.HOLD_OPPONENT_PHONE              .getRegularExpressions(); 
+	public static String[] HOLD_OPPONENT_PHONE               = ECommandPatterns.HOLD_OPPONENT_PHONE              .getRegularExpressions(); 
 	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.HOLD_OPPONENT_NICK")
-	public static String[] HOLD_OPPONENT_NICK               = ECommandPatterns.HOLD_OPPONENT_NICK               .getRegularExpressions(); 
+	public static String[] HOLD_OPPONENT_NICK                = ECommandPatterns.HOLD_OPPONENT_NICK               .getRegularExpressions(); 
 	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.HOLD_MATCH_WORD")
-	public static String[] HOLD_MATCH_WORD                  = ECommandPatterns.HOLD_MATCH_WORD                  .getRegularExpressions(); 
+	public static String[] HOLD_MATCH_WORD                   = ECommandPatterns.HOLD_MATCH_WORD                  .getRegularExpressions(); 
 	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.ACCEPT_INVITATION")
-	public static String[] ACCEPT_INVITATION                = ECommandPatterns.ACCEPT_INVITATION                .getRegularExpressions(); 
+	public static String[] ACCEPT_INVITATION                 = ECommandPatterns.ACCEPT_INVITATION                .getRegularExpressions(); 
 	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.REFUSE_INVITATION")
-	public static String[] REFUSE_INVITATION                = ECommandPatterns.REFUSE_INVITATION                .getRegularExpressions(); 
+	public static String[] REFUSE_INVITATION                 = ECommandPatterns.REFUSE_INVITATION                .getRegularExpressions(); 
 	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.INVITATION_TIMEOUT")
-	public static long     INVITATION_TIMEOUT               = ECommandPatterns.INVITATION_TIMEOUT               .getTimeout(); 
+	public static long     INVITATION_TIMEOUT                = ECommandPatterns.INVITATION_TIMEOUT               .getTimeout(); 
 	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.SUGGEST_LETTER_OR_WORD_FOR_HUMAN")
-	public static String[] SUGGEST_LETTER_OR_WORD_FOR_HUMAN = ECommandPatterns.SUGGEST_LETTER_OR_WORD_FOR_HUMAN .getRegularExpressions(); 
+	public static String[] SUGGEST_LETTER_OR_WORD_FOR_HUMAN  = ECommandPatterns.SUGGEST_LETTER_OR_WORD_FOR_HUMAN .getRegularExpressions(); 
 	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.CANCEL_HUMAN_GAME")
-	public static String[] CANCEL_HUMAN_GAME                = ECommandPatterns.CANCEL_HUMAN_GAME                .getRegularExpressions(); 
+	public static String[] CANCEL_HUMAN_GAME                 = ECommandPatterns.CANCEL_HUMAN_GAME                .getRegularExpressions(); 
 	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.SUGGEST_LETTER_OR_WORD_FOR_BOT")
-	public static String[] SUGGEST_LETTER_OR_WORD_FOR_BOT   = ECommandPatterns.SUGGEST_LETTER_OR_WORD_FOR_BOT   .getRegularExpressions(); 
+	public static String[] SUGGEST_LETTER_OR_WORD_FOR_BOT    = ECommandPatterns.SUGGEST_LETTER_OR_WORD_FOR_BOT   .getRegularExpressions(); 
 	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.CANCEL_BOT_GAME")
-	public static String[] CANCEL_BOT_GAME                  = ECommandPatterns.CANCEL_BOT_GAME                  .getRegularExpressions(); 
+	public static String[] CANCEL_BOT_GAME                   = ECommandPatterns.CANCEL_BOT_GAME                  .getRegularExpressions(); 
 	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.LIST_MORE_USERS")
-	public static String[] LIST_MORE_USERS                  = ECommandPatterns.LIST_MORE_USERS                  .getRegularExpressions();
+	public static String[] LIST_MORE_USERS                   = ECommandPatterns.LIST_MORE_USERS                  .getRegularExpressions();
 
 	
 	public static void applyConfiguration() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
@@ -314,7 +325,13 @@ public class Configuration {
 				commandPatterns.setRegularExpressions(regularExpressions);
 			}
 		}
-		
+		// apply new command patterns
+		try {
+			StateDetails.defineFields();
+		} catch (Throwable t) {
+			System.out.println("ERROR -- could not run 'StateDetails.defineFields'. Command Patterns reloading didn't work and probably left it in an inconsistent state. Please restart the Hangman Game");
+			t.printStackTrace();
+		}
 		
 	}
 

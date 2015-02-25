@@ -30,7 +30,10 @@ public abstract class IPhraseology {
 		winningArt                                                    ("\\0/\n |\n/ \\\n"),
 		losingArt                                                     ("+-+\n| x\n|/|\\\n|/ \\\n====\n"),
 		playersList                                                   ("{{nick}} ({{state}}/{{numberOfLuckyNumbers}})"),
-		INFOWelcome                                                   ("Welcome to the HANGMAN game. Join and compete for prizes. Send HELP for free to {{shortCode}} to know the rules."),
+		INFOWelcome                                                   ("HANGMAN: Registration succeeded. Send HELP to {{shortCode}} to know the rules and how to play, or simply send PLAY to {{shortCode}}"),
+		INFOFallbackNewUsersHelp                                      ("You are at the HANGMAN game. To continue, you must subscribe. Send HANGMAN now to {{shortCode}} and compete for prizes. You will be charged at $ every week."),
+		INFOFallbackExistingUsersHelp                                 ("HANGMAN: unknown command. Please send HELP to see the full list. Short list: LIST to see online users; P [NICK] [MSG] to send a private message; ",
+		                                                               "INVITE [NICK] to invite a player; INVITE [PHONE] to invite a friend of yours; PLAY to play with a random user. Choose an option and send it to {{shortCode}}"),
 		INFOFullHelp                                                  ("You can play the HANGMAN game in 2 ways: guessing someone's word or inviting someone to play with your word " +
 		                                                               "You'll get 1 lucky number each word you guess. Whenever you invite a friend or user to play, you win another lucky number " +
 		                                                               "Every week, 1 lucky number is selected to win the prize. Send an option to {{shortCode}}: (J)Play online; (C)Invite a friend or user; (R)anking; (A)Help"),
@@ -179,15 +182,21 @@ public abstract class IPhraseology {
 	// INFO
 	////////
 	
-	@ConfigurableElement("shown in response to the first interaction the user has with the game")
+	@ConfigurableElement("shown in response to the first interaction the user has with the game, after registration")
 	public abstract String INFOWelcome();
+	
+	@ConfigurableElement("shown in response to the first interaction the user has with the game, to instruct him/her on how to register")
+	public abstract String INFOFallbackNewUsersHelp();
+	
+	@ConfigurableElement("shown when an existing user attempts to send an unrecognized command, to give him/her a quick list of commands")
+	public abstract String INFOFallbackExistingUsersHelp();
+	
+	@ConfigurableElement("shown when the user request the help / instructions")
+	public abstract String[] INFOFullHelp();
 	
 	@ConfigurableElement("menu shown to new users")
 	public abstract String INFOWelcomeMenu();
 
-	@ConfigurableElement("shown when the user request the help / instructions")
-	public abstract String[] INFOFullHelp();
-	
 	@ConfigurableElement("shown when it is not possible to register the user on the registration APIs")
 	public abstract String INFOCouldNotRegister();
 

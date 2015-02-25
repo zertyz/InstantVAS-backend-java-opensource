@@ -136,29 +136,46 @@ public class HangmanSMSGameProcessorTests {
 	public void testUnrecognizedCommandSubtleties() throws SQLException {
 		tc.resetDatabases();
 		
-		// ignore unknown commands for NEW_USERs
-		tc.checkResponse("21991234899", "HJKS");
-
-		// ... and for EXISTING_USERs
-		registerUser("21991234899", "Dom");
-		tc.checkResponse("21991234899", "HJKS");
-
-		// only known commands should work
-		tc.checkResponse("21991234899", "HELP",
-			"You can play the HANGMAN game in 2 ways: guessing someone's word or inviting someone to play with your word " +
-			"You'll get 1 lucky number each word you guess. Whenever you invite a friend or user to play, you win another lucky number " +
-			"Every week, 1 lucky number is selected to win the prize. Send an option to 9714: (J)Play online; (C)Invite a friend or user; (R)anking; (A)Help");
+		// send 'NEW_USER's help on an unknown command, help or any other
+		tc.checkResponse("21991234899", "HJKS",        testPhraseology.INFOFallbackNewUsersHelp());
+		tc.checkResponse("21991234899", "help",        testPhraseology.INFOFallbackNewUsersHelp());
+		tc.checkResponse("21991234899", "list",        testPhraseology.INFOFallbackNewUsersHelp());
+		tc.checkResponse("21991234899", "invite",      testPhraseology.INFOFallbackNewUsersHelp());
+		tc.checkResponse("21991234899", "p dombot hi", testPhraseology.INFOFallbackNewUsersHelp());
 		
+		// send 'EXISTING_USER's help likewise
+		registerUser("21991234899", "Dom");
+		tc.checkResponse("21991234899", "HJKS", testPhraseology.INFOFallbackExistingUsersHelp());
+
+	}
+	
+	@Test
+	public void testHelpCommandSubtleties() throws SQLException {
+		tc.resetDatabases();
+		
+		// Asking for help at NEW_USER state should not show the full help
+		tc.checkResponse("21991234899", "help", testPhraseology.INFOFallbackNewUsersHelp());
+		
+		// now, the full help must be issued
+		registerUser("21991234899", "DOM");
+		tc.checkResponse("21991234899", "help", testPhraseology.INFOFullHelp());
+		
+		// but, again, an unknown command should issue a special help
+		tc.checkResponse("21991234899", "helpame!!", testPhraseology.INFOFallbackExistingUsersHelp());
+
 	}
 	
 	@Test
 	public void testUserRegistrationSubtleties() throws SQLException {
 		tc.resetDatabases();
 		
+		tc.checkResponse("21998019166", "unsubscribe", testPhraseology.UNSUBSCRIBINGUnsubscriptionNotification());
+		assertFalse("Even new users should be able to send unsubscribe", userDB.isUserSubscribed("21998019166"));
+		
 		tc.checkResponse("21998019166", "hangman", testPhraseology.INFOWelcome());
 		assertTrue("Just saying hello to the game should register the player", userDB.isUserSubscribed("21998019166"));
 		
-		tc.checkResponse("21998019167", "help", testPhraseology.INFOFullHelp());
+		tc.checkResponse("21998019167", "help", testPhraseology.INFOFallbackNewUsersHelp());
 		assertFalse("Asking for help should not register the player", userDB.isUserSubscribed("21998019167"));
 
 // this is now a useless test since we register the user right on the "NEW_USER" state. Can be deleted after some air time validates the rule
@@ -199,12 +216,14 @@ public class HangmanSMSGameProcessorTests {
 		tc.checkResponse("22222", "end",
 			testPhraseology.PLAYINGMatchGiveupNotificationForWordProvidingPlayer("AllTwo"),
 			testPhraseology.PLAYINGMatchGiveupNotificationForWordGuessingPlayer("AllOne"));
-		tc.checkResponse("22222", "x");		// test fall back to 'EXISTING_USER' state, where only known commands are answered
+		// test fall back to 'EXISTING_USER' state, where unknown commands issues the specialized help
+		tc.checkResponse("22222", "x", testPhraseology.INFOFallbackExistingUsersHelp());
 		
 		// test ending a match with a bot
 		startABotMatch("21991234899", "DOM", "CHIMPANZEE");
 		tc.checkResponse("21991234899", "end", testPhraseology.PLAYINGMatchGiveupNotificationForWordGuessingPlayer("DomBot"));
-		tc.checkResponse("21991234899", "x");		// test the fall back to 'EXISTING_USER' state, where only known commands are answered
+		// test the fall back to 'EXISTING_USER' state, where only known commands are answered
+		tc.checkResponse("21991234899", "x", testPhraseology.INFOFallbackExistingUsersHelp());
 	}
 	
 	@Test
@@ -224,12 +243,13 @@ public class HangmanSMSGameProcessorTests {
 		
 		tc.resetDatabases();
 		
-		tc.checkResponse("21991234899", "Forca", "Welcome to the HANGMAN game. Join and compete for prizes. Send HELP for free to 9714 to know the rules.");
+		tc.checkResponse("21991234899", "Forca", "HANGMAN: Registration succeeded. Send HELP to 9714 to know the rules and how to play, or simply send PLAY to 9714");
 		tc.checkResponse("21991234899", "AJUDA",
 			"You can play the HANGMAN game in 2 ways: guessing someone's word or inviting someone to play with your word " +
 			"You'll get 1 lucky number each word you guess. Whenever you invite a friend or user to play, you win another lucky number " +
 			"Every week, 1 lucky number is selected to win the prize. Send an option to 9714: (J)Play online; (C)Invite a friend or user; (R)anking; (A)Help");
 		tc.checkResponse("21991234899", "nick HardCodedNick", "HANGMAN: Name registered: HardCodedNick. Send LIST to 9714 to see online players. NICK [NEW NICK] to change your name.");
+		tc.checkResponse("21998019167", "Forca", "HANGMAN: Registration succeeded. Send HELP to 9714 to know the rules and how to play, or simply send PLAY to 9714");
 		tc.checkResponse("21998019167", "nick haole", "HANGMAN: Name registered: haole. Send LIST to 9714 to see online players. NICK [NEW NICK] to change your name.");
 		tc.checkResponse("21991234899", "C", "HANGMAN: Name registered: " + playerNickName + ". Send your friend's phone to 9714 or LIST to see online players. NICK [NEW NICK] to change your name.");
 		tc.checkResponse("21991234899", "21998019167", "HANGMAN: Your friend's phone: 21998019167. Think of a word without special digits and send it now to 9714. After the invitation, you'll get a lucky number");
@@ -577,8 +597,8 @@ public class HangmanSMSGameProcessorTests {
 					state = 5;
 					break;
 				case 5:
-					sendPrivateMessage(wordProvidingPlayerNick, wordGuessingPlayerNick, "Did you get that as well?");
-					sendPrivateMessage(wordGuessingPlayerNick, wordProvidingPlayerNick, "Surely I did!");
+					sendPrivateMessage(wordProvidingPlayerPhone, wordGuessingPlayerNick, "Did you get that as well?");
+					sendPrivateMessage(wordGuessingPlayerPhone, wordProvidingPlayerNick, "Surely I did!");
 					state = 6;
 					break;
 				default:

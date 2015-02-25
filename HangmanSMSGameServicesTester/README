@@ -1,0 +1,6 @@
+HangmanSMSGameServicesTester
+============================
+
+Tests the 'HangmanSMSGameServices' tomcat web application
+
+See Configuration.java for environment details

@@ -294,8 +294,7 @@ public class CommandDetails {
 	}
 
 	protected static CommandAnswerDto getNewCommandAnswerDto(SessionDto currentSession, CommandMessageDto[] commandMessages) throws SQLException {
-		CommandMessageDto[] transitionMessages = applySessionTransitionRules(currentSession, null);
-		return new CommandAnswerDto(addCommandMessages(transitionMessages, commandMessages), null);
+		return new CommandAnswerDto(commandMessages, null);
 	}
 
 	
@@ -351,6 +350,24 @@ public class CommandDetails {
 				return getNewCommandAnswerDto(session, commandResponse);
 			}
 
+		}
+	};
+	
+	@ConfigurableElement("Command to be executed if an unrecognized message is received while in 'NEW_USER' state")
+	public static final ICommandProcessor SHOW_FALLBACK_NEW_USERS_HELP = new ICommandProcessor() {
+		@Override
+		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
+			CommandMessageDto commandResponses = new CommandMessageDto(phrases.INFOFallbackNewUsersHelp(), EResponseMessageType.HELP);
+			return getNewCommandAnswerDto(session, commandResponses);
+		}
+	};
+	
+	@ConfigurableElement("Command to be executed if an unrecognized message is received while in 'EXISTING_USER' state")
+	public static final ICommandProcessor SHOW_FALLBACK_EXISTING_USERS_HELP = new ICommandProcessor() {
+		@Override
+		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
+			CommandMessageDto commandResponses = new CommandMessageDto(phrases.INFOFallbackExistingUsersHelp(), EResponseMessageType.HELP);
+			return getNewCommandAnswerDto(session, commandResponses);
 		}
 	};
 	

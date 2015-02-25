@@ -33,10 +33,13 @@ public class NavigationMap {
 		
 		NO_ANSWER(CommandDetails.NO_ANSWER),
 
+		
 		// help commands
 		////////////////
 		
 		SHOW_WELCOME_MESSAGE(CommandDetails.SHOW_WELCOME_MESSAGE),
+		SHOW_FALLBACK_NEW_USERS_HELP(CommandDetails.SHOW_FALLBACK_NEW_USERS_HELP),
+		SHOW_FALLBACK_EXISTING_USERS_HELP(CommandDetails.SHOW_FALLBACK_EXISTING_USERS_HELP),
 		SHOW_FULL_HELP_MESSAGE(CommandDetails.SHOW_FULL_HELP_MESSAGE),
 		
 		
@@ -86,7 +89,7 @@ public class NavigationMap {
 		// unsubscription commands
 		//////////////////////////
 		
-		UNSUBSCRIBE(CommandDetails.UNSUBSCRIBE),
+		UNSUBSCRIBE(CommandDetails.UNSUBSCRIBE), 		
 		
 		
 		;
