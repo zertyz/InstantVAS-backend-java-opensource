@@ -612,4 +612,18 @@ public class HangmanSMSGameProcessorTests {
 		}
 	}
 	
+	
+	/**********************
+	** USAGE ERROR TESTS **
+	**********************/
+	
+	@Test
+	public void testSpecialCharacterMessages() throws SQLException {
+		tc.resetDatabases();
+		// TODO forca\n is not being recognized as forca. Update command patterns
+		tc.checkResponse("21991234899", "forca\n", testPhraseology.INFOFallbackNewUsersHelp());
+		tc.checkResponse("21991234898", "forca\r", testPhraseology.INFOFallbackNewUsersHelp());
+		tc.checkResponse("21991234897", "\r\n\r\n", testPhraseology.INFOFallbackNewUsersHelp());
+	}
+	
 }

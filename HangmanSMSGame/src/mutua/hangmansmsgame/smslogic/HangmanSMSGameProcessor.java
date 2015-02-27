@@ -95,7 +95,7 @@ public class HangmanSMSGameProcessor implements EventClient<EHangmanSMSGameEvent
 			// try to match 'incomingText' against each pattern
 			for (int patternIndex=0; patternIndex<patterns.length; patternIndex++) {
 				String regularExpression = patterns[patternIndex];
-				Pattern pattern = Pattern.compile(regularExpression, Pattern.CASE_INSENSITIVE);
+				Pattern pattern = Pattern.compile(regularExpression, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 				Matcher m = pattern.matcher(incomingText);
 				// build the invocation object
 				if (m.matches()) {

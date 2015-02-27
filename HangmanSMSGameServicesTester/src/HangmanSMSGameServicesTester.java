@@ -11,8 +11,8 @@ import servers.http.SimpleHTTPServer;
 
 
 /** <pre>
- * Main.java
- * =========
+ * HangmanSMSGameServicesTester.java
+ * =================================
  * (created by luiz, Feb 23, 2015)
  *
  * Apply & check the expected response of test scripts
@@ -26,7 +26,7 @@ import servers.http.SimpleHTTPServer;
  * @author luiz
  */
 
-public class Main {
+public class HangmanSMSGameServicesTester {
 	
 	private static void execute(String message, Fuckable task) {
 		System.out.print(message+"...");
@@ -107,6 +107,19 @@ public class Main {
 				// grep '#' | sed 's/#\([^;]*\);\([^;]*\);\([^;]*\);\([^;]*\);\([^;]*\);\([^;]*\);/checkInteraction("\1", "\2", false, "\3", "\4", "\5", "\6");/' | sed 's/#\([^;]*\);\([^;]*\);\([^;]*\);\([^;]*\);/checkInteraction("\1", "\2", false, "\3", "\4");/' | less -# 1
 				checkInteraction("phone1", "hangman", true, "phone1", "Hello, fucker");
 				checkInteraction("phone1", "help", true, "phone1", "Hello, fucker");
+				
+				// this used to kill the 10 consumers on previous versions
+				checkInteraction("phone1",  "anyshit with \r, \n or possibly others at the end, like \t or even \\n!!", true, "phone1",  "<<no shit used to be answered>>");
+				checkInteraction("phone2",  "anyshit with \r, \n or possibly others at the end, like \t or even \\n!!", true, "phone2",  "<<no shit used to be answered>>");
+				checkInteraction("phone3",  "anyshit with \r, \n or possibly others at the end, like \t or even \\n!!", true, "phone3",  "<<no shit used to be answered>>");
+				checkInteraction("phone4",  "anyshit with \r, \n or possibly others at the end, like \t or even \\n!!", true, "phone4",  "<<no shit used to be answered>>");
+				checkInteraction("phone5",  "anyshit with \r, \n or possibly others at the end, like \t or even \\n!!", true, "phone5",  "<<no shit used to be answered>>");
+				checkInteraction("phone6",  "anyshit with \r, \n or possibly others at the end, like \t or even \\n!!", true, "phone6",  "<<no shit used to be answered>>");
+				checkInteraction("phone7",  "anyshit with \r, \n or possibly others at the end, like \t or even \\n!!", true, "phone7",  "<<no shit used to be answered>>");
+				checkInteraction("phone8",  "anyshit with \r, \n or possibly others at the end, like \t or even \\n!!", true, "phone8",  "<<no shit used to be answered>>");
+				checkInteraction("phone9",  "anyshit with \r, \n or possibly others at the end, like \t or even \\n!!", true, "phone9",  "<<no shit used to be answered>>");
+				checkInteraction("phone10", "anyshit with \r, \n or possibly others at the end, like \t or even \\n!!", true, "phone10", "<<no shit used to be answered>>");
+				
 				checkInteraction("21991224077", "forca", false, "21991224077", "HANGMAN: Registration succeeded. Send HELP to 9714 to know the rules and how to play, or simply send PLAY to 9714");
 				checkInteraction("21991224077", "nick 78TestingDom", false, "21991224077", "HANGMAN: Name registered: 78TestingDom. Send LIST to 9714 to see online players. NICK [NEW NICK] to change your name.");
 				checkInteraction("21998019077", "forca", false, "21998019077", "HANGMAN: Registration succeeded. Send HELP to 9714 to know the rules and how to play, or simply send PLAY to 9714");
