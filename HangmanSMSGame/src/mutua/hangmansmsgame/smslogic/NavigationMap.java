@@ -40,7 +40,8 @@ public class NavigationMap {
 		SHOW_WELCOME_MESSAGE(CommandDetails.SHOW_WELCOME_MESSAGE),
 		SHOW_FALLBACK_NEW_USERS_HELP(CommandDetails.SHOW_FALLBACK_NEW_USERS_HELP),
 		SHOW_FALLBACK_EXISTING_USERS_HELP(CommandDetails.SHOW_FALLBACK_EXISTING_USERS_HELP),
-		SHOW_FULL_HELP_MESSAGE(CommandDetails.SHOW_FULL_HELP_MESSAGE),
+		SHOW_FULL_HELP1_MESSAGE(CommandDetails.SHOW_FULL_HELP1_MESSAGE),
+		SHOW_FULL_HELP2_MESSAGE(CommandDetails.SHOW_FULL_HELP2_MESSAGE),
 		
 		
 		// invitation commands
@@ -120,6 +121,7 @@ public class NavigationMap {
 		//////////////////////////////////
 		
 		NEW_USER(StateDetails.NEW_USER),
+		SHOWING_HELP(StateDetails.SHOWING_HELP),
 		
 		
 		// loop state for existing users

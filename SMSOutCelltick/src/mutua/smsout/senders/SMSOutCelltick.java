@@ -86,6 +86,7 @@ public class SMSOutCelltick extends SMSOutSender {
 			requestData.addParameter("account",   ACCOUNT);
 			requestData.addParameter("dlrmask",   "2");
 			requestData.addParameter("reportDLR", "0");
+			requestData.addParameter("coding",    "4");
 			String response = HTTPClientAdapter.requestGet(mtServiceUrl, requestData, "UTF-8");
 			if (response.indexOf("Sent") != -1) {
 				log.reportEvent(SMSOUT_ACCEPTED, REQUEST, HTTPClientAdapter.toString(mtServiceUrl, requestData), RESPONSE, response);
@@ -119,6 +120,7 @@ public class SMSOutCelltick extends SMSOutSender {
 			requestData.addParameter("account",   ACCOUNT);
 			requestData.addParameter("dlrmask",   "2");
 			requestData.addParameter("reportDLR", "0");
+			requestData.addParameter("coding",    "4");
 			String response = HTTPClientAdapter.requestGet(mtServiceUrl, requestData, "UTF-8");
 			if (response.indexOf("Sent") != -1) {
 				log.reportEvent(SMSOUT_ACCEPTED, REQUEST, HTTPClientAdapter.toString(mtServiceUrl, requestData), RESPONSE, response);

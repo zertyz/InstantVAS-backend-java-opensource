@@ -34,9 +34,10 @@ public abstract class IPhraseology {
 		INFOFallbackNewUsersHelp                                      ("You are at the HANGMAN game. To continue, you must subscribe. Send HANGMAN now to {{shortCode}} and compete for prizes. You will be charged at $ every week."),
 		INFOFallbackExistingUsersHelp                                 ("HANGMAN: unknown command. Please send HELP to see the full list. Short list: LIST to see online users; P [NICK] [MSG] to send a private message; ",
 		                                                               "INVITE [NICK] to invite a player; INVITE [PHONE] to invite a friend of yours; PLAY to play with a random user. Choose an option and send it to {{shortCode}}"),
-		INFOFullHelp                                                  ("You can play the HANGMAN game in 2 ways: guessing someone's word or inviting someone to play with your word " +
+		INFOFullHelp1                                                 ("You can play the HANGMAN game in 2 ways: guessing someone's word or inviting someone to play with your word " +
 		                                                               "You'll get 1 lucky number each word you guess. Whenever you invite a friend or user to play, you win another lucky number " +
 		                                                               "Every week, 1 lucky number is selected to win the prize. Send an option to {{shortCode}}: (J)Play online; (C)Invite a friend or user; (R)anking; (A)Help"),
+		INFOFullHelp2                                                 ("This is the extended help message..."),
 		INFOWelcomeMenu                                               ("Pick an option. Send to {{shortCode}}: {{shortHelp}}"),
 		INFOCouldNotRegister                                          ("HANGMAN: You could not be registered at this time. Please try again later."),
 		PROFILEView                                                   ("HANGMAN: {{nick}}: Subscribed, {{state}}, {{numberOfLuckyNumbers}} lucky numbers. Send SIGNUP to provoke for free or INVITE {{nick}} for a match."),
@@ -192,7 +193,10 @@ public abstract class IPhraseology {
 	public abstract String INFOFallbackExistingUsersHelp();
 	
 	@ConfigurableElement("shown when the user request the help / instructions")
-	public abstract String[] INFOFullHelp();
+	public abstract String[] INFOFullHelp1();
+	
+	@ConfigurableElement("shown when the user requests to see more of the help / instructions")
+	public abstract String[] INFOFullHelp2();
 	
 	@ConfigurableElement("menu shown to new users")
 	public abstract String INFOWelcomeMenu();

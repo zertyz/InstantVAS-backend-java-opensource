@@ -43,9 +43,9 @@ public class SMSInCelltick extends SMSInParser<HttpServletRequest, HttpServletRe
 		}
 		
 		// extra parameters
-		String account  = request.getParameter("account");
-		String validity = request.getParameter("validity");
-		String smsc     = request.getParameter("smsc");
+		String account  = request.getParameter("ACCOUNT");
+		String validity = request.getParameter("VALIDITY");
+		String smsc     = request.getParameter("SMSC");
 		
 		// TODO fix this workarround (if it is really necessary and if not, remove the dependency from SMSOutCelltick project)
 		SMSOutCelltick.ACCOUNT  = account;

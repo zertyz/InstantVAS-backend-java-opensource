@@ -36,7 +36,8 @@ public class StateDetails {
 		// commands used on several states
 		//////////////////////////////////
 		
-		SHOW_FULL_HELP_MESSAGE            ("AJUDA", "HELP", "A"),
+		SHOW_FULL_HELP1_MESSAGE           ("AJUDA", "HELP", "A"),
+		SHOW_FULL_HELP2_MESSAGE           ("AJUDA", "HELP", "A", "MAIS"),
 		SHOW_PROFILE                      ("PROFILE (.*)", "PROFILE"),
 		DEFINE_NICK                       ("NICK (.*)", "N (.*)"),
 		LIST_USERS                        ("LIST", "RANKING", "R", "L"),
@@ -120,12 +121,13 @@ public class StateDetails {
 	// STATE DETAILS
 	////////////////
 
-	public static CommandTriggersDto[] NEW_USER;	
-	public static CommandTriggersDto[] EXISTING_USER;	
+	public static CommandTriggersDto[] NEW_USER;
+	public static CommandTriggersDto[] SHOWING_HELP;
+	public static CommandTriggersDto[] EXISTING_USER;
 	public static CommandTriggersDto[] ENTERING_OPPONENT_CONTACT_INFO;
 	public static CommandTriggersDto[] ENTERING_MATCH_WORD;
 	public static CommandTriggersDto[] ANSWERING_TO_INVITATION;
-	public static CommandTriggersDto[] GUESSING_HUMAN_WORD;	
+	public static CommandTriggersDto[] GUESSING_HUMAN_WORD;
 	public static CommandTriggersDto[] GUESSING_BOT_WORD;
 	public static CommandTriggersDto[] LISTING_USERS;
 
@@ -137,7 +139,7 @@ public class StateDetails {
 		// COMMON COMMAND PATTERNS
 		//////////////////////////
 		
-		CommandTriggersDto SHOW_FULL_HELP_COMMAND_PATTERNS               = ECommandPatterns.SHOW_FULL_HELP_MESSAGE.getCommandTriggers(ECOMMANDS.SHOW_FULL_HELP_MESSAGE);
+		CommandTriggersDto SHOW_FULL_HELP1_COMMAND_PATTERNS              = ECommandPatterns.SHOW_FULL_HELP1_MESSAGE.getCommandTriggers(ECOMMANDS.SHOW_FULL_HELP1_MESSAGE);
 		CommandTriggersDto SHOW_PROFILE_COMMAND_PATTERNS                 = ECommandPatterns.SHOW_PROFILE.getCommandTriggers(ECOMMANDS.SHOW_PROFILE);
 		CommandTriggersDto DEFINE_NICK_COMMAND_PATTERNS                  = ECommandPatterns.DEFINE_NICK.getCommandTriggers(ECOMMANDS.DEFINE_NICK);
 		CommandTriggersDto LIST_USERS_COMMAND_PATTERNS                   = ECommandPatterns.LIST_USERS.getCommandTriggers(ECOMMANDS.LIST_USERS);
@@ -157,8 +159,23 @@ public class StateDetails {
 			NO_ANSWER_COMMAND_PATTERNS
 		);
 		
+		setInstance("SHOWING_HELP",
+			ECommandPatterns.SHOW_FULL_HELP2_MESSAGE.getCommandTriggers(ECOMMANDS.SHOW_FULL_HELP2_MESSAGE),
+			SHOW_FULL_HELP1_COMMAND_PATTERNS,
+			SHOW_PROFILE_COMMAND_PATTERNS,
+			DEFINE_NICK_COMMAND_PATTERNS,
+			LIST_USERS_COMMAND_PATTERNS,
+			PROVOKE_COMMAND_PATTERNS,
+			START_INVITATION_PROCESS_COMMAND_PATTERNS,
+			INVITE_NICK_OR_PHONE_COMMAND_PATTERNS,
+			PLAY_WITH_RANDOM_USER_OR_BOT_COMMAND_PATTERNS,
+			UNSUBSCRIBE,
+			FALLBACK_HELP_COMMAND_PATTERNS,
+			NO_ANSWER_COMMAND_PATTERNS
+		);
+		
 		setInstance("EXISTING_USER",
-			SHOW_FULL_HELP_COMMAND_PATTERNS,
+			SHOW_FULL_HELP1_COMMAND_PATTERNS,
 			SHOW_PROFILE_COMMAND_PATTERNS,
 			DEFINE_NICK_COMMAND_PATTERNS,
 			LIST_USERS_COMMAND_PATTERNS,
@@ -174,7 +191,7 @@ public class StateDetails {
 		setInstance("ENTERING_OPPONENT_CONTACT_INFO",
 			ECommandPatterns.HOLD_OPPONENT_PHONE.getCommandTriggers(ECOMMANDS.HOLD_OPPONENT_PHONE),
 			ECommandPatterns.HOLD_OPPONENT_NICK.getCommandTriggers(ECOMMANDS.HOLD_OPPONENT_NICK),
-			SHOW_FULL_HELP_COMMAND_PATTERNS,
+			SHOW_FULL_HELP1_COMMAND_PATTERNS,
 			SHOW_PROFILE_COMMAND_PATTERNS,
 			DEFINE_NICK_COMMAND_PATTERNS,
 			LIST_USERS_COMMAND_PATTERNS,
@@ -187,7 +204,7 @@ public class StateDetails {
 		);
 
 		setInstance("ENTERING_MATCH_WORD",
-			SHOW_FULL_HELP_COMMAND_PATTERNS,
+			SHOW_FULL_HELP1_COMMAND_PATTERNS,
 			SHOW_PROFILE_COMMAND_PATTERNS,
 			DEFINE_NICK_COMMAND_PATTERNS,
 			LIST_USERS_COMMAND_PATTERNS,
@@ -201,7 +218,7 @@ public class StateDetails {
 		);
 
 		setInstance("ANSWERING_TO_INVITATION",
-			SHOW_FULL_HELP_COMMAND_PATTERNS,
+			SHOW_FULL_HELP1_COMMAND_PATTERNS,
 			SHOW_PROFILE_COMMAND_PATTERNS,
 			DEFINE_NICK_COMMAND_PATTERNS,
 			LIST_USERS_COMMAND_PATTERNS,
@@ -218,7 +235,7 @@ public class StateDetails {
 
 		setInstance("GUESSING_HUMAN_WORD",
 			ECommandPatterns.SUGGEST_LETTER_OR_WORD_FOR_HUMAN.getCommandTriggers(ECOMMANDS.SUGGEST_LETTER_OR_WORD_FOR_HUMAN),
-			SHOW_FULL_HELP_COMMAND_PATTERNS,
+			SHOW_FULL_HELP1_COMMAND_PATTERNS,
 			SHOW_PROFILE_COMMAND_PATTERNS,
 			DEFINE_NICK_COMMAND_PATTERNS,
 			LIST_USERS_COMMAND_PATTERNS,
@@ -233,7 +250,7 @@ public class StateDetails {
 		
 		setInstance("GUESSING_BOT_WORD",
 			ECommandPatterns.SUGGEST_LETTER_OR_WORD_FOR_BOT.getCommandTriggers(ECOMMANDS.SUGGEST_LETTER_OR_WORD_FOR_BOT),
-			SHOW_FULL_HELP_COMMAND_PATTERNS,
+			SHOW_FULL_HELP1_COMMAND_PATTERNS,
 			SHOW_PROFILE_COMMAND_PATTERNS,
 			DEFINE_NICK_COMMAND_PATTERNS,
 			LIST_USERS_COMMAND_PATTERNS,
@@ -248,7 +265,7 @@ public class StateDetails {
 
 		setInstance("LISTING_USERS",
 			ECommandPatterns.LIST_MORE_USERS.getCommandTriggers(ECOMMANDS.LIST_MORE_USERS),
-			SHOW_FULL_HELP_COMMAND_PATTERNS,
+			SHOW_FULL_HELP1_COMMAND_PATTERNS,
 			SHOW_PROFILE_COMMAND_PATTERNS,
 			DEFINE_NICK_COMMAND_PATTERNS,
 			LIST_USERS_COMMAND_PATTERNS,

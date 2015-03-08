@@ -67,6 +67,7 @@ public class HangmanSMSGameServicesTester {
 		request.addParameter("LA",                   "48925");
 		request.addParameter("MO_ID",                Double.toString(Math.random()));
 		request.addParameter("TEXT",                 moText);
+		request.addParameter("SMSC",                 "myOwnSMSC");
 		HTTPClientAdapter.requestGet(Configuration.GAME_BASE_URL + Configuration.SEND_MO_URL_SUFFIX, request);
 		
 		lastMessageTimes.put(moPhone, System.currentTimeMillis());

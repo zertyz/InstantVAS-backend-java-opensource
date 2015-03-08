@@ -47,8 +47,13 @@ public class TestPhraseology extends IPhraseology {
 	}
 
 	@Override
-	public String[] INFOFullHelp() {
-		return getPhrases(EPhraseNames.INFOFullHelp, new String[][] {{"shortCode", shortCode}});
+	public String[] INFOFullHelp1() {
+		return getPhrases(EPhraseNames.INFOFullHelp1, new String[][] {{"shortCode", shortCode}});
+	}
+
+	@Override
+	public String[] INFOFullHelp2() {
+		return getPhrases(EPhraseNames.INFOFullHelp2, new String[][] {{"shortCode", shortCode}});
 	}
 
 	@Override

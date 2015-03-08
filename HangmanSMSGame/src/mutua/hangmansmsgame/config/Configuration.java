@@ -156,8 +156,10 @@ public class Configuration {
 	public static String[] INFOFallbackNewUsersHelp                                       = EPhraseNames.INFOFallbackNewUsersHelp.getTexts();
 	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.INFOFallbackExistingUsersHelp")
 	public static String[] INFOFallbackExistingUsersHelp                                  = EPhraseNames.INFOFallbackExistingUsersHelp.getTexts();
-	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.INFOFullHelp")
-	public static String[] INFOFullHelp                                                   = EPhraseNames.INFOFullHelp.getTexts();
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.INFOFullHelp1")
+	public static String[] INFOFullHelp1                                                   = EPhraseNames.INFOFullHelp1.getTexts();
+	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.INFOFullHelp2")
+	public static String[] INFOFullHelp2                                                   = EPhraseNames.INFOFullHelp2.getTexts();
 	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.INFOWelcomeMenu")
 	public static String[] INFOWelcomeMenu                                                = EPhraseNames.INFOWelcomeMenu.getTexts();
 	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.INFOCouldNotRegister")
@@ -229,8 +231,10 @@ public class Configuration {
 	public static String[] SHOW_FALLBACK_NEW_USERS_HELP      = ECommandPatterns.SHOW_FALLBACK_NEW_USERS_HELP     .getRegularExpressions(); 
 	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.SHOW_FALLBACK_EXISTING_USERS_HELP")
 	public static String[] SHOW_FALLBACK_EXISTING_USERS_HELP = ECommandPatterns.SHOW_FALLBACK_EXISTING_USERS_HELP.getRegularExpressions(); 
-	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.SHOW_FULL_HELP_MESSAGE")
-	public static String[] SHOW_FULL_HELP_MESSAGE            = ECommandPatterns.SHOW_FULL_HELP_MESSAGE           .getRegularExpressions(); 
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.SHOW_FULL_HELP1_MESSAGE")
+	public static String[] SHOW_FULL_HELP1_MESSAGE           = ECommandPatterns.SHOW_FULL_HELP1_MESSAGE           .getRegularExpressions(); 
+	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.SHOW_FULL_HELP2_MESSAGE")
+	public static String[] SHOW_FULL_HELP2_MESSAGE           = ECommandPatterns.SHOW_FULL_HELP2_MESSAGE           .getRegularExpressions(); 
 	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.SHOW_PROFILE")
 	public static String[] SHOW_PROFILE                      = ECommandPatterns.SHOW_PROFILE                     .getRegularExpressions(); 
 	@ConfigurableElement(sameAs="mutua.hangmansmsgame.smslogic.CommandDetails.DEFINE_NICK")

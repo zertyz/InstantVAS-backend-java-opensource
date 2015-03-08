@@ -156,9 +156,16 @@ public class HangmanSMSGameProcessorTests {
 		// Asking for help at NEW_USER state should not show the full help
 		tc.checkResponse("21991234899", "help", testPhraseology.INFOFallbackNewUsersHelp());
 		
-		// now, the full help must be issued
+		// now, the full help must be issued, then the second help message, and then back again to the first... even if they share the same keyword
 		registerUser("21991234899", "DOM");
-		tc.checkResponse("21991234899", "help", testPhraseology.INFOFullHelp());
+		tc.checkResponse("21991234899", "help", testPhraseology.INFOFullHelp1());
+		tc.checkResponse("21991234899", "help", testPhraseology.INFOFullHelp2());
+		tc.checkResponse("21991234899", "help", testPhraseology.INFOFullHelp1());
+		tc.checkResponse("21991234899", "help", testPhraseology.INFOFullHelp2());
+		
+		// já criadas as frases e os comandos, com atualização no arquivo de configurações.
+		// falta fazer o comando help2 ser reconhecido por algum estado mas, antes,
+		// temos que criar um estado para "mostrando help", onde o help2 será reconhecido
 		
 		// but, again, an unknown command should issue a special help
 		tc.checkResponse("21991234899", "helpame!!", testPhraseology.INFOFallbackExistingUsersHelp());

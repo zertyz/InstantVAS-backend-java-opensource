@@ -372,15 +372,28 @@ public class CommandDetails {
 	};
 	
 	@ConfigurableElement("The help command. No args.")
-	public static final ICommandProcessor SHOW_FULL_HELP_MESSAGE = new ICommandProcessor() {
+	public static final ICommandProcessor SHOW_FULL_HELP1_MESSAGE = new ICommandProcessor() {
 		@Override
 		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
-			String[] smsTexts = phrases.INFOFullHelp();
+			String[] smsTexts = phrases.INFOFullHelp1();
 			CommandMessageDto[] commandResponses = new CommandMessageDto[smsTexts.length];
 			for (int i=0; i<commandResponses.length; i++) {
 				commandResponses[i] = new CommandMessageDto(smsTexts[i], EResponseMessageType.HELP);
 			}
-			return getNewCommandAnswerDto(session, commandResponses);
+			return getNewCommandAnswerDto(session, commandResponses, ESTATES.SHOWING_HELP);
+		}
+	};
+
+	@ConfigurableElement("The continuation help command. No args.")
+	public static final ICommandProcessor SHOW_FULL_HELP2_MESSAGE = new ICommandProcessor() {
+		@Override
+		public CommandAnswerDto processCommand(SessionDto session, ESMSInParserCarrier carrier, String[] parameters, IPhraseology phrases) throws SQLException {
+			String[] smsTexts = phrases.INFOFullHelp2();
+			CommandMessageDto[] commandResponses = new CommandMessageDto[smsTexts.length];
+			for (int i=0; i<commandResponses.length; i++) {
+				commandResponses[i] = new CommandMessageDto(smsTexts[i], EResponseMessageType.HELP);
+			}
+			return getNewCommandAnswerDto(session, commandResponses, ESTATES.EXISTING_USER);
 		}
 	};
 
