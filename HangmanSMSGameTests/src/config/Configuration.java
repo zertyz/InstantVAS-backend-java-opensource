@@ -26,7 +26,7 @@ import static mutua.hangmansmsgame.config.Configuration.log;
 
 public class Configuration {
 
-	public static EDataAccessLayers DEFAULT_DAL = EDataAccessLayers.RAM;
+	public static EDataAccessLayers DEFAULT_DAL = EDataAccessLayers.POSTGRESQL;
 
 	static {
     	// set the vars

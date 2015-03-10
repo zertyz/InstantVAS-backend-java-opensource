@@ -25,6 +25,12 @@ public abstract class IPhraseology {
 	
 	public enum EPhraseNames {
 		
+		headCharacter                                                 ("O"),
+		leftArmCharacter                                              ("/"),
+		chestCharacter                                                ("|"),
+		rightArmCharacter                                             ("\\"),
+		leftLegCharacter                                              ("/"),
+		rightLegCharacter                                             ("\\"),
 		shortHelp                                                     ("(J) Play online; (C) Invite a friend or user; (R)anking; (A)Help"),
 		gallowsArt                                                    ("+-+\n| {{head}}\n|{{leftArm}}{{chest}}{{rightArm}}\n|{{leftLeg}} {{rightLeg}}\n|\n====\n"),
 		winningArt                                                    ("\\0/\n |\n/ \\\n"),
@@ -226,12 +232,12 @@ public abstract class IPhraseology {
 	protected String getGallowsArt(boolean drawHead, boolean drawLeftArm, boolean drawRightArm,
 	                                boolean drawChest, boolean drawLeftLeg, boolean drawRightLeg) {
 		return getPhrase(EPhraseNames.gallowsArt, new String[][] {
-			{"head",     (drawHead?"O":"")},
-			{"leftArm",  (drawLeftArm?"/":" ")},
-			{"chest",    (drawChest?"|":" ")},
-			{"rightArm", (drawRightArm?"\\":"")},
-			{"leftLeg",  (drawLeftLeg?"/":" ")},
-			{"rightLeg", (drawRightLeg?"\\":"")},
+			{"head",     (drawHead?getPhrase(EPhraseNames.headCharacter):"")},
+			{"leftArm",  (drawLeftArm?getPhrase(EPhraseNames.leftArmCharacter):" ")},
+			{"chest",    (drawChest?getPhrase(EPhraseNames.chestCharacter):" ")},
+			{"rightArm", (drawRightArm?getPhrase(EPhraseNames.rightArmCharacter):"")},
+			{"leftLeg",  (drawLeftLeg?getPhrase(EPhraseNames.leftLegCharacter):" ")},
+			{"rightLeg", (drawRightLeg?getPhrase(EPhraseNames.rightLegCharacter):"")},
 		});
 	}
 	

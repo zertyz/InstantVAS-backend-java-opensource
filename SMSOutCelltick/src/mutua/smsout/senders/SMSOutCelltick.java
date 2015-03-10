@@ -86,7 +86,6 @@ public class SMSOutCelltick extends SMSOutSender {
 			requestData.addParameter("account",   ACCOUNT);
 			requestData.addParameter("dlrmask",   "2");
 			requestData.addParameter("reportDLR", "0");
-			requestData.addParameter("coding",    "4");
 			String response = HTTPClientAdapter.requestGet(mtServiceUrl, requestData, "UTF-8");
 			if (response.indexOf("Sent") != -1) {
 				log.reportEvent(SMSOUT_ACCEPTED, REQUEST, HTTPClientAdapter.toString(mtServiceUrl, requestData), RESPONSE, response);
@@ -106,7 +105,7 @@ public class SMSOutCelltick extends SMSOutSender {
 			String udh           = "%05%00%03%"+CSMSHexReferenceNumber+"%"+hexTotal+"%"+hexPartNumber;
 			HTTPRequestDto requestData = new HTTPRequestDto();
 			requestData.addEncodedParameter("udh", udh);
-			requestData.addParameter("coding",    "1");
+			//requestData.addParameter("coding",    "1");
 			requestData.addParameter("subAct",    Integer.toString(i+1));
 			requestData.addParameter("total",     total);
 			requestData.addParameter("to",        smsOut.getPhone());
@@ -120,7 +119,6 @@ public class SMSOutCelltick extends SMSOutSender {
 			requestData.addParameter("account",   ACCOUNT);
 			requestData.addParameter("dlrmask",   "2");
 			requestData.addParameter("reportDLR", "0");
-			requestData.addParameter("coding",    "4");
 			String response = HTTPClientAdapter.requestGet(mtServiceUrl, requestData, "UTF-8");
 			if (response.indexOf("Sent") != -1) {
 				log.reportEvent(SMSOUT_ACCEPTED, REQUEST, HTTPClientAdapter.toString(mtServiceUrl, requestData), RESPONSE, response);

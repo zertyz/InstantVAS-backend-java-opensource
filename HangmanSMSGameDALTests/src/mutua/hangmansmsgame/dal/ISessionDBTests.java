@@ -1,5 +1,7 @@
 package mutua.hangmansmsgame.dal;
 
+import java.sql.SQLException;
+
 import mutua.hangmansmsgame.dal.dto.SessionDto;
 
 import org.junit.Test;
@@ -39,7 +41,7 @@ public class ISessionDBTests {
 	**********/
 	
 	@Test
-	public void testSimpleUsage() throws InterruptedException {
+	public void testSimpleUsage() throws InterruptedException, SQLException {
 		String expectedPhone           = "21991234899";
 		String expectedNavigationState = "state";
 		

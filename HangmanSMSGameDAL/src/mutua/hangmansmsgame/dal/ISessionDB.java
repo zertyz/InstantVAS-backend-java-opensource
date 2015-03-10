@@ -1,5 +1,7 @@
 package mutua.hangmansmsgame.dal;
 
+import java.sql.SQLException;
+
 import mutua.hangmansmsgame.dal.dto.SessionDto;
 
 /** <pre>
@@ -20,7 +22,7 @@ public interface ISessionDB {
 	void reset();
 	
 	/** Retrieves a 'UserSessionDto' from the database */
-	SessionDto getSession(String phone);
+	SessionDto getSession(String phone) throws SQLException;
 	
 	/** Stores a 'UserSessionDto' on the database */
 	void setSession(SessionDto session);

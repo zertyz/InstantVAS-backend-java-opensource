@@ -50,7 +50,7 @@ public class DALFactory {
 				matchDB   = new mutua.hangmansmsgame.dal.ram.MatchDB();
 				break;
 			case POSTGRESQL:
-				sessionDB = new mutua.hangmansmsgame.dal.ram.SessionDB();
+				sessionDB = new mutua.hangmansmsgame.dal.postgresql.SessionDB();
 				userDB    = new mutua.hangmansmsgame.dal.postgresql.UserDB();
 				matchDB   = new mutua.hangmansmsgame.dal.postgresql.MatchDB();
 				break;

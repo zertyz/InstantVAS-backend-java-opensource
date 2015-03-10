@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.util.Random;
 
 import mutua.hangmansmsgame.dal.DALFactory;
+import mutua.hangmansmsgame.dal.ISessionDB;
 import mutua.hangmansmsgame.dal.IUserDB;
 import mutua.hangmansmsgame.hangmangamelogic.HangmanGame;
 import mutua.hangmansmsgame.i18n.IPhraseology;
@@ -37,7 +38,8 @@ public class HangmanSMSGameProcessorTests {
 	// databases
 	////////////
     
-	private static IUserDB userDB = DALFactory.getUserDB(Configuration.DEFAULT_DAL);
+	private static IUserDB    userDB    = DALFactory.getUserDB(Configuration.DEFAULT_DAL);
+	private static ISessionDB sessionDB = DALFactory.getSessionDB(Configuration.DEFAULT_DAL);
 
 	
 	/*********************
@@ -147,6 +149,21 @@ public class HangmanSMSGameProcessorTests {
 		registerUser("21991234899", "Dom");
 		tc.checkResponse("21991234899", "HJKS", testPhraseology.INFOFallbackExistingUsersHelp());
 
+	}
+	
+	@Test
+	public void testGameRestartSubtleties() throws SQLException {
+		tc.resetDatabases();
+		
+		// register some users
+		registerUser("21991234899", "Dom");
+		registerUser("21998019166", "Paty");
+		
+		// simulate an application server restart
+		sessionDB.reset();
+		
+		// test if the users still can play without problems
+		invitePlayerByNick("21991234899", "Paty");
 	}
 	
 	@Test

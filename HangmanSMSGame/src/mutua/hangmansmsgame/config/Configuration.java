@@ -140,15 +140,27 @@ public class Configuration {
 	// phrasing
 	///////////
 	
-	@ConfigurableElement("")
+	@ConfigurableElement("character presented on the {{head}} placeholder of 'gallowsArt' whenever the head must be drawn")
+	public static String[] headCharacter                                                  = EPhraseNames.headCharacter.getTexts();
+	@ConfigurableElement("character presented on the {{leftArm}} placeholder of 'gallowsArt' whenever the left arm must be drawn")
+	public static String[] leftArmCharacter                                               = EPhraseNames.leftArmCharacter.getTexts();
+	@ConfigurableElement("character presented on the {{chest}} placeholder of 'gallowsArt' whenever the chest must be drawn")
+	public static String[] chestCharacter                                                 = EPhraseNames.chestCharacter.getTexts();
+	@ConfigurableElement("character presented on the {{rightArm}} placeholder of 'gallowsArt' whenever the right arm must be drawn")
+	public static String[] rightArmCharacter                                              = EPhraseNames.rightArmCharacter.getTexts();
+	@ConfigurableElement("character presented on the {{leftLeg}} placeholder of 'gallowsArt' whenever the left leg must be drawn")
+	public static String[] leftLegCharacter                                               = EPhraseNames.leftLegCharacter.getTexts();
+	@ConfigurableElement("character presented on the {{rightLeg}} placeholder of 'gallowsArt' whenever the right leg must be drawn")
+	public static String[] rightLegCharacter                                              = EPhraseNames.rightLegCharacter.getTexts();
+	@ConfigurableElement("little help to be added at the end of some messages")
 	public static String[] shortHelp                                                      = EPhraseNames.shortHelp.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement("the gallows ascii art, while playing")
 	public static String[] gallowsArt                                                     = EPhraseNames.gallowsArt.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement("the gallows ascii art, after winning")
 	public static String[] winningArt                                                     = EPhraseNames.winningArt.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement("the gallows ascii art, after winning")
 	public static String[] losingArt                                                      = EPhraseNames.losingArt.getTexts();
-	@ConfigurableElement("")
+	@ConfigurableElement("information to show for each user, while listing / ranking users")
 	public static String[] playersList                                                    = EPhraseNames.playersList.getTexts();
 	@ConfigurableElement(sameAsMethod="mutua.hangmansmsgame.i18n.IPhraseology.INFOWelcome")
 	public static String[] INFOWelcome                                                    = EPhraseNames.INFOWelcome.getTexts();
