@@ -34,11 +34,11 @@ public class PostgreSQLAdapterConfiguration extends PostgreSQLAdapter {
 
 	@Override
 	protected String[] getCredentials() {
-		String hostname     = "zertyz.heliohost.org";
+		String hostname     = "venus";
 		String port         = "5432";
-		String databaseName = "zertyz_spikes";
-		String user         = "zertyz_user";
-		String password     = "spikes";
+		String databaseName = "hangman";
+		String user         = "hangman";
+		String password     = "hangman";
 		return new String[] {hostname, port, databaseName, user, password};
 	}
 

@@ -4,10 +4,6 @@
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/JDBCAdapter"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/MutuaICCConfiguration"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/java">
-		<attributes>
-			<attribute name="owner.project.facets" value="java"/>
-		</attributes>
-	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

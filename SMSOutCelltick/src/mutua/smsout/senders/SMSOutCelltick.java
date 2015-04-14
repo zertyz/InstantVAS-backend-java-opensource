@@ -73,6 +73,7 @@ public class SMSOutCelltick extends SMSOutSender {
 		// send normal SMS
 		if (SMSes.length == 1) {
 			HTTPRequestDto requestData = new HTTPRequestDto();
+			requestData.addParameter("coding",    "1");
 			requestData.addParameter("to",        smsOut.getPhone());
 			requestData.addParameter("total",     "1");
 			requestData.addParameter("text",      smsOut.getText());
@@ -105,7 +106,7 @@ public class SMSOutCelltick extends SMSOutSender {
 			String udh           = "%05%00%03%"+CSMSHexReferenceNumber+"%"+hexTotal+"%"+hexPartNumber;
 			HTTPRequestDto requestData = new HTTPRequestDto();
 			requestData.addEncodedParameter("udh", udh);
-			//requestData.addParameter("coding",    "1");
+			requestData.addParameter("coding",    "1");
 			requestData.addParameter("subAct",    Integer.toString(i+1));
 			requestData.addParameter("total",     total);
 			requestData.addParameter("to",        smsOut.getPhone());

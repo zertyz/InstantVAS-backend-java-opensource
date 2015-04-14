@@ -53,6 +53,7 @@ public class HangmanSMSGameServicesTester {
 			long lastSentMessageMillis = lastMessageTimes.get(moPhone);
 			// sleep until it is time to send the next message for this phone -- unfortunately making everybody wait.
 			long timeToSleep = (1*1000) - (System.currentTimeMillis() - lastSentMessageMillis);
+			timeToSleep = (1*25) - (System.currentTimeMillis() - lastSentMessageMillis);
 			if (timeToSleep > 0) {
 				System.out.println("Sleeping " + timeToSleep + " before sending again to '"+moPhone+"'");
 				try {Thread.sleep(timeToSleep);} catch (InterruptedException e) {}
