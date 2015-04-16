@@ -188,6 +188,9 @@ public class CommandDetails {
 				}
 			}
 			unpresentedPhones[unpresentedPhonesIndex++] = latestPlayerPhones[i];
+			if (unpresentedPhonesIndex == unpresentedPhones.length) {
+				break NEXT_PLAYER;
+			}
 		}
 		String[][] playersInfo = new String[unpresentedPhonesIndex][3];
 		for (int i=0; i<playersInfo.length; i++) {

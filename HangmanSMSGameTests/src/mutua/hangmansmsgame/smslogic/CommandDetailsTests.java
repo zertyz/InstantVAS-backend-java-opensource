@@ -63,7 +63,6 @@ public class CommandDetailsTests {
 	@Test
 	public void getUsersListBreakingUnderTheMaximumNumberOfCharactersTest() throws SQLException {
 		String[] presentedUsers;
-		int maxChars = testPhraseology.LISTINGShowPlayers(new String[][] {}).length() + 15;
 		tc.setUserDB(new String[][] {
 			{"21991234811", "Patata"},
 			{"21991234812", "Patate"},
@@ -80,6 +79,16 @@ public class CommandDetailsTests {
 			{"21991234833", "Patiti"},
 			{"21991234834", "Patito"},
 			{"21991234835", "Patitu"},
+			{"21991234841", "Patota"},
+			{"21991234842", "Patote"},
+			{"21991234843", "Patoti"},
+			{"21991234844", "Patoto"},
+			{"21991234845", "Patotu"},
+			{"21991234851", "Patuta"},
+			{"21991234852", "Patute"},
+			{"21991234853", "Patuti"},
+			{"21991234854", "Patuto"},
+			{"21991234855", "Patutu"},
 		});
 		tc.setSessionDB(new String[][] {
 			{"21991234811", "NEW_USER"},
@@ -97,16 +106,33 @@ public class CommandDetailsTests {
 			{"21991234833", "NEW_USER"},
 			{"21991234834", "NEW_USER"},
 			{"21991234835", "NEW_USER"},
+			{"21991234841", "NEW_USER"},
+			{"21991234842", "NEW_USER"},
+			{"21991234843", "NEW_USER"},
+			{"21991234844", "NEW_USER"},
+			{"21991234845", "NEW_USER"},
+			{"21991234851", "NEW_USER"},
+			{"21991234852", "NEW_USER"},
+			{"21991234853", "NEW_USER"},
+			{"21991234854", "NEW_USER"},
+			{"21991234855", "NEW_USER"},
 		});
 
-		presentedUsers = new String[] {};
-		while (true) {
-			String[][] playersInfo = CommandDetails.getPlayersInfoToPresentOnTheListCommandRespectingTheMaximumNumberOfCharacters(testPhraseology, maxChars, presentedUsers);
-			if (playersInfo == null) {
-				break;
+		int[] maxCharsArray = {
+			testPhraseology.LISTINGShowPlayers(new String[][] {}).length() + 15,
+			134,
+			134*3,
+		};
+		for (int maxChars: maxCharsArray) {
+			presentedUsers = new String[] {"21991234855"};
+			while (true) {
+				String[][] playersInfo = CommandDetails.getPlayersInfoToPresentOnTheListCommandRespectingTheMaximumNumberOfCharacters(testPhraseology, maxChars, presentedUsers);
+				if (playersInfo == null) {
+					break;
+				}
+				presentedUsers = CommandDetails.getNewPresentedUsers(presentedUsers, playersInfo);
+				System.out.println(testPhraseology.LISTINGShowPlayers(playersInfo));
 			}
-			presentedUsers = CommandDetails.getNewPresentedUsers(presentedUsers, playersInfo);
-			System.out.println(testPhraseology.LISTINGShowPlayers(playersInfo));
 		}
 	}
 	
