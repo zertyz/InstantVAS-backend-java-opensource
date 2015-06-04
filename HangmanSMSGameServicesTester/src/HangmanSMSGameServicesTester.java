@@ -52,15 +52,15 @@ public class HangmanSMSGameServicesTester {
 		if (lastMessageTimes.containsKey(moPhone)) {
 			long lastSentMessageMillis = lastMessageTimes.get(moPhone);
 			// sleep until it is time to send the next message for this phone -- unfortunately making everybody wait.
-			long timeToSleep = (1*1000) - (System.currentTimeMillis() - lastSentMessageMillis);
-			timeToSleep = (1*25) - (System.currentTimeMillis() - lastSentMessageMillis);
+			long timeToSleep = (1*3000) - (System.currentTimeMillis() - lastSentMessageMillis);
+			//timeToSleep = (1*25) - (System.currentTimeMillis() - lastSentMessageMillis);
 			if (timeToSleep > 0) {
 				System.out.println("Sleeping " + timeToSleep + " before sending again to '"+moPhone+"'");
 				try {Thread.sleep(timeToSleep);} catch (InterruptedException e) {}
 			}
 		}
 		
-		// send
+		// send -- similar to curl 'http://localhost:8080/HangmanSMSGameServices/AddToMOQueue?AUTHENTICATION_TOKEN=caosjufsojjfidsjf&CARRIER_NAME=48925&MO_ID=1&SMSC=myOwnSMSC&MSISDN=991234899&TEXT=hangman'
 		HTTPRequestDto request = new HTTPRequestDto();
 		request.addParameter("AUTHENTICATION_TOKEN", Configuration.AUTHENTICATION_TOKEN);
 		request.addParameter("MSISDN",               moPhone);
@@ -78,8 +78,16 @@ public class HangmanSMSGameServicesTester {
 		// check registration status
 		
 	}
-
 	
+	private static void performActivation(String msisdn) throws IOException {
+		// send -- similar to curl 'http://localhost:8080/HangmanSMSGameServices/AddToSubscribeUserQueue?AUTHENTICATION_TOKEN=caosjufsojjfidsjf&MSISDN=991234899'
+		HTTPRequestDto request = new HTTPRequestDto();
+		request.addParameter("AUTHENTICATION_TOKEN", Configuration.AUTHENTICATION_TOKEN);
+		request.addParameter("MSISDN",               msisdn);
+		HTTPClientAdapter.requestGet(Configuration.GAME_BASE_URL + Configuration.SUBSCRIBE_URL_SUFFIX, request);
+	}
+
+
 	public static void main(String[] args) {
 		
 		System.out.println("Now testing HangmanSMSGameServices!");
@@ -121,6 +129,16 @@ public class HangmanSMSGameServicesTester {
 				checkInteraction("phone8",  "anyshit with \r, \n or possibly others at the end, like \t or even \\n!!", true, "phone8",  "<<no shit used to be answered>>");
 				checkInteraction("phone9",  "anyshit with \r, \n or possibly others at the end, like \t or even \\n!!", true, "phone9",  "<<no shit used to be answered>>");
 				checkInteraction("phone10", "anyshit with \r, \n or possibly others at the end, like \t or even \\n!!", true, "phone10", "<<no shit used to be answered>>");
+				
+				System.out.println("Serial Activation of "+(999999-100000+1)+" users START -- " + System.currentTimeMillis());
+				for (int i=100000; i<=999999-899899; i++) {
+					String msisdn = "21991"+i;
+					if ((i%9999) == 0) {
+						System.out.println("+ ~10000 done -- " + System.currentTimeMillis());
+					}
+					performActivation(msisdn);
+				}
+				System.out.println("Serial Activation of "+(999999-100000+1)+" users FINISH -- " + System.currentTimeMillis());
 				
 				checkInteraction("21991224077", "forca", false, "21991224077", "HANGMAN: Registration succeeded. Send HELP to 9714 to know the rules and how to play, or simply send PLAY to 9714");
 				checkInteraction("21991224077", "nick 78TestingDom", false, "21991224077", "HANGMAN: Name registered: 78TestingDom. Send LIST to 9714 to see online players. NICK [NEW NICK] to change your name.");

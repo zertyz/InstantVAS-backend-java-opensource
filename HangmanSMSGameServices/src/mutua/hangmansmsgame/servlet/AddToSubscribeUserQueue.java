@@ -23,25 +23,21 @@ import static mutua.icc.instrumentation.DefaultInstrumentationProperties.*;
 public class AddToSubscribeUserQueue extends HttpServlet {
 	
 	private static final long serialVersionUID = 1L;
-	
-	private static IUserDB userDB = DALFactory.getUserDB(Configuration.DATA_ACCESS_LAYER);
+
 	
 	protected void process(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		log.reportRequestStart(request.getQueryString());
+		log.reportRequestStart("AddToSubscribeUserQueue " + request.getQueryString());
 		PrintWriter out = response.getWriter();
 		try {
 			String phone = request.getParameter("MSISDN");
-			CommandDetails.assureUserHasANickname(phone);
-			if (!userDB.isUserSubscribed(phone)) {
-				userDB.setSubscribed(phone, true);
-				log.reportDebug("Hangman: received an api registration request for " + phone + ": registration complete");
+			if (AddToMOQueue.gameMOProducer.addToSubscribeUserQueue(phone)) {
+				out.print("ACCEPTED");
 			} else {
-				log.reportDebug("Hangman: received an api registration request for " + phone + ": already registered");
+				throw new RuntimeException("Adding entry to 'SubscribeUserQueue' was not possible");
 			}
-			out.print("ACCEPTED");
-		} catch (SQLException e) {
+		} catch (Throwable t) {
 			out.print("FAILED");
-			log.reportThrowable(e, "Error while subscribing user from the web");
+			log.reportThrowable(t, "Error while subscribing user from the web");
 		}
 		log.reportRequestFinish();
 	}

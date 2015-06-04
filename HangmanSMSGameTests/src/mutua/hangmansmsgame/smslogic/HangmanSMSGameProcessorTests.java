@@ -427,6 +427,11 @@ public class HangmanSMSGameProcessorTests {
 		// test playing with a human letters recognition
 		startAPlayerMatch("21991234899", "dom", hardWord, "21998019167", "paty");
 		usedLetters = "AB";
+		// first, test sending an empty message
+		tc.checkResponse("21998019167", "",
+		                 testPhraseology.PLAYINGWordProvidingPlayerStatus(false, false, false, false, false, false, "A------------------------B", "", usedLetters, "paty"),
+		                 testPhraseology.PLAYINGWordGuessingPlayerStatus (false, false, false, false, false, false, "A------------------------B", ""));
+		// now loop through all messages
 		for (char letter : attemptedLetters) {
 			String sLetter = Character.toString(letter);
 			if (usedLetters.indexOf(sLetter.toUpperCase()) == -1) {
@@ -517,6 +522,20 @@ public class HangmanSMSGameProcessorTests {
     	invitePlayerByPhone(wordProvidingPlayerPhone, wordGuessingPlayerPhone);
     	sendWordToBeGuessed(wordProvidingPlayerPhone, wordProvidingPlayerNick, word, wordGuessingPlayerNick);
 		acceptInvitation(wordGuessingPlayerPhone, word, wordGuessingPlayerNick);
+	}
+	
+	@Test
+	public void testPlayingSubtleties() throws SQLException {
+		tc.resetDatabases();
+		
+		// verify that the user may send the same letter again without loosing chances
+		startABotMatch("21991234899", "dom", "CHIMPANZEE");
+		tc.checkResponse("21991234899", "c", testPhraseology.PLAYINGWordGuessingPlayerStatus(false, false, false, false, false, false, "C-------EE", "CE"));
+		tc.checkResponse("21991234899", "e", testPhraseology.PLAYINGWordGuessingPlayerStatus(false, false, false, false, false, false, "C-------EE", "CE"));
+		tc.checkResponse("21991234899", "p", testPhraseology.PLAYINGWordGuessingPlayerStatus(false, false, false, false, false, false, "C---P---EE", "CEP"));
+		tc.checkResponse("21991234899", "p", testPhraseology.PLAYINGWordGuessingPlayerStatus(false, false, false, false, false, false, "C---P---EE", "CEP"));
+		tc.checkResponse("21991234899", "k", testPhraseology.PLAYINGWordGuessingPlayerStatus(true, false, false, false, false, false, "C---P---EE", "CEKP"));
+		tc.checkResponse("21991234899", "k", testPhraseology.PLAYINGWordGuessingPlayerStatus(true, false, false, false, false, false, "C---P---EE", "CEKP"));
 	}
 	
 	

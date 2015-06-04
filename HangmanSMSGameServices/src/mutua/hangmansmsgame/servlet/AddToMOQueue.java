@@ -68,8 +68,8 @@ public class AddToMOQueue extends HttpServlet {
 	private static EventClient<EHangmanSMSGameEvents> gameMTConsumer    = new MTConsumer();
 	private static MTProducer                         gameMTProducer    = new MTProducer(gameMTProducerAndConsumerLink, gameMTConsumer);
 
-	private static EventClient<EHangmanSMSGameEvents> gameMOConsumer    = new HangmanSMSGameProcessor(gameMTProducer);
-	private static MOProducer                         gameMOProducer    = new MOProducer(gameMOProducerAndConsumerLink, gameMOConsumer);
+	protected static EventClient<EHangmanSMSGameEvents> gameMOConsumer    = new HangmanSMSGameProcessor(gameMTProducer);
+	protected static MOProducer                         gameMOProducer    = new MOProducer(gameMOProducerAndConsumerLink, gameMOConsumer);
 	
 
 	private void process(HttpServletRequest request, HttpServletResponse response) {
@@ -163,7 +163,11 @@ class MOProducer extends EventServer<EHangmanSMSGameEvents> {
 		}
 	}
 	
-	public void addToMOQueue(IncomingSMSDto mo) {
-		dispatchNeedToBeConsumedEvent(EHangmanSMSGameEvents.INTERACTIVE_REQUEST, mo);
+	public boolean addToMOQueue(IncomingSMSDto mo) {
+		return dispatchNeedToBeConsumedEvent(EHangmanSMSGameEvents.INTERACTIVE_REQUEST, mo);
+	}
+	
+	public boolean addToSubscribeUserQueue(String phone) {
+		return dispatchNeedToBeConsumedEvent(EHangmanSMSGameEvents.SUBSCRIBE_USER, phone);
 	}
 }

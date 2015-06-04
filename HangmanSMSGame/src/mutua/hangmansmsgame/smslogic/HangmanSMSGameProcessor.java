@@ -3,14 +3,10 @@ package mutua.hangmansmsgame.smslogic;
 import static mutua.hangmansmsgame.config.Configuration.log;
 import static mutua.icc.instrumentation.DefaultInstrumentationEvents.DIE_DEBUG;
 import static mutua.icc.instrumentation.DefaultInstrumentationProperties.DIP_MSG;
-import static mutua.icc.instrumentation.HangmanSMSGameInstrumentationEvents.IE_ANSWER_FROM_COMMAND;
-import static mutua.icc.instrumentation.HangmanSMSGameInstrumentationEvents.IE_PROCESSING_COMMAND;
-import static mutua.icc.instrumentation.HangmanSMSGameInstrumentationEvents.IE_REQUEST_FROM_EXISTING_USER;
-import static mutua.icc.instrumentation.HangmanSMSGameInstrumentationEvents.IE_REQUEST_FROM_NEW_USER;
-import static mutua.icc.instrumentation.HangmanSMSGameInstrumentationProperties.IP_COMMAND_ANSWER;
-import static mutua.icc.instrumentation.HangmanSMSGameInstrumentationProperties.IP_COMMAND_INVOCATION;
-import static mutua.icc.instrumentation.HangmanSMSGameInstrumentationProperties.IP_PHONE;
+import static mutua.icc.instrumentation.HangmanSMSGameInstrumentationEvents.*;
+import static mutua.icc.instrumentation.HangmanSMSGameInstrumentationProperties.*;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -19,6 +15,7 @@ import mutua.events.EventClient;
 import mutua.events.annotations.EventConsumer;
 import mutua.hangmansmsgame.dal.DALFactory;
 import mutua.hangmansmsgame.dal.ISessionDB;
+import mutua.hangmansmsgame.dal.IUserDB;
 import mutua.hangmansmsgame.dal.dto.SessionDto;
 import mutua.hangmansmsgame.dispatcher.IResponseReceiver;
 import mutua.hangmansmsgame.dispatcher.MessageDispatcher;
@@ -54,6 +51,8 @@ public class HangmanSMSGameProcessor implements EventClient<EHangmanSMSGameEvent
 	public enum EHangmanSMSGameEvents {
 		INTERACTIVE_REQUEST,
 		TIMEOUT_EVENT,
+		SUBSCRIBE_USER,
+		UNSUBSCRIBE_USER,
 	}
 	
 	
@@ -61,6 +60,7 @@ public class HangmanSMSGameProcessor implements EventClient<EHangmanSMSGameEvent
 	////////////
 	
 	private static ISessionDB userSessionDB = DALFactory.getSessionDB();
+	private static IUserDB    userDB        = DALFactory.getUserDB();
 	
 	// phraseology
 	//////////////
@@ -155,6 +155,19 @@ public class HangmanSMSGameProcessor implements EventClient<EHangmanSMSGameEvent
 		}
 	}
 	
+	@EventConsumer({/*EHangmanSMSGameEvents.*/"SUBSCRIBE_USER"})
+	public void subscribeUser(String phone) throws SQLException {
+		log.reportRequestStart(phone + " subscribeUser");
+		CommandDetails.assureUserHasANickname(phone);
+		if (!userDB.isUserSubscribed(phone)) {
+			userDB.setSubscribed(phone, true);
+			log.reportDebug("Hangman: received an api registration request for " + phone + ": registration complete");
+		} else {
+			log.reportDebug("Hangman: received an api registration request for " + phone + ": already registered");
+		}
+		log.reportRequestFinish();
+	}
+	
 	@EventConsumer({/*EHangmanSMSGameEvents.*/"TIMEOUT_EVENT"})
 	public void processTimeout() {
 		
@@ -169,10 +182,10 @@ public class HangmanSMSGameProcessor implements EventClient<EHangmanSMSGameEvent
 	@EventConsumer({/*EHangmanSMSGameEvents.*/"INTERACTIVE_REQUEST"})
 	public void process(IncomingSMSDto incomingSMS) throws SMSProcessorException {
 		
-		log.reportRequestStart(incomingSMS.getPhone());
-		
 		String incomingPhone = incomingSMS.getPhone();
 		String incomingText = incomingSMS.getText();
+		
+		log.reportRequestStart(incomingPhone + " " + incomingText);
 		
 		// get the user state
 		SessionDto userSession;
@@ -186,7 +199,7 @@ public class HangmanSMSGameProcessor implements EventClient<EHangmanSMSGameEvent
 				log.reportEvent(IE_REQUEST_FROM_EXISTING_USER, IP_PHONE, incomingPhone);
 			}
 		} catch (Exception e) {
-			throw new RuntimeException("Database comunication problem: cannot retrieve state for user '"+incomingPhone+"'", e);
+			throw new RuntimeException("Database communication problem: cannot retrieve state for user '"+incomingPhone+"'", e);
 		}
 			
 		// determine which command (and arguments) to call

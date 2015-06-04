@@ -54,15 +54,14 @@ public class WebAppConfiguration {
 	public static Instrumentation<HangmanHTTPInstrumentationRequestProperty, String> log;
 	
 	
-	
 	// MO
 	/////
 	
 	public static SMSInParser<HttpServletRequest, HttpServletResponse>  smsParser = new SMSInCelltick(Configuration.APPID);
 
 	
-	// MO QUEUE
-	///////////
+	// MO QUEUE (but also SubscribeUser & UnsubscribeUser queues)
+	/////////////////////////////////////////////////////////////
 	
 	public enum EQueueStrategy {DIRECT, RAM, LOG_FILE, POSTGRESQL};
 	

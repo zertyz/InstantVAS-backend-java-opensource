@@ -16,7 +16,7 @@ import mutua.smsout.dto.OutgoingSMSDto.EBillingType;
  * ===========================
  * (created by luiz, Feb 1, 2015)
  *
- * Responsible for serialization & deserialization of MO queue events to and from the database
+ * Responsible for serialization & deserialization of MT queue events to and from the database
  *
  * @see RelatedClass(es)
  * @version $Id$
@@ -34,7 +34,7 @@ public class MTSMSesQueueDataBureau extends	IDatabaseQueueDataBureau<EHangmanSMS
 	}
 
 	@Override
-	public IndirectMethodInvocationInfo<EHangmanSMSGameEvents> desserializeQueueEntry(int eventId, Object[] databaseRow) {
+	public IndirectMethodInvocationInfo<EHangmanSMSGameEvents> deserializeQueueEntry(int eventId, Object[] databaseRow) {
 		int    moId    = (Integer)databaseRow[1];
 		String phone   = (String)databaseRow[2];
 		String text    = (String)databaseRow[3];
