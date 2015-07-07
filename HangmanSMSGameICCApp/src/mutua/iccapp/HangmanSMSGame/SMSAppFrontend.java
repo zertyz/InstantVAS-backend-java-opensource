@@ -46,8 +46,8 @@ public class SMSAppFrontend extends EventServer<EHangmanSMSGameEvents>{
 			e.printStackTrace();
 		}
     	Configuration.SUBSCRIPTION_ENGINE = new TestableSubscriptionAPI(log);
-    	Configuration.DATA_ACCESS_LAYER          = EDataAccessLayers.RAM;
-    	Configuration.SESSIONS_DATA_ACCESS_LAYER = EDataAccessLayers.RAM;
+    	Configuration.DATA_ACCESS_LAYER          = EDataAccessLayers.POSTGRESQL;
+    	Configuration.SESSIONS_DATA_ACCESS_LAYER = EDataAccessLayers.POSTGRESQL;
     	try {
 			//Configuration.loadFromFile("/tmp/hangman.config");
     		Configuration.applyConfiguration();

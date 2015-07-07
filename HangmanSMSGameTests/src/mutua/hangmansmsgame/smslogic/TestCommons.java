@@ -62,7 +62,8 @@ public class TestCommons {
 	public void setUserDB(String[][] users) throws SQLException {
 		userDB.reset();
 		for (String[] userRecord : users) {
-			userDB.checkAvailabilityAndRecordNickname(userRecord[0], userRecord[1]);
+			String assignedNick = userDB.assignSequencedNicknameToPhone(userRecord[0], userRecord[1]);
+			assertEquals("Assigned nicknames do not match", userRecord[1], assignedNick);
 		}
 	}
 	

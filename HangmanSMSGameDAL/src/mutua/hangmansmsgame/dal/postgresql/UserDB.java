@@ -1,6 +1,8 @@
 package mutua.hangmansmsgame.dal.postgresql;
 
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 import mutua.hangmansmsgame.dal.IUserDB;
 import adapters.JDBCAdapter;
@@ -18,7 +20,7 @@ import adapters.dto.PreparedProcedureInvocationDto;
  * @author luiz
  */
 
-public class UserDB implements IUserDB {
+public class UserDB extends IUserDB {
 
 	private JDBCAdapter dba;
 	
@@ -54,7 +56,7 @@ public class UserDB implements IUserDB {
 	}
 
 	@Override
-	public boolean checkAvailabilityAndRecordNickname(String phoneNumber, String nickname) throws SQLException {
+	protected synchronized boolean checkAvailabilityAndRecordNickname(String phoneNumber, String nickname) throws SQLException {
 		String nicksPhone = getUserPhoneNumber(nickname);
 		if (nicksPhone != null) {
 			if (!phoneNumber.equals(nicksPhone)) {
@@ -62,15 +64,37 @@ public class UserDB implements IUserDB {
 			}
 		}
 		PreparedProcedureInvocationDto procedure;
-		if (isUserOnRecord(phoneNumber)) {
-			procedure = new PreparedProcedureInvocationDto("UpdateNick");
+		boolean useUpSert = false;
+		if (useUpSert) {
+			procedure = new PreparedProcedureInvocationDto("UpsertUser");
 		} else {
-			procedure = new PreparedProcedureInvocationDto("InsertUser");
+			if (isUserOnRecord(phoneNumber)) {
+				procedure = new PreparedProcedureInvocationDto("UpdateNick");
+			} else {
+				procedure = new PreparedProcedureInvocationDto("InsertUser");
+			}
 		}
 		procedure.addParameter("PHONE", phoneNumber);
 		procedure.addParameter("NICK",  nickname);
-		dba.invokeUpdateProcedure(procedure);
+		if (useUpSert) {
+			dba.invokeVirtualTableProcedure(procedure).close();
+		} else {
+			dba.invokeUpdateProcedure(procedure);
+		}
 		return true;
+	}
+	
+	@Override
+	protected Map<String, Boolean> getNicknameAutonumberedSequenceElements(String nickname) throws SQLException {
+		PreparedProcedureInvocationDto procedure = new PreparedProcedureInvocationDto("SelectAutonumberedNicks");
+		procedure.addParameter("NICK", "^"+nickname+"\\d+$");	// pattern for the postgresql ~ operator
+		Object[][] elements = dba.invokeArrayProcedure(procedure);
+		HashMap<String, Boolean> nicks = new HashMap<String, Boolean>(elements.length+1, 1);
+		for (int i=0; i < elements.length; i++) {
+			String nick = (String)elements[i][0];
+			nicks.put(nick, true);
+		}
+		return nicks;
 	}
 
 	@Override

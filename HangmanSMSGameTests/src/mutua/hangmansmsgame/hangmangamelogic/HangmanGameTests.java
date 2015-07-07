@@ -47,6 +47,11 @@ public class HangmanGameTests {
 		assertEquals("Wrong 'number of wrong tries left'", totalNumberOfWrongTries, numberOfWrongTriesLeft);
 		System.out.println(game.getGuessedWordSoFar());
 		suggestLetter(game, 'n');
+		suggestLetter(game, 'n');
+		suggestLetter(game, 'n');
+		suggestLetter(game, 'n');
+		suggestLetter(game, 'n');
+		suggestLetter(game, 'n');
 		suggestLetter(game, 'i');
 		suggestLetter(game, 'o');
 		suggestLetter(game, 'u');
@@ -69,9 +74,13 @@ public class HangmanGameTests {
 	@Test
 	public void testSimpleGameLosingFlow() {
 		String word = "wrongword";
-		int totalNumberOfWrongTries = 1;
+		int totalNumberOfWrongTries = 2;
 		HangmanGame game = new HangmanGame(word, totalNumberOfWrongTries);
 		game.suggestLetter('x');
+		game.suggestLetter('x');
+		game.suggestLetter('x');
+		game.suggestLetter('x');
+		game.suggestLetter('y');
 		assertEquals("Game did not report as being on the LOST state", EHangmanGameStates.LOST, game.getGameState());
 	}
 	

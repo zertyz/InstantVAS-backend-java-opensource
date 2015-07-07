@@ -3,6 +3,8 @@ package mutua.hangmansmsgame.smslogic;
 import static org.junit.Assert.*;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.UUID;
 
 import mutua.hangmansmsgame.dal.DALFactory;
 import mutua.hangmansmsgame.dal.IUserDB;
@@ -37,61 +39,34 @@ public class HangmanSMSGamePerformanceTests {
 
 
 	@Test
-	public void registerNicknamePerformanceTests() throws InterruptedException, SQLException {
+	public void testNicknameIndexes() throws InterruptedException, SQLException {
 
 		tc.resetDatabases();
 		
-		int attempts = 100;
-		long referenceStart = System.currentTimeMillis();
-		for (int i=0; i<attempts; i++) {
-			CommandDetails.registerUserNickname("t"+i, "nick"+i+"_");
+		int measurementNicks = 1000;
+		int randomNicks = 10000;
+		long start = System.currentTimeMillis();
+		for (int i=0; i<measurementNicks; i++) {
+			CommandDetails.registerUserNickname("t_1_"+i, "nick_1_"+i+"_");
 		}
-		long targetStart = System.currentTimeMillis();
-		long referenceElapsed = targetStart - referenceStart;
-		for (int i=0; i<attempts; i++) {
-			CommandDetails.registerUserNickname("t2"+i, "nick2"+i+"_");
+		long referenceElapsed = System.currentTimeMillis() - start;
+		
+		for (int i=0; i<randomNicks; i++) {
+			UUID uuid = UUID.randomUUID();
+			CommandDetails.registerUserNickname("rnd_"+i, uuid.toString().substring(0, 10));
 		}
-		long targetElapsed = System.currentTimeMillis() - targetStart;
-		System.out.println(referenceElapsed + "\t" + ((double)referenceElapsed)/((double)attempts));
-		System.out.println(targetElapsed + "\t" + ((double)targetElapsed)/((double)(2*attempts)));
 		
-		tc.resetDatabases();
-		
-		referenceStart = System.currentTimeMillis();
-		for (int i=0; i<attempts; i++) {
-			CommandDetails.registerUserNickname("t"+i, "nick");
+		start = System.currentTimeMillis();
+		for (int i=0; i<measurementNicks; i++) {
+			CommandDetails.registerUserNickname("t_2_"+i, "nick_2_"+i+"_");
 		}
-		targetStart = System.currentTimeMillis();
-		referenceElapsed = targetStart - referenceStart;
-		for (int i=0; i<attempts; i++) {
-			CommandDetails.registerUserNickname("t2"+i, "nick");
-		}
-		targetElapsed = System.currentTimeMillis() - targetStart;
-		System.out.println(referenceElapsed + "\t" + ((double)referenceElapsed)/((double)attempts));
-		System.out.println(targetElapsed + "\t" + ((double)targetElapsed)/((double)(2*attempts)));
+		long targetElapsed = System.currentTimeMillis() - start;
+		System.out.println(referenceElapsed + "\t" + ((double)referenceElapsed)/((double)measurementNicks));
+		System.out.println(targetElapsed + "\t" + ((double)targetElapsed)/((double)(measurementNicks)));
 		
-		// O(1) -- same time
-		// O(n) -- elapsed time devided by total n are equal
-		// O(n^x) -- 
-		
-		// this is O(n), right?
-//		referenceStart = 0;
-//		targetStart = 0;
-//		for (int i=0; i<attempts; i++) {
-//			for (int j=0; j<i; j++) {
-//				targetStart++;
-//			}
-//		}
-//		referenceElapsed = targetStart - referenceStart;
-//		targetElapsed = 0;
-//		for (int i=0; i<attempts; i++) {
-//			for (int j=0; j<(i+attempts); j++) {
-//				targetElapsed++;
-//			}
-//		}
-//		System.out.println(referenceElapsed + "\t" + ((double)referenceElapsed)/((double)attempts));
-//		System.out.println(targetElapsed + "\t" + ((double)targetElapsed)/((double)(1*attempts)));
+		// for O(1), these two numbers should be similar
 		
 	}
 
+	
 }

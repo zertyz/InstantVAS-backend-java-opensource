@@ -25,10 +25,10 @@ public abstract class PostgreSQLAdapter extends JDBCAdapter {
 	////////////////
 	
 	@ConfigurableElement("Additional URL parameters for PostgreSQL JDBC driver connection properties")
-	public static String  CONNECTION_PROPERTIES = "characterEncoding=UTF8&characterSetResults=UTF8&autoReconnect=true&connectTimeout=10000&socketTimeout=10000";
+	public static String  CONNECTION_PROPERTIES = "charSet=UTF8&tcpKeepAlive=true&connectTimeout=30&loginTimeout=30&socketTimeout=300";
 	@ConfigurableElement("Indicates whether or not to perform needed administrative tasks, such as database creation")
 	public static boolean ALLOW_DATABASE_ADMINISTRATION = true;
-	
+
 
 	public PostgreSQLAdapter(Instrumentation<?, ?> log, String[][] preparedProceduresDefinitions) throws SQLException {
 		super(log, new org.postgresql.Driver().getClass(), preparedProceduresDefinitions);

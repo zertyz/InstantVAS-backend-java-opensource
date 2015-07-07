@@ -1,7 +1,9 @@
 package mutua.hangmansmsgame.dal.ram;
 
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 
 import mutua.hangmansmsgame.dal.IUserDB;
 
@@ -17,7 +19,7 @@ import mutua.hangmansmsgame.dal.IUserDB;
  * @author luiz
  */
 
-public class UserDB implements IUserDB {
+public class UserDB extends IUserDB {
 	
 	/** nicknamesByPhone := {[phone] = "nickname", ...} */
 	private static Hashtable<String, String> nicknamesByPhone = new Hashtable<String, String>();
@@ -74,7 +76,7 @@ public class UserDB implements IUserDB {
 	}
 
 	@Override
-	public boolean checkAvailabilityAndRecordNickname(String phoneNumber, String nickname) {
+	protected boolean checkAvailabilityAndRecordNickname(String phoneNumber, String nickname) {
 		
 		String registeredPhoneNumber = getUserPhoneNumber(nickname);
 		if ((registeredPhoneNumber != null) && (!registeredPhoneNumber.equals(phoneNumber))) {
@@ -84,6 +86,17 @@ public class UserDB implements IUserDB {
 		nicknamesByPhone.put(phoneNumber, nickname);
 		phonesByNickname.put(nickname, phoneNumber);
 		return true;
+	}
+	
+	@Override
+	protected Map<String, Boolean> getNicknameAutonumberedSequenceElements(String nickname) throws SQLException {
+		HashMap<String, Boolean> nicks = new HashMap<String, Boolean>();
+		for (String nick : phonesByNickname.keySet()) {
+			if (nick.startsWith(nickname)) {
+				nicks.put(nick, true);
+			}
+		}
+		return nicks;
 	}
 
 	@Override
@@ -115,6 +128,5 @@ public class UserDB implements IUserDB {
 		nextBotWordByPhone.put(phoneNumber, nextBotWord);
 		return returnValue;
 	}
-
 
 }

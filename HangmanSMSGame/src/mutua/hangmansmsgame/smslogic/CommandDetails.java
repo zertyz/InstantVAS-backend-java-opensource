@@ -10,6 +10,7 @@ import static mutua.icc.instrumentation.DefaultInstrumentationProperties.DIP_MSG
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Random;
 
 import mutua.hangmansmsgame.config.Configuration;
@@ -110,12 +111,7 @@ public class CommandDetails {
 	}
 	
 	public static void registerUserNickname(String phone, String nickname) throws SQLException {
-		int count = 1;
-		String alternativeNick = nickname;
-		while (!userDB.checkAvailabilityAndRecordNickname(phone, alternativeNick)) {
-			alternativeNick = nickname + count;
-			count++;
-		}
+		userDB.assignSequencedNicknameToPhone(phone, nickname);
 	}
 
 	/** formalizes the default nickname registration rule */
@@ -590,7 +586,13 @@ public class CommandDetails {
 			MatchDto matchData = matchDB.retrieveMatch(matchId);
 			MatchPlayersInfo matchPlayersInfo = getMatchPlayersInfo(matchData);
 			HangmanGame game  = new HangmanGame(serializedGameState);
-			game.suggestLetter(suggestedLetter.charAt(0));
+			char[] suggestLetters = suggestedLetter.toCharArray();
+			for (char c : suggestLetters) {
+				if (game.getGameState() != EHangmanGameStates.PLAYING) {
+					break;
+				}
+				game.suggestLetter(c);
+			}
 			int attemptsLeft = game.getNumberOfWrongTriesLeft();
 			
 			CommandMessageDto wordProvidingPlayerMessage;
@@ -656,7 +658,13 @@ public class CommandDetails {
 			String wordProvidingPlayerNick  = session.getParameterValue(ESessionParameters.MATCH_BOT_NAME);
 
 			HangmanGame game = new HangmanGame(serializedGameState);
-			game.suggestLetter(suggestedLetter.charAt(0));
+			char[] suggestLetters = suggestedLetter.toCharArray();
+			for (char c : suggestLetters) {
+				if (game.getGameState() != EHangmanGameStates.PLAYING) {
+					break;
+				}
+				game.suggestLetter(c);
+			}
 			int attemptsLeft = game.getNumberOfWrongTriesLeft();
 			
 			CommandAnswerDto answer;

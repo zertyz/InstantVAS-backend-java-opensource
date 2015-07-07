@@ -39,18 +39,7 @@ public class PreparedProcedureInvocationDto {
 	
 
 	public void addParameter(String parameterName, String value) throws PreparedProcedureException {
-
 		checkParameterName(parameterName);
-		
-		// escape special characters
-		////////////////////////////
-		
-		// regex
-		String special_regex_characters_pattern = "([\\$\\{\\}\\\\])";
-		if (value.matches(".*"+special_regex_characters_pattern+".*")) {
-			value = value.replaceAll(special_regex_characters_pattern, "\\\\$1");
-		}
-		
 		parametersTable.put(parameterName, value);
 	}
 	

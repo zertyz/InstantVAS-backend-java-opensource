@@ -26,12 +26,14 @@ import static mutua.hangmansmsgame.config.Configuration.log;
 
 public class Configuration {
 
-	public static EDataAccessLayers DEFAULT_DAL = EDataAccessLayers.RAM;
+	public static EDataAccessLayers DEFAULT_DAL                     = EDataAccessLayers.POSTGRESQL;
+	public static boolean           POSTGRESQL_SHOULD_DEBUG_QUERIES = false;
 
 	static {
     	// set the vars
     	mutua.hangmansmsgame.config.Configuration.DATA_ACCESS_LAYER = DEFAULT_DAL;
     	mutua.hangmansmsgame.config.Configuration.SESSIONS_DATA_ACCESS_LAYER = DEFAULT_DAL;
+    	mutua.hangmansmsgame.config.Configuration.POSTGRESQL_SHOULD_DEBUG_QUERIES = POSTGRESQL_SHOULD_DEBUG_QUERIES;
     	DALFactory.DEFAULT_DAL = DEFAULT_DAL;
     	
     	try {

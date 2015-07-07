@@ -58,10 +58,11 @@ public class HangmanSMSGamePostgreSQLAdapters extends PostgreSQLAdapter {
 			{"Users", "CREATE TABLE Users(" +
 			          "userId      SERIAL   NOT NULL PRIMARY KEY, " +
 			          "phone       VARCHAR(15) NOT NULL UNIQUE,   " +
-			          "nick        VARCHAR(15) NOT NULL UNIQUE,   " +
+			          "nick        VARCHAR(15) NOT NULL,          " +
 			          "subscribed  BOOLEAN,                       " +
 			          "nextBotWord INTEGER     DEFAULT -1,        " +
-			          "ts          TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"},
+			          "ts          TIMESTAMP DEFAULT CURRENT_TIMESTAMP)",
+			          "CREATE UNIQUE INDEX unique_caseinsensitive_nick ON Users (lower(nick));"},
 			{"Match", "CREATE TABLE Match(" +
 			          "matchId                  SERIAL      NOT NULL PRIMARY KEY, " +
 			          "wordProvidingPlayerPhone VARCHAR(15) NOT NULL, " +
@@ -84,6 +85,9 @@ public class HangmanSMSGamePostgreSQLAdapters extends PostgreSQLAdapter {
 			{"SelectCorrectlyCasedNick",    "SELECT nick  FROM Users WHERE LOWER(nick)=LOWER(${NICK})"},
 			{"SelectNickByPhone",           "SELECT nick  FROM Users WHERE phone=${PHONE}"},
 			{"InsertUser",                  "INSERT INTO Users(phone, nick) VALUES(${PHONE}, ${NICK})"},
+			//{"UpsertUser",          		"INSERT INTO Users(phone, nick) VALUES(${PHONE}, ${NICK}) ON CONFLICT (phone) UPDATE SET nick=${NICK} WHERE phone=${PHONE}"},	// will only be available on postgresql 9.5 -- http://dba.stackexchange.com/questions/13468/idiomatic-way-to-implement-upsert-in-postgresql
+			//{"UpsertUser",          		"WITH update_outcome AS (UPDATE Users SET nick=${NICK} WHERE phone=${PHONE} RETURNING 'update'::text AS action, phone), insert_outcome AS (INSERT INTO Users(phone, nick) SELECT ${PHONE} AS phone, ${NICK} AS nick WHERE NOT EXISTS (SELECT phone FROM update_outcome LIMIT 1) RETURNING 'insert'::text AS action, phone) SELECT * FROM update_outcome UNION ALL SELECT * FROM insert_outcome"},	// works on any postgresql. Same link above
+			{"SelectAutonumberedNicks",     "SELECT nick from Users WHERE nick ~ ${NICK}"},
 			{"UpdateNick",                  "UPDATE Users SET nick=${NICK} WHERE phone=${PHONE}"},
 			{"UpdateSubscriptionByPhone",   "UPDATE Users SET subscribed=${SUBSCRIBED} WHERE phone=${PHONE}"},
 			{"SelectSubscriptionByPhone",   "SELECT subscribed FROM Users WHERE phone=${PHONE}"},

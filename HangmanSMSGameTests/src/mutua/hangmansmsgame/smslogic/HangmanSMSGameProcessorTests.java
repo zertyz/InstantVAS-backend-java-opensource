@@ -160,6 +160,7 @@ public class HangmanSMSGameProcessorTests {
 		registerUser("21998019166", "Paty");
 		
 		// simulate an application server restart
+		// (temporary test, only valid for POSTGRESQL DAL)
 		sessionDB.reset();
 		
 		// test if the users still can play without problems
@@ -430,7 +431,7 @@ public class HangmanSMSGameProcessorTests {
 		// first, test sending an empty message
 		tc.checkResponse("21998019167", "",
 		                 testPhraseology.PLAYINGWordProvidingPlayerStatus(false, false, false, false, false, false, "A------------------------B", "", usedLetters, "paty"),
-		                 testPhraseology.PLAYINGWordGuessingPlayerStatus (false, false, false, false, false, false, "A------------------------B", ""));
+		                 testPhraseology.PLAYINGWordGuessingPlayerStatus (false, false, false, false, false, false, "A------------------------B", usedLetters));
 		// now loop through all messages
 		for (char letter : attemptedLetters) {
 			String sLetter = Character.toString(letter);
@@ -499,8 +500,10 @@ public class HangmanSMSGameProcessorTests {
 		tc.resetDatabases();
 		registerUser("21991234899", "DOm");
 		invitePlayerByPhone("21991234899", "21998019167");
-		tc.checkResponse("998019167", "list", "Guest9167 has become busy. However, a new player, DomBot, is available. Play with DomBot? Send YES to 9714",
-		                                      "DOm(RJ/10). To play, send INVITE [NICK] to 9714; MORE for more players or PROFILE [NICK]");
+
+		// future feature
+//		tc.checkResponse("998019167", "list", "Guest9167 has become busy. However, a new player, DomBot, is available. Play with DomBot? Send YES to 9714",
+//		                                      "DOm(RJ/10). To play, send INVITE [NICK] to 9714; MORE for more players or PROFILE [NICK]");
 	}
 	
 	@Test

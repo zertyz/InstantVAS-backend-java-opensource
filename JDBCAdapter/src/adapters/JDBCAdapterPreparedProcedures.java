@@ -128,7 +128,9 @@ public class JDBCAdapterPreparedProcedures {
 			}
 		}
 
-		log.reportEvent(IE_DATABASE_QUERY, IP_SQL_TEMPLATE, preparedSql, IP_SQL_TEMPLATE_PARAMETERS, parameterValues);
+		if (JDBCAdapter.SHOULD_DEBUG_QUERIES) {
+			log.reportEvent(IE_DATABASE_QUERY, IP_SQL_TEMPLATE, preparedSql, IP_SQL_TEMPLATE_PARAMETERS, parameterValues);
+		}
 		
 		PreparedStatement ps = connection.prepareStatement(preparedSql);
 		int parameterCount = 1;

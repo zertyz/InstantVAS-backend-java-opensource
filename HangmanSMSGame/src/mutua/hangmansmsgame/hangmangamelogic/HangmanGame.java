@@ -43,14 +43,18 @@ public class HangmanGame {
 			throw new RuntimeException("Attempted to play a hangman game which is not in the 'PLAYING' state. The game state is "+gameState);
 		}
 		letter = Character.toUpperCase(letter);
-		attemptedLetters.put(letter, true);
 		if (word.matches(".*" + letter + ".*")) {
+			attemptedLetters.put(letter, true);
 			computeGameState();
 			return true;
 		} else {
-			numberOfWrongTriesLeft--;
-			computeGameState();
-			return false;
+			if (!getAttemptedLettersSoFar().matches(".*" + letter + ".*")) {
+				numberOfWrongTriesLeft--;
+				attemptedLetters.put(letter, true);
+				computeGameState();
+				return false;
+			}
+			return true;
 		}
 	}
 

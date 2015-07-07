@@ -82,7 +82,7 @@ public class Configuration {
 	//////////////
 	
 	@ConfigurableElement(sameAs="mutua.hangmansmsgame.dal.DALFactory.DEFAULT_DAL")
-	public static EDataAccessLayers  DATA_ACCESS_LAYER             = EDataAccessLayers.RAM;
+	public static EDataAccessLayers  DATA_ACCESS_LAYER             = EDataAccessLayers.POSTGRESQL;
 	@ConfigurableElement(sameAs="mutua.hangmansmsgame.dal.DALFactory.DEFAULT_SESSIONS_DAL")
 	public static EDataAccessLayers  SESSIONS_DATA_ACCESS_LAYER    = DATA_ACCESS_LAYER;
 	@ConfigurableElement(sameAs="mutua.hangmansmsgame.dal.postgresql.HangmanSMSGamePostgreSQLAdapters.HOSTNAME")
@@ -101,6 +101,8 @@ public class Configuration {
 	public static boolean POSTGRESQL_ALLOW_DATABASE_ADMINISTRATION = PostgreSQLAdapter.ALLOW_DATABASE_ADMINISTRATION;
 	@ConfigurableElement(sameAs="adapters.JDBCAdapter.SHOULD_DEBUG_QUERIES")
 	public static boolean POSTGRESQL_SHOULD_DEBUG_QUERIES          = JDBCAdapter.SHOULD_DEBUG_QUERIES;
+	@ConfigurableElement(sameAs="adapters.JDBCAdapter.CONNECTION_POOL_SIZE")
+	public static int     POSTGRESQL_CONNECTION_POOL_SIZE          = JDBCAdapter.CONNECTION_POOL_SIZE;
 
 	
 	// SMS Framework parameters

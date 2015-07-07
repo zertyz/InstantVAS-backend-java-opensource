@@ -1,6 +1,7 @@
 package mutua.hangmansmsgame.dal.config;
 
 import static mutua.icc.instrumentation.DefaultInstrumentationProperties.DIP_MSG;
+import adapters.JDBCAdapter;
 import mutua.hangmansmsgame.dal.DALFactory;
 import mutua.hangmansmsgame.dal.DALFactory.EDataAccessLayers;
 import mutua.hangmansmsgame.dal.postgresql.HangmanSMSGamePostgreSQLAdapters;
@@ -27,8 +28,8 @@ public class Configuration {
 	
 	public static final Instrumentation<DefaultInstrumentationProperties, String> log;
 	
-	public static EDataAccessLayers DEFAULT_DAL = EDataAccessLayers.POSTGRESQL;
-	public static Boolean POSTGRES_DEBUG_QUERIES              = true;
+	public static EDataAccessLayers DEFAULT_DAL               = EDataAccessLayers.POSTGRESQL;
+	public static Boolean POSTGRESQL_DEBUG_QUERIES            = false;
 	public static String  POSTGRESQL_CONNECTION_HOSTNAME      = "venus";
 	public static int     POSTGRESQL_CONNECTION_PORT          = 5432;
 	public static String  POSTGRESQL_CONNECTION_DATABASE_NAME = "hangman";
@@ -57,9 +58,11 @@ public class Configuration {
 		HangmanSMSGamePostgreSQLAdapters.USER                  = POSTGRESQL_CONNECTION_USER;
 		HangmanSMSGamePostgreSQLAdapters.PASSWORD              = POSTGRESQL_CONNECTION_PASSWORD;
 		HangmanSMSGamePostgreSQLAdapters.CONNECTION_PROPERTIES = POSTGRESQL_CONNECTION_PROPERTIES;
+		
+		JDBCAdapter.SHOULD_DEBUG_QUERIES = POSTGRESQL_DEBUG_QUERIES;
 
-    	DALFactory.DEFAULT_DAL          = DEFAULT_DAL;
-    	DALFactory.DEFAULT_SESSIONS_DAL = DEFAULT_DAL;
+		DALFactory.DEFAULT_DAL           = DEFAULT_DAL;
+    	DALFactory.DEFAULT_SESSIONS_DAL  = DEFAULT_DAL;
 	}
 	
 }
