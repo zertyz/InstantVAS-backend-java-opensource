@@ -25,3 +25,22 @@ Response type: plain text. One of:
 ACCEPTED  -- the request was accepted for processing
 POSTPONED -- the request cannot be accepted now. Please try again in some seconds.
 REJECTED  -- the request was rejected and trying again with the same parameters won't help
+
+--------------------------------
+
+Each one of those has:
+	- it's own instrumentation and reporting mechanisms
+	- it's own database storage
+	- it's own configuration
+	- it's own installation of session variables
+	- it's own plugin mechanisms for internal interrelation with other SMS Modules (through a 'MutuaSMSAppModule' base project?)
+	- command & states configuration
+
+Common SMSes (sessions, welcome, help, invite external?, phrases, randomShortHelps?):
+Users (new, nick, list, profile, dal):
+Hangman (guess human and bot, invite nick, invite phone, invite external?, cancel human and bot game, dal):
+Chat (provoke):
+Subscription (Subscribe -- sms and web -- and unsubscribe and dal)
+-- additional --
+Raffle
+Prize distribution (prepayd credits)

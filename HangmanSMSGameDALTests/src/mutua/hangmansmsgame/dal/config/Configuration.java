@@ -35,7 +35,7 @@ public class Configuration {
 	public static String  POSTGRESQL_CONNECTION_DATABASE_NAME = "hangman";
 	public static String  POSTGRESQL_CONNECTION_USER          = "hangman";
 	public static String  POSTGRESQL_CONNECTION_PASSWORD      = "hangman";
-	public static String  POSTGRESQL_CONNECTION_PROPERTIES    = "characterEncoding=UTF8&characterSetResults=UTF8&autoReconnect=true&connectTimeout=10000&socketTimeout=10000";
+	public static String  POSTGRESQL_CONNECTION_PROPERTIES    = "charSet=UTF8&tcpKeepAlive=true&connectTimeout=30&loginTimeout=30&socketTimeout=300";
 
 	
 	static {

@@ -1,0 +1,28 @@
+MutuaSMSAppLogic
+====================
+
+Unites all the common logic aspects of a SMS application or game, to know:
+
+	- MO / MT / Broadcasting
+	- command recognition & navigation among states
+	- Session manipulation
+	- all common sms commands, like "welcome", "help", "short helps" and "exit"
+	- phrasing mechanisms
+	- configuration
+
+A full "Logic" component of an SMS App
+
+The recommended usage for this project is derivate it on a new project, together with
+'MutuaSMSAppModule' derivated modules. For instance:
+
+	MutuaSMSAppLogicHangman:
+		MutuaSMSAppLogic
+		MutuaSMSAppModuleHangman
+		MutuaSMSAppModuleUsers
+		MutuaSMSAppModuleSubscription
+		MutuaSMSAppModuleChat
+		MutuaSMSAppModuleRaffle
+		MutuaSMSAppModulePrizes
+
+The 'MutuaSMSAppLogicHangman' newly created project should, then, apply any left to be applyed
+glue on all of the modules.

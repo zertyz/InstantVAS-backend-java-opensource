@@ -385,7 +385,7 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 	}
 	
 	/** executes a query (typically via SELECT statement) that will return a single row, with some number of fields
-	/*  in it, which the order is known -- possibly via SELECT a, b, c... clause */
+	 *  in it, which the order is known -- possibly via SELECT a, b, c... clause */
 	public Object[] invokeRowProcedure(PreparedProcedureInvocationDto invocation) throws SQLException {
 		Connection conn = getConnection();
 		PreparedStatement ps = preparedProcedures.buildPreparedStatement(invocation, conn);
@@ -399,7 +399,7 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 	}
 	
 	/** executes a query (typically via SELECT statement) that will return a virtual table that can be contained into RAM -- that is, has a
-	/*  few and foreseeable amount of elements -- possibly using the LIMIT clause */
+	 *  few and foreseeable amount of elements -- possibly using the LIMIT clause */
 	public Object[][] invokeArrayProcedure(PreparedProcedureInvocationDto invocation) throws SQLException {
 		Connection conn = getConnection();
 		PreparedStatement ps = preparedProcedures.buildPreparedStatement(invocation, conn);
@@ -409,7 +409,7 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 	}
 	
 	/** executes a query (typically via SELECT statement) that will produce huge quantities of results and, thus, won't fit into RAM
-	/*  the returned 'ResultSet' needs to be closed after use */
+	 *  the returned 'ResultSet' needs to be closed after use */
 	public ResultSet invokeVirtualTableProcedure(PreparedProcedureInvocationDto invocation) throws SQLException {
 		Connection conn = getConnection();
 		PreparedStatement ps = preparedProcedures.buildPreparedStatement(invocation, conn);

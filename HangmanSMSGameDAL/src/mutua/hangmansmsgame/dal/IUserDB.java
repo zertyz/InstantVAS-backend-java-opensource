@@ -8,7 +8,7 @@ import java.util.Map;
  * ============
  * (created by luiz, Jan 2, 2015)
  *
- * Defines access methods for the "Users" data base, with some common logic attatched to it
+ * Defines access methods for the "Users" data base, with some common logic attached to it
  *
  * @see ram.UserDB, postgresql.UserDB
  * @version $Id$

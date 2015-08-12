@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/SMSInParser"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/SMSOutSender"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/MutuaICCConfiguration"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/MutuaICCInstrumentation"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/MutuaEvents"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/MutuaGPP2PCommunications"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ReportDataCollector"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/MutuaSMSAppModule"/>
+	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

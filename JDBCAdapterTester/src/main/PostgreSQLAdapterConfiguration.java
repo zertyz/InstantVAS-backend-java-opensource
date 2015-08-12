@@ -47,7 +47,38 @@ public class PostgreSQLAdapterConfiguration extends PostgreSQLAdapter {
 		return new String[][] {
 			{"SimpleTable", "CREATE TABLE SimpleTable (id int, phone char(20));"},
 			{"NotSoSimple", "CREATE TABLE NotSoSimple (id Serial NOT NULL PRIMARY KEY, " +
-			                "phone char(20) UNIQUE);"},
+			                "phone char(20) UNIQUE);\n"+
+"CREATE OR REPLACE FUNCTION somefunc() RETURNS integer AS $$\n"+
+"DECLARE\n"+
+"    quantity integer := 30;\n"+
+"BEGIN\n"+
+"    RAISE NOTICE 'Quantity here is %', quantity;  -- Quantity here is 30\n"+
+"    quantity := 50;\n"+
+"    --\n"+
+"    -- Create a subblock\n"+
+"    --\n"+
+"    DECLARE\n"+
+"        quantity integer := 80;\n"+
+"    BEGIN\n"+
+"        RAISE NOTICE 'Quantity here is %', quantity;  -- Quantity here is 80\n"+
+"    END;\n"+
+"    \n"+
+"    RAISE NOTICE 'Quantity here is %', quantity;  -- Quantity here is 50\n"+
+"\n"+
+"    RETURN quantity;\n"+
+"END;\n"+
+"$$ LANGUAGE plpgsql;\n"+
+
+"CREATE OR REPLACE FUNCTION UpdateOrInsertNotSoSimple(new_phone CHAR(20), new_id int) RETURNS void AS $$\n"+
+"BEGIN\n"+
+"UPDATE NotSoSimple SET phone=new_phone WHERE id=new_id;\n"+
+"IF NOT FOUND THEN \n"+
+"INSERT INTO NotSoSimple(phone) VALUES (new_phone);\n"+
+"END IF;\n"+
+"END;\n"+
+"$$ LANGUAGE plpgsql;\n"
+
+			},
 		};
 	}
 	
@@ -60,7 +91,9 @@ public class PostgreSQLAdapterConfiguration extends PostgreSQLAdapter {
 			{"InsertSimpleRecord",      "INSERT INTO SimpleTable VALUES (${ID}, ${PHONE})"},
 			{"GetSimpleIdFromPhone",    "SELECT phone FROM SimpleTable WHERE id=${ID}"},
 			{"DeleteSimpleRecord",      "DELETE FROM SimpleTable WHERE id=${ID}"},
-			{"InsertNotSoSimpleRecord", "INSERT INTO NotSoSimple VALUES (${PHONE})"},
+			{"InsertNotSoSimpleRecord", "INSERT INTO NotSoSimple(phone) VALUES (${PHONE})"},
+			{"NoParamStoredProcedure",  "SELECT * FROM somefunc()"},
+			{"ParamStoredProcedure",    "SELECT FROM UpdateOrInsertNotSoSimple(${PHONE}, ${ID})"},
 		});
 	}
 }

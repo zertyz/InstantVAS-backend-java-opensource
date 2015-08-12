@@ -47,6 +47,19 @@ public class PostgreSQLTester {
 		invocation.addParameter("ID", 11);
 		result = db.invokeUpdateProcedure(invocation);
 		System.out.println("Result: " + result);
+
+		// NO PARAM STORED PROCEDURE
+		invocation = new PreparedProcedureInvocationDto("NoParamStoredProcedure");
+		int sp = (Integer) db.invokeScalarProcedure(invocation);
+		System.out.println("Result: " + sp);
+
+		// PARAM STORED PROCEDURE
+		invocation = new PreparedProcedureInvocationDto("ParamStoredProcedure");
+		invocation.addParameter("ID",    11);
+		invocation.addParameter("PHONE", "2192820997");
+		db.invokeRowProcedure(invocation);
+		System.out.println("Result: NULL");
+
 		log.reportRequestFinish();
 	}
 
