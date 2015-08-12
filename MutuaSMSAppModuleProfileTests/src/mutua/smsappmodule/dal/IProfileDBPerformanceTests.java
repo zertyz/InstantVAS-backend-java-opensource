@@ -66,8 +66,8 @@ public class IProfileDBPerformanceTests {
 	public void testPureNonCollisionalNicknamesAlgorithmAnalysis() throws SQLException, InterruptedException {
 
 		int inserts = totalNumberOfUsers / 2;
-		int updates = inserts / 5;
-		int selects = inserts / 5;
+		int updates = inserts;
+		int selects = inserts;
 
 		// prepare the tables & variables
 		final ProfileDto[] profiles = new ProfileDto[inserts*2];
@@ -96,7 +96,7 @@ public class IProfileDBPerformanceTests {
 	public void testPureCollisionalNicknamesAlgorithmAnalysis() throws SQLException, InterruptedException {
 
 		int inserts = 5000;
-		int selects = inserts / 5;
+		int selects = inserts;
 
 		// prepare the tables & variables
 		final ProfileDto[] profiles = new ProfileDto[inserts*2];
@@ -122,8 +122,8 @@ public class IProfileDBPerformanceTests {
 	public void testHibridCollisionalNicknamesAlgorithmAnalysis() throws SQLException, InterruptedException {
 
 		int inserts = totalNumberOfUsers / 2;
-		int updates = inserts / 5;
-		int selects = inserts / 5;
+		int updates = inserts;
+		int selects = inserts;
 		int collisionFactor = 3;
 
 		// prepare the tables & variables

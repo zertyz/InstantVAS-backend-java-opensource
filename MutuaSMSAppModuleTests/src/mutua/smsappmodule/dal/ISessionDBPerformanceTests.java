@@ -1,6 +1,6 @@
 package mutua.smsappmodule.dal;
 
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationTests.DEFAULT_MODULE_DAL;
+import static mutua.smsappmodule.config.SMSAppModuleConfigurationTests.*;
 
 import java.sql.SQLException;
 
@@ -12,6 +12,7 @@ import mutua.smsappmodule.dto.UserDto;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
+import static org.junit.Assert.*;
 
 /** <pre>
  * ISessionDBPerformanceTests.java
@@ -35,9 +36,9 @@ public class ISessionDBPerformanceTests {
 	private static int numberOfThreads = 4;
 
 	// users table pre-fill
-	private static int       totalNumberOfUsers = SMSAppModuleConfigurationTests.PERFORMANCE_TESTS_LOAD_FACTOR * ((DEFAULT_MODULE_DAL == SMSAppModuleDALFactory.RAM) ? 600000 : 30000);	// please, be sure the division between this and 'numberOfThreads' is round
-	private static long      phoneStart         = 991230000;
-	private static UserDto[] users              = new UserDto[totalNumberOfUsers];
+	private static       int       totalNumberOfUsers = SMSAppModuleConfigurationTests.PERFORMANCE_TESTS_LOAD_FACTOR * ((DEFAULT_MODULE_DAL == SMSAppModuleDALFactory.RAM) ? 600000 : 30000);	// please, be sure the division between this and 'numberOfThreads' is round
+	private static       long      phoneStart         = 991230000;
+	private static final UserDto[] users              = new UserDto[totalNumberOfUsers];
 
 	/*******************
 	** COMMON METHODS **
@@ -60,10 +61,10 @@ public class ISessionDBPerformanceTests {
 	**********/
 
 	@Test
-	public void testAlgorithmAnalysis() throws InterruptedException, SQLException {
+	public void testMultipleUsersSessionAlgorithmAnalysis() throws InterruptedException, SQLException {
 		int inserts = totalNumberOfUsers / 2;
-		int updates = inserts / 5;
-		int selects = inserts / 5;
+		int updates = inserts;
+		int selects = inserts;
 		
 		String[][] newProperties = {
 			{"BobSong",     "Don't rock my boat"},
@@ -81,7 +82,7 @@ public class ISessionDBPerformanceTests {
 			updateSessions[i] = new SessionDto(users[i],                null, updateProperties, null);
 		}
 		
-		new DatabaseAlgorithmAnalysis("ISessionDB", numberOfThreads, inserts, updates, selects) {
+		new DatabaseAlgorithmAnalysis("ISessionDB Multiple Users", numberOfThreads, inserts, updates, selects) {
 			public void resetTables() throws SQLException {
 				sessionDB.reset();
 			}
@@ -95,6 +96,40 @@ public class ISessionDBPerformanceTests {
 				sessionDB.getSession(users[i]);
 			}
 		};
+		
+	}
+
+	@Test
+	public void testMultiplePropertiesSessionAlgorithmAnalysis() throws InterruptedException, SQLException {
+		int totalNumberOfSessions = SMSAppModuleConfigurationTests.PERFORMANCE_TESTS_LOAD_FACTOR * ((DEFAULT_MODULE_DAL == SMSAppModuleDALFactory.RAM) ? 600000 : 30000);	// please, be sure the division between this and 'numberOfThreads' is round
+		int inserts = totalNumberOfSessions / 2;
+		int updates = inserts;
+				
+		new DatabaseAlgorithmAnalysis("ISessionDB Multiple Properties", numberOfThreads, inserts, updates, -1) {
+			public void resetTables() throws SQLException {
+				sessionDB.reset();
+			}
+			public void insertLoopCode(int i) throws SQLException {
+				String si = Integer.toString(i);
+				sessionDB.setSession(new SessionDto(users[0], new String[][] {
+					{"Song"+si, "This is song #"+si+": another bob song"},
+				}, null, null));
+			}
+			public void updateLoopCode(int i) throws SQLException {
+				String si = Integer.toString(i);
+				sessionDB.setSession(new SessionDto(users[0], null, new String[][] {
+					{"Song"+si, "This is still song #"+si+": but now, a beatles song"},
+				}, null));
+			}
+		};
+		
+//		SessionDto retrievedSession = sessionDB.getSession(users[0]);
+//		String[][] storedProperties = retrievedSession.getStoredProperties();
+//		assertEquals("Performance test didn't insert the elements correctly", inserts*2, storedProperties.length);
+//		for (int i=0; i<storedProperties.length; i++) {
+//			assertEquals("Performance test didn't insert the elements correctly", "Song"+Integer.toString(i),                                             storedProperties[i][0]);
+//			assertEquals("Performance test didn't update the elements correctly", "This is still song #"+Integer.toString(i)+": but now, a beatles song", storedProperties[i][1]);
+//		}
 		
 	}
 }

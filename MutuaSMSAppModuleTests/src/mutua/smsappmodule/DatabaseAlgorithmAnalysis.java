@@ -125,9 +125,9 @@ public abstract class DatabaseAlgorithmAnalysis {
 
 		this.numberOfThreads          = numberOfThreads;
 		
-		this.shouldPerformInsertTests = true;
-		this.shouldPerformUpdateTests = true;
-		this.shouldPerformSelectTests = true;
+		this.shouldPerformInsertTests = inserts != -1 ? true : false;
+		this.shouldPerformUpdateTests = updates != -1 ? true : false;
+		this.shouldPerformSelectTests = selects != -1 ? true : false;
 		this.shouldPerformDeleteTests = false;
 		
 		this.inserts                  = inserts;
@@ -156,35 +156,7 @@ public abstract class DatabaseAlgorithmAnalysis {
 
 	/** Runs a Insert & Select algorithm analysis test */
 	public DatabaseAlgorithmAnalysis(String testName, int numberOfThreads, int inserts, int selects) throws InterruptedException, SQLException {
-		this.numberOfThreads          = numberOfThreads;
-		
-		this.shouldPerformInsertTests = true;
-		this.shouldPerformUpdateTests = false;
-		this.shouldPerformSelectTests = true;
-		this.shouldPerformDeleteTests = false;
-		
-		this.inserts                  = inserts;
-		this._perThreadInsertAttempts = inserts / numberOfThreads;
-		
-		this.updates                          = -1;
-		this.numberOfFirstPassUpdateElements  = -1;
-		this.numberOfSecondPassUpdateElements = -1;
-		this._perThreadUpdates                = -1; 
-		
-		this.selects                          = selects;
-		this.numberOfFirstPassSelectElements  = inserts;
-		this.numberOfSecondPassSelectElements = inserts*2;
-		this._perThreadSelects                = selects / numberOfThreads;
-		
-		this.deletes                          = -1;
-		this.numberOfFirstPassDeleteElements  = -1;
-		this.numberOfSecondPassDeleteElements = -1;
-		this._perThreadDeletes                = -1;
-		
-		System.gc();
-		System.err.print(testName + " Algorithm Analisys: "); System.err.flush();
-		analyse();
-		
+		this(testName, numberOfThreads, inserts, -1, selects);
 	}
 
 	

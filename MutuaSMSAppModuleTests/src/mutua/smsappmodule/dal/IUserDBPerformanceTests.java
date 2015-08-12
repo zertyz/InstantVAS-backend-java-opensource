@@ -35,7 +35,7 @@ public class IUserDBPerformanceTests {
 		
 		int numberOfThreads = 4;
 		int inserts = 15000 * SMSAppModuleConfigurationTests.PERFORMANCE_TESTS_LOAD_FACTOR;
-		int selects = inserts / 5;
+		int selects = inserts;
 		final long phoneStart = 991230000;
 		
 		// prepare tables & variables

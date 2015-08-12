@@ -22,6 +22,9 @@ import adapters.PostgreSQLAdapter;
 public class SMSAppModulePostgreSQLAdapterProfile extends PostgreSQLAdapter {
 
 	
+	// the version information for database tables present on this class, to be stored on the 'Meta' table. Useful for future data conversions.
+	private static String modelVersionForMetaTable = "2015.08.12";
+	
 	// configuration
 	////////////////
 	
@@ -86,7 +89,6 @@ public class SMSAppModulePostgreSQLAdapterProfile extends PostgreSQLAdapter {
 			                          // a unique 'nickname' violation: determine the first whole on the sequence and insert (or update) the sequenced nick
 			             "            BEGIN\n" +
 			             "                PERFORM pg_advisory_lock(hashtext(lower(p_nickname)));\n" +
-//			             "                FOR sequenceRow IN SELECT CAST(SUBSTRING(lower(Profiles.nickname) FROM lower('^'||p_nickname||'(\\d+)$')) AS INTEGER) as nicknameSequenceElement FROM Profiles WHERE Profiles.nickname ~* ('^'||p_nickname||'\\d+$') AND Profiles.userId != p_userId ORDER BY nicknameSequenceElement ASC\n" +
 			             "                FOR sequenceRow IN SELECT CAST(SUBSTRING(lower(Profiles.nickname) FROM lower('^'||p_nickname||'(\\d+)$')) AS INTEGER) as nicknameSequenceElement FROM Profiles WHERE lower(Profiles.nickname) LIKE lower(p_nickname||'%') AND lower(Profiles.nickname) ~ lower('^'||p_nickname||'\\d+$') AND Profiles.userId != p_userId ORDER BY nicknameSequenceElement ASC\n" +
 			             "                LOOP\n" +
 			             "                    EXIT WHEN (sequenceRow.nicknameSequenceElement - sequence) > 0;\n" +
@@ -109,7 +111,10 @@ public class SMSAppModulePostgreSQLAdapterProfile extends PostgreSQLAdapter {
 			             "    END LOOP;\n" +
 			             "    RAISE EXCEPTION 'WTF?? Duplicate entry (userId and/or nickname): (%, %) after 2 attempts', p_userId, p_nickname||CAST(sequence AS TEXT) USING ERRCODE = 'unique_violation';\n" +
 			             "END;\n" + 
-			             "$$ LANGUAGE plpgsql;"},
+			             "$$ LANGUAGE plpgsql;" +
+				          
+				         // Meta record
+				         "INSERT INTO Meta(tableName, modelVersion) VALUES ('Profiles', '"+modelVersionForMetaTable+"')"},
 		};
 	}
 	

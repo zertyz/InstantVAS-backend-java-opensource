@@ -22,6 +22,9 @@ import adapters.PostgreSQLAdapter;
 public class SMSAppModulePostgreSQLAdapterSubscription extends PostgreSQLAdapter {
 
 	
+	// the version information for database tables present on this class, to be stored on the 'Meta' table. Useful for future data conversions.
+	private static String modelVersionForMetaTable = "2015.08.12";
+	
 	// configuration
 	////////////////
 	
@@ -85,7 +88,10 @@ public class SMSAppModulePostgreSQLAdapterSubscription extends PostgreSQLAdapter
 			                  "        INSERT INTO Subscriptions(userId, isSubscribed, subscriptionChannel, unsubscriptionChannel) VALUES (p_userId, FALSE, p_channel, NULL); \n" + 
 			                  "    END IF;\n" + 
 			                  "END;\n" + 
-			                  "$$ LANGUAGE plpgsql;"},
+			                  "$$ LANGUAGE plpgsql;" +
+					          
+					          // Meta record
+					          "INSERT INTO Meta(tableName, modelVersion) VALUES ('Subscriptions', '"+modelVersionForMetaTable+"')"},
 		};
 	}
 	

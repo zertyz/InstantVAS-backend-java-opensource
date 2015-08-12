@@ -21,6 +21,10 @@ import adapters.PostgreSQLAdapter;
 
 public class SMSAppModulePostgreSQLAdapter extends PostgreSQLAdapter {
 
+	
+	// the version information for database tables present on this class, to be stored on the 'Meta' table. Useful for future data conversions.
+	private static String modelVersionForMetaTable = "2015.08.12";
+
 	// configuration
 	////////////////
 	
@@ -54,19 +58,31 @@ public class SMSAppModulePostgreSQLAdapter extends PostgreSQLAdapter {
 			return null;
 		}
 		return new String[][] {
-				
-			{"Users", // global set_updated_timestamp trigger function
-                      // all tables that sets this trigger with "CREATE TRIGGER [TBLNAME]_update_timestamp BEFORE UPDATE ON [TBLNAME] FOR EACH ROW EXECUTE PROCEDURE set_updated_timestamp()"
-                      // must have a field of type TIMESTAMP named 'uts'
-                      "CREATE FUNCTION set_updated_timestamp() RETURNS TRIGGER LANGUAGE plpgsql AS $$\n" +
-                      "BEGIN\n" +
-                      "    NEW.uts := now();\n" +
-                      "    RETURN NEW;\n" +
-                      "END;\n" +
-                      "$$;" +
+			
+			{"Meta", // global set_updated_timestamp trigger function
+                     // all tables that sets this trigger with "CREATE TRIGGER [TBLNAME]_update_timestamp BEFORE UPDATE ON [TBLNAME] FOR EACH ROW EXECUTE PROCEDURE set_updated_timestamp()"
+                     // must have a field of type TIMESTAMP named 'uts'
+                     "CREATE OR REPLACE FUNCTION set_updated_timestamp() RETURNS TRIGGER LANGUAGE plpgsql AS $$\n" +
+                     "BEGIN\n" +
+                     "    NEW.uts := now();\n" +
+                     "    RETURN NEW;\n" +
+                     "END;\n" +
+                     "$$;" +
 
-                      // the table
-			          "CREATE TABLE Users(" +
+                     // the table
+			         "CREATE TABLE Meta(" +
+			         "tableName     TEXT       PRIMARY KEY," +
+			         "modelVersion  TEXT       NOT NULL," +
+			         "cts           TIMESTAMP  DEFAULT CURRENT_TIMESTAMP," +
+			         "uts           TIMESTAMP  DEFAULT NULL);" +
+
+			         // trigger for 'uts' -- the updated timestamp
+	                 "CREATE TRIGGER Meta_update_timestamp BEFORE UPDATE ON Meta FOR EACH ROW EXECUTE PROCEDURE set_updated_timestamp();" +
+			          
+			         // Meta record
+			         "INSERT INTO Meta(tableName, modelVersion) VALUES ('Meta', '"+modelVersionForMetaTable+"')"},
+			
+			{"Users", "CREATE TABLE Users(" +
 			          "userId          SERIAL      PRIMARY KEY," +
 			          "phoneNumber     TEXT        NOT NULL UNIQUE," +
 	                  "cts             TIMESTAMP   DEFAULT CURRENT_TIMESTAMP," +
@@ -83,7 +99,10 @@ public class SMSAppModulePostgreSQLAdapter extends PostgreSQLAdapter {
 			          "        RETURN QUERY INSERT INTO Users(phoneNumber) VALUES (p_phone) RETURNING userId; \n" + 
 			          "    END IF;\n" + 
 			          "END;\n" +			          
-			          "$$ LANGUAGE plpgsql;"},
+			          "$$ LANGUAGE plpgsql;" +
+			          
+			          // Meta record
+			          "INSERT INTO Meta(tableName, modelVersion) VALUES ('Users', '"+modelVersionForMetaTable+"')"},
 			          
 			{"Sessions", "CREATE TABLE Sessions(" +
 			             "userId                INTEGER     REFERENCES Users(userId) ON DELETE CASCADE," +
@@ -94,7 +113,10 @@ public class SMSAppModulePostgreSQLAdapter extends PostgreSQLAdapter {
 			             "PRIMARY KEY (userId, propertyName));" +
 		                  
 		                 // trigger for 'uts' -- the updated timestamp
-		                 "CREATE TRIGGER Sessions_update_timestamp BEFORE UPDATE ON Sessions FOR EACH ROW EXECUTE PROCEDURE set_updated_timestamp();"}
+		                 "CREATE TRIGGER Sessions_update_timestamp BEFORE UPDATE ON Sessions FOR EACH ROW EXECUTE PROCEDURE set_updated_timestamp();" +
+				          
+				         // Meta record
+				         "INSERT INTO Meta(tableName, modelVersion) VALUES ('Sessions', '"+modelVersionForMetaTable+"')"}
 		};
 	}
 	
