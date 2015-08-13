@@ -10,7 +10,7 @@ import mutua.smsappmodule.dto.UserDto;
  * ====================
  * (created by luiz, Jul 24, 2015)
  *
- * Defines access methods for the "Subscriptions" databases
+ * Defines access methods for the "Subscriptions" table
  *
  * @see mutua.smsappmodule.dal.ram.SubscriptionDB
  * @see mutua.smsappmodule.dal.postgresql.SubscriptionDB

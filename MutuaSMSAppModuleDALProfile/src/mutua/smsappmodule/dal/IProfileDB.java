@@ -10,10 +10,10 @@ import mutua.smsappmodule.dto.UserDto;
  * ===============
  * (created by luiz, Aug 3, 2015)
  *
- * Defines access methods for the "User Profile" databases
+ * Defines access methods for the "User Profile" table
  *
- * @see mutua.smsappmodule.dal.ram.SubscriptionDB
- * @see mutua.smsappmodule.dal.postgresql.SubscriptionDB
+ * @see mutua.smsappmodule.dal.ram.ProfileDB
+ * @see mutua.smsappmodule.dal.postgresql.ProfileDB
  * @version $Id$
  * @author luiz
  */

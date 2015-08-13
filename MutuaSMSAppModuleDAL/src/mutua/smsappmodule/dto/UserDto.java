@@ -1,6 +1,7 @@
 package mutua.smsappmodule.dto;
 
 import mutua.icc.configuration.annotations.ConfigurableElement;
+import mutua.smsappmodule.dal.IUserDB;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
 
 /** <pre>
@@ -8,10 +9,10 @@ import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
  * ============
  * (created by luiz, Jul 15, 2015)
  *
- * Represents a user, be it already registered (has an 'userId') on the database or
+ * Represents a retrieved/committable user, be it already registered (has an 'userId') on the database or
  * new ('userId' equals to -1)
  *
- * @see RelatedClass(es)
+ * @see IUserDB
  * @version $Id$
  * @author luiz
  */
@@ -45,6 +46,16 @@ public class UserDto {
 	
 	public String getPhoneNumber() {
 		return phoneNumber;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		UserDto anotherUser = (UserDto)obj;
+		if ((userId == -1) && (anotherUser.userId == -1)) {
+			return phoneNumber.equals(anotherUser.phoneNumber);
+		} else {
+			return userId == anotherUser.userId;
+		}
 	}
 
 }

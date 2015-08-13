@@ -9,7 +9,7 @@ import mutua.smsappmodule.dto.UserDto;
  * ============
  * (created by luiz, Jul 15, 2015)
  *
- * Defines access methods for the "Users" database
+ * Defines access methods for the "Users" table
  *
  * @see mutua.smsappmodule.dal.ram.UserDB
  * @see mutua.smsappmodule.dal.postgresql.UserDB

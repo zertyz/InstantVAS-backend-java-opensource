@@ -73,7 +73,7 @@ public class ISubscriptionDBPerformanceTests {
 		// DONE: fazer o mesmo para muitas e muitas sessions e um usuário só -- no modelo Pure-Collisional, Non-Collisional e Hibrid-Collisional
 		// TODO: testar performance do sessions com o enum data type http://www.postgresql.org/docs/9.2/static/datatype-enum.html
 		// TODO: fazer testes de performance para as filas, no mesmo modelo. Criar também os stored procedures
-		// TODO: criar os outros bancos de dados: hangman: botwords por usuário, matches; chat: started conversations, chat history (substring of MO/MT), block?
+		// TODO: criar os outros bancos de dados: hangman: botwords por usuário (vai para o profile), matches; chat: started conversations, chat history (substring of MO/MT), block?
 		// DONE: criar uma tabela MutuaSMSMeta para controlar as versões de cada tabela & stored procedure
 		
 		int inserts =  totalNumberOfUsers / 2;

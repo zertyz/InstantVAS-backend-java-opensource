@@ -10,7 +10,7 @@ import mutua.smsappmodule.dto.UserDto;
  * ===============
  * (created by luiz, Jul 15, 2015)
  *
- * Defines access methods for the "Sessions" database
+ * Defines access methods for the "Sessions" table
  *
  * @see mutua.smsappmodule.dal.ram.SessionDB
  * @see mutua.smsappmodule.dal.postgresql.SessionDB
