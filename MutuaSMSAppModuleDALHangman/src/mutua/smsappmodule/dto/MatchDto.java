@@ -46,6 +46,11 @@ public class MatchDto {
 		this.matchId = matchId;
 	}
 	
+	/** To be used when a new match is inserted on the database */
+	public void setMatchId(int matchId) {
+		this.matchId = matchId;
+	}
+	
 	public int getMatchId() {
 		return matchId;
 	}
@@ -88,5 +93,5 @@ public class MatchDto {
 			return matchId == anotherMatch.matchId;
 		}
 	}
-	
+
 }

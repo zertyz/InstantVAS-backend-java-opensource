@@ -30,7 +30,7 @@ public class SMSAppModuleConfigurationHangmanTests {
 	// database
 	public static SMSAppModuleDALFactoryHangman  DEFAULT_HANGMAN_DAL = SMSAppModuleDALFactoryHangman.POSTGRESQL;
 	public static SMSAppModuleDALFactory         DEFAULT_MODULE_DAL  = SMSAppModuleDALFactory       .POSTGRESQL;
-	public static Boolean POSTGRESQL_DEBUG_QUERIES                 = true;
+	public static Boolean POSTGRESQL_DEBUG_QUERIES                 = false;
 	public static Boolean POSTGRESQL_ALLOW_DATABASE_ADMINISTRATION = true;
 	public static String  POSTGRESQL_CONNECTION_HOSTNAME      = "venus";
 	public static int     POSTGRESQL_CONNECTION_PORT          = 5432;

@@ -44,7 +44,9 @@ public class MatchDB implements IMatchDB {
 		procedure.addParameter("SERIALIZED_GAME",               match.getSerializedGame());
 		procedure.addParameter("MATCH_START_MILLIS",            match.getMatchStartMillis());
 		procedure.addParameter("STATUS",                        match.getStatus().name());
-		return (Integer)dba.invokeScalarProcedure(procedure);
+		int matchId = (Integer)dba.invokeScalarProcedure(procedure);
+		match.setMatchId(matchId);
+		return matchId;
 	}
 
 	@Override
@@ -64,6 +66,7 @@ public class MatchDB implements IMatchDB {
 		EMatchStatus status                    = EMatchStatus.valueOf((String)fields[6]);
 
 		MatchDto match = new MatchDto(
+			matchId,
 			new UserDto(wordProvidingPlayerUserId, wordProvidingPlayerPhone),
 			new UserDto(wordGuessingPlayerUserId, wordGuessingPlayerPhone),
 			serializedGame,

@@ -19,6 +19,7 @@ import mutua.smsappmodule.dto.MatchDto.EMatchStatus;
  */
 
 public class MatchDB implements IMatchDB {
+
 	
 	// data structures
 	//////////////////
@@ -42,7 +43,9 @@ public class MatchDB implements IMatchDB {
 	@Override
 	public int storeNewMatch(MatchDto match) {
 		matches.add(match);
-		return matches.lastIndexOf(match);
+		int matchId = matches.lastIndexOf(match);
+		match.setMatchId(matchId);
+		return matchId;
 	}
 
 	@Override

@@ -21,6 +21,7 @@ import mutua.icc.instrumentation.Instrumentation;
 
 public abstract class PostgreSQLAdapter extends JDBCAdapter {
 
+	
 	// configuration
 	////////////////
 	
@@ -75,4 +76,21 @@ public abstract class PostgreSQLAdapter extends JDBCAdapter {
 		                                   USER,
 		                                   PASSWORD);
 	}
+	
+	
+	// helper methods
+	/////////////////
+	
+	protected static String list(Object[] stringArray, String quote, String separator) {
+		StringBuffer sb = new StringBuffer();
+		for (Object element : stringArray) {
+			sb.append(quote).append(element.toString()).append(quote).append(separator);
+		}
+		// remove the last 'separator'
+		if (sb.length() > 0) {
+			sb.deleteCharAt(sb.length()-1);
+		}
+		return sb.toString();
+	}
+
 }

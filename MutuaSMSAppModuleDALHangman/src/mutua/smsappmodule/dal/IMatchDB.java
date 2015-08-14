@@ -32,7 +32,4 @@ public interface IMatchDB {
 	/** Used to mark a match as over, for instance */
 	void updateMatchStatus(MatchDto match, EMatchStatus status) throws SQLException;
 	
-//	/** Traverses through all active matches, notifying the 'callback' function */
-//	void traverseThroughActiveMatches(IMatchTraversalCallback callback);
-
 }

@@ -20,7 +20,7 @@ import org.junit.Test;
  * ==============================
  * (created by luiz, Jan 27, 2015)
  *
- * Tests the normal-circumstance usage of {@link #IProfileDB} implementations
+ * Tests the normal-circumstance usage of {@link IMatchDB} implementations
  *
  * @see RelatedClass(es)
  * @version $Id$
@@ -75,7 +75,7 @@ public class IMatchDBBehavioralTests {
 		
 		matchDB.updateMatchStatus(firstExpectedMatch, EMatchStatus.CLOSED_WORD_GUESSED);
 		
-		MatchDto expectedTaintedMatch = new MatchDto(firstExpectedMatchWordProvidingPlayer,
+		MatchDto expectedTaintedMatch = new MatchDto(firstMatchId, firstExpectedMatchWordProvidingPlayer,
 		                                             firstExpectedMatchWordGuessingPlayer,
 		                                             "ANYSHIT",
 		                                             123,

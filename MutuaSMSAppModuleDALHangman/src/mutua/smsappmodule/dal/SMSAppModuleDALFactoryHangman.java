@@ -4,6 +4,7 @@ import java.sql.SQLException;
 
 import mutua.icc.configuration.annotations.ConfigurableElement;
 import mutua.smsappmodule.dal.ram.MatchDB;
+import mutua.smsappmodule.dal.ram.NextBotWordsDB;
 
 /** <pre>
  * SMSAppModuleDALFactoryHangman.java
@@ -22,13 +23,15 @@ public enum SMSAppModuleDALFactoryHangman {
 	
 	RAM {
 		protected void instantiateDataAccessLayers() {
-			super.matchDB = new mutua.smsappmodule.dal.ram.MatchDB();
+			super.matchDB        = new mutua.smsappmodule.dal.ram.MatchDB();
+			super.nextBotWordsDB = new mutua.smsappmodule.dal.ram.NextBotWordsDB();
 		}
 	},
 	
 	POSTGRESQL {
 		protected void instantiateDataAccessLayers() throws SQLException {
-			super.matchDB = new mutua.smsappmodule.dal.postgresql.MatchDB();
+			super.matchDB        = new mutua.smsappmodule.dal.postgresql.MatchDB();
+			super.nextBotWordsDB = new mutua.smsappmodule.dal.postgresql.NextBotWordsDB();
 		}
 	},
 	
@@ -37,7 +40,8 @@ public enum SMSAppModuleDALFactoryHangman {
 	@ConfigurableElement("The desired data access handler for the 'User Profile SMS Module' facilities")
 	public static SMSAppModuleDALFactoryHangman DEFAULT_DAL = SMSAppModuleDALFactoryHangman.RAM;
 	
-	private IMatchDB matchDB;
+	private IMatchDB        matchDB;
+	private INextBotWordsDB nextBotWordsDB;
 	
 	private boolean wasInstantiated = false;
 	
@@ -59,5 +63,10 @@ public enum SMSAppModuleDALFactoryHangman {
 	public IMatchDB getMatchDB() {
 		checkDataAccessLayers();
 		return matchDB;
+	}
+	
+	public INextBotWordsDB getNextBotWordsDB() {
+		checkDataAccessLayers();
+		return nextBotWordsDB;
 	}
 }

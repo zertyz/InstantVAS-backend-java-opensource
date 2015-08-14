@@ -18,7 +18,7 @@ import org.junit.Test;
  * ==============================
  * (created by luiz, Aug 4, 2015)
  *
- * Tests the normal-circumstance usage of {@link #IProfileDB} implementations
+ * Tests the normal-circumstance usage of {@link IProfileDB} implementations
  *
  * @see RelatedClass(es)
  * @version $Id$

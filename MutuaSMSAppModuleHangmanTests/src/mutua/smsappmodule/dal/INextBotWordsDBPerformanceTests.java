@@ -21,17 +21,17 @@ import org.junit.Test;
  * (created by luiz, Aug 13, 2015)
  *
  * Measures and tests the f(n) of the O(f(n)) algorithm complexity implementations
- * of {@link IMatchDB}
+ * of {@link INextBotWordsDB}
  *
  * @see RelatedClass(es)
  * @version $Id$
  * @author luiz
  */
 
-public class IMatchDBPerformanceTests {
+public class INextBotWordsDBPerformanceTests {
 
-	private IUserDB  userDB  = DEFAULT_MODULE_DAL.getUserDB();
-	private IMatchDB matchDB = DEFAULT_HANGMAN_DAL.getMatchDB();
+	private IUserDB         userDB         = DEFAULT_MODULE_DAL.getUserDB();
+	private INextBotWordsDB nextBotWordsDB = DEFAULT_HANGMAN_DAL.getNextBotWordsDB();
 	
 	// algorithm settings
 	private static int numberOfThreads = 4;
@@ -63,31 +63,20 @@ public class IMatchDBPerformanceTests {
 	**********/
 	
 	@Test
-	public void testMatchDBAlgorithmAnalysis() throws SQLException, InterruptedException {
+	public void testSeveralUsersAlgorithmAnalysis() throws SQLException, InterruptedException {
 
-		int inserts = (totalNumberOfUsers / 2) / 2;
+		int inserts = totalNumberOfUsers / 2;
 		int updates = inserts;
-		int selects = inserts;
 
-		// prepare the tables & variables
-		final MatchDto[] matches  = new MatchDto[inserts*2];
-		long millis = System.currentTimeMillis();
-		for (int i=0; i<inserts*2; i++) {
-			matches[i]  = new MatchDto(users[i], users[i+(inserts*2)], "Serialized game", millis, EMatchStatus.ACTIVE);
-		}
-
-		new DatabaseAlgorithmAnalysis("IMatchDB", numberOfThreads, inserts, updates, selects) {
+		new DatabaseAlgorithmAnalysis("INextBotWordsDB Several Users", numberOfThreads, inserts, updates, -1) {
 			public void resetTables() throws SQLException {
-				matchDB.reset();
+				nextBotWordsDB.reset();
 			}
 			public void insertLoopCode(int i) throws SQLException {
-				matchDB.storeNewMatch(matches[i]);
+				nextBotWordsDB.getAndIncNextBotWord(users[i]);
 			}
 			public void updateLoopCode(int i) throws SQLException {
-				matchDB.updateMatchStatus(matches[i], EMatchStatus.CLOSED_WORD_GUESSED);
-			}
-			public void selectLoopCode(int i) throws SQLException {
-				matchDB.retrieveMatch(matches[i].getMatchId());
+				nextBotWordsDB.getAndIncNextBotWord(users[i]);
 			}
 		};
 
