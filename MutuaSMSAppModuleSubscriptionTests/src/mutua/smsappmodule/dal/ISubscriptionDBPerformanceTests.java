@@ -75,6 +75,8 @@ public class ISubscriptionDBPerformanceTests {
 		// TODO: fazer testes de performance para as filas, no mesmo modelo. Criar também os stored procedures
 		// TODO: criar os outros bancos de dados: hangman: botwords por usuário (vai para o profile), matches; chat: started conversations, chat history (substring of MO/MT), block?
 		// DONE: criar uma tabela MutuaSMSMeta para controlar as versões de cada tabela & stored procedure
+		// TODO: QueueEventLink should not allow the ConsumerWorker to consume work if there are no workers!!!
+		// TODO: test that the above item was done by running AdditionalEventLinkTests and verifying that the red prints only increase after the 10 ConsumerWorkers are busy waiting for a consumer method invoker to be registered
 		
 		int inserts =  totalNumberOfUsers / 2;
 		int updates = inserts;

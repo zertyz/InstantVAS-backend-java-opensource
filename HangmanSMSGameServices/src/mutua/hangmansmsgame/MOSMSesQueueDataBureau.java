@@ -95,8 +95,8 @@ public class MOSMSesQueueDataBureau extends IDatabaseQueueDataBureau<EHangmanSMS
 
 	@Override
 	public String getFieldsCreationLine() {
-		return 	"carrier   VARCHAR(15) NOT NULL, " +
-                "phone     VARCHAR(15) NOT NULL, " +
-				"text      VARCHAR(160) NOT NULL, ";
+		return 	"carrier   TEXT NOT NULL, " +
+                "phone     TEXT NOT NULL, " +
+				"text      TEXT NOT NULL, ";
 	}
 }

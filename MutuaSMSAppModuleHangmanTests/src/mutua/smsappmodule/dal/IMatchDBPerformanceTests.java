@@ -90,6 +90,10 @@ public class IMatchDBPerformanceTests {
 				matchDB.retrieveMatch(matches[i].getMatchId());
 			}
 		};
+		
+		// attempt to speed up the next 'UserDB.reset()',
+		// which is unreasonably slow due to the non-unique relations to userId
+		matchDB.reset();
 
 	}
 	

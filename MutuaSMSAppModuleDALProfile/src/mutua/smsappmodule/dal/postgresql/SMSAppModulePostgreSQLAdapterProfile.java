@@ -62,7 +62,7 @@ public class SMSAppModulePostgreSQLAdapterProfile extends PostgreSQLAdapter {
 			             "userId        INTEGER     PRIMARY KEY REFERENCES Users(userId) ON DELETE CASCADE," +
 			             "nickname      TEXT        NOT NULL," +
 			             "cts           TIMESTAMP   DEFAULT CURRENT_TIMESTAMP," +
-			             "uts           TIMESTAMP   DEFAULT NULL);"+
+			             "uts           TIMESTAMP   DEFAULT NULL);" +
 			            
 			             // custom indexes
 			             "CREATE UNIQUE INDEX unique_caseinsensitive_nickname ON Profiles (lower(nickname) text_pattern_ops);" +
@@ -74,42 +74,43 @@ public class SMSAppModulePostgreSQLAdapterProfile extends PostgreSQLAdapter {
 			             "CREATE OR REPLACE FUNCTION AssertProfile(p_userId INTEGER, p_nickname TEXT, OUT userId INTEGER, OUT nickname TEXT) RETURNS RECORD AS $$\n" +
 			             "DECLARE\n" +
 			             "    sequence    INTEGER := 1;\n" +
+			             "    attempt     INTEGER := 1;\n" +
 			             "    sequenceRow RECORD;\n" +
 			             "BEGIN\n" + 
-			             "    FOR attempt IN 1..2 LOOP\n" + 
+			             "    UPDATE Profiles SET (nickname) = (p_nickname) WHERE Profiles.userId=p_userId; \n" + 
+			             "    IF NOT FOUND THEN \n" + 
+			             "        INSERT INTO Profiles(userId, nickname) VALUES (p_userId, p_nickname); \n" + 
+			             "    END IF;\n" +
+			             "    userId   := p_userId;\n" +
+			             "    nickname := p_nickname;\n" +
+			             "    RETURN;\n" +
+			             "EXCEPTION WHEN unique_violation THEN\n" +
+			                  // a unique 'nickname' violation: determine the first role on the sequence and insert (or update) the sequenced nick
+			                  // even with the explicit lock (valid until the function ends), a retry loop is still necessary. Possibly because the
+			                  // transaction starts with the query that calls the stored procedure
+			             "    <<retry>>\n" +
+			             "    LOOP\n" +
 			             "        BEGIN\n" +
-			             "            UPDATE Profiles SET (nickname) = (p_nickname) WHERE Profiles.userId=p_userId; \n" + 
+			             "            PERFORM pg_advisory_xact_lock(hashtext(lower(p_nickname)));\n" +
+			             "            FOR sequenceRow IN SELECT CAST(SUBSTRING(lower(Profiles.nickname) FROM lower('^'||p_nickname||'(\\d+)$')) AS INTEGER) as nicknameSequenceElement FROM Profiles WHERE lower(Profiles.nickname) LIKE lower(p_nickname||'%') AND lower(Profiles.nickname) ~ lower('^'||p_nickname||'\\d+$') AND Profiles.userId != p_userId ORDER BY nicknameSequenceElement ASC\n" +
+			             "            LOOP\n" +
+			             "                EXIT WHEN (sequenceRow.nicknameSequenceElement - sequence) > 0;\n" +
+			             "                sequence := sequence + 1;\n" +
+			             "            END LOOP;\n" +
+			             "            UPDATE Profiles SET (nickname) = (p_nickname||CAST(sequence AS TEXT)) WHERE Profiles.userId=p_userId; \n" + 
 			             "            IF NOT FOUND THEN \n" + 
-			             "                INSERT INTO Profiles(userId, nickname) VALUES (p_userId, p_nickname); \n" + 
+			             "                INSERT INTO Profiles(userId, nickname) VALUES (p_userId, p_nickname||CAST(sequence AS TEXT)); \n" + 
 			             "            END IF;\n" +
 			             "            userId   := p_userId;\n" +
-			             "            nickname := p_nickname;\n" +
+			             "            nickname := p_nickname||CAST(sequence AS TEXT);\n" +
 			             "            RETURN;\n" +
 			             "        EXCEPTION WHEN unique_violation THEN\n" +
-			                          // a unique 'nickname' violation: determine the first whole on the sequence and insert (or update) the sequenced nick
-			             "            BEGIN\n" +
-			             "                PERFORM pg_advisory_lock(hashtext(lower(p_nickname)));\n" +
-			             "                FOR sequenceRow IN SELECT CAST(SUBSTRING(lower(Profiles.nickname) FROM lower('^'||p_nickname||'(\\d+)$')) AS INTEGER) as nicknameSequenceElement FROM Profiles WHERE lower(Profiles.nickname) LIKE lower(p_nickname||'%') AND lower(Profiles.nickname) ~ lower('^'||p_nickname||'\\d+$') AND Profiles.userId != p_userId ORDER BY nicknameSequenceElement ASC\n" +
-			             "                LOOP\n" +
-			             "                    EXIT WHEN (sequenceRow.nicknameSequenceElement - sequence) > 0;\n" +
-			             "                    sequence := sequence + 1;\n" +
-			             "                END LOOP;\n" +
-			             "                UPDATE Profiles SET (nickname) = (p_nickname||CAST(sequence AS TEXT)) WHERE Profiles.userId=p_userId; \n" + 
-			             "                IF NOT FOUND THEN \n" + 
-			             "                    INSERT INTO Profiles(userId, nickname) VALUES (p_userId, p_nickname||CAST(sequence AS TEXT)); \n" + 
-			             "                END IF;\n" +
-			             "                PERFORM pg_advisory_unlock(hashtext(lower(p_nickname)));\n" +
-			             "                userId   := p_userId;\n" +
-			             "                nickname := p_nickname||CAST(sequence AS TEXT);\n" +
-			             "                RETURN;\n" +
-			             "            EXCEPTION WHEN unique_violation THEN\n" +
-			             "                PERFORM pg_advisory_unlock(hashtext(lower(p_nickname)));\n" +
-			             "            END;\n" +
-                                  // When the control gets here, it will loop again, meaning that the nested exception occurred.
-			                      // I don't have a clue why this shit, on reentrant accesses, happens. The lock works. It doesn't make sense... (luiz, postgresql v. 9.4.1-1)
+			             "            IF attempt >= 3 THEN\n" +
+			             "                RAISE EXCEPTION 'Duplicate entry (userId and/or nickname): (%, %), even with pg_advisory_xact_lock(%), after % attempts', p_userId, p_nickname||CAST(sequence AS TEXT), hashtext(lower(p_nickname)), attempt USING ERRCODE = 'unique_violation';\n" +
+			             "            END IF;\n" +
+			             "            attempt := attempt + 1;\n" +
 			             "        END;\n" +
-			             "    END LOOP;\n" +
-			             "    RAISE EXCEPTION 'WTF?? Duplicate entry (userId and/or nickname): (%, %) after 2 attempts', p_userId, p_nickname||CAST(sequence AS TEXT) USING ERRCODE = 'unique_violation';\n" +
+			             "    END LOOP retry;\n" +
 			             "END;\n" + 
 			             "$$ LANGUAGE plpgsql;" +
 				          

@@ -53,7 +53,7 @@ public abstract class PostgreSQLAdapter extends JDBCAdapter {
 		
 		for (String[] tableDefinition : tableDefinitions) {
 			String databaseName = tableDefinition[0];
-			statements += "DROP TABLE " + databaseName + ";";
+			statements += "DROP TABLE " + databaseName + " CASCADE;";
 		}
 		return statements;
 	}

@@ -56,7 +56,7 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 
 
 	// common variables
-	private static Connection[] pool = new Connection[CONNECTION_POOL_SIZE];
+	private static Connection[] pool = {};
 	
 	// to be defined in the 'getCredentials' method
 	protected String HOSTNAME;
@@ -304,6 +304,9 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 	}
 	
 	private void checkAndPopulatePoolOfConnections() throws SQLException {
+		if (CONNECTION_POOL_SIZE != pool.length) {
+			pool = new Connection[CONNECTION_POOL_SIZE];
+		}
 		for (int i=0; i<pool.length; i++) {
 			if (pool[i] != null) try {
 				if (pool[i].isValid(30)) {

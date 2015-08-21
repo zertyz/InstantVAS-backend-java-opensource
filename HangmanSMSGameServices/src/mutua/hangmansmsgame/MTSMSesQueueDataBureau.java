@@ -56,7 +56,7 @@ public class MTSMSesQueueDataBureau extends	IDatabaseQueueDataBureau<EHangmanSMS
 	@Override
 	public String getFieldsCreationLine() {
 		return "moId      INTEGER      NOT NULL, " +
-		       "phone     VARCHAR(15)  NOT NULL, " +
-		       "text      VARCHAR(511) NOT NULL, ";
+		       "phone     TEXT         NOT NULL, " +
+		       "text      TEXT         NOT NULL, ";
 	}
 }
