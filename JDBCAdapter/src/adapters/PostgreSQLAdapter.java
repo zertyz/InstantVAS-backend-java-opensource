@@ -48,7 +48,7 @@ public abstract class PostgreSQLAdapter extends JDBCAdapter {
 	@Override
 	/** For postgreSQL, a different strategy is used to "drop" the database -- drop all tables instead */
 	protected String getDropDatabaseCommand() {
-		String statements = "";		
+		String statements = "";
 		String[][] tableDefinitions = getTableDefinitions();
 		
 		for (String[] tableDefinition : tableDefinitions) {

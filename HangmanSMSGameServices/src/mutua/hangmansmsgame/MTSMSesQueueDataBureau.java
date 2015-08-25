@@ -28,9 +28,10 @@ public class MTSMSesQueueDataBureau extends	IDatabaseQueueDataBureau<EHangmanSMS
 	@Override
 	public void serializeQueueEntry(IndirectMethodInvocationInfo<EHangmanSMSGameEvents> entry, PreparedProcedureInvocationDto preparedProcedure) throws PreparedProcedureException {
 		OutgoingSMSDto mt = (OutgoingSMSDto)entry.getParameters()[0];
-		preparedProcedure.addParameter("MO_ID",   mt.getMoId());
-		preparedProcedure.addParameter("PHONE",   mt.getPhone());
-		preparedProcedure.addParameter("TEXT",    mt.getText());
+		preparedProcedure.addParameter("METHOD_ID", entry.getMethodId().toString());
+		preparedProcedure.addParameter("MO_ID",     mt.getMoId());
+		preparedProcedure.addParameter("PHONE",     mt.getPhone());
+		preparedProcedure.addParameter("TEXT",      mt.getText());
 	}
 
 	@Override
@@ -55,7 +56,8 @@ public class MTSMSesQueueDataBureau extends	IDatabaseQueueDataBureau<EHangmanSMS
 
 	@Override
 	public String getFieldsCreationLine() {
-		return "moId      INTEGER      NOT NULL, " +
+		return "methodId  TEXT         NOT NULL, " +
+		       "moId      INTEGER      NOT NULL, " +
 		       "phone     TEXT         NOT NULL, " +
 		       "text      TEXT         NOT NULL, ";
 	}

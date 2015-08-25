@@ -29,7 +29,7 @@ public class IUserDBPerformanceTests {
 
 	
 	@Test
-	public void testAlgorithmAnalysis() throws InterruptedException, SQLException {
+	public void testAlgorithmAnalysis() throws Throwable {
 		
 		SMSAppModuleTestCommons.resetTables();
 		

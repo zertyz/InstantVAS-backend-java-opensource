@@ -63,7 +63,7 @@ public class ISubscriptionDBPerformanceTests {
 	**********/
 	
 	@Test
-	public void testAlgorithmAnalysis() throws SQLException, InterruptedException {
+	public void testAlgorithmAnalysis() throws Throwable {
 		
 		// TODO: análise de features prometidos para a Celltick. Demanda inicial Koby + Prometido por mim + Demanda relatórios Dedé
 		// DONE: acrescentar testes aos performance tests e, quando não puder, criar os reentrancy tests
@@ -75,8 +75,10 @@ public class ISubscriptionDBPerformanceTests {
 		// TODO: fazer testes de performance para as filas, no mesmo modelo. Criar também os stored procedures
 		// TODO: criar os outros bancos de dados: hangman: botwords por usuário (vai para o profile), matches; chat: started conversations, chat history (substring of MO/MT), block?
 		// DONE: criar uma tabela MutuaSMSMeta para controlar as versões de cada tabela & stored procedure
-		// TODO: QueueEventLink should not allow the ConsumerWorker to consume work if there are no workers!!!
-		// TODO: test that the above item was done by running AdditionalEventLinkTests and verifying that the red prints only increase after the 10 ConsumerWorkers are busy waiting for a consumer method invoker to be registered
+		// DONE: QueueEventLink should not allow the ConsumerWorker to consume work if there are no workers!!!
+		// DONE: test that the above item was done by running AdditionalEventLinkTests and verifying that the red prints only increase after the 10 ConsumerWorkers are busy waiting for a consumer method invoker to be registered
+		// DONE: bug: it is possible to run testAddSeveralItemsAndConsumeAllAtOnce and it will never stop
+		// DONE: why running the AdditionalEventLinkTests (before the performance tests consumers are implemented) makes some tests ocasionally fail?
 		
 		int inserts =  totalNumberOfUsers / 2;
 		int updates = inserts;

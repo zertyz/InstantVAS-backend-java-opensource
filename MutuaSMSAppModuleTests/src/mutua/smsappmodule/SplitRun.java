@@ -50,7 +50,7 @@ public abstract class SplitRun extends Thread {
 		reset();
 	}
 	
-	public abstract void splitRun(int arg) throws SQLException;
+	public abstract void splitRun(int arg) throws Throwable;
 
 	private int arg;
 	

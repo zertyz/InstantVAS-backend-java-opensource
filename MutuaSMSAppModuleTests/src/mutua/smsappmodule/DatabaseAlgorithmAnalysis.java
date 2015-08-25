@@ -93,6 +93,7 @@ public abstract class DatabaseAlgorithmAnalysis {
 	
 	private final int numberOfThreads;
 	
+	private final boolean shouldPerformWarmUp;
 	private final boolean shouldPerformInsertTests;
 	private final boolean shouldPerformUpdateTests;
 	private final boolean shouldPerformSelectTests;
@@ -120,12 +121,13 @@ public abstract class DatabaseAlgorithmAnalysis {
 	private final int _perThreadDeletes;
 	private long deleteStart1, deleteEnd1, deleteStart2, deleteEnd2;
 	
-	/** Runs a Insert, Update, Select algorithm analysis test */
-	public DatabaseAlgorithmAnalysis(String testName, int numberOfThreads, int inserts, int updates, int selects) throws InterruptedException, SQLException {
+	/** Runs a Insert, Update, Select algorithm analysis test, with the possibility of not running the Warmup phase */
+	public DatabaseAlgorithmAnalysis(String testName, boolean performWarmUp, int numberOfThreads, int inserts, int updates, int selects) throws Throwable {
 
 		this.numberOfThreads          = numberOfThreads;
 		
 		this.shouldPerformInsertTests = inserts != -1 ? true : false;
+		this.shouldPerformWarmUp      = this.shouldPerformInsertTests ? performWarmUp : false;
 		this.shouldPerformUpdateTests = updates != -1 ? true : false;
 		this.shouldPerformSelectTests = selects != -1 ? true : false;
 		this.shouldPerformDeleteTests = false;
@@ -151,42 +153,46 @@ public abstract class DatabaseAlgorithmAnalysis {
 		System.gc();
 		System.err.print(testName + " Algorithm Analisys: "); System.err.flush();
 		analyse();
-		
+	}
+	
+	/** Runs a Insert, Update, Select algorithm analysis test */
+	public DatabaseAlgorithmAnalysis(String testName, int numberOfThreads, int inserts, int updates, int selects) throws Throwable {
+		this(testName, true, numberOfThreads, inserts, updates, selects);
 	}
 
 	/** Runs a Insert & Select algorithm analysis test */
-	public DatabaseAlgorithmAnalysis(String testName, int numberOfThreads, int inserts, int selects) throws InterruptedException, SQLException {
+	public DatabaseAlgorithmAnalysis(String testName, int numberOfThreads, int inserts, int selects) throws Throwable {
 		this(testName, numberOfThreads, inserts, -1, selects);
 	}
 
 	
-	public abstract void resetTables() throws SQLException;
+	public abstract void resetTables() throws Throwable;
 
-	public void insertLoopCode(int i)  throws SQLException {
+	public void insertLoopCode(int i)  throws Throwable {
 		throw new RuntimeException("If you want your algorithm analysis test to test INSERTs, you must override 'insertLoopCode'");
 	}
 
-	public void updateLoopCode(int i)  throws SQLException {
+	public void updateLoopCode(int i)  throws Throwable {
 		throw new RuntimeException("If you want your algorithm analysis test to test UPDATEs, you must override 'updateLoopCode'");
 	}
 
-	public void selectLoopCode(int i)  throws SQLException {
+	public void selectLoopCode(int i)  throws Throwable {
 		throw new RuntimeException("If you want your algorithm analysis test to test SELECTs, you must override 'selectLoopCode'");
 	}
 	
-	public void deleteLoopCode(int i)  throws SQLException {
+	public void deleteLoopCode(int i)  throws Throwable {
 		throw new RuntimeException("If you want your algorithm analysis test to test DELETEs, you must override 'deleteLoopCode'");
 	}
 	
-	private void analyse() throws InterruptedException, SQLException {
+	private void analyse() throws Throwable {
 
 		// WARMUP
-		if (shouldPerformInsertTests) {
+		if (shouldPerformWarmUp) {
 			System.err.print("Warm Up; "); System.err.flush();
 			resetTables();
 			for (int threadNumber=0; threadNumber<numberOfThreads; threadNumber++) {
 				SplitRun.add(new SplitRun(threadNumber) {
-					public void splitRun(int threadNumber) throws SQLException {
+					public void splitRun(int threadNumber) throws Throwable {
 						for (int i=_perThreadInsertAttempts*threadNumber; i<_perThreadInsertAttempts*(threadNumber+1)/100; i++) {
 							insertLoopCode(i);
 						}
@@ -205,7 +211,7 @@ public abstract class DatabaseAlgorithmAnalysis {
 			insertStart1 = System.currentTimeMillis();
 			for (int threadNumber=0; threadNumber<numberOfThreads; threadNumber++) {
 				SplitRun.add(new SplitRun(threadNumber) {
-					public void splitRun(int threadNumber) throws SQLException {
+					public void splitRun(int threadNumber) throws Throwable {
 						for (int i=_perThreadInsertAttempts*threadNumber; i<_perThreadInsertAttempts*(threadNumber+1); i++) {
 							insertLoopCode(i);
 						}
@@ -222,7 +228,7 @@ public abstract class DatabaseAlgorithmAnalysis {
 			updateStart1 = System.currentTimeMillis();
 			for (int threadNumber=0; threadNumber<numberOfThreads; threadNumber++) {
 				SplitRun.add(new SplitRun(threadNumber) {
-					public void splitRun(int threadNumber) throws SQLException {
+					public void splitRun(int threadNumber) throws Throwable {
 						for (int i=_perThreadUpdates*threadNumber; i<_perThreadUpdates*(threadNumber+1); i++) {
 							updateLoopCode(i);
 						}
@@ -239,7 +245,7 @@ public abstract class DatabaseAlgorithmAnalysis {
 			selectStart1 = System.currentTimeMillis();
 			for (int threadNumber=0; threadNumber<numberOfThreads; threadNumber++) {
 				SplitRun.add(new SplitRun(threadNumber) {
-					public void splitRun(int threadNumber) throws SQLException {
+					public void splitRun(int threadNumber) throws Throwable {
 						for (int i=_perThreadSelects*threadNumber; i<_perThreadSelects*(threadNumber+1); i++) {
 							selectLoopCode(i);
 						}
@@ -258,7 +264,7 @@ public abstract class DatabaseAlgorithmAnalysis {
 			insertStart2 = System.currentTimeMillis();
 			for (int threadNumber=0; threadNumber<numberOfThreads; threadNumber++) {
 				SplitRun.add(new SplitRun(threadNumber) {
-					public void splitRun(int threadNumber) throws SQLException {
+					public void splitRun(int threadNumber) throws Throwable {
 						for (int i=_perThreadInsertAttempts*threadNumber; i<_perThreadInsertAttempts*(threadNumber+1); i++) {
 							insertLoopCode(inserts+i);
 						}
@@ -275,7 +281,7 @@ public abstract class DatabaseAlgorithmAnalysis {
 			updateStart2 = System.currentTimeMillis();
 			for (int threadNumber=0; threadNumber<numberOfThreads; threadNumber++) {
 				SplitRun.add(new SplitRun(threadNumber) {
-					public void splitRun(int threadNumber) throws SQLException {
+					public void splitRun(int threadNumber) throws Throwable {
 						for (int i=_perThreadUpdates*threadNumber; i<_perThreadUpdates*(threadNumber+1); i++) {
 							updateLoopCode(inserts+i);
 						}
@@ -292,7 +298,7 @@ public abstract class DatabaseAlgorithmAnalysis {
 			selectStart2 = System.currentTimeMillis();
 			for (int threadNumber=0; threadNumber<numberOfThreads; threadNumber++) {
 				SplitRun.add(new SplitRun(threadNumber) {
-					public void splitRun(int threadNumber) throws SQLException {
+					public void splitRun(int threadNumber) throws Throwable {
 						for (int i=_perThreadSelects*threadNumber; i<_perThreadSelects*(threadNumber+1); i++) {
 							selectLoopCode(inserts+i);
 						}

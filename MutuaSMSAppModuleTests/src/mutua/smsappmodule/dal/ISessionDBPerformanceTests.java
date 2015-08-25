@@ -61,7 +61,7 @@ public class ISessionDBPerformanceTests {
 	**********/
 
 	@Test
-	public void testMultipleUsersSessionAlgorithmAnalysis() throws InterruptedException, SQLException {
+	public void testMultipleUsersSessionAlgorithmAnalysis() throws Throwable {
 		int inserts = totalNumberOfUsers / 2;
 		int updates = inserts;
 		int selects = inserts;
@@ -100,7 +100,7 @@ public class ISessionDBPerformanceTests {
 	}
 
 	@Test
-	public void testMultiplePropertiesSessionAlgorithmAnalysis() throws InterruptedException, SQLException {
+	public void testMultiplePropertiesSessionAlgorithmAnalysis() throws Throwable {
 		int totalNumberOfSessions = SMSAppModuleConfigurationTests.PERFORMANCE_TESTS_LOAD_FACTOR * ((DEFAULT_MODULE_DAL == SMSAppModuleDALFactory.RAM) ? 600000 : 30000);	// please, be sure the division between this and 'numberOfThreads' is round
 		int inserts = totalNumberOfSessions / 2;
 		int updates = inserts;

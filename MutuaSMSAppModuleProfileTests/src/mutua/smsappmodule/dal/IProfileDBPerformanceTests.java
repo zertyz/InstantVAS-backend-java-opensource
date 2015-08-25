@@ -63,7 +63,7 @@ public class IProfileDBPerformanceTests {
 	**********/
 	
 	@Test
-	public void testPureNonCollisionalNicknamesAlgorithmAnalysis() throws SQLException, InterruptedException {
+	public void testPureNonCollisionalNicknamesAlgorithmAnalysis() throws Throwable {
 
 		int inserts = totalNumberOfUsers / 2;
 		int updates = inserts;
@@ -93,7 +93,7 @@ public class IProfileDBPerformanceTests {
 	}
 	
 	@Test
-	public void testPureCollisionalNicknamesAlgorithmAnalysis() throws SQLException, InterruptedException {
+	public void testPureCollisionalNicknamesAlgorithmAnalysis() throws Throwable {
 
 		int inserts = 5000;
 		int selects = inserts;
@@ -119,7 +119,7 @@ public class IProfileDBPerformanceTests {
 	}
 	
 	@Test
-	public void testHibridCollisionalNicknamesAlgorithmAnalysis() throws SQLException, InterruptedException {
+	public void testHibridCollisionalNicknamesAlgorithmAnalysis() throws Throwable {
 
 		int inserts = totalNumberOfUsers / 2;
 		int updates = inserts;

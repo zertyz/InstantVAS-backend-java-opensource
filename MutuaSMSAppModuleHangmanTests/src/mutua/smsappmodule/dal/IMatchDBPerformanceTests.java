@@ -63,7 +63,7 @@ public class IMatchDBPerformanceTests {
 	**********/
 	
 	@Test
-	public void testMatchDBAlgorithmAnalysis() throws SQLException, InterruptedException {
+	public void testMatchDBAlgorithmAnalysis() throws Throwable {
 
 		int inserts = (totalNumberOfUsers / 2) / 2;
 		int updates = inserts;

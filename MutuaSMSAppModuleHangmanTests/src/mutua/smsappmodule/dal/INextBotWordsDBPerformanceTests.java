@@ -63,7 +63,7 @@ public class INextBotWordsDBPerformanceTests {
 	**********/
 	
 	@Test
-	public void testSeveralUsersAlgorithmAnalysis() throws SQLException, InterruptedException {
+	public void testSeveralUsersAlgorithmAnalysis() throws Throwable {
 
 		int inserts = totalNumberOfUsers / 2;
 		int updates = inserts;

@@ -50,9 +50,10 @@ public class MOSMSesQueueDataBureau extends IDatabaseQueueDataBureau<EHangmanSMS
 			default:
 				throw new RuntimeException("Don't know how to serialize EHangmanSMSGameEvents."+entry.getMethodId());
 		}
-		preparedProcedure.addParameter("CARRIER", carrier);
-		preparedProcedure.addParameter("PHONE",   phone);
-		preparedProcedure.addParameter("TEXT",    text);
+		preparedProcedure.addParameter("METHOD_ID", entry.getMethodId().toString());
+		preparedProcedure.addParameter("CARRIER",   carrier);
+		preparedProcedure.addParameter("PHONE",     phone);
+		preparedProcedure.addParameter("TEXT",      text);
 	}
 
 	@Override
@@ -95,7 +96,8 @@ public class MOSMSesQueueDataBureau extends IDatabaseQueueDataBureau<EHangmanSMS
 
 	@Override
 	public String getFieldsCreationLine() {
-		return 	"carrier   TEXT NOT NULL, " +
+		return 	"methodId  TEXT NOT NULL, " +
+		        "carrier   TEXT NOT NULL, " +
                 "phone     TEXT NOT NULL, " +
 				"text      TEXT NOT NULL, ";
 	}
