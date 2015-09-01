@@ -50,11 +50,11 @@ public class UserDto {
 	
 	@Override
 	public boolean equals(Object obj) {
-		UserDto anotherUser = (UserDto)obj;
-		if ((userId == -1) && (anotherUser.userId == -1)) {
-			return phoneNumber.equals(anotherUser.phoneNumber);
+		UserDto other = (UserDto)obj;
+		if ((userId == -1) && (other.userId == -1)) {
+			return phoneNumber.equals(other.phoneNumber);
 		} else {
-			return userId == anotherUser.userId;
+			return userId == other.userId;
 		}
 	}
 
