@@ -26,8 +26,12 @@ public interface IProfileDB {
 	/** Retrieves the 'ProfileDto' associated with 'user' from the database, or null if none exists */
 	ProfileDto getProfileRecord(UserDto user) throws SQLException;
 	
+	/** Retrieves the 'ProfileDto' associated with the case insensitive 'nickname' */
+	ProfileDto getProfileRecord(String nickname) throws SQLException;
+
 	/** Makes the best effort to store the 'profile' record, returning the same object if successful, or a new object
 	 *  if any values needed to be changed -- e.g. a new nickname is assigned in case of nickname collision */
 	ProfileDto setProfileRecord(ProfileDto profile) throws SQLException;
+
 
 }

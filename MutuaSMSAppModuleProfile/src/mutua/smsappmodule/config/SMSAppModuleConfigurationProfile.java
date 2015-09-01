@@ -31,11 +31,11 @@ public class SMSAppModuleConfigurationProfile {
 	///////////
 	
 	@ConfigurableElement(sameAsMethod="mutua.smsappmodule.i18n.SMSAppModulePhrasingsProfile.phrAskNickname")
-	public static String PROFILEPphrAskNickname                      = phrAskNickname.toString();
+	public static String PROFILEphrAskNickname                      = phrAskNickname.toString();
 	@ConfigurableElement(sameAsMethod="mutua.smsappmodule.i18n.SMSAppModulePhrasingsProfile.phrNicknameRegistrationNotification")
-	public static String PROFILEPphrNicknameRegistrationNotification = phrNicknameRegistrationNotification.toString();
+	public static String PROFILEphrNicknameRegistrationNotification = phrNicknameRegistrationNotification.toString();
 	@ConfigurableElement(sameAsMethod="mutua.smsappmodule.i18n.SMSAppModulePhrasingsProfile.phrUserProfilePresentation")
-	public static String PROFILEPphrPresentation                     = phrUserProfilePresentation.toString();
+	public static String PROFILEphrPresentation                     = phrUserProfilePresentation.toString();
 	// show players?
 	
 	
@@ -56,9 +56,9 @@ public class SMSAppModuleConfigurationProfile {
 	
 	/** Apply on-the-fly phrasing changes */
 	public static void applyPhrasingConfiguration() {
-		phrAskNickname                     .setPhrases(PROFILEPphrAskNickname);
-		phrNicknameRegistrationNotification.setPhrases(PROFILEPphrNicknameRegistrationNotification);
-		phrUserProfilePresentation         .setPhrases(PROFILEPphrPresentation);
+		phrAskNickname                     .setPhrases(PROFILEphrAskNickname);
+		phrNicknameRegistrationNotification.setPhrases(PROFILEphrNicknameRegistrationNotification);
+		phrUserProfilePresentation         .setPhrases(PROFILEphrPresentation);
 	}
 	
 	/** Apply on-the-fly command trigger changes */

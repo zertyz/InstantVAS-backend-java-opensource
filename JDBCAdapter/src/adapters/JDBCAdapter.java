@@ -142,7 +142,7 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 						stm.addBatch(tableDefinitions[i][j]);
 					}
 					int[] result = stm.executeBatch();
-					log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "Table '"+requiredTableName+"' borned with "+result.length+" records");
+					log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "Table '"+requiredTableName+"' borned with "+result.length+" record"+(result.length==1 ? "":"s"));
 				}
 			}
 		}

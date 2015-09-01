@@ -31,4 +31,12 @@ public class ProfileDto {
 		return nickname;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		ProfileDto other = (ProfileDto)obj;
+		return this.user.equals(other.user) && this.nickname.equals(other.nickname);
+	}
+	
+	
+
 }

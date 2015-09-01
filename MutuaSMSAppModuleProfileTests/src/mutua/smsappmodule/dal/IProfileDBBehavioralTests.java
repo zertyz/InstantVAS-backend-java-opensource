@@ -67,6 +67,7 @@ public class IProfileDBBehavioralTests {
 		assertEquals("Failed to store a new user profile -- Original and retrieved 'user' doesn't match",      originalProfile.getUser().getPhoneNumber(),     retrievedProfile.getUser().getPhoneNumber());
 		assertEquals("Failed to store a new user profile -- Original and retrieved 'nickname' doesn't match",  originalProfile.getNickname(),                  retrievedProfile.getNickname());
 		assertSame  ("Failed to store a new user profile -- Original and stored objects are not the same",     originalProfile, storedProfile);
+		assertEquals("Failed to retrieve profile by nickname",                                                 retrievedProfile, profileDB.getProfileRecord("anickname"));
 		
 		// test existing profile
 		originalProfile  = new ProfileDto(dom, "dOm");
@@ -75,6 +76,7 @@ public class IProfileDBBehavioralTests {
 		assertEquals("Failed to store an existing user profile -- Original and retrieved 'user' doesn't match",      originalProfile.getUser().getPhoneNumber(),     retrievedProfile.getUser().getPhoneNumber());
 		assertEquals("Failed to store an existing user profile -- Original and retrieved 'nickname' doesn't match",  originalProfile.getNickname(),                  retrievedProfile.getNickname());
 		assertSame  ("Failed to store an existing user profile -- Original and stored objects are not the same",     originalProfile, storedProfile);
+		assertEquals("Failed to retrieve profile by nickname",                                                       retrievedProfile, profileDB.getProfileRecord("dom"));
 		
 		// test nickname collision
 		originalProfile  = new ProfileDto(paty, "Dom");
@@ -90,6 +92,7 @@ public class IProfileDBBehavioralTests {
 		retrievedProfile = profileDB.getProfileRecord(dom);
 		assertEquals("Failed allow the same user to change his own nickname to the same case insensitive value -- Original and retrieved 'nickname's differ",    originalProfile.getNickname(), retrievedProfile.getNickname());
 		assertSame  ("Failed allow the same user to change his own nickname to the same case insensitive value -- Original and stored objects are not the same", originalProfile, storedProfile);
+		assertEquals("Failed to retrieve profile by nickname",                                                     retrievedProfile, profileDB.getProfileRecord("DoM"));
 		
 	}
 	
@@ -112,6 +115,7 @@ public class IProfileDBBehavioralTests {
 			profileDB.setProfileRecord(retrievedProfile);
 			retrievedProfile = profileDB.getProfileRecord(users[i]);
 			assertEquals("Nicknames collision prevention sequence algorithm is not allowing the user to change to exactly the same nickname (sequence numbers included)", expectedNickname, retrievedProfile.getNickname());
+			assertEquals("Failed to retrieve profile by nickname", retrievedProfile, profileDB.getProfileRecord(expectedNickname));
 
 		}
 		

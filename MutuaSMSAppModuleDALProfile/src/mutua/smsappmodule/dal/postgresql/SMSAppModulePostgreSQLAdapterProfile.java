@@ -106,7 +106,7 @@ public class SMSAppModulePostgreSQLAdapterProfile extends PostgreSQLAdapter {
 			             "            RETURN;\n" +
 			             "        EXCEPTION WHEN unique_violation THEN\n" +
 			             "            IF attempt >= 3 THEN\n" +
-			             "                RAISE EXCEPTION 'Duplicate entry (userId and/or nickname): (%, %), even with pg_advisory_xact_lock(%), after % attempts', p_userId, p_nickname||CAST(sequence AS TEXT), hashtext(lower(p_nickname)), attempt USING ERRCODE = 'unique_violation';\n" +
+			             "                RAISE EXCEPTION 'Duplicate entry (userId and/or nickname): (%, %), even with pg_advisory_xact_lock(%), after % attempt(s)', p_userId, p_nickname||CAST(sequence AS TEXT), hashtext(lower(p_nickname)), attempt USING ERRCODE = 'unique_violation';\n" +
 			             "            END IF;\n" +
 			             "            attempt := attempt + 1;\n" +
 			             "        END;\n" +
@@ -125,9 +125,10 @@ public class SMSAppModulePostgreSQLAdapterProfile extends PostgreSQLAdapter {
 	
 	public static JDBCAdapter getProfileDBAdapter() throws SQLException {
 		return new SMSAppModulePostgreSQLAdapterProfile(log, new String[][] {
-			{"ResetTable",             "DELETE FROM Profiles"},
-			{"SelectProfileByUser",    "SELECT userId, nickname FROM Profiles WHERE userId=${USER_ID}"},
-			{"AssertProfile",          "SELECT userId, nickname FROM AssertProfile(${USER_ID}, ${NICKNAME})"},
+			{"ResetTable",              "DELETE FROM Profiles"},
+			{"SelectProfileByUser",     "SELECT userId, nickname FROM Profiles WHERE userId=${USER_ID}"},
+			{"AssertProfile",           "SELECT userId, nickname FROM AssertProfile(${USER_ID}, ${NICKNAME})"},
+			{"SelectProfileByNickname", "SELECT Users.userId, Users.phoneNumber, Profiles.nickname FROM Users, Profiles WHERE lower(nickname)=lower(${NICKNAME}) AND Users.userId = Profiles.userId"},
 		});
 	}
 }

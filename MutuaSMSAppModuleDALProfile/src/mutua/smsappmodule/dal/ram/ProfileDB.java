@@ -53,6 +53,11 @@ public class ProfileDB implements IProfileDB {
 	}
 
 	@Override
+	public ProfileDto getProfileRecord(String nickname) {
+		return profilesByNick.get(nickname.toLowerCase());
+	}
+
+	@Override
 	public ProfileDto setProfileRecord(ProfileDto profile) throws SQLException {
 		UserDto user = profile.getUser();
 		// detect nickname collision

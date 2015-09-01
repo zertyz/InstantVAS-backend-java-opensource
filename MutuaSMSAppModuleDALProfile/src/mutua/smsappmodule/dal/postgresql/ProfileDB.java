@@ -46,6 +46,17 @@ public class ProfileDB implements IProfileDB {
 	}
 
 	@Override
+	public ProfileDto getProfileRecord(String nickname) throws SQLException {
+		PreparedProcedureInvocationDto procedure = new PreparedProcedureInvocationDto("SelectProfileByNickname");
+		procedure.addParameter("NICKNAME", nickname);
+		Object[] row = dba.invokeRowProcedure(procedure);
+		int    userId                 = (Integer) row[0];
+		String phoneNumber            = (String)  row[1];
+		String correctlyCasedNickname = (String)  row[2];
+		return new ProfileDto(new UserDto(userId, phoneNumber), correctlyCasedNickname);
+	}
+
+	@Override
 	public ProfileDto setProfileRecord(ProfileDto profile) throws SQLException {
 		PreparedProcedureInvocationDto procedure = new PreparedProcedureInvocationDto("AssertProfile");
 		procedure.addParameter("USER_ID",  profile.getUser().getUserId());
