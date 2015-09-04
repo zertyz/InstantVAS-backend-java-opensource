@@ -150,7 +150,6 @@ public abstract class DatabaseAlgorithmAnalysis {
 		this.numberOfSecondPassDeleteElements = -1;
 		this._perThreadDeletes                = -1;
 		
-		System.gc();
 		System.err.print(testName + " Algorithm Analisys: "); System.err.flush();
 		analyse();
 	}
@@ -188,6 +187,7 @@ public abstract class DatabaseAlgorithmAnalysis {
 
 		// WARMUP
 		if (shouldPerformWarmUp) {
+			System.gc(); System.runFinalization(); System.gc();
 			System.err.print("Warm Up; "); System.err.flush();
 			resetTables();
 			for (int threadNumber=0; threadNumber<numberOfThreads; threadNumber++) {
@@ -207,6 +207,7 @@ public abstract class DatabaseAlgorithmAnalysis {
 		
 		// INSERTS (first pass)
 		if (shouldPerformInsertTests) {
+			System.gc(); System.runFinalization(); System.gc();
 			System.err.print("Insert "); System.err.flush();
 			insertStart1 = System.currentTimeMillis();
 			for (int threadNumber=0; threadNumber<numberOfThreads; threadNumber++) {
@@ -224,6 +225,7 @@ public abstract class DatabaseAlgorithmAnalysis {
 		
 		// UPDATES (first pass)
 		if (shouldPerformUpdateTests) {
+			System.gc(); System.runFinalization(); System.gc();
 			System.err.print("Update "); System.err.flush();
 			updateStart1 = System.currentTimeMillis();
 			for (int threadNumber=0; threadNumber<numberOfThreads; threadNumber++) {
@@ -241,6 +243,7 @@ public abstract class DatabaseAlgorithmAnalysis {
 
 		// SELECTS (first pass)
 		if (shouldPerformSelectTests) {
+			System.gc(); System.runFinalization(); System.gc();
 			System.err.print("Select "); System.err.flush();
 			selectStart1 = System.currentTimeMillis();
 			for (int threadNumber=0; threadNumber<numberOfThreads; threadNumber++) {
@@ -260,6 +263,7 @@ public abstract class DatabaseAlgorithmAnalysis {
 		
 		// INSERTS (second pass)
 		if (shouldPerformInsertTests) {
+			System.gc(); System.runFinalization(); System.gc();
 			System.err.print("Insert "); System.err.flush();
 			insertStart2 = System.currentTimeMillis();
 			for (int threadNumber=0; threadNumber<numberOfThreads; threadNumber++) {
@@ -277,6 +281,7 @@ public abstract class DatabaseAlgorithmAnalysis {
 				
 		// UPDATES (second pass)
 		if (shouldPerformUpdateTests) {
+			System.gc(); System.runFinalization(); System.gc();
 			System.err.print("Update "); System.err.flush();
 			updateStart2 = System.currentTimeMillis();
 			for (int threadNumber=0; threadNumber<numberOfThreads; threadNumber++) {
@@ -294,6 +299,7 @@ public abstract class DatabaseAlgorithmAnalysis {
 
 		// SELECTS (second pass)
 		if (shouldPerformSelectTests) {
+			System.gc(); System.runFinalization(); System.gc();
 			System.err.print("Select "); System.err.flush();
 			selectStart2 = System.currentTimeMillis();
 			for (int threadNumber=0; threadNumber<numberOfThreads; threadNumber++) {
@@ -323,7 +329,26 @@ public abstract class DatabaseAlgorithmAnalysis {
 		
 	}
 	
-	public enum EAlgorithmComplexity {BetterThanO1, O1, Ologn, On, WorseThanOn};
+	public enum EAlgorithmComplexity {BetterThanO1, O1, Ologn, BetweenOLogNAndOn, On, WorseThanOn;
+		public String toString() {
+			switch (this) {
+				case BetterThanO1:
+					return "Better than O(1) -- aren't the machines idle?";
+				case O1:
+					return "O(1)";
+				case Ologn:
+					return "O(log(n))";
+				case BetweenOLogNAndOn:
+					return "Worse than O(log(n)), but better than O(n)";
+				case On:
+					return "O(n)";
+				case WorseThanOn:
+					return "Worse than O(n)";
+				default:
+					return "unknown complexity -- update 'DatabaseAlgorithmAnalysis' source code";
+			}
+		}
+	};
 	
 	/** Performs the algorithm analysis for a massive database insert operation.
 	 * To perform the analysis, two insertions of 'n' elements must be done on an empty database.
@@ -354,12 +379,16 @@ public abstract class DatabaseAlgorithmAnalysis {
 		// test for O(log(n)) -- (t2/t1) / (log(n*3)/log(n)) ~= 1
 		if ( Math.abs( ((t2/t1) / (Math.log(n*3)/Math.log(n))) - ((double)1) ) < percentError ) {
 			complexity = EAlgorithmComplexity.Ologn;
-		} else {
+		} else 
 		// test for O(n) -- t2/t1 / 3 ~= 1
 		if ( Math.abs( ((t2/t1)/3) - ((double)1)) < percentError ) {
 			complexity = EAlgorithmComplexity.On;
 		} else
+		// test for worse than O(n)
+		if ( ( ((t2/t1)/3) - ((double) 1) ) > percentError ) {
 			complexity = EAlgorithmComplexity.WorseThanOn;
+		} else {
+			complexity = EAlgorithmComplexity.BetweenOLogNAndOn;
 		}
 		
 		System.err.println("Insert algorithm analysis:");
@@ -402,12 +431,16 @@ public abstract class DatabaseAlgorithmAnalysis {
 		// test for O(log(n)) -- (t2/t1) / (log(n2)/log(n1)) ~= 1
 		if ( Math.abs( ((t2/t1) / (Math.log(n2)/Math.log(n1))) - ((double)1) ) < percentError ) {
 			complexity = EAlgorithmComplexity.Ologn;
-		} else {
+		} else 
 		// test for O(n) -- (t2/t1) / (n2/n1) ~= 1
 		if ( Math.abs( ((t2/t1) / (n2/n1)) - ((double)1) ) < percentError ) {
 			complexity = EAlgorithmComplexity.On;
 		} else
+		// test for worse than O(n)
+		if ( ( ((t2/t1) / (n2/n1)) - ((double)1) ) > percentError ) {
 			complexity = EAlgorithmComplexity.WorseThanOn;
+		} else {
+			complexity = EAlgorithmComplexity.BetweenOLogNAndOn;
 		}
 		
 		System.err.println(operation + " algorithm analysis:");

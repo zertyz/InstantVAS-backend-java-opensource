@@ -37,7 +37,7 @@ public abstract class PostgreSQLAdapter extends JDBCAdapter {
 	
 	@Override
 	protected String getShowTablesCommand() {
-		return "SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema';";
+		return "SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema' AND tableowner='"+DATABASE_NAME+"';";
 	};
 
 	@Override
