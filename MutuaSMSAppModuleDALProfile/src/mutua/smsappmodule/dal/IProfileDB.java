@@ -33,5 +33,4 @@ public interface IProfileDB {
 	 *  if any values needed to be changed -- e.g. a new nickname is assigned in case of nickname collision */
 	ProfileDto setProfileRecord(ProfileDto profile) throws SQLException;
 
-
 }

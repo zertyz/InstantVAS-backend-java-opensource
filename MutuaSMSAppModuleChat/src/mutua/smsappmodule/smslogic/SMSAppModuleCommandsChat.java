@@ -1,13 +1,16 @@
 package mutua.smsappmodule.smslogic;
 
-import static mutua.smsappmodule.smslogic.CommandCommons.*;
-import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates.*;
-import static mutua.smsappmodule.smslogic.sessions.SMSAppModuleSessionsChat.*;
 import static mutua.smsappmodule.i18n.SMSAppModulePhrasingsChat.*;
+import static mutua.smsappmodule.smslogic.CommandCommons.getNewStateReplyCommandAnswer;
+import static mutua.smsappmodule.smslogic.CommandCommons.getSameStateReplyCommandAnswer;
+import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates.nstExistingUser;
+import static mutua.smsappmodule.smslogic.sessions.SMSAppModuleSessionsChat.sprLastPrivateMessageSender;
 
 import java.sql.SQLException;
 
+import mutua.smsappmodule.dal.IChatDB;
 import mutua.smsappmodule.dal.IProfileDB;
+import mutua.smsappmodule.dal.SMSAppModuleDALFactoryChat;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactoryProfile;
 import mutua.smsappmodule.dto.ProfileDto;
 import mutua.smsappmodule.dto.UserDto;
@@ -76,6 +79,7 @@ public enum SMSAppModuleCommandsChat implements ICommandProcessor {
 	// databases
 	////////////
 	
+	private static IChatDB    chatDB    = SMSAppModuleDALFactoryChat.DEFAULT_DAL.getChatDB();
 	private static IProfileDB profileDB = SMSAppModuleDALFactoryProfile.DEFAULT_DAL.getProfileDB();
 
 	

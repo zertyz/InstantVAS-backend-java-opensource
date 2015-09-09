@@ -46,6 +46,7 @@ public class IProfileDBBehavioralTests {
 	** TESTS **
 	**********/
 	
+	@Test
 	public void testNonExistingProfileRecord() throws SQLException {
 		UserDto    user    = userDB.assureUserIsRegistered("21991234899");
 		ProfileDto profile = profileDB.getProfileRecord(user);

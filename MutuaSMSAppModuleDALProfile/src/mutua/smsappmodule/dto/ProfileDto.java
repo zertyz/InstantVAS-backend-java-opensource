@@ -14,10 +14,12 @@ package mutua.smsappmodule.dto;
 
 public class ProfileDto {
 	
+	
 	private UserDto user;
 	private String  nickname;
 	
-	/** Creates a user profile record */
+	
+	/** Creates an user profile record */
 	public ProfileDto(UserDto user, String nickname) {
 		this.user     = user;
 		this.nickname = nickname;
@@ -36,7 +38,5 @@ public class ProfileDto {
 		ProfileDto other = (ProfileDto)obj;
 		return this.user.equals(other.user) && this.nickname.equals(other.nickname);
 	}
-	
-	
 
 }
