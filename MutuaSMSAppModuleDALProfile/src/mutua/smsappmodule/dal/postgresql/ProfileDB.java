@@ -40,6 +40,9 @@ public class ProfileDB implements IProfileDB {
 		PreparedProcedureInvocationDto procedure = new PreparedProcedureInvocationDto("SelectProfileByUser");
 		procedure.addParameter("USER_ID", user.getUserId());
 		Object[] row = dba.invokeRowProcedure(procedure);
+		if (row == null) {
+			return null;
+		}
 		int    userId   = (Integer) row[0];
 		String nickname = (String)  row[1];
 		return new ProfileDto(user, nickname);
@@ -50,6 +53,9 @@ public class ProfileDB implements IProfileDB {
 		PreparedProcedureInvocationDto procedure = new PreparedProcedureInvocationDto("SelectProfileByNickname");
 		procedure.addParameter("NICKNAME", nickname);
 		Object[] row = dba.invokeRowProcedure(procedure);
+		if (row == null) {
+			return null;
+		}
 		int    userId                 = (Integer) row[0];
 		String phoneNumber            = (String)  row[1];
 		String correctlyCasedNickname = (String)  row[2];

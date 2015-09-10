@@ -185,8 +185,8 @@ public class IProfileDBPerformanceTests {
 		final ProfileDto[] profiles  = new ProfileDto[inserts*2];
 		Random rnd = new Random();
 		for (int i=0; i<users.length; i++) {
-			StringBuffer nickname = new StringBuffer(10);
-			for (int j=0; j<8; j++) {
+			StringBuffer nickname = new StringBuffer(20);
+			for (int j=0; j<9; j++) {	// this will give a 1 in ~162 million chance of collision when running the extensive tests: print(1/(Math.pow(1/37, 9)*800000))
 				nickname.append(nicknameChars[rnd.nextInt(nicknameChars.length)]);
 			}
 			nicknames[i] = nickname.toString();

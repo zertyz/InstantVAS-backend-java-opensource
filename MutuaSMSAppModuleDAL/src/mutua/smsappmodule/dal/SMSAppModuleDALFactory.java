@@ -50,7 +50,7 @@ public enum SMSAppModuleDALFactory {
 	
 	/** this method allows the instantiation of only the desired data access layer
 	/* (preventing unecessary drivers to be loaded) */
-	private void checkDataAccessLayers() {
+	public void checkDataAccessLayers() {
 		if (!wasInstantiated) try {
 			instantiateDataAccessLayers();
 			wasInstantiated = true;

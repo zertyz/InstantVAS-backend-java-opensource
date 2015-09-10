@@ -23,7 +23,7 @@ public class SMSAppModulePostgreSQLAdapterChat extends PostgreSQLAdapter {
 
 	
 	// the version information for database tables present on this class, to be stored on the 'Meta' table. Useful for future data conversions.
-	private static String modelVersionForMetaTable = "2015.09.08";
+	private static String modelVersionForMetaTable = "2015.09.10";
 	
 	// configuration
 	////////////////
@@ -82,6 +82,10 @@ public class SMSAppModulePostgreSQLAdapterChat extends PostgreSQLAdapter {
 			                    "recipientUserId  INTEGER   NOT NULL REFERENCES Users(userId) ON DELETE CASCADE, " +
 			                    "moTextStartIndex INTEGER   NOT NULL, " +
 			                    "cts              TIMESTAMP DEFAULT CURRENT_TIMESTAMP);" +
+			                    
+			                    // custom indexes
+			                    "CREATE INDEX SenderUserIds    ON PrivateMessages(senderUserId);" +
+			                    "CREATE INDEX RecipientUserIds ON PrivateMessages(recipientUserId);" +
 			                    
 				                // Meta record
 				                "INSERT INTO Meta(tableName, modelVersion) VALUES ('PrivateMessages', '"+modelVersionForMetaTable+"_"+moIdReference+"')"},

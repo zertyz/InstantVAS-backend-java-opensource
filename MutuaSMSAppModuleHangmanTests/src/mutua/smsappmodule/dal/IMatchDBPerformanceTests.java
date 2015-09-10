@@ -92,7 +92,7 @@ public class IMatchDBPerformanceTests {
 		};
 		
 		// attempt to speed up the next 'UserDB.reset()',
-		// which is unreasonably slow due to the non-unique relations to userId
+		// which is unreasonably slow due to the non-indexed relations to userId
 		matchDB.reset();
 
 	}

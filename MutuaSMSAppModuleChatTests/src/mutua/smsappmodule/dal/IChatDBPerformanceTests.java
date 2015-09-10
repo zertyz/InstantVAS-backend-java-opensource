@@ -1,14 +1,14 @@
 package mutua.smsappmodule.dal;
 
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationChatTests.*;
-import static mutua.smsappmodule.SMSAppModuleChatTestCommons.*;
+import static mutua.smsappmodule.SMSAppModuleChatTestCommons.addMO;
+import static mutua.smsappmodule.SMSAppModuleChatTestCommons.moQueueLink;
+import static mutua.smsappmodule.config.SMSAppModuleConfigurationChatTests.DEFAULT_CHAT_DAL;
 import static org.junit.Assert.*;
 
 import java.sql.SQLException;
-import java.util.Hashtable;
-import java.util.Random;
+import java.util.Arrays;
+import java.util.Comparator;
 
-import mutua.events.MO;
 import mutua.smsappmodule.DatabaseAlgorithmAnalysis;
 import mutua.smsappmodule.SMSAppModuleTestCommons;
 import mutua.smsappmodule.SplitRun;
@@ -40,12 +40,14 @@ public class IChatDBPerformanceTests {
 	private static int numberOfThreads = 4;
 
 	// users table pre-fill
-	private static int       totalNumberOfUsers = SMSAppModuleConfigurationTests.PERFORMANCE_TESTS_LOAD_FACTOR * ((DEFAULT_CHAT_DAL == SMSAppModuleDALFactoryChat.RAM) ? 89 : 18) * (4*numberOfThreads);	// please, pick a reasonable number, since approximately the square number of elements will be created (users + mos + privateMessages)
+	private static int       totalNumberOfUsers = ((int)Math.pow(SMSAppModuleConfigurationTests.PERFORMANCE_TESTS_LOAD_FACTOR, 1d/2d)) * ((DEFAULT_CHAT_DAL == SMSAppModuleDALFactoryChat.RAM) ? 89 : 18) * (4*numberOfThreads);	// please, pick a reasonable number, since approximately the square number of elements will be created (users + mos + privateMessages)
 	private static long      phoneStart         = 991230000;
 	private static UserDto[]           users    = new UserDto[totalNumberOfUsers];
 	private static PrivateMessageDto[] pvts     = null;
 
 	
+	private static String firstMessage  = "Here is the message...";
+	private static String secondMessage = "...and here is the answer";
 	/** Inserts a private chat MO from every user to himself and every next one on the 'users' list, using 'p' concurrent threads and
 	 *  computing also the replies. The private messages are placed into 'pvts' list, which will be returned and will have the length of
 	 *  the double triangular number for 'users.length', that is: pvts.length := ((users.length*(users.length+1))/2)*2;
@@ -76,17 +78,17 @@ public class IChatDBPerformanceTests {
 					// first interval: an _n/2 portion from the base of the pyramid
 					for (int s=(threadNumber*_u)/2; s<((threadNumber+1)*_u)/2; s++) {
 						for (int r=s; r<users.length; r++) {
-							String moText = "M "+users[r].getPhoneNumber()+" This came from the first interval";
+							String moText = "M1i "+users[r].getPhoneNumber()+" "+firstMessage;
 							int moId = addMO(chatDB, users[s], moText);
-							pvts[m++] = new PrivateMessageDto(users[s], users[r], moId, "This came from the first interval");
+							pvts[m++] = new PrivateMessageDto(users[s], users[r], moId, firstMessage);
 						}
 					}
 					// second interval: an _n/2 portion from the top of the pyramid
 					for (int s=users.length-(((threadNumber+1)*_u)/2); s<users.length-((threadNumber*_u)/2); s++) {
 						for (int r=s; r<users.length; r++) {
-							String moText = "M "+users[r].getPhoneNumber()+" This came from the second interval";
+							String moText = "M2i "+users[r].getPhoneNumber()+" "+firstMessage;
 							int moId = addMO(chatDB, users[s], moText);
-							pvts[m++] = new PrivateMessageDto(users[s], users[r], moId, "This came from the second interval");
+							pvts[m++] = new PrivateMessageDto(users[s], users[r], moId, firstMessage);
 						}
 					}
 				}
@@ -105,17 +107,17 @@ public class IChatDBPerformanceTests {
 					// first interval: an _n/2 portion from the base of the pyramid
 					for (int r=(threadNumber*_u)/2; r<((threadNumber+1)*_u)/2; r++) {
 						for (int s=r; s<users.length; s++) {
-							String moText = "M "+users[r].getPhoneNumber()+" Got it! From the first!";
+							String moText = "M1i "+users[r].getPhoneNumber()+" "+secondMessage;
 							int moId = addMO(chatDB, users[s], moText);
-							pvts[m++] = new PrivateMessageDto(users[s], users[r], moId, "Got it! From the first!");
+							pvts[m++] = new PrivateMessageDto(users[s], users[r], moId, secondMessage);
 						}
 					}
 					// second interval: an _n/2 portion from the top of the pyramid
 					for (int r=users.length-(((threadNumber+1)*_u)/2); r<users.length-((threadNumber*_u)/2); r++) {
 						for (int s=r; s<users.length; s++) {
-							String moText = "M "+users[r].getPhoneNumber()+" Now from the second. Good!";
+							String moText = "M2i "+users[r].getPhoneNumber()+" "+secondMessage;
 							int moId = addMO(chatDB, users[s], moText);
-							pvts[m++] = new PrivateMessageDto(users[s], users[r], moId, "Now from the second. Good!");
+							pvts[m++] = new PrivateMessageDto(users[s], users[r], moId, secondMessage);
 						}
 					}
 				}
@@ -137,6 +139,14 @@ public class IChatDBPerformanceTests {
 		try {
 			SMSAppModuleTestCommons.resetTables();
 			SMSAppModuleTestCommons.insertUsers(phoneStart, users, numberOfThreads);
+			// prepare the 'users' list for the tests
+			Arrays.sort(users, new Comparator<UserDto>() {
+				@Override
+				public int compare(UserDto o1, UserDto o2) {
+					return o1.getUserId() - o2.getUserId();
+				}
+			});
+
 		} catch (Throwable t) {
 			t.printStackTrace();
 			throw new RuntimeException("Could not fulfill users table", t);
@@ -184,9 +194,14 @@ public class IChatDBPerformanceTests {
 	public void testTriangularNumberedPrivateMessagesChatAlgorithmAnalysis() throws Throwable {
 
 		final int inserts = pvts.length / 2;	// this requires that users.length is a multiple of 4*numbersOfThread, so that pvts.length can be a multiple of 2*numbersOfThread
+		final int updates = users.length;
 		final int selects = users.length;
+		
+		// prepare the tables & variables
+		// this test depends on the 'users' list being sorted
 
-		new DatabaseAlgorithmAnalysis("IChatDB User's Triangular Numbers Private Messages", numberOfThreads, inserts, selects) {
+		// TODO: refactor DatabaseAlgorithmAnalysis to allow custom test names. Here, the update test should be called "getPrivatePeers test" and the select test, "GetPrivateMessages test"
+		new DatabaseAlgorithmAnalysis("IChatDB User's Triangular Numbers Bi-Directional Private Messages", numberOfThreads, inserts, updates, selects) {
 			public void resetTables() throws SQLException {
 				chatDB.reset();
 			}
@@ -195,10 +210,36 @@ public class IChatDBPerformanceTests {
 				UserDto sender        = pvts[i].getSender();
 				UserDto recipient     = pvts[i].getRecipient();
 				int moId              = pvts[i].getMoId();
-				chatDB.logPrivateMessage(sender, recipient, moId, 13);
+				chatDB.logPrivateMessage(sender, recipient, moId, 14);	// 14 is the length of "M2i <phone> "
+			}
+			public void updateLoopCode(int i) throws SQLException {
+				if ((i != 0) && (i != inserts)) {
+					UserDto user1 = users[(i-1) % inserts];
+					UserDto user2 = users[i % inserts];
+					PrivateMessageDto[] privateMessages = chatDB.getPrivateMessages(user1, user2);
+					if ((i/inserts) == 0) {	//	first pass
+						assertEquals("Wrong number of private messages", 1, privateMessages.length);
+						assertEquals("Wrong sender    for first message", user1,        privateMessages[0].getSender());
+						assertEquals("Wrong recipient for first message", user2,        privateMessages[0].getRecipient());
+						assertEquals("Wrong text      for first message", firstMessage, privateMessages[0].getMessage());
+					} else {	// second pass
+						assertEquals("Wrong number of private messages", 2, privateMessages.length);
+						assertEquals("Wrong sender    for second message", user2,         privateMessages[1].getSender());
+						assertEquals("Wrong recipient for second message", user1,         privateMessages[1].getRecipient());
+						assertEquals("Wrong text      for second message", secondMessage, privateMessages[1].getMessage());
+					}
+				}
 			}
 			public void selectLoopCode(int i) throws SQLException {
-				chatDB.getPrivatePeers(users[i % inserts]);
+				UserDto[] retrievedPeers = chatDB.getPrivatePeers(users[i % inserts]);
+				assertEquals("Wrong number of peers retrieved", users.length, retrievedPeers.length);
+				Arrays.sort(retrievedPeers, new Comparator<UserDto>() {
+					@Override
+					public int compare(UserDto o1, UserDto o2) {
+						return o1.getUserId() - o2.getUserId();
+					}
+				});
+				assertArrayEquals("Peers list differs", users, retrievedPeers);
 			}
 		};
 

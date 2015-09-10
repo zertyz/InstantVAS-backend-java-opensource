@@ -80,6 +80,9 @@ public class INextBotWordsDBPerformanceTests {
 			}
 		};
 
+		// attempt to speed up the next 'UserDB.reset()',
+		// which is unreasonably slow due to the non-indexed relations to userId
+		nextBotWordsDB.reset();
 	}
 	
 }
