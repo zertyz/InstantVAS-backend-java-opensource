@@ -1,19 +1,13 @@
 package mutua.smsappmodule.dal;
 
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationChatTests.DEFAULT_CHAT_DAL;
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationChatTests.DEFAULT_MODULE_DAL;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static mutua.smsappmodule.config.SMSAppModuleConfigurationChatTests.*;
+import static mutua.smsappmodule.SMSAppModuleChatTestCommons.*;
+import static org.junit.Assert.*;
 
 import java.sql.SQLException;
 
 import mutua.events.MO;
-import mutua.events.PostgreSQLQueueEventLink;
-import mutua.events.SpecializedMOQueueDataBureau;
-import mutua.events.TestEventServer;
-import mutua.events.TestEventServer.ETestEventServices;
 import mutua.smsappmodule.SMSAppModuleTestCommons;
-import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterChat;
 import mutua.smsappmodule.dto.PrivateMessageDto;
 import mutua.smsappmodule.dto.UserDto;
 
@@ -34,45 +28,17 @@ import org.junit.Test;
 
 public class IChatDBBehavioralTests {
 
-	private PostgreSQLQueueEventLink<ETestEventServices> moQueueLink;
-	private TestEventServer moQueueProducer;
-	
-	private IUserDB userDB;
-	private IChatDB chatDB;
+	private IUserDB userDB = DEFAULT_MODULE_DAL.getUserDB();
+	private IChatDB chatDB = DEFAULT_CHAT_DAL.getChatDB();
 	
 
 	/*******************
 	** COMMON METHODS **
 	*******************/
 	
-	public IChatDBBehavioralTests() throws SQLException {
-		if (DEFAULT_CHAT_DAL == SMSAppModuleDALFactoryChat.POSTGRESQL) {
-			moQueueLink = new PostgreSQLQueueEventLink<ETestEventServices>(ETestEventServices.class, "SpecializedMOQueue", new SpecializedMOQueueDataBureau());
-			SMSAppModulePostgreSQLAdapterChat.configureChatDatabaseModule("SpecializedMOQueue", "eventId", "text");	// from 'moQueueLink', 'PostgreSQLQueueEventLink' and 'SpecializedMOQueueDataBureau'
-			moQueueProducer = new TestEventServer(moQueueLink);
-		}
-		userDB = DEFAULT_MODULE_DAL.getUserDB();
-		chatDB = DEFAULT_CHAT_DAL.getChatDB(); 
-	}
-	
 	@Before
 	public void resetTables() throws SQLException {
-		chatDB.reset();
-		SMSAppModuleTestCommons.resetTables();
-		if (moQueueLink != null) {
-			moQueueLink.resetQueues();
-		}
-	}
-	
-	// simulates the recording of an MO message, returning the 'moId'
-	public int addMO(UserDto user, String moText) throws SQLException {
-		if (DEFAULT_CHAT_DAL == SMSAppModuleDALFactoryChat.POSTGRESQL) {
-			return moQueueProducer.addToMOQueue(new MO(user.getPhoneNumber(), moText));
-		} else if (DEFAULT_CHAT_DAL == SMSAppModuleDALFactoryChat.RAM) {
-			return ((mutua.smsappmodule.dal.ram.ChatDB)chatDB).addMO(moText);
-		} else {
-			throw new RuntimeException("Don't know how to set an MO for Chat DAL type '"+DEFAULT_CHAT_DAL+"'");
-		}
+		resetChatTables(chatDB);
 	}
 	
 
@@ -106,8 +72,8 @@ public class IChatDBBehavioralTests {
 		String mo2PrivateMessage = "yes, I did!";
 		
 		// test ping-pong
-		int mo1Id = addMO(dom, mo1Text);
-		int mo2Id = addMO(paty, mo2Text);
+		int mo1Id = addMO(chatDB, dom, mo1Text);
+		int mo2Id = addMO(chatDB, paty, mo2Text);
 		chatDB.logPrivateMessage(dom, paty, mo1Id, mo1Text, mo1PrivateMessage);
 		chatDB.logPrivateMessage(paty, dom, mo2Id, mo2Text, mo2PrivateMessage);
 		UserDto[] domPeers  = chatDB.getPrivatePeers(dom);
@@ -140,7 +106,7 @@ public class IChatDBBehavioralTests {
 		UserDto dom  = userDB.assureUserIsRegistered("21991234899");
 		UserDto paty = userDB.assureUserIsRegistered("21998019167");
 		String moText = "M paty this is what I sent to you";
-		int moId = addMO(dom, moText);
+		int moId = addMO(chatDB, dom, moText);
 		chatDB.logPrivateMessage(dom, paty, moId, moText, "but this is what the chat system reports to the db I sent instead");
 	}
 
@@ -149,7 +115,7 @@ public class IChatDBBehavioralTests {
 		UserDto dom  = userDB.assureUserIsRegistered("21991234899");
 		UserDto paty = userDB.assureUserIsRegistered("21998019167");
 		String moText = "M paty this is what I sent to you";
-		int moId = addMO(dom, moText);
+		int moId = addMO(chatDB, dom, moText);
 		chatDB.logPrivateMessage(dom, paty, moId, moText, "this is what I sent");
 	}
 

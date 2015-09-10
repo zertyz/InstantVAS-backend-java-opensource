@@ -62,7 +62,8 @@ public class SMSAppModuleTestCommons {
 		userDB.reset();
 	}
 	
-	/** Inserts 'n' users on the database, starting at 'first' and using 'p' concurrent threads */
+	/** Inserts 'n' users on the database, starting at 'first' and using 'p' concurrent threads.
+	 *  'users.length' must be divisible by 'p'. */
 	public static void insertUsers(final long first, final UserDto[] users, int p) throws SQLException, InterruptedException {
 		final int _n = users.length / p;
 		for (int threadNumber=0; threadNumber<p; threadNumber++) {

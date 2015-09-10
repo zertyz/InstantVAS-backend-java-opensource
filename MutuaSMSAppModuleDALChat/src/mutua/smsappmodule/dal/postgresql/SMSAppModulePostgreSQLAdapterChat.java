@@ -100,10 +100,10 @@ public class SMSAppModulePostgreSQLAdapterChat extends PostgreSQLAdapter {
 			{"SelectPeers",            "SELECT DISTINCT userId, phoneNumber FROM " +
 			                           "(SELECT senderUserId    AS userId, phoneNumber, moId FROM PrivateMessages, Users WHERE PrivateMessages.recipientUserId=${USER_ID} AND Users.userId=${USER_ID} UNION " +
 			                           " SELECT recipientUserId AS userId, phoneNumber, moId FROM PrivateMessages, Users WHERE PrivateMessages.senderUserId=${USER_ID}    AND Users.userId=${USER_ID} ORDER BY moId ASC) uq"},
-			{"SelectPrivateMessages",  "SELECT pm.moId, su.userId AS senderUserID, su.phoneNumber AS senderPhoneNumber, ru.userID AS recipientUserID, ru.phoneNumber AS recipientPhoneNumber, SUBSTRING("+moQueueTableName+"."+moQueueTextFieldName+" FROM pm.moTextStartIndex+1) AS message FROM PrivateMessages pm, Users su, Users ru, "+moQueueTableName+" WHERE " +
+			{"SelectPrivateMessages",  "SELECT pm.moId, pm.senderUserID, su.phoneNumber AS senderPhoneNumber, pm.recipientUserID, ru.phoneNumber AS recipientPhoneNumber, SUBSTRING("+moQueueTableName+"."+moQueueTextFieldName+" FROM pm.moTextStartIndex+1) AS message FROM PrivateMessages pm, Users su, Users ru, "+moQueueTableName+" WHERE " +
 			                           "((pm.senderUserId=${USER1_ID} AND pm.recipientUserId=${USER2_ID}) OR " +
 			                           " (pm.senderUserId=${USER2_ID} AND pm.recipientUserId=${USER1_ID})) AND " +
-			                           "su.userId=pm.senderUserId AND ru.userId=pm.recipientUserId AND pm.moId = "+moQueueTableName+"."+moQueueIdFieldName+" ORDER BY moId ASC"},
+			                           "su.userId=pm.senderUserId AND ru.userId=pm.recipientUserId AND pm.moId = "+moQueueTableName+"."+moQueueIdFieldName+" ORDER BY pm.moId ASC"},
 		});
 	}
 

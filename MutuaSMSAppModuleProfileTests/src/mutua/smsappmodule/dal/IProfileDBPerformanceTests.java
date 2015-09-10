@@ -1,7 +1,6 @@
 package mutua.smsappmodule.dal;
 
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationProfileTests.DEFAULT_MODULE_DAL;
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationProfileTests.DEFAULT_PROFILE_DAL;
+import static mutua.smsappmodule.config.SMSAppModuleConfigurationProfileTests.*;
 import static org.junit.Assert.*;
 
 import java.sql.SQLException;
@@ -25,14 +24,13 @@ import org.junit.Test;
  * Measures and tests the f(n) of the O(f(n)) algorithm complexity implementations
  * of {@link IProfileDB}
  *
- * @see RelatedClass(es)
+ * @see IProfileDB
  * @version $Id$
  * @author luiz
  */
 
 public class IProfileDBPerformanceTests {
 
-	private IUserDB    userDB    = DEFAULT_MODULE_DAL.getUserDB();
 	private IProfileDB profileDB = DEFAULT_PROFILE_DAL.getProfileDB();
 	
 	// algorithm settings
