@@ -57,5 +57,11 @@ public class UserDto {
 			return userId == other.userId;
 		}
 	}
+	
+	@Override
+	public String toString() {
+		return new StringBuffer().append("{userId=").append(userId).
+		       append(", phoneNumber='").append(phoneNumber).append("'}").toString();
+	}
 
 }

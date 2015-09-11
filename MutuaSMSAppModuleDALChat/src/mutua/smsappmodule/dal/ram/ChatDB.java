@@ -54,7 +54,7 @@ public class ChatDB extends IChatDB {
 
 	
 	/** special method used to keep track of MOs for the RAM version -- DB versions should use the Queue tables */
-	public int addMO(String moText) throws SQLException {
+	public synchronized int addMO(String moText) throws SQLException {
 		int moId = moTexts.size();
 		moTexts.put(moId, moText);
 		return moId;
@@ -65,15 +65,17 @@ public class ChatDB extends IChatDB {
 
 	@Override
 	public void reset() throws SQLException {
-		moTexts.clear();
+		//moTexts.clear();	if we are to delete this property, we must do it when resetting the queues
 		privateSenders.clear();
 	}
 
 	@Override
 	public void logPrivateMessage(UserDto sender, UserDto recipient, int moId, int moTextStartIndex) throws SQLException {
-		Hashtable<UserDto, ArrayList<Integer[]>> conversations = assureConversations(sender);
-		ArrayList<Integer[]>                     messages      = assureMessages(conversations, recipient);
-		messages.add(new Integer[] {moId, moTextStartIndex});
+		synchronized (privateSenders) {
+			Hashtable<UserDto, ArrayList<Integer[]>> conversations = assureConversations(sender);
+			ArrayList<Integer[]>                     messages      = assureMessages(conversations, recipient);
+			messages.add(new Integer[] {moId, moTextStartIndex});
+		}
 	}
 
 	@Override
@@ -100,46 +102,49 @@ public class ChatDB extends IChatDB {
 
 	@Override
 	public PrivateMessageDto[] getPrivateMessages(UserDto user1, UserDto user2) throws SQLException {
-		// returns all messages that matches 'privateSenders[user1][user2]' or 'privateSenders[user2][user1]'
-		TreeSet<PrivateMessageDto> privateMessages = new TreeSet<PrivateMessageDto>(new Comparator<PrivateMessageDto>() {
-			@Override
-			public int compare(PrivateMessageDto o1, PrivateMessageDto o2) {
-				if (o1.getMoId() < o2.getMoId()) {
-					return -1;
-				} else if (o1.getMoId() == o2.getMoId()) {
-					return 0;
-				} else {
-					return 1;
+		synchronized (privateSenders) {
+	
+			// returns all messages that matches 'privateSenders[user1][user2]' or 'privateSenders[user2][user1]'
+			TreeSet<PrivateMessageDto> privateMessages = new TreeSet<PrivateMessageDto>(new Comparator<PrivateMessageDto>() {
+				@Override
+				public int compare(PrivateMessageDto o1, PrivateMessageDto o2) {
+					if (o1.getMoId() < o2.getMoId()) {
+						return -1;
+					} else if (o1.getMoId() == o2.getMoId()) {
+						return 0;
+					} else {
+						return 1;
+					}
+				}
+			});
+			Hashtable<UserDto, ArrayList<Integer[]>> conversations = assureConversations(user1);
+			for (UserDto user2Candidate : conversations.keySet()) {
+				if (user2Candidate.equals(user2)) {
+					ArrayList<Integer[]> messages = assureMessages(conversations, user2Candidate);
+					for (Integer[] message : messages) {
+						int moId             = message[0];
+						int moTextStartIndex = message[1];
+						privateMessages.add(new PrivateMessageDto(user1, user2, moId, moTexts.get(moId).substring(moTextStartIndex)));
+					}
 				}
 			}
-		});
-		Hashtable<UserDto, ArrayList<Integer[]>> conversations = assureConversations(user1);
-		for (UserDto user2Candidate : conversations.keySet()) {
-			if (user2Candidate.equals(user2)) {
-				ArrayList<Integer[]> messages = assureMessages(conversations, user2Candidate);
-				for (Integer[] message : messages) {
-					int moId             = message[0];
-					int moTextStartIndex = message[1];
-					privateMessages.add(new PrivateMessageDto(user1, user2, moId, moTexts.get(moId).substring(moTextStartIndex)));
+			conversations = assureConversations(user2);
+			for (UserDto user1Candidate : conversations.keySet()) {
+				if (user1Candidate.equals(user1)) {
+					ArrayList<Integer[]> messages = assureMessages(conversations, user1Candidate);
+					for (Integer[] message : messages) {
+						int moId             = message[0];
+						int moTextStartIndex = message[1];
+						privateMessages.add(new PrivateMessageDto(user2, user1, moId, moTexts.get(moId).substring(moTextStartIndex)));
+					}
 				}
 			}
-		}
-		conversations = assureConversations(user2);
-		for (UserDto user1Candidate : conversations.keySet()) {
-			if (user1Candidate.equals(user1)) {
-				ArrayList<Integer[]> messages = assureMessages(conversations, user1Candidate);
-				for (Integer[] message : messages) {
-					int moId             = message[0];
-					int moTextStartIndex = message[1];
-					privateMessages.add(new PrivateMessageDto(user2, user1, moId, moTexts.get(moId).substring(moTextStartIndex)));
-				}
+			int privateMessagesLength = privateMessages.size();
+			if (privateMessagesLength == 0) {
+				return null;
+			} else {
+				return privateMessages.toArray(new PrivateMessageDto[privateMessagesLength]);
 			}
-		}
-		int privateMessagesLength = privateMessages.size();
-		if (privateMessagesLength == 0) {
-			return null;
-		} else {
-			return privateMessages.toArray(new PrivateMessageDto[privateMessagesLength]);
 		}
 	}
 

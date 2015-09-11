@@ -50,4 +50,12 @@ public class PrivateMessageDto {
 		PrivateMessageDto other = (PrivateMessageDto)obj;
 		return this.sender.equals(other.getSender()) && this.recipient.equals(other.getRecipient()) && this.message.equals(other.message) && (this.moId == other.moId);
 	}
+	
+	@Override
+	public String toString() {
+		return new StringBuffer().append("{moId=").append(moId).
+		       append(", sender={").append(sender.toString()).
+		       append("}, recipient={").append(recipient.toString()).
+		       append("}, message='").append(message).append("'}").toString();
+	}
 }

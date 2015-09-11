@@ -37,8 +37,8 @@ public class SMSAppModuleConfigurationChatTests {
 		"ChatModuleTests", DefaultInstrumentationProperties.DIP_MSG, EInstrumentationDataPours.CONSOLE, null);
 	
 	// database
-	public static SMSAppModuleDALFactoryChat  DEFAULT_CHAT_DAL   = SMSAppModuleDALFactoryChat.POSTGRESQL;
-	public static SMSAppModuleDALFactory      DEFAULT_MODULE_DAL = SMSAppModuleDALFactory    .POSTGRESQL;
+	public static SMSAppModuleDALFactoryChat  DEFAULT_CHAT_DAL   = SMSAppModuleDALFactoryChat.RAM;
+	public static SMSAppModuleDALFactory      DEFAULT_MODULE_DAL = SMSAppModuleDALFactory    .RAM;
 	public static Boolean POSTGRESQL_DEBUG_QUERIES                 = false;
 	public static Boolean POSTGRESQL_ALLOW_DATABASE_ADMINISTRATION = true;
 	public static String  POSTGRESQL_CONNECTION_HOSTNAME      = "venus";

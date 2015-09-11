@@ -40,7 +40,7 @@ public class IChatDBPerformanceTests {
 	private static int numberOfThreads = 4;
 
 	// users table pre-fill
-	private static int       totalNumberOfUsers = ((int)Math.pow(SMSAppModuleConfigurationTests.PERFORMANCE_TESTS_LOAD_FACTOR, 1d/2d)) * ((DEFAULT_CHAT_DAL == SMSAppModuleDALFactoryChat.RAM) ? 89 : 18) * (4*numberOfThreads);	// please, pick a reasonable number, since approximately the square number of elements will be created (users + mos + privateMessages)
+	private static int       totalNumberOfUsers = ((int)Math.ceil(Math.pow(SMSAppModuleConfigurationTests.PERFORMANCE_TESTS_LOAD_FACTOR, 1d/2d))) * ((DEFAULT_CHAT_DAL == SMSAppModuleDALFactoryChat.RAM) ? 89 : 18) * (4*numberOfThreads);	// please, pick a reasonable number, since approximately the square number of elements will be created (users + mos + privateMessages)
 	private static long      phoneStart         = 991230000;
 	private static UserDto[]           users    = new UserDto[totalNumberOfUsers];
 	private static PrivateMessageDto[] pvts     = null;
@@ -154,7 +154,9 @@ public class IChatDBPerformanceTests {
 		
 		// fulfill Queue table
 		try {
-			moQueueLink.resetQueues();
+			if (moQueueLink != null) {
+				moQueueLink.resetQueues();
+			}
 			pvts = insertChatMOs(users, numberOfThreads);
 			
 			System.out.println("PVTS  analysis: len="+pvts.length +"; _m="+(pvts.length/numberOfThreads));
@@ -211,6 +213,23 @@ public class IChatDBPerformanceTests {
 				UserDto recipient     = pvts[i].getRecipient();
 				int moId              = pvts[i].getMoId();
 				chatDB.logPrivateMessage(sender, recipient, moId, 14);	// 14 is the length of "M2i <phone> "
+				
+//				PrivateMessageDto[] privateMessages1 = chatDB.getPrivateMessages(sender, recipient);
+//				PrivateMessageDto[] privateMessages2 = chatDB.getPrivateMessages(recipient, sender);
+//				
+//				assertArrayEquals("getPrivateMessages results are dependent on the factors order", privateMessages1, privateMessages2);
+//				boolean found = false;
+//				for (PrivateMessageDto pvt : privateMessages1) {
+//					if (pvt.getMoId() == moId) {
+//						found = true;
+//					}
+//				}
+//				if (!found) {
+//					System.out.println("---> " + new PrivateMessageDto(sender, recipient, moId, "#14").toString());
+//					for (PrivateMessageDto pvt : privateMessages1) {
+//						System.out.println(pvt.toString());
+//					}
+//				}
 			}
 			public void updateLoopCode(int i) throws SQLException {
 				if ((i != 0) && (i != inserts)) {

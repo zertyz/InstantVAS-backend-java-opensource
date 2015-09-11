@@ -41,7 +41,7 @@ public class UserDB implements IUserDB {
 	}
 
 	@Override
-	public UserDto assureUserIsRegistered(String phoneNumber) throws SQLException {
+	public synchronized UserDto assureUserIsRegistered(String phoneNumber) throws SQLException {
 		UserDto user = users.get(phoneNumber);
 		if (user == null) {
 			user = new UserDto(users.size(), phoneNumber);
