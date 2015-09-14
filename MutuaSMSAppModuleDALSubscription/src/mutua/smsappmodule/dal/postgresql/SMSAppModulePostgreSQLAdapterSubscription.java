@@ -101,7 +101,7 @@ public class SMSAppModulePostgreSQLAdapterSubscription extends PostgreSQLAdapter
 	
 	public static JDBCAdapter getSubscriptionDBAdapter() throws SQLException {
 		return new SMSAppModulePostgreSQLAdapterSubscription(log, new String[][] {
-			{"ResetTable",                  "DELETE FROM Subscriptions"},
+			{"ResetTable",                  "TRUNCATE Subscriptions CASCADE"},
 			{"SelectSubscriptionByUser",    "SELECT userId, isSubscribed, lastBilling, subscriptionChannel, unsubscriptionChannel FROM Subscriptions WHERE userId=${USER_ID}"},
 			{"AssertSubscribed",            "SELECT * FROM AssertSubscribed(${USER_ID}, ${CHANNEL})"},
 			{"AssertUnsubscribed",          "SELECT * FROM AssertUnsubscribed(${USER_ID}, ${CHANNEL})"},

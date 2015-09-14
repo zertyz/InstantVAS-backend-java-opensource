@@ -87,10 +87,8 @@ public class SMSAppModuleConfigurationChatTests {
 		PostgreSQLAdapter.ALLOW_DATABASE_ADMINISTRATION = POSTGRESQL_ALLOW_DATABASE_ADMINISTRATION;
 		
 		JDBCAdapter.SHOULD_DEBUG_QUERIES = POSTGRESQL_DEBUG_QUERIES;
-
-		// set the 'APPName' before 'SUBSCRIPTIONtrgLocalStartDoubleOptin' is defined
-		SMSAppModuleConfiguration.APPName = "ChatTest";
 		
+		SMSAppModuleConfiguration.APPName = "ChatModuleTests";
 	}
 
 	

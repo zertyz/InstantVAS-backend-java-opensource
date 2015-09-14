@@ -12,6 +12,7 @@ import mutua.smsappmodule.dto.SubscriptionDto.EUnsubscriptionChannel;
 import mutua.smsappmodule.dto.UserDto;
 import mutua.smsappmodule.dto.SubscriptionDto.ESubscriptionChannel;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -55,6 +56,11 @@ public class ISubscriptionDBPerformanceTests {
 			t.printStackTrace();
 			throw new RuntimeException("Could not fulfill users table", t);
 		}
+	}
+
+	@AfterClass
+	public static void clearRAM() {
+		users = null;
 	}
 
 	

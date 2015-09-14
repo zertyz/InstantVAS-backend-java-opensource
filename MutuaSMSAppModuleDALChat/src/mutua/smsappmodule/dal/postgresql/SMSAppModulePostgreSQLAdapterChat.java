@@ -98,7 +98,7 @@ public class SMSAppModulePostgreSQLAdapterChat extends PostgreSQLAdapter {
 	
 	public static JDBCAdapter getChatDBAdapter() throws SQLException {
 		return new SMSAppModulePostgreSQLAdapterChat(log, new String[][] {
-			{"ResetTable",             "DELETE FROM PrivateMessages"},
+			{"ResetTable",             "TRUNCATE PrivateMessages CASCADE"},
 			{"InsertPrivateMessage",   "INSERT INTO PrivateMessages(moId, senderUserId, recipientUserId, moTextStartIndex) " +
 			                           "VALUES(${MO_ID}, ${SENDER_USER_ID}, ${RECIPIENT_USER_ID}, ${MO_TEXT_START_INDEX})"},
 			{"SelectPeers",            "SELECT DISTINCT userId, phoneNumber FROM " +

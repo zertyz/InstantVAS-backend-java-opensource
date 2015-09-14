@@ -333,7 +333,7 @@ public abstract class DatabaseAlgorithmAnalysis {
 		public String toString() {
 			switch (this) {
 				case BetterThanO1:
-					return "Better than O(1) -- aren't the machines idle?";
+					return "Better than O(1) -- aren't the machines idle or there is too little RAM?";
 				case O1:
 					return "O(1)";
 				case Ologn:

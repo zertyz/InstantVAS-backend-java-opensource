@@ -13,6 +13,7 @@ import mutua.smsappmodule.config.SMSAppModuleConfigurationTests;
 import mutua.smsappmodule.dto.ProfileDto;
 import mutua.smsappmodule.dto.UserDto;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -55,6 +56,11 @@ public class IProfileDBPerformanceTests {
 			t.printStackTrace();
 			throw new RuntimeException("Could not fulfill users table", t);
 		}
+	}
+
+	@AfterClass
+	public static void clearRAM() {
+		users = null;
 	}
 
 	

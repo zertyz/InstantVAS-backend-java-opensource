@@ -125,7 +125,7 @@ public class SMSAppModulePostgreSQLAdapterProfile extends PostgreSQLAdapter {
 	
 	public static JDBCAdapter getProfileDBAdapter() throws SQLException {
 		return new SMSAppModulePostgreSQLAdapterProfile(log, new String[][] {
-			{"ResetTable",              "DELETE FROM Profiles"},
+			{"ResetTable",              "TRUNCATE Profiles CASCADE"},
 			{"SelectProfileByUser",     "SELECT userId, nickname FROM Profiles WHERE userId=${USER_ID}"},
 			{"AssertProfile",           "SELECT userId, nickname FROM AssertProfile(${USER_ID}, ${NICKNAME})"},
 			{"SelectProfileByNickname", "SELECT Users.userId, Users.phoneNumber, Profiles.nickname FROM Users, Profiles WHERE lower(nickname)=lower(${NICKNAME}) AND Users.userId = Profiles.userId"},

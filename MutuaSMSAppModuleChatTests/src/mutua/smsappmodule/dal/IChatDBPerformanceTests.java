@@ -16,6 +16,7 @@ import mutua.smsappmodule.config.SMSAppModuleConfigurationTests;
 import mutua.smsappmodule.dto.PrivateMessageDto;
 import mutua.smsappmodule.dto.UserDto;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -185,6 +186,12 @@ public class IChatDBPerformanceTests {
 			t.printStackTrace();
 			throw new RuntimeException("Could not fulfill queue table", t);
 		}
+	}
+
+	@AfterClass
+	public static void clearRAM() {
+		users = null;
+		pvts = null;
 	}
 
 	

@@ -12,6 +12,7 @@ import mutua.smsappmodule.dto.MatchDto;
 import mutua.smsappmodule.dto.UserDto;
 import mutua.smsappmodule.dto.MatchDto.EMatchStatus;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -57,6 +58,11 @@ public class IMatchDBPerformanceTests {
 		}
 	}
 
+	@AfterClass
+	public static void clearRAM() {
+		users = null;
+	}
+
 	
 	/**********
 	** TESTS **
@@ -91,10 +97,6 @@ public class IMatchDBPerformanceTests {
 			}
 		};
 		
-		// attempt to speed up the next 'UserDB.reset()',
-		// which is unreasonably slow due to the non-indexed relations to userId
-		matchDB.reset();
-
 	}
 	
 }

@@ -125,7 +125,7 @@ public class SMSAppModulePostgreSQLAdapterHangman extends PostgreSQLAdapter {
 
 	public static JDBCAdapter getNextBotWordsDBAdapter() throws SQLException {
 		return new SMSAppModulePostgreSQLAdapterHangman(log, new String[][] {
-			{"ResetTable",                    "DELETE FROM NextBotWords"},
+			{"ResetTable",                    "TRUNCATE NextBotWords CASCADE"},
 			{"SelectAndIncrementNextBotWord", "SELECT * FROM SelectAndIncrementNextBotWord(${USER_ID})"},
 		});
 	}

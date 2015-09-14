@@ -126,14 +126,14 @@ public class SMSAppModulePostgreSQLAdapter extends PostgreSQLAdapter {
 	
 	public static JDBCAdapter getUsersDBAdapter() throws SQLException {
 		return new SMSAppModulePostgreSQLAdapter(log, new String[][] {
-			{"ResetTable",                "DELETE FROM Users"},
+			{"ResetTable",                "TRUNCATE Users CASCADE"},
 			{"AssertUserIsRegistered",    "SELECT * FROM AssertUserIsRegistered(${PHONE})"},
 		});
 	}
 
 	public static JDBCAdapter getSessionsDBAdapter() throws SQLException {
 		return new SMSAppModulePostgreSQLAdapter(log, new String[][] {
-			{"ResetTable",          "DELETE FROM Sessions"},
+			{"ResetTable",          "TRUNCATE Sessions CASCADE"},
 			{"DeleteProperty",      "DELETE FROM Sessions WHERE userId=${USER_ID} AND propertyName=${PROPERTY_NAME}"},
 			{"FetchProperties",     "SELECT propertyName, propertyValue FROM Sessions WHERE userId=${USER_ID}"},
 			{"InsertProperty",      "INSERT INTO Sessions(userId, propertyName, propertyValue) VALUES (${USER_ID}, ${PROPERTY_NAME}, ${PROPERTY_VALUE})"},

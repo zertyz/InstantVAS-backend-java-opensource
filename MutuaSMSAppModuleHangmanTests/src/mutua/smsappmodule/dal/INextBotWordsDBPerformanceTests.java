@@ -12,6 +12,7 @@ import mutua.smsappmodule.dto.MatchDto;
 import mutua.smsappmodule.dto.UserDto;
 import mutua.smsappmodule.dto.MatchDto.EMatchStatus;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -56,6 +57,11 @@ public class INextBotWordsDBPerformanceTests {
 			throw new RuntimeException("Could not fulfill users table", t);
 		}
 	}
+	
+	@AfterClass
+	public static void clearRAM() {
+		users = null;
+	}
 
 	
 	/**********
@@ -80,9 +86,6 @@ public class INextBotWordsDBPerformanceTests {
 			}
 		};
 
-		// attempt to speed up the next 'UserDB.reset()',
-		// which is unreasonably slow due to the non-indexed relations to userId
-		nextBotWordsDB.reset();
 	}
 	
 }
