@@ -116,5 +116,7 @@ public enum SMSAppModuleCommandsHelp implements ICommandProcessor {
 	public static String[] trgGlobalStartCompositeHelpDialog    = {"M?O?R?E? *INFOR?M?A?T?I?O?N?", "RULE.*"};
 	/** {@link #nstPresentingCompositeHelp} triggers that activates {@link #cmdShowNextCompositeHelpMessage} */
 	public static String[] trgLocalShowNextCompositeHelpMessage = {"MO?R?E?.*", "\\s*+\\s*", "NE?X?T?.*"};
+	/** global triggers that activates {@link #cmdShowStatelessHelp} */
+	public static String[] trgGlobalShowStatelessHelpMessage    = {"HELP.*"};
 
 }

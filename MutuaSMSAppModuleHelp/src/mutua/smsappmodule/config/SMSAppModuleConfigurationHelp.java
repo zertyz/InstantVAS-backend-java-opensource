@@ -1,8 +1,7 @@
 package mutua.smsappmodule.config;
 
 import static mutua.smsappmodule.i18n.SMSAppModulePhrasingsHelp.*;
-import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHelp.trgGlobalStartCompositeHelpDialog;
-import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHelp.trgLocalShowNextCompositeHelpMessage;
+import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHelp.*;
 
 import java.util.HashMap;
 
@@ -55,6 +54,8 @@ public class SMSAppModuleConfigurationHelp {
 	public static String[] HELPtrgGlobalStartCompositeHelpDialog    = trgGlobalStartCompositeHelpDialog;
 	@ConfigurableElement("Local triggers (available only to the 'composite help dialog' navigation state) to execute the 'show next composite help message'")
 	public static String[] HELPtrgLocalShowNextCompositeHelpMessage = trgLocalShowNextCompositeHelpMessage;
+	@ConfigurableElement("Global triggers (available to all navigation states) to execute the general help message")
+	public static String[] HELPtrgGlobalShowStatelessHelpMessage    = trgGlobalShowStatelessHelpMessage;
 
 	
 	/************

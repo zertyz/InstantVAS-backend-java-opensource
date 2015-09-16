@@ -22,7 +22,7 @@ import mutua.icc.instrumentation.Instrumentation;
 public class TestableSubscriptionAPI extends SubscriptionEngine {
 
 	
-	/** registeredUsers := { [userPhone] = "|channelName1||channelName2|...", ...} */
+	/** registeredUsers := { [userPhone] = "#channelName1##channelName2#...", ...} */
 	private static Hashtable<String, String> registeredUsers = new Hashtable<String, String>();;
 	
 	
@@ -35,12 +35,12 @@ public class TestableSubscriptionAPI extends SubscriptionEngine {
 		super(log);
 	}
 	
-	private boolean _isUserSubscribed(String userPhone, String channelName) {
+	public boolean _isUserSubscribed(String userPhone, String channelName) {
 		if (!registeredUsers.containsKey(userPhone)) {
 			return false;
 		}
 		String subscribedChannels = registeredUsers.get(userPhone);
-		if (subscribedChannels.indexOf("|"+channelName+"|") < 0) {
+		if (subscribedChannels.indexOf("#"+channelName+"#") < 0) {
 			return false;
 		} else {
 			return true;
@@ -54,7 +54,7 @@ public class TestableSubscriptionAPI extends SubscriptionEngine {
 		} else {
 			subscribedChannels = "";
 		}
-		subscribedChannels += "|"+channelName+"|";
+		subscribedChannels += "#"+channelName+"#";
 		registeredUsers.put(userPhone, subscribedChannels);
 	}
 	
@@ -65,7 +65,7 @@ public class TestableSubscriptionAPI extends SubscriptionEngine {
 		} else {
 			return;
 		}
-		subscribedChannels.replaceAll("|"+channelName+"|", "");
+		subscribedChannels = subscribedChannels.replaceAll("#"+channelName+"#", "");
 		registeredUsers.put(userPhone, subscribedChannels);
 	}
 
@@ -75,11 +75,11 @@ public class TestableSubscriptionAPI extends SubscriptionEngine {
 		String request = "subscribe '"+userPhone+"' to '"+channelName+"'";
 		
 		if (_isUserSubscribed(userPhone, channelName)) {
-			log.reportEvent(SUBSCRIPTION_OK, REQUEST, request, RESPONSE, "_isUserSubscribed == true");
+			log.reportEvent(SUBSCRIPTION_OK, REQUEST, request, RESPONSE, "_wasUserSubscribed == true");
 			return ESubscriptionOperationStatus.ALREADY_SUBSCRIBED;
 		} else {
 			_subscribeUser(userPhone, channelName);
-			log.reportEvent(SUBSCRIPTION_OK, REQUEST, request, RESPONSE, "_isUserSubscribed == false");
+			log.reportEvent(SUBSCRIPTION_OK, REQUEST, request, RESPONSE, "_wasUserSubscribed == false");
 			return ESubscriptionOperationStatus.OK;
 		}
 	}
@@ -90,11 +90,11 @@ public class TestableSubscriptionAPI extends SubscriptionEngine {
 		String request = "unsubscribe '"+userPhone+"' from '"+channelName+"'";
 
 		if (!_isUserSubscribed(userPhone, channelName)) {
-			log.reportEvent(UNSUBSCRIPTION_NOT_SUBSCRIBED, REQUEST, request, RESPONSE, "_isUserSubscribed == false");
+			log.reportEvent(UNSUBSCRIPTION_NOT_SUBSCRIBED, REQUEST, request, RESPONSE, "_wasUserSubscribed == false");
 			return EUnsubscriptionOperationStatus.NOT_SUBSCRIBED;
 		} else {
 			_unsubscribeUser(userPhone, channelName);
-			log.reportEvent(UNSUBSCRIPTION_OK, REQUEST, request, RESPONSE, "_isUserSubscribed == true");
+			log.reportEvent(UNSUBSCRIPTION_OK, REQUEST, request, RESPONSE, "_wasUserSubscribed == true");
 			return EUnsubscriptionOperationStatus.OK;
 		}
 	}

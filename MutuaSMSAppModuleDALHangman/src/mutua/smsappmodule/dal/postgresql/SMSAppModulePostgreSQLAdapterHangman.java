@@ -110,7 +110,7 @@ public class SMSAppModulePostgreSQLAdapterHangman extends PostgreSQLAdapter {
 	
 	public static JDBCAdapter getMatchDBAdapter() throws SQLException {
 		return new SMSAppModulePostgreSQLAdapterHangman(log, new String[][] {
-			{"ResetTable",             "DELETE FROM Matches"},
+			{"ResetTable",             "TRUNCATE Matches CASCADE"},
 			{"InsertMatch",            "INSERT INTO Matches(wordProvidingPlayerUserId, wordGuessingPlayerUserId, serializedGame, matchStartMillis, status) " +
 			                           "VALUES(${WORD_PROVIDING_PLAYER_USER_ID}, ${WORD_GUESSING_PLAYER_USER_ID}, ${SERIALIZED_GAME}, ${MATCH_START_MILLIS}, ${STATUS}::MatchStatuses) " +
 			                           "RETURNING matchId"},

@@ -52,6 +52,8 @@ public class NavigationStateCommons implements INavigationState {
 					timeout = (Long)commandTriggersData[i];
 				} else if (commandTriggersData[i] instanceof String[]) {
 					regularExpressions = (String[])commandTriggersData[i];
+				} else if (commandTriggersData[i] instanceof String) {
+					regularExpressions = new String[] {(String)commandTriggersData[i]};
 				} else {
 					throw new RuntimeException("Don't know how to create a command trigger from type '"+commandTriggersData[i].getClass().getName()+"'");
 				}

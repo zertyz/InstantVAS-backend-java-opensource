@@ -37,8 +37,9 @@ import static mutua.smsappmodule.config.SMSAppModuleConfigurationTests.*;
 
 public class SMSAppModuleTestCommons {
 	
+	public final SMSProcessor smsP;
+	
 	private Instrumentation<?, ?> log;
-	private SMSProcessor smsP;
 	private TestResponseReceiver responseReceiver;
 	
 	private static IUserDB    userDB    = DEFAULT_MODULE_DAL.getUserDB();
@@ -50,7 +51,7 @@ public class SMSAppModuleTestCommons {
 		responseReceiver = new TestResponseReceiver();
 		smsP = new SMSProcessor(log, responseReceiver, navigationStatesArrays);
 	}
-
+	
 	
 	/**********************************
 	** DATABASE MANIPULATION METHODS **

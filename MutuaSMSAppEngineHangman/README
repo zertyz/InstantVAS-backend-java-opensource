@@ -1,0 +1,8 @@
+MutuaSMSAppEngineHangman
+========================
+
+Defines what a general Hangman SMS Game is, allowing it to be:
+ - sets the sms modules to the Hangman SMS Game needs
+ - allows full unifyed customization through configuration files, functioning as an abstraction for Hangman SMS Games instances
+ - implemented over several interfaces (web: MutuaSMSWebApplicationInterface; gui: MutuaSMSGuiApplicationInterface, previously HangmanSMSGameICCApp)
+ - fully jUnit tested  

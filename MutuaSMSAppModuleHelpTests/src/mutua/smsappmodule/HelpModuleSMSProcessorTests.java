@@ -47,7 +47,7 @@ public class HelpModuleSMSProcessorTests {
 	public void testStatelessHelps() throws SQLException {
 		tc.resetTables();
 		SMSAppModuleNavigationStates.nstNewUser.setCommandTriggers(new Object[][] {
-			{cmdShowStatelessHelp, new String[] {"help"}},
+			{cmdShowStatelessHelp, trgGlobalShowStatelessHelpMessage},
 		});
 		tc.checkResponse("+5521991234899", "help", getStatelessHelpMessage());
 	}
@@ -56,9 +56,9 @@ public class HelpModuleSMSProcessorTests {
 	public void testFallbackHelps() throws SQLException {
 		tc.resetTables();
 		SMSAppModuleNavigationStates.nstNewUser.setCommandTriggers(new Object[][] {
-			{cmdShowStatelessHelp,        new String[] {"help"}},
-			{cmdStartCompositeHelpDialog, new String[] {"rules"}},
-			{cmdShowNewUsersFallbackHelp, new String[] {".*"}},
+			{cmdShowStatelessHelp,        trgGlobalShowStatelessHelpMessage},
+			{cmdStartCompositeHelpDialog, trgGlobalStartCompositeHelpDialog},
+			{cmdShowNewUsersFallbackHelp, ".*"},
 		});
 		tc.checkResponse("+5521991234899", "unknown keyword", getNewUsersFallbackHelp());
 		tc.checkResponse("+5521991234899", "rules",           getCompositeHelpMessage(0));

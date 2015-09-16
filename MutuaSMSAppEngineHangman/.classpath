@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/MutuaSMSAppLogic"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/MutuaSMSAppModuleChat"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/MutuaSMSAppModuleHangman"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/MutuaSMSAppModuleHelp"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/MutuaSMSAppModuleProfile"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/MutuaSMSAppModuleSubscription"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/MutuaSMSAppModule"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
