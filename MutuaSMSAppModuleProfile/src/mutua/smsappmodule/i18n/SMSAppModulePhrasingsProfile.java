@@ -21,7 +21,7 @@ import mutua.smsappmodule.config.SMSAppModuleConfiguration;
 public enum SMSAppModulePhrasingsProfile {
 	
 	phrAskNickname                     ("{{appName}}: To be properly registered, whould you mind providing a nickname? Please text it now to {{shortCode}} -- 8 letters or numbers max."),
-	phrNicknameRegistrationNotification("{{appName}}: Nickname registered: {{registeredNickname}}. Thanks. Now, who is going to tell you where to go? Someone must customize this message."),
+	phrNicknameRegistrationNotification("{{appName}}: Nickname registered: {{registeredNickname}}. Thanks. Now, who is going to tell you what commands may go next? Someone must customize this message."),
 	phrUserProfilePresentation         ("{{appName}}: {{nickname}}: {{subscriptionState}}, from {{state}}, {{numberOfLuckyNumbers}} lucky numbers. Whatever more you want to show through customizations: {{whatever}}"),
 	
 	;
@@ -65,9 +65,10 @@ public enum SMSAppModulePhrasingsProfile {
 	}
 	
 	@ConfigurableElement("Phrase sent in response to the request of change the nickname -- the text should confirm the nickname registered on the system. Variables: {{shortCode}}, {{appName}}, {{registeredNickname}}")
-	public static String getNicknameRegistrationNotification() {
-		return phrNicknameRegistrationNotification.getPhrase("shortCode", SMSAppModuleConfiguration.APPShortCode,
-                                                             "appName",   SMSAppModuleConfiguration.APPName);
+	public static String getNicknameRegistrationNotification(String registeredNickname) {
+		return phrNicknameRegistrationNotification.getPhrase("shortCode",          SMSAppModuleConfiguration.APPShortCode,
+                                                             "appName",            SMSAppModuleConfiguration.APPName,
+                                                             "registeredNickname", registeredNickname);
 	}
 
 	@ConfigurableElement("Text sent to present the details of a user profile. Variables: {{shortCode}}, {{appName}}")

@@ -1,12 +1,17 @@
 package mutua.smsappmodule.smslogic;
 
+import java.sql.SQLException;
+
 import static mutua.smsappmodule.i18n.SMSAppModulePhrasingsProfile.*;
 import static mutua.smsappmodule.smslogic.CommandCommons.*;
 import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates.*;
 import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesProfile.*;
 
-import java.sql.SQLException;
-
+import mutua.smsappmodule.dal.IProfileDB;
+import mutua.smsappmodule.dal.IUserDB;
+import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
+import mutua.smsappmodule.dal.SMSAppModuleDALFactoryProfile;
+import mutua.smsappmodule.dto.ProfileDto;
 import mutua.smsappmodule.smslogic.commands.CommandAnswerDto;
 import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
 import mutua.smsappmodule.smslogic.sessions.SessionModel;
@@ -45,7 +50,10 @@ public enum SMSAppModuleCommandsProfile implements ICommandProcessor {
 	cmdRegisterNickname {
 		@Override
 		public CommandAnswerDto processCommand(SessionModel session, ESMSInParserCarrier carrier, String[] parameters) throws SQLException {
-			return getNewStateReplyCommandAnswer(session, nstExistingUser, getNicknameRegistrationNotification());
+			String desiredNickname = parameters[0];
+			ProfileDto registeredProfile = profileDB.setProfileRecord(new ProfileDto(session.getUser(), desiredNickname));
+			String registeredNickname = registeredProfile.getNickname();
+			return getNewStateReplyCommandAnswer(session, nstExistingUser, getNicknameRegistrationNotification(registeredNickname));
 		}
 	},
 	
@@ -58,6 +66,13 @@ public enum SMSAppModuleCommandsProfile implements ICommandProcessor {
 		return this.name();
 	}
 	
+	
+	// database access
+	//////////////////
+	
+	private static IUserDB    userDB    = SMSAppModuleDALFactory.DEFAULT_DAL.getUserDB();
+	private static IProfileDB profileDB = SMSAppModuleDALFactoryProfile.DEFAULT_DAL.getProfileDB();
+		
 	
 	// SMSAppModuleCommandCommons candidates
 	////////////////////////////////////////

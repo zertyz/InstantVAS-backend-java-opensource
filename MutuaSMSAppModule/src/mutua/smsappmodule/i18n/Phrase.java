@@ -61,24 +61,21 @@ public class Phrase {
 		if (phrases == null) {
 			return null;
 		}
-		if ((parameters != null) && (parameters.length >= 2)) {
-			String[] replacedPhrases = new String[phrases.length];
-			for (int i=0; i<phrases.length; i++) {
-				String originalMessage = phrases[i];
-				String fulfilledMessage = originalMessage;
-				// fulfill the parameters
-				for (int j=0; j<(parameters.length-1); j+=2) {
-					String parameterName  = parameters[j+0];
-					String parameterValue = parameters[j+1];
-					if (parameterValue != null) {
-						fulfilledMessage = fulfilledMessage.replaceAll("\\{\\{" + parameterName + "\\}\\}", Matcher.quoteReplacement(parameterValue));
-					}
+		String[] replacedPhrases = new String[phrases.length];
+		for (int i=0; i<phrases.length; i++) {
+			String originalMessage = phrases[i];
+			String fulfilledMessage = originalMessage;
+			// fulfill the parameters
+			for (int j=0; j<(parameters.length-1); j+=2) {
+				String parameterName  = parameters[j+0];
+				String parameterValue = parameters[j+1];
+				if (parameterValue != null) {
+					fulfilledMessage = fulfilledMessage.replaceAll("\\{\\{" + parameterName + "\\}\\}", Matcher.quoteReplacement(parameterValue));
 				}
-				replacedPhrases[i] = fulfilledMessage;
 			}
-			phrases = replacedPhrases;
+			replacedPhrases[i] = fulfilledMessage;
 		}
-		return phrases;
+		return replacedPhrases;
 	}
 	
 	/** @see IPhraseology#getPhrases(EPhraseNames, String[][]) */

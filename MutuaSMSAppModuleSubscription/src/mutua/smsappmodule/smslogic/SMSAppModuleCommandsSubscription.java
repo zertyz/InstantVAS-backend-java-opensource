@@ -106,7 +106,7 @@ public enum SMSAppModuleCommandsSubscription implements ICommandProcessor {
 	////////////////////////////////////////
 	
 	
-	;
+
 	
 	/***********************************************************************
 	** GLOBAL COMMAND TRIGGERS -- to be used in several navigation states **

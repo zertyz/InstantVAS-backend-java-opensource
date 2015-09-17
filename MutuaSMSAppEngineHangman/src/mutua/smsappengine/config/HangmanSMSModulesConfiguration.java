@@ -207,7 +207,7 @@ public class HangmanSMSModulesConfiguration {
 			".*",
 		};
 		SUBSCRIPTIONtrgLocalAcceptDoubleOptin  = new String[] {
-			"FORCA",
+			"HANGMAN",
 		};
 		SUBSCRIPTIONtrgGlobalUnsubscribe       = new String[] {
 			"UNSUBSCRIBE",
@@ -227,7 +227,8 @@ public class HangmanSMSModulesConfiguration {
 		});
 		nstExistingUser.setCommandTriggers(new Object[][] {
 			{cmdUnsubscribe,                   SUBSCRIPTIONtrgGlobalUnsubscribe},
-			{cmdShowStatelessHelp,  HELPtrgGlobalShowStatelessHelpMessage},
+			{cmdShowStatelessHelp,             HELPtrgGlobalShowStatelessHelpMessage},
+			{cmdRegisterNickname,              PROFILEtrgGlobalRegisterNickname},
 			{cmdShowExistingUsersFallbackHelp, ".*"},
 		});
 		
@@ -242,7 +243,7 @@ public class HangmanSMSModulesConfiguration {
 		
 		// phrasing
 		PROFILEphrAskNickname                      = "";
-		PROFILEphrNicknameRegistrationNotification = "";
+		PROFILEphrNicknameRegistrationNotification = "{{appName}}: Name registered: {{registeredNickname}}. Send LIST to {{shortCode}} to see online players. NICK [NEW NICK] to change your name.";
 		PROFILEphrPresentation                     = "";
 		
 		// command patterns
