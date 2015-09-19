@@ -8,7 +8,7 @@ import mutua.smsappmodule.config.SMSAppModuleConfiguration;
  * ==============================
  * (created by luiz, Aug 31, 2015)
  *
- * Enumerates and specifies the phrasing to be used by the "User Profile" 'MutuaSMSAppModule' implementation.
+ * Enumerates and specifies the phrasing to be used by the "Chat" 'MutuaSMSAppModule' implementation.
  * It is a good idea, when possible, to make command names match phrase names.
  * 
  * This class implements the Mutua SMSApp Phrasing design pattern, as described in {@link Phrase}

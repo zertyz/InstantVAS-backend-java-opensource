@@ -102,6 +102,6 @@ public enum SMSAppModuleCommandsChat implements ICommandProcessor {
 	/** global triggers that executes {@link #cmdSendPrivateMessage} */
 	public static String[] trgGlobalSendPrivateMessage   = {"M ([A-Za-z0-9_-]+) (.*)"};
 	/** {@link SMSAppModuleNavigationStatesChat#nstChattingWithSomeone} triggers that activates {@link #cmdSendPrivateReply} */
-	public static String[] trgLocalSendPrivateReply             = {"(.+)"};
+	public static String[] trgLocalSendPrivateReply      = {"(.+)"};
 
 }

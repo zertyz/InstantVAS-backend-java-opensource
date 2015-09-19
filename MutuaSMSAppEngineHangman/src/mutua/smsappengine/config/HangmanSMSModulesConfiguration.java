@@ -4,18 +4,23 @@ import static mutua.smsappmodule.config.SMSAppModuleConfiguration.*;
 import static mutua.smsappmodule.config.SMSAppModuleConfigurationChat.*;
 import static mutua.smsappmodule.config.SMSAppModuleConfigurationHelp.*;
 import static mutua.smsappmodule.config.SMSAppModuleConfigurationProfile.*;
+import static mutua.smsappmodule.config.SMSAppModuleConfigurationHangman.*;
 import static mutua.smsappmodule.config.SMSAppModuleConfigurationSubscription.*;
+import static mutua.smsappmodule.i18n.SMSAppModulePhrasingsHangman.*;
 import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHelp.*;
 import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsSubscription.*;
 import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsProfile.*;
-import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsChat.*;
+import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHangman.*;
 import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates.*;
+import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesHangman.*;
 import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesChat.*;
 import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesProfile.*;
 import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesSubscription.*;
+import mutua.icc.configuration.annotations.ConfigurableElement;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.smsappmodule.config.SMSAppModuleConfiguration;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationChat;
+import mutua.smsappmodule.config.SMSAppModuleConfigurationHangman;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationHelp;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationProfile;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationSubscription;
@@ -31,7 +36,7 @@ import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterProfile;
 import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterSubscription;
 import mutua.smsappmodule.smslogic.navigationstates.INavigationState;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates;
-import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesChat;
+import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesHangman;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesHelp;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesProfile;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesSubscription;
@@ -57,7 +62,7 @@ public class HangmanSMSModulesConfiguration {
 		SMSAppModuleNavigationStatesHelp.values(),
 		SMSAppModuleNavigationStatesSubscription.values(),
 		SMSAppModuleNavigationStatesProfile.values(),
-		SMSAppModuleNavigationStatesChat.values()//,
+		SMSAppModuleNavigationStatesHangman.values()//,
 		//SMSAppModuleNavigationStatesHangman.values(),
 	};
 	
@@ -229,7 +234,11 @@ public class HangmanSMSModulesConfiguration {
 			{cmdUnsubscribe,                   SUBSCRIPTIONtrgGlobalUnsubscribe},
 			{cmdShowStatelessHelp,             HELPtrgGlobalShowStatelessHelpMessage},
 			{cmdRegisterNickname,              PROFILEtrgGlobalRegisterNickname},
+			{cmdInviteNicknameOrPhoneNumber,   HANGMANtrgGlobalInviteNicknameOrPhoneNumber},
 			{cmdShowExistingUsersFallbackHelp, ".*"},
+		});
+		nstEnteringMatchWord.setCommandTriggers(new Object[][] {
+			{cmdHoldMatchWord,    "([^ ]+)"},
 		});
 		
 		SMSAppModuleConfigurationSubscription.subscriptionEngine = subscriptionEngine;
@@ -286,11 +295,19 @@ public class HangmanSMSModulesConfiguration {
 		///////////////////////////////////
 		
 		// phrasing
+		HANGMANphrAskOpponentNicknameOrPhone                                = "{{appName}}: Name registered: {{invitingPlayerNickname}}. Send your friend's phone to {{shortCode}} or LIST to see online players. NICK [NEW NICK] to change your name.";
+		HANGMANphrAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation = "{{appName}}: Inviting {{opponentNickname}}. Think of a word without special digits and send it now to {{shortCode}}. After the invitation, you'll get a lucky number";
+		HANGMANphrInvitationNotificationForInvitingPlayer                   = "{{invitedPlayerNickname}} was invited to play with you. while you wait, you can provoke {{invitedPlayerNickname}} by sending a message to {{shortCode}} (0.31+tax) or send SIGNUP to provoke for free how many times you want";
+		HANGMANphrInvitationNotificationForInvitedPlayer                    = "{{appName}}: {{invitingPlayerNickname}} is inviting you for a hangman match. Do you accept? Send YES to {{shortCode}} or PROFILE to see {{invitingPlayerNickname}} information";
 		
 		// command patterns
+		HANGMANtrgGlobalInviteNicknameOrPhoneNumber = new String[] {
+			"INVITE +(.*)",
+		};
 
+		DEFAULT_NICKNAME_PREFIX = "Guest";
 		//SMSAppModuleConfigurationHangman.log = null;	// to come from a parameter. BTW, where is the log for this module?
-		//SMSAppModuleConfigurationHangman.applyConfiguration();
+		SMSAppModuleConfigurationHangman.applyConfiguration();
 
 	}
 
