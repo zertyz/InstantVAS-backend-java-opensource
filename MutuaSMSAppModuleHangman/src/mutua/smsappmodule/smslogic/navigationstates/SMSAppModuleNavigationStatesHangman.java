@@ -31,11 +31,25 @@ public enum SMSAppModuleNavigationStatesHangman implements INavigationState {
 	nstEnteringMatchWord {
 		@Override
 		public void setCommandTriggersFromConfigurationValues() {
-			setCommandTriggers(new Object[][] {
+//			setCommandTriggers(new Object[][] {
 //				{cmdHoldMatchWord,  HANGMANtrgLocalEnterMatchWord},
 //				{SMSAppModuleCommandsHelp.cmdShowStatelessHelp, new String[] {"HELP"}},
 //				{SMSAppModuleCommandsHelp.cmdShowStatefulHelp,  new String[] {".*"}},
-			});
+//			});
+		}
+	},
+	
+	/** State an invited user gets into after he/she is invited for a match, which is set by {@link SMSAppModuleCommandsHangman#cmdHoldMatchWord}.
+	 *  The invited user answer will, then, be processed by {@link SMSAppModuleCommandsHangman#cmdAnswerToInvitation}.
+	 *  SMS Applications must extend it, adding their own command triggers. */
+	nstAnsweringToHangmanMatchInvitation {
+		@Override
+		public void setCommandTriggersFromConfigurationValues() {
+//			setCommandTriggers(new Object[][] {
+//				{cmdHoldMatchWord,  HANGMANtrgLocalEnterMatchWord},
+//				{SMSAppModuleCommandsHelp.cmdShowStatelessHelp, new String[] {"HELP"}},
+//				{SMSAppModuleCommandsHelp.cmdShowStatefulHelp,  new String[] {".*"}},
+//			});
 		}
 	},
 	
@@ -44,11 +58,11 @@ public enum SMSAppModuleNavigationStatesHangman implements INavigationState {
 	nstGuessingWordFromHangmanHumanOpponent {
 		@Override
 		public void setCommandTriggersFromConfigurationValues() {
-			setCommandTriggers(new Object[][] {
+//			setCommandTriggers(new Object[][] {
 //				{cmdSuggestLetterOrWordForHuman,  HANGMANtrgLocalSuggestLetterOrWordForHumanOrBot},
 //				{SMSAppModuleCommandsHelp.cmdShowStatelessHelp, new String[] {"HELP"}},
 //				{SMSAppModuleCommandsHelp.cmdShowStatefulHelp,  new String[] {".*"}},
-			});
+//			});
 		}
 	},
 	
@@ -57,11 +71,11 @@ public enum SMSAppModuleNavigationStatesHangman implements INavigationState {
 	nstGuessingWordFromHangmanBotOpponent {
 		@Override
 		public void setCommandTriggersFromConfigurationValues() {
-			setCommandTriggers(new Object[][] {
+//			setCommandTriggers(new Object[][] {
 //				{cmdSuggestLetterOrWordForBot,  HANGMANtrgLocalSuggestLetterOrWordForHumanOrBot},
 //				{SMSAppModuleCommandsHelp.cmdShowStatelessHelp, new String[] {"HELP"}},
 //				{SMSAppModuleCommandsHelp.cmdShowStatefulHelp,  new String[] {".*"}},
-			});
+//			});
 		}
 	},
 	

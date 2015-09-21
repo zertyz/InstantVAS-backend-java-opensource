@@ -120,6 +120,7 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 		Connection con = createDatabaseConnection();
 		Statement stm = con.createStatement();
 		Object[][] tables = getArrayFromQueryExecution(con, getShowTablesCommand());
+
 		// match
 		for (int i=0; i<tableDefinitions.length; i++) {
 			String requiredTableName    = tableDefinitions[i][0];

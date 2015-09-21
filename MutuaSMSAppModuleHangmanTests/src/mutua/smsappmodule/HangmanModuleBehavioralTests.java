@@ -17,7 +17,7 @@ import org.junit.Test;
  */
 
 public class HangmanModuleBehavioralTests {
-
+/*
 	@Test
 	public void testConfigurationFile() throws IllegalArgumentException, IllegalAccessException {
 		ConfigurationManager cm = new ConfigurationManager(log, SMSAppModuleConfigurationHelp.class);
@@ -70,4 +70,4 @@ public class HangmanModuleBehavioralTests {
 		assertEquals("If a composite help dialog gets past the end, it must cycle again from the start", expectedCompositeHelpMessage1, observedCompositeHelpMessage);
 	}
 	
-}
+*/}

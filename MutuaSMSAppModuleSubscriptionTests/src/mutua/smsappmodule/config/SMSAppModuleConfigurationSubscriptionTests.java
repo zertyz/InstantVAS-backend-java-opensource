@@ -79,7 +79,7 @@ public class SMSAppModuleConfigurationSubscriptionTests {
 		
 		// set the subscription engine
 		SMSAppModuleConfigurationSubscription.subscriptionEngine = new TestableSubscriptionAPI(log);
-		SMSAppModuleConfigurationSubscription.subscriptionToken  = "anyshit";
+		SMSAppModuleConfigurationSubscription.subscriptionToken  = "SubscriptionModuleTests";
 
 	}
 

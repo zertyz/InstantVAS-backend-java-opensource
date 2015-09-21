@@ -101,9 +101,9 @@ public enum SMSAppModulePhrasingsHangman {
 	
 	/** @see SMSAppModuleConfigurationHangman#HANGMANphrInvitationNotificationForInvitedPlayer */
 	public static String getInvitationNotificationForInvitedPlayer(String invitingPlayerNickname) {
-		return phrInvitationNotificationForInvitedPlayer.getPhrase("shortCode",             SMSAppModuleConfiguration.APPShortCode,
-		                                                           "appName",               SMSAppModuleConfiguration.APPName,
-		                                                           "invitedPlayerNickname", invitingPlayerNickname);
+		return phrInvitationNotificationForInvitedPlayer.getPhrase("shortCode",              SMSAppModuleConfiguration.APPShortCode,
+		                                                           "appName",                SMSAppModuleConfiguration.APPName,
+		                                                           "invitingPlayerNickname", invitingPlayerNickname);
 	}
 	
 

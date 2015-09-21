@@ -9,16 +9,22 @@ import static mutua.smsappmodule.smslogic.sessions.SMSAppModuleSessionsHangman.*
 
 import java.sql.SQLException;
 
+import mutua.smsappmodule.dal.IMatchDB;
 import mutua.smsappmodule.dal.IProfileDB;
+import mutua.smsappmodule.dal.ISessionDB;
 import mutua.smsappmodule.dal.IUserDB;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
+import mutua.smsappmodule.dal.SMSAppModuleDALFactoryHangman;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactoryProfile;
+import mutua.smsappmodule.dto.MatchDto;
 import mutua.smsappmodule.dto.ProfileDto;
 import mutua.smsappmodule.dto.SessionDto;
 import mutua.smsappmodule.dto.UserDto;
+import mutua.smsappmodule.dto.MatchDto.EMatchStatus;
+import mutua.smsappmodule.hangmangame.HangmanGame;
+import mutua.smsappmodule.hangmangame.HangmanGame.EHangmanGameStates;
 import mutua.smsappmodule.smslogic.commands.CommandAnswerDto;
 import mutua.smsappmodule.smslogic.commands.CommandMessageDto;
-import mutua.smsappmodule.smslogic.commands.CommandMessageDto.EResponseMessageType;
 import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesHangman;
 import mutua.smsappmodule.smslogic.sessions.SMSAppModuleSessionsHangman;
@@ -116,27 +122,33 @@ public enum SMSAppModuleCommandsHangman implements ICommandProcessor {
 		@Override
 		public CommandAnswerDto processCommand(SessionModel session, ESMSInParserCarrier carrier, String[] parameters) throws SQLException {
 			String opponentPlayerPhoneNumber = session.getStringProperty(sprOpponentPhoneNumber);
-			String invitingPlayerNickName    = profileDB.getProfileRecord(session.getUser()).getNickname();
+			String invitingPlayerNickname    = profileDB.getProfileRecord(session.getUser()).getNickname();
 			String wordToPlay                = parameters[0];
 			
-			String opponentPlayerNickName = assurePhoneNumberHasAnUserAndNickname(opponentPlayerPhoneNumber).getNickname();
+			ProfileDto opponentProfile = assurePhoneNumberHasAnUserAndNickname(opponentPlayerPhoneNumber);
+			String opponentPlayerNickName = opponentProfile.getNickname();
 
 			HangmanGame game = new HangmanGame(wordToPlay, 6);
 			
 			if ((!wordToPlay.matches("[A-Za-z]+")) || (game.getGameState() == EHangmanGameStates.WON)) {
-				CommandMessageDto commandResponse = new CommandMessageDto(phrases.INVITINGNotAGoodWord(game.getWord()), EResponseMessageType.HELP);
-				return getNewCommandAnswerDto(session, commandResponse);
+				throw new RuntimeException("not a good word");
+				//CommandMessageDto commandResponse = new CommandMessageDto(phrases.INVITINGNotAGoodWord(game.getWord()), EResponseMessageType.HELP);
+				//return getNewCommandAnswerDto(session, commandResponse);
 			}
 			
 			// TODO a mensagem enviada ao convidado pode conter o telefone do proponente, caso o convite seja baseado em número de telefone, para facilitar a identificação do amigo proponente.
-			CommandMessageDto invitingPlayerMessage = new CommandMessageDto(phrases.INVITINGInvitationNotificationForInvitingPlayer(opponentPlayerNickName),
-			                                                                EResponseMessageType.ACQUIRE_MATCH_INFORMATION);
-			CommandMessageDto opponentPlayerMessage = new CommandMessageDto(opponentPlayerPhoneNumber, phrases.INVITINGInvitationNotificationForInvitedPlayer(invitingPlayerNickName),
-                                                                            EResponseMessageType.INVITATION_MESSAGE);
-			SessionDto opponentSession = new SessionDto(opponentPlayerPhoneNumber, ESTATES.ANSWERING_TO_INVITATION.name(),
-			                                            ESessionParameters.OPPONENT_PHONE_NUMBER, session.getPhone(),
-			                                            ESessionParameters.HANGMAN_SERIALIZED_GAME_STATE, game.serializeGameState());
-			sessionDB.setSession(opponentSession);
+			CommandMessageDto invitingPlayerMessage = new CommandMessageDto(getInvitationNotificationForInvitingPlayer(opponentPlayerNickName), null);
+			CommandMessageDto opponentPlayerMessage = new CommandMessageDto(opponentPlayerPhoneNumber, getInvitationNotificationForInvitedPlayer(invitingPlayerNickname), null);
+			// set inviting & invited player sessions
+			SessionModel opponentSession = new SessionModel(sessionDB.getSession(opponentProfile.getUser()));
+			MatchDto match = new MatchDto(session.getUser(), opponentSession.getUser(), game.serializeGameState(), System.currentTimeMillis(), EMatchStatus.ACTIVE);
+			matchDB.storeNewMatch(match);
+			opponentSession.setNavigationState(nstAnsweringToHangmanMatchInvitation);
+			opponentSession.setProperty(sprHangmanMatchId, match.getMatchId());
+			sessionDB.setSession(opponentSession.getChangedSessionDto());
+			//session.setProperty(sprHangmanMatchId, match.getMatchId());
+			session.setProperty(sprOpponentPhoneNumber, "");
+			session.setNavigationState(nstExistingUser);
 			return getNewCommandAnswerDto(session, new CommandMessageDto[] {invitingPlayerMessage, opponentPlayerMessage});
 		}
 	}
@@ -147,7 +159,9 @@ public enum SMSAppModuleCommandsHangman implements ICommandProcessor {
 	////////////
 	
 	private static IUserDB    userDB    = SMSAppModuleDALFactory.DEFAULT_DAL.getUserDB();
+	private static ISessionDB sessionDB = SMSAppModuleDALFactory.DEFAULT_DAL.getSessionDB();
 	private static IProfileDB profileDB = SMSAppModuleDALFactoryProfile.DEFAULT_DAL.getProfileDB();
+	private static IMatchDB   matchDB   = SMSAppModuleDALFactoryHangman.DEFAULT_DAL.getMatchDB();
 
 	
 	@Override

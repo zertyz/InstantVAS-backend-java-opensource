@@ -21,7 +21,7 @@ import org.junit.Test;
  */
 
 public class HangmanModuleSMSProcessorTests {
-
+/*
 	// variables
 	////////////
 	
@@ -54,4 +54,4 @@ public class HangmanModuleSMSProcessorTests {
 		tc.checkResponse("+5521991234899", "rules",           getCompositeHelpMessage(0));
 		tc.checkResponse("+5521991234899", "unknown keyword", getExistingUsersFallbackHelp());
 	}
-}
+*/}

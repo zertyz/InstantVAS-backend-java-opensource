@@ -239,6 +239,7 @@ public class HangmanSMSModulesConfiguration {
 		});
 		nstEnteringMatchWord.setCommandTriggers(new Object[][] {
 			{cmdHoldMatchWord,    "([^ ]+)"},
+			{cmdShowExistingUsersFallbackHelp, ".*"},
 		});
 		
 		SMSAppModuleConfigurationSubscription.subscriptionEngine = subscriptionEngine;
