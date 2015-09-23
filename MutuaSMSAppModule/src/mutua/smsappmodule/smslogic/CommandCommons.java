@@ -2,6 +2,7 @@ package mutua.smsappmodule.smslogic;
 
 import java.sql.SQLException;
 
+import mutua.smsappmodule.dto.UserDto;
 import mutua.smsappmodule.smslogic.commands.CommandAnswerDto;
 import mutua.smsappmodule.smslogic.commands.CommandMessageDto;
 import mutua.smsappmodule.smslogic.navigationstates.INavigationState;
@@ -41,6 +42,25 @@ public class CommandCommons {
 		session.setNavigationState(newState);
 		return new CommandAnswerDto(commandMessage, session);
 	}
+
+	/** refactored method to be used when a command generates not only a "same state" reply, but also a message to
+	 *  another user */
+	protected static CommandAnswerDto getSameStateReplyWithAnAdditionalMessageToAnotherUserCommandAnswer(String replyMTText, UserDto anotherUser, String anotherMTText) {
+		CommandMessageDto reply          = new CommandMessageDto(replyMTText, null);
+		CommandMessageDto anotherMessage = new CommandMessageDto(anotherUser.getPhoneNumber(), anotherMTText, null);
+		return new CommandAnswerDto(new CommandMessageDto[] {reply, anotherMessage}, null);
+	}
+	
+	/** refactored method to be used when a command generates a reply with a change in the navigation state which requires another user
+	 *  to be notified */
+	protected static CommandAnswerDto getNewStateReplyWithAnAdditionalMessageToAnotherUserCommandAnswer(SessionModel session, INavigationState newState,
+	                                                                                                    String replyMTText, UserDto anotherUser, String anotherMTText) {
+		session.setNavigationState(newState);
+		CommandMessageDto reply          = new CommandMessageDto(replyMTText, null);
+		CommandMessageDto anotherMessage = new CommandMessageDto(anotherUser.getPhoneNumber(), anotherMTText, null);
+		return new CommandAnswerDto(new CommandMessageDto[] {reply, anotherMessage}, null);
+	}
+
 	
 	/** Implements rules like warning users that a match was cancelled by commands who would force the user from quitting the playing state (invite, list, ...),
 	 *  possibly issueing messages to both users and taking other actions as well. */

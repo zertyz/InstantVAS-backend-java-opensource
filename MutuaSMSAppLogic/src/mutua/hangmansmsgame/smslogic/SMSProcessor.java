@@ -93,6 +93,9 @@ public class SMSProcessor {
 	 *  should process the 'incomingText' and build the object needed to issue the call */
 	protected CommandInvocationDto resolveInvocationHandler(INavigationState state, String incomingText) {
 		CommandTriggersDto[] commandTriggers = state.getCommandTriggers();
+		if (commandTriggers == null) {
+			throw new RuntimeException("CommandTriggers for state '"+state.getNavigationStateName()+"' is null");
+		}
 		// traverse all commands
 		for (int comandIndex=0; comandIndex<commandTriggers.length; comandIndex++) {
 			ICommandProcessor command = commandTriggers[comandIndex].getCommand();

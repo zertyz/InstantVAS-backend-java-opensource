@@ -136,9 +136,6 @@ public enum SMSAppModuleCommandsHangman implements ICommandProcessor {
 				//return getNewCommandAnswerDto(session, commandResponse);
 			}
 			
-			// TODO a mensagem enviada ao convidado pode conter o telefone do proponente, caso o convite seja baseado em número de telefone, para facilitar a identificação do amigo proponente.
-			CommandMessageDto invitingPlayerMessage = new CommandMessageDto(getInvitationNotificationForInvitingPlayer(opponentPlayerNickName), null);
-			CommandMessageDto opponentPlayerMessage = new CommandMessageDto(opponentPlayerPhoneNumber, getInvitationNotificationForInvitedPlayer(invitingPlayerNickname), null);
 			// set inviting & invited player sessions
 			SessionModel opponentSession = new SessionModel(sessionDB.getSession(opponentProfile.getUser()));
 			MatchDto match = new MatchDto(session.getUser(), opponentSession.getUser(), game.serializeGameState(), System.currentTimeMillis(), EMatchStatus.ACTIVE);
@@ -149,9 +146,28 @@ public enum SMSAppModuleCommandsHangman implements ICommandProcessor {
 			//session.setProperty(sprHangmanMatchId, match.getMatchId());
 			session.setProperty(sprOpponentPhoneNumber, "");
 			session.setNavigationState(nstExistingUser);
-			return getNewCommandAnswerDto(session, new CommandMessageDto[] {invitingPlayerMessage, opponentPlayerMessage});
+			// TODO a mensagem enviada ao convidado pode conter o telefone do proponente, caso o convite seja baseado em número de telefone, para facilitar a identificação do amigo proponente.
+			return getSameStateReplyWithAnAdditionalMessageToAnotherUserCommandAnswer(getInvitationNotificationForInvitingPlayer(opponentPlayerNickName),
+			                                                                          userDB.assureUserIsRegistered(opponentPlayerPhoneNumber), getInvitationNotificationForInvitedPlayer(invitingPlayerNickname));
 		}
-	}
+	},
+	
+	/** Command triggered by messages matched by {@link #trgLocalAcceptInvitation}, invoked by the invited user who wants to accept
+	 *  a hangman match invitation.
+	 *  Receives no parameters */
+	cmdAcceptMatchInvitation {
+		@Override
+		public CommandAnswerDto processCommand(SessionModel session, ESMSInParserCarrier carrier, String[] parameters) throws SQLException {
+			MatchDto match = matchDB.retrieveMatch(session.getIntProperty(sprHangmanMatchId));
+			HangmanGame game = new HangmanGame(match.getSerializedGame());
+			UserDto wordProvidingPlayer = match.getWordProvidingPlayer();
+			String wordGuessingPlayerNickname = profileDB.getProfileRecord(session.getUser()).getNickname();
+			return getNewStateReplyWithAnAdditionalMessageToAnotherUserCommandAnswer(session, nstGuessingWordFromHangmanHumanOpponent,
+			                                                                         getWordGuessingPlayerMatchStart(game.getGuessedWordSoFar(), game.getAttemptedLettersSoFar()),
+			                                                                         wordProvidingPlayer,
+			                                                                         getWordProvidingPlayerMatchStart(game.getGuessedWordSoFar(), wordGuessingPlayerNickname));
+		}
+	},
 	
 	;
 	
@@ -205,6 +221,8 @@ public enum SMSAppModuleCommandsHangman implements ICommandProcessor {
 	/** global triggers that executes {@link #cmdInviteNicknameOrPhoneNumber} */
 	public static String[] trgGlobalInviteNicknameOrPhoneNumber   = {"INVITE +(.*)"};
 	/** {@link SMSAppModuleNavigationStatesHangman#nstEnteringMatchWord} triggers that activates {@link #cmdHoldMatchWord} */
-	public static String[] trgLocalHoldMatchWord      = {"([^ ]+)"};
+	public static String[] trgLocalHoldMatchWord                  = {"([^ ]+)"};
+	/** {@link SMSAppModuleNavigationStatesHangman#nstAnsweringToHangmanMatchInvitation} triggers that activates {@link #cmdAcceptMatchInvitation} */
+	public static String[] trgLocalAcceptMatchInvitation          = {"YES"};
 
 }

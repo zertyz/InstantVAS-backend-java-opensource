@@ -1,8 +1,7 @@
 package mutua.smsappmodule.smslogic;
 
 import static mutua.smsappmodule.i18n.SMSAppModulePhrasingsChat.*;
-import static mutua.smsappmodule.smslogic.CommandCommons.getNewStateReplyCommandAnswer;
-import static mutua.smsappmodule.smslogic.CommandCommons.getSameStateReplyCommandAnswer;
+import static mutua.smsappmodule.smslogic.CommandCommons.*;
 import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates.nstExistingUser;
 import static mutua.smsappmodule.smslogic.sessions.SMSAppModuleSessionsChat.sprLastPrivateMessageSender;
 
@@ -15,6 +14,7 @@ import mutua.smsappmodule.dal.SMSAppModuleDALFactoryProfile;
 import mutua.smsappmodule.dto.ProfileDto;
 import mutua.smsappmodule.dto.UserDto;
 import mutua.smsappmodule.smslogic.commands.CommandAnswerDto;
+import mutua.smsappmodule.smslogic.commands.CommandMessageDto;
 import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesChat;
 import mutua.smsappmodule.smslogic.sessions.SessionModel;
@@ -67,9 +67,12 @@ public enum SMSAppModuleCommandsChat implements ICommandProcessor {
 			
 			// TODO: in order for 'cmdSendPrivateReply', 'sprLastPrivateMessageSender' and 'nstChattingWithSomeone' to work, we need to set the state of the target user to 'nstChattingWithSomeone'. This may be undesired and, until the dead-lock is solved, that feature won't be further implemented
 			
-			System.out.println("Sending to "+targetPhoneNumber+": "+getPrivateMessage(senderNickname));
+			System.out.println("Sending to "+targetPhoneNumber+": "+getPrivateMessage(senderNickname, privateMessage));
 			
-			return getNewStateReplyCommandAnswer(session, nstExistingUser, getPrivateMessageDeliveryNotification(targetUserProfile.getNickname()));
+			//return getNewStateReplyCommandAnswer(session, nstExistingUser, getPrivateMessageDeliveryNotification(targetUserProfile.getNickname()));
+			return getSameStateReplyWithAnAdditionalMessageToAnotherUserCommandAnswer(
+				getPrivateMessageDeliveryNotification(targetUserProfile.getNickname()),
+				targetUserProfile.getUser(), getPrivateMessage(senderNickname, privateMessage));
 		}
 	},
 	
@@ -100,7 +103,7 @@ public enum SMSAppModuleCommandsChat implements ICommandProcessor {
 	***********************************************************************/
 	
 	/** global triggers that executes {@link #cmdSendPrivateMessage} */
-	public static String[] trgGlobalSendPrivateMessage   = {"M ([A-Za-z0-9_-]+) (.*)"};
+	public static String[] trgGlobalSendPrivateMessage   = {"[MP] ([^ ]+) (.*)"};
 	/** {@link SMSAppModuleNavigationStatesChat#nstChattingWithSomeone} triggers that activates {@link #cmdSendPrivateReply} */
 	public static String[] trgLocalSendPrivateReply      = {"(.+)"};
 

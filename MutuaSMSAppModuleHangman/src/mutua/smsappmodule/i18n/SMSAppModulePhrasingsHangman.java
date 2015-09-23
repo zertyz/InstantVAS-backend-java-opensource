@@ -21,9 +21,15 @@ import mutua.smsappmodule.config.SMSAppModuleConfiguration;
 
 public enum SMSAppModulePhrasingsHangman {
 
-	phrgallowsArt                                               ("+-+\n| {{head}}\n|{{leftArm}}{{chest}}{{rightArm}}\n|{{leftLeg}} {{rightLeg}}\n|\n====\n"),
-	phrwinningArt                                               ("\\0/\n |\n/ \\\n"),
-	phrlosingArt                                                ("+-+\n| x\n|/|\\\n|/ \\\n====\n"),
+	phr_headCharacter                                           ("O"),
+	phr_leftArmCharacter                                        ("/"),
+	phr_chestCharacter                                          ("|"),
+	phr_rightArmCharacter                                       ("\\"),
+	phr_leftLegCharacter                                        ("/"),
+	phr_rightLegCharacter                                       ("\\"),
+	phr_gallowsArt                                              ("+-+\n| {{head}}\n|{{leftArm}}{{chest}}{{rightArm}}\n|{{leftLeg}} {{rightLeg}}\n|\n====\n"),
+	phr_winningArt                                              ("\\0/\n |\n/ \\\n"),
+	phr_losingArt                                               ("+-+\n| x\n|/|\\\n|/ \\\n====\n"),
 	phrAskOpponentNicknameOrPhone                               ("{{appName}}: Name registered: {{invitingPlayerNickname}}. Send your friend's phone to {{shortCode}} or LIST to see online players. NICK [NEW NICK] to change your name."),
 	phrAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation("{{appName}}: Inviting {{opponentNickname}}. Think of a word without special digits and send it now to {{shortCode}}. After the invitation, you'll get a lucky number"),
 	phrAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation   ("{{appName}}: Your friend's phone: {{opponentPhoneNumber}}. Think of a word without special digits and send it now to {{shortCode}}. After the invitation, you'll get a lucky number"),
@@ -33,8 +39,8 @@ public enum SMSAppModulePhrasingsHangman {
 	phrInvitationRefusalNotificationForInvitingPlayer           ("{{invitedPlayerNickname}} refused your invitation to play. Send LIST to 9714 and pick someone else"),
 	phrInvitationRefusalNotificationForInvitedPlayer            ("The invitation to play the Hangman Game made by {{invitingPlayerNickname}} was refused. Send LIST to {{shortCode}} to see online users"),
 	phrNotAGoodWord                                             ("You selected '{{word}}'. This is possily not a good word. Please think of one only with A-Z letters, without accents, digits, ponctuation or any other special characters and send it to {{shortCode}}"),
-	phrWordProvidingPlayerStart                                 ("Game started with {{wordGuessingPlayerNick}}.\n{{gallowsArt}}Send P {{wordGuessingPlayerNick}} MSG to give him/her clues"),
-	phrWordGuessingPlayerStart                                  ("{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nSend a letter, the complete word or END to cancel the game"),
+	phrWordProvidingPlayerMatchStart                            ("Game started with {{wordGuessingPlayerNickname}}.\n{{gallowsArt}}Send P {{wordGuessingPlayerNickname}} MSG to give him/her clues"),
+	phrWordGuessingPlayerMatchStart                             ("{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nSend a letter, the complete word or END to cancel the game"),
 	phrWordGuessingPlayerStatus                                 ("{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nSend a letter, the complete word or END to cancel the game"),
 	phrWordProvidingPlayerStatus                                ("{{nickname}} guessed letter {{guessedLetter}}\n{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nSend P {{nickname}} MSG to provoke him/her"),
 	phrWinningMessageForWordGuessingPlayer                      ("{{winningArt}}{{word}}! You got it! Here is your lucky number: {{luckyNumber}}. Send: J to play or A for help"),
@@ -106,5 +112,33 @@ public enum SMSAppModulePhrasingsHangman {
 		                                                           "invitingPlayerNickname", invitingPlayerNickname);
 	}
 	
+	/** @see SMSAppModuleConfigurationHangman#HANGMANphr_gallowsArt */
+	public static String getGallowsArt(boolean drawHead, boolean drawLeftArm, boolean drawRightArm,
+	                                   boolean drawChest, boolean drawLeftLeg, boolean drawRightLeg) {
+		return phr_gallowsArt.getPhrase("head",     (drawHead     ? phr_headCharacter    .getPhrase():""),
+		                                "leftArm",  (drawLeftArm  ? phr_leftArmCharacter .getPhrase():" "),
+		                                "chest",    (drawChest    ? phr_chestCharacter   .getPhrase():" "),
+		                                "rightArm", (drawRightArm ? phr_rightArmCharacter.getPhrase():""),
+		                                "leftLeg",  (drawLeftLeg  ? phr_leftLegCharacter .getPhrase():" "),
+		                                "rightLeg", (drawRightLeg ? phr_rightLegCharacter.getPhrase():""));
+	}
+
+	/** @see SMSAppModuleConfigurationHangman#HANGMANphrWordGuessingPlayerMatchStart */
+	public static String getWordGuessingPlayerMatchStart(String guessedWordSoFar, String usedLetters) {
+		return phrWordGuessingPlayerMatchStart.getPhrase("shortCode",              SMSAppModuleConfiguration.APPShortCode,
+		                                                 "appName",                SMSAppModuleConfiguration.APPName,
+		                                                 "gallowsArt",             getGallowsArt(false, false, false, false, false, false),
+		                                                 "guessedWordSoFar",       guessedWordSoFar,
+		                                                 "usedLetters",            usedLetters);
+	}
+	
+	/** @see SMSAppModuleConfigurationHangman#HANGMANphrWordProvidingPlayerMatchStart */
+	public static String getWordProvidingPlayerMatchStart(String guessedWordSoFar, String wordGuessingPlayerNickname) {
+		return phrWordProvidingPlayerMatchStart.getPhrase("shortCode",                  SMSAppModuleConfiguration.APPShortCode,
+		                                                  "appName",                    SMSAppModuleConfiguration.APPName,
+		                                                  "gallowsArt",                 getGallowsArt(false, false, false, false, false, false),
+		                                                  "guessedWordSoFar",           guessedWordSoFar,
+		                                                  "wordGuessingPlayerNickname", wordGuessingPlayerNickname);
+	}
 
 }

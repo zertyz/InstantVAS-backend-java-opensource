@@ -1,21 +1,23 @@
 package mutua.smsappengine.config;
 
 import static mutua.smsappmodule.config.SMSAppModuleConfiguration.*;
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationChat.*;
 import static mutua.smsappmodule.config.SMSAppModuleConfigurationHelp.*;
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationProfile.*;
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationHangman.*;
 import static mutua.smsappmodule.config.SMSAppModuleConfigurationSubscription.*;
+import static mutua.smsappmodule.config.SMSAppModuleConfigurationProfile.*;
+import static mutua.smsappmodule.config.SMSAppModuleConfigurationChat.*;
+import static mutua.smsappmodule.config.SMSAppModuleConfigurationHangman.*;
 import static mutua.smsappmodule.i18n.SMSAppModulePhrasingsHangman.*;
 import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHelp.*;
 import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsSubscription.*;
 import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsProfile.*;
+import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsChat.*;
 import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHangman.*;
 import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates.*;
-import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesHangman.*;
-import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesChat.*;
-import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesProfile.*;
+import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesHelp.*;
 import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesSubscription.*;
+import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesProfile.*;
+import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesChat.*;
+import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesHangman.*;
 import mutua.icc.configuration.annotations.ConfigurableElement;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.smsappmodule.config.SMSAppModuleConfiguration;
@@ -173,15 +175,9 @@ public class HangmanSMSModulesConfiguration {
 		};
 		
 		// command patterns
-		HELPtrgGlobalStartCompositeHelpDialog = new String[] {
-			"RULES",	
-		};
-		HELPtrgLocalShowNextCompositeHelpMessage = new String[] {
-			"+",
-		};
-		HELPtrgGlobalShowStatelessHelpMessage = new String[] {
-			"HELP",
-		};
+		HELPtrgGlobalStartCompositeHelpDialog    = new String[] {"RULES"};
+		HELPtrgLocalShowNextCompositeHelpMessage = new String[] {"+"};
+		HELPtrgGlobalShowStatelessHelpMessage    = new String[] {"HELP"};
 		
 		// stateful help messages
 		setStatefulHelpMessages(new Object[][] {
@@ -208,16 +204,18 @@ public class HangmanSMSModulesConfiguration {
 		SUBSCRIPTIONphrLifecycleUnsubscription     = "";
 		
 		// command patterns
-		SUBSCRIPTIONtrgLocalStartDoubleOptin   = new String[] {
-			".*",
-		};
-		SUBSCRIPTIONtrgLocalAcceptDoubleOptin  = new String[] {
-			"HANGMAN",
-		};
-		SUBSCRIPTIONtrgGlobalUnsubscribe       = new String[] {
-			"UNSUBSCRIBE",
-		};
+		SUBSCRIPTIONtrgLocalStartDoubleOptin   = new String[] {".*"};
+		SUBSCRIPTIONtrgLocalAcceptDoubleOptin  = new String[] {"HANGMAN"};
+		SUBSCRIPTIONtrgGlobalUnsubscribe       = new String[] {"UNSUBSCRIBE"};
 		
+		/* estes estados são o que define a aplicação. Estivessem em um arquivo de configurações, uma só aplicação, com todos os módulos compilados juntos,
+		 * atenderia a todos os serviços possíveis. Uma forma interessante de conseguir isso é carregar estes dados através da rede, toda vez que o servidor
+		 * de aplicações der boot -- desta maneira nós garantimos que o serviço "instant vas" será sempre necessário para executar o software e evitam-se
+		 * possíveis problemas com pirataria.
+		 * Hoje em dia já é possível que os cmds sejam chamados de forma a imitar o serviço africano 'iText'. Por exemplo, para o envio de emails,
+		 * o comando cmdSendEmail (que recebe dois parâmetros) pode ser usado, mesmo que se esteja enviando sempre email para uma única pessoa,
+		 * situação na qual a regular expression deve ser trocada de algo como "M (%w+) (.*)" para "M (.*)" e a chamada do comando seria trocada de
+		 * cmdSendEmail("$1", "$2") para cmdSendEmail("luiz@InstantVAS.com", "$1") -- esta forma de chamar ainda tem que ser implementada, na verdade. */
 		// navigation states
 		nstNewUser.setCommandTriggers(new Object[][] {
 			{cmdSubscribe,                SUBSCRIPTIONtrgLocalAcceptDoubleOptin},	// the double opt-in process starts with a broadcast message
@@ -235,10 +233,16 @@ public class HangmanSMSModulesConfiguration {
 			{cmdShowStatelessHelp,             HELPtrgGlobalShowStatelessHelpMessage},
 			{cmdRegisterNickname,              PROFILEtrgGlobalRegisterNickname},
 			{cmdInviteNicknameOrPhoneNumber,   HANGMANtrgGlobalInviteNicknameOrPhoneNumber},
+			{cmdSendPrivateMessage,            CHATtrgGlobalSendPrivateMessage},
 			{cmdShowExistingUsersFallbackHelp, ".*"},
 		});
 		nstEnteringMatchWord.setCommandTriggers(new Object[][] {
-			{cmdHoldMatchWord,    "([^ ]+)"},
+			{cmdHoldMatchWord,                 HANGMANtrgLocalHoldMatchWord},
+			{cmdShowExistingUsersFallbackHelp, ".*"},
+		});
+		nstAnsweringToHangmanMatchInvitation.setCommandTriggers(new Object[][] {
+			{cmdSendPrivateMessage,            CHATtrgGlobalSendPrivateMessage},
+			{cmdAcceptMatchInvitation,         HANGMANtrgLocalAcceptMatchInvitation},
 			{cmdShowExistingUsersFallbackHelp, ".*"},
 		});
 		
@@ -257,15 +261,9 @@ public class HangmanSMSModulesConfiguration {
 		PROFILEphrPresentation                     = "";
 		
 		// command patterns
-		PROFILEtrgGlobalStartAskForNicknameDialog = new String[] {
-			"",
-		};
-		PROFILEtrgLocalRegisterNickname           = new String[] {
-			"",
-		};
-		PROFILEtrgGlobalRegisterNickname          = new String[] {
-			"",
-		};
+		PROFILEtrgGlobalStartAskForNicknameDialog = new String[] {""};
+		PROFILEtrgLocalRegisterNickname           = new String[] {""};
+		PROFILEtrgGlobalRegisterNickname          = new String[] {""};
 		
 		//SMSAppModuleConfigurationProfile.log = null; // to come from a parameter. BTW, where is the log for this module?
 		SMSAppModuleConfigurationProfile.applyConfiguration();
@@ -275,18 +273,14 @@ public class HangmanSMSModulesConfiguration {
 		////////////////////////////////
 		
 		// phrasing
-		CHATphrPrivateMessage                     = "";
-		CHATphrPrivateMessageDeliveryNotification = "";
+		CHATphrPrivateMessage                     = "{{senderNickname}}: {{senderMessage}} - To answer, text P {{senderNickname}} [MSG] to {{shortCode}}";
+		CHATphrPrivateMessageDeliveryNotification = "{{appName}}: your message has been delivered to {{targetNickname}}. What can be the command that I'll suggest now?";
 		CHATphrNicknameNotFound                   = "";
 		CHATphrDoNotKnowWhoYouAreChattingTo       = "";
 		
 		// command patterns
-		CHATtrgGlobalSendPrivateMessage = new String[] {
-			"",
-		};
-		CHATtrgLocalSendPrivateReply    = new String[] {
-			"",
-		};
+		CHATtrgGlobalSendPrivateMessage = new String[] {"[MP] ([^ ]+) (.*)"};
+		CHATtrgLocalSendPrivateReply    = new String[] {""};
 		
 		//SMSAppModuleConfigurationChat.log = null;	// to come from a parameter. BTW, where is the log for this module?
 		SMSAppModuleConfigurationChat.applyConfiguration();
@@ -302,9 +296,9 @@ public class HangmanSMSModulesConfiguration {
 		HANGMANphrInvitationNotificationForInvitedPlayer                    = "{{appName}}: {{invitingPlayerNickname}} is inviting you for a hangman match. Do you accept? Send YES to {{shortCode}} or PROFILE to see {{invitingPlayerNickname}} information";
 		
 		// command patterns
-		HANGMANtrgGlobalInviteNicknameOrPhoneNumber = new String[] {
-			"INVITE +(.*)",
-		};
+		HANGMANtrgGlobalInviteNicknameOrPhoneNumber = new String[] {"INVITE +(.*)"};
+		HANGMANtrgLocalHoldMatchWord                = new String[] {"([^ ]+)"};
+		HANGMANtrgLocalAcceptMatchInvitation        = new String[] {"YES"};
 
 		DEFAULT_NICKNAME_PREFIX = "Guest";
 		//SMSAppModuleConfigurationHangman.log = null;	// to come from a parameter. BTW, where is the log for this module?

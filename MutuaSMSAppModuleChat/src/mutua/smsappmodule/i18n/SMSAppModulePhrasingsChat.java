@@ -20,8 +20,8 @@ import mutua.smsappmodule.config.SMSAppModuleConfiguration;
 
 public enum SMSAppModulePhrasingsChat {
 	
-	phrPrivateMessage                    ("{{appName}}: "),
-	phrPrivateMessageDeliveryNotification("{{appName}}: "),
+	phrPrivateMessage                    ("{{senderNickname}}: {{senderMessage}} - To answer, text P {{senderNickname}} [MSG] to {{shortCode}}"),
+	phrPrivateMessageDeliveryNotification("{{appName}}: Your message has been sent to {{targetNickname}}"),
 	phrNicknameNotFound                  ("{{appName}}: "),
 	phrDoNotKnowWhoYouAreChattingTo      ("{{appName}}: To chat privately, please text M <nickname> <msg> to {{shortCode}}"),
 	
@@ -59,11 +59,12 @@ public enum SMSAppModulePhrasingsChat {
 	** PHRASING METHODS **
 	*********************/
 	
-	@ConfigurableElement("Phrase sent to the target user when the sender user wants to send a chat private message. Variables: {{shortCode}}, {{appName}}, {{senderNickname}}")
-	public static String getPrivateMessage(String senderNickname) {
+	@ConfigurableElement("Phrase sent to the target user when the sender user wants to send a chat private message. Variables: {{shortCode}}, {{appName}}, {{senderNickname}}, {{senderMessage}}")
+	public static String getPrivateMessage(String senderNickname, String senderMessage) {
 		return phrPrivateMessage.getPhrase("shortCode",      SMSAppModuleConfiguration.APPShortCode,
                                            "appName",        SMSAppModuleConfiguration.APPName,
-                                           "senderNickname", senderNickname);
+                                           "senderNickname", senderNickname,
+                                           "senderMessage",  senderMessage);
 	}
 	
 	@ConfigurableElement("Phrase sent to the sender user, who sent a private message, to inform of the correct delivery. Variables: {{shortCode}}, {{appName}}, {{targetNickname}}")

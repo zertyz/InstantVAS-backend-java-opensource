@@ -113,9 +113,41 @@ public class HangmanAppEngineBehavioralTests {
 		
 		// invitation
 		tc.checkResponse("21998019167", "invite HardCodedNick", "HANGMAN: Inviting HardCodedNick. Think of a word without special digits and send it now to 9714. After the invitation, you'll get a lucky number");
-		tc.checkResponse("21998019167", "Scriptogram",
+		tc.checkResponse("21998019167", "coconuts",
 			"HardCodedNick was invited to play with you. while you wait, you can provoke HardCodedNick by sending a message to 9714 (0.31+tax) or send SIGNUP to provoke for free how many times you want",
 			"HANGMAN: pAtRiCiA is inviting you for a hangman match. Do you accept? Send YES to 9714 or PROFILE to see pAtRiCiA information");
+
+		// chat
+		String expectedChatMessage = "c'mon, man! Lets go for a match!!";
+		tc.checkResponse("21998019167", "P HardCodedNick " + expectedChatMessage, 
+			"HANGMAN: your message has been delivered to HardCodedNick. What can be the command that I'll suggest now?",
+			"pAtRiCiA: " + expectedChatMessage + " - To answer, text P pAtRiCiA [MSG] to 9714"
+		);
+		expectedChatMessage = "I don't know what is this yet. But, OK... lets try... For me it is easy because I'm already subscribed.";
+		tc.checkResponse("21991234899", "P pAtRiCiA " + expectedChatMessage,
+			"HANGMAN: your message has been delivered to pAtRiCiA. What can be the command that I'll suggest now?",
+			"HardCodedNick: " + expectedChatMessage + " - To answer, text P HardCodedNick [MSG] to 9714"
+		);
+		
+		// back to the invitation...
+		tc.checkResponse("21991234899", "YES", "+-+\n" +
+		                                       "| \n" +
+		                                       "|  \n" +
+		                                       "|  \n" +
+		                                       "|\n" +
+		                                       "====\n" +
+		                                       "Word: C-C----S\n" +
+		                                       "Used: CS\n" +
+		                                       "Send a letter, the complete word or END to cancel the game",
+		                                       "Game started with HardCodedNick.\n" +
+		                                       "+-+\n" +
+		                                       "| \n" +
+		                                       "|  \n" +
+		                                       "|  \n" +
+		                                       "|\n" +
+		                                       "====\n" +
+		                                       "Send P HardCodedNick MSG to give him/her clues");
+
 	}
 
 }
