@@ -76,11 +76,12 @@ public class MatchDB implements IMatchDB {
 	}
 
 	@Override
-	public void updateMatchStatus(MatchDto match, EMatchStatus status) throws SQLException {
+	public void updateMatchStatus(MatchDto match, EMatchStatus status, String serializedGame) throws SQLException {
 		int matchId = match.getMatchId();
 		PreparedProcedureInvocationDto procedure = new PreparedProcedureInvocationDto("UpdateMatchStatusById");
-		procedure.addParameter("MATCH_ID", matchId);
-		procedure.addParameter("STATUS",   status.name());
+		procedure.addParameter("MATCH_ID",        matchId);
+		procedure.addParameter("STATUS",          status.name());
+		procedure.addParameter("SERIALIZED_GAME", serializedGame);
 		dba.invokeUpdateProcedure(procedure);
 	}
 

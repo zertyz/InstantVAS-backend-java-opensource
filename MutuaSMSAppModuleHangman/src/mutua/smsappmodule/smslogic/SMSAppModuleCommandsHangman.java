@@ -169,6 +169,66 @@ public enum SMSAppModuleCommandsHangman implements ICommandProcessor {
 		}
 	},
 	
+	/** */
+	cmdSuggestLetterOrWordForHuman {
+		@Override
+		public CommandAnswerDto processCommand(SessionModel session, ESMSInParserCarrier carrier, String[] parameters) throws SQLException {
+			String suggestedLetterOrWord = parameters[0];
+			int    matchId               = session.getIntProperty(sprHangmanMatchId);
+			MatchDto match               = matchDB.retrieveMatch(matchId);
+			String serializedGameState   = match.getSerializedGame();
+			
+			UserDto wordProvidingUser     = match.getWordProvidingPlayer();
+			String  wordProvidingPhone    = wordProvidingUser.getPhoneNumber();
+			String  wordProvidingNickname = profileDB.getProfileRecord(wordProvidingUser).getNickname();
+			String  wordGuessingPhone     = session.getUser().getPhoneNumber();
+			String  wordGuessingNickname  = profileDB.getProfileRecord(match.getWordGuessingPlayer()).getNickname();
+			
+			//MatchPlayersInfo matchPlayersInfo = getMatchPlayersInfo(matchData);
+			HangmanGame game  = new HangmanGame(serializedGameState);
+			char[] suggestLetters = suggestedLetterOrWord.toCharArray();
+			for (char c : suggestLetters) {
+				if (game.getGameState() != EHangmanGameStates.PLAYING) {
+					break;
+				}
+				game.suggestLetter(c);
+			}
+			int attemptsLeft = game.getNumberOfWrongTriesLeft();
+			
+			EHangmanGameStates gameState = game.getGameState();
+			String replyMT                 = null;
+			String notificationMT          = null;
+			EMatchStatus matchStatus       = null;
+			CommandAnswerDto commandAnswer = null;
+			switch (gameState) {
+				case PLAYING:
+					replyMT        = getWordGuessingPlayerStatus(attemptsLeft<6, attemptsLeft<5, attemptsLeft<4, attemptsLeft<3, attemptsLeft<2, attemptsLeft<1,
+					                                             game.getGuessedWordSoFar(), game.getAttemptedLettersSoFar());
+					notificationMT = getWordProvidingPlayerStatus(attemptsLeft<6, attemptsLeft<5, attemptsLeft<4, attemptsLeft<3, attemptsLeft<2, attemptsLeft<1,
+                                                                  game.getGuessedWordSoFar(), suggestedLetterOrWord, game.getAttemptedLettersSoFar(), wordGuessingNickname);
+					matchStatus    = EMatchStatus.ACTIVE;
+					commandAnswer  = getSameStateReplyWithAnAdditionalMessageToAnotherUserCommandAnswer(replyMT, wordProvidingUser, notificationMT);
+					break;
+				case WON:
+					replyMT        = getWinningMessageForWordGuessingPlayer(game.getWord(), wordProvidingNickname);
+					notificationMT = getWinningMessageForWordProvidingPlayer(wordGuessingNickname);
+					matchStatus    = EMatchStatus.CLOSED_WORD_GUESSED;
+					commandAnswer  = getNewStateReplyWithAnAdditionalMessageToAnotherUserCommandAnswer(session, nstExistingUser, replyMT, wordProvidingUser, notificationMT);
+					break;
+				case LOST:
+					replyMT        = getLosingMessageForWordGuessingPlayer(game.getWord(), wordProvidingNickname);
+					notificationMT = getLosingMessageForWordProvidingPlayer(wordGuessingNickname);
+					matchStatus    = EMatchStatus.CLOSED_ATTEMPTS_EXCEEDED;
+					commandAnswer  = getNewStateReplyWithAnAdditionalMessageToAnotherUserCommandAnswer(session, nstExistingUser, replyMT, wordProvidingUser, notificationMT);
+					break;
+				default:
+					throw new RuntimeException("Don't know nothing about EHangmanGameState." + gameState);
+			}
+			matchDB.updateMatchStatus(match, matchStatus, game.serializeGameState());
+			return commandAnswer;
+		}
+	},
+	
 	;
 	
 	// databases
@@ -224,5 +284,8 @@ public enum SMSAppModuleCommandsHangman implements ICommandProcessor {
 	public static String[] trgLocalHoldMatchWord                  = {"([^ ]+)"};
 	/** {@link SMSAppModuleNavigationStatesHangman#nstAnsweringToHangmanMatchInvitation} triggers that activates {@link #cmdAcceptMatchInvitation} */
 	public static String[] trgLocalAcceptMatchInvitation          = {"YES"};
+	/** {@link SMSAppModuleNavigationStatesHangman#nstGuessingWordFromHangmanBotOpponent} and {@link SMSAppModuleNavigationStatesHangman#nstGuessingWordFromHangmanHumanOpponent} triggers
+	 *  that activates {@link #cmdSuggestLetterOrWordForHuman} */
+	public static String[] trgLocalNewLetterOrWordSuggestion      = {"([A-Z]+)"};
 
 }

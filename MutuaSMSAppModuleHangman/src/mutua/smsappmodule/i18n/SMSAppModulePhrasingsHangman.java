@@ -39,16 +39,16 @@ public enum SMSAppModulePhrasingsHangman {
 	phrInvitationRefusalNotificationForInvitingPlayer           ("{{invitedPlayerNickname}} refused your invitation to play. Send LIST to 9714 and pick someone else"),
 	phrInvitationRefusalNotificationForInvitedPlayer            ("The invitation to play the Hangman Game made by {{invitingPlayerNickname}} was refused. Send LIST to {{shortCode}} to see online users"),
 	phrNotAGoodWord                                             ("You selected '{{word}}'. This is possily not a good word. Please think of one only with A-Z letters, without accents, digits, ponctuation or any other special characters and send it to {{shortCode}}"),
-	phrWordProvidingPlayerMatchStart                            ("Game started with {{wordGuessingPlayerNickname}}.\n{{gallowsArt}}Send P {{wordGuessingPlayerNickname}} MSG to give him/her clues"),
+	phrWordProvidingPlayerMatchStart                            ("Game started with {{wordGuessingPlayerNickname}}.\n{{gallowsArt}}Send P {{wordGuessingPlayerNickname}} [MSG] to give him/her clues"),
 	phrWordGuessingPlayerMatchStart                             ("{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nSend a letter, the complete word or END to cancel the game"),
+	phrWordProvidingPlayerStatus                                ("{{wordGuessingPlayerNickname}} guessed letter {{guessedLetter}}\n{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nSend P {{wordGuessingPlayerNickname}} [MSG] to provoke him/her"),
 	phrWordGuessingPlayerStatus                                 ("{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nSend a letter, the complete word or END to cancel the game"),
-	phrWordProvidingPlayerStatus                                ("{{nickname}} guessed letter {{guessedLetter}}\n{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nSend P {{nickname}} MSG to provoke him/her"),
-	phrWinningMessageForWordGuessingPlayer                      ("{{winningArt}}{{word}}! You got it! Here is your lucky number: {{luckyNumber}}. Send: J to play or A for help"),
-	phrWinningMessageForWordProvidingPlayer                     ("{{wordGuessingPlayerNick}} guessed your word! P {{wordGuessingPlayerNick}} MSG to provoke him/her or INVITE {{wordGuessingPlayerNick}} for a new match"),
-	phrLosingMessageForWordGuessingPlayer                       ("{{losingArt}}The word was {{word}}. Now challenge {{wordProvidingPlayerNick}}: send INVITE {{wordProvidingPlayerNick}} to {{shortCode}}"),
-	phrLosingMessageForWordProvidingPlayer                      ("Good one! {{wordGuessingPlayerNick}} wasn't able to guessed your word! P {{wordGuessingPlayerNick}} MSG to provoke him/her or INVITE {{wordGuessingPlayerNick}} for a new match"),
-	phrMatchGiveupNotificationForWordProvidingPlayer            ("{{wordGuessingPlayerNick}} cancelled the match. To find other users to play with, sent LIST to {{shortCode}}"),
-	phrMatchGiveupNotificationForWordGuessingPlayer             ("Your match with {{wordProvidingPlayerNick}} has been canceled. Send P {{wordProvidingPlayerNick}} MSG to talk to him/her or LIST to play with someone else"),
+	phrWinningMessageForWordGuessingPlayer                      ("{{winningArt}}{{word}}! You got it! Here is your lucky number: xxx.xx.xx.xxx. Send: J to play or A for help"),
+	phrWinningMessageForWordProvidingPlayer                     ("{{wordGuessingPlayerNickname}} guessed your word! P {{wordGuessingPlayerNickname}} [MSG] to provoke him/her or INVITE {{wordGuessingPlayerNickname}} for a new match"),
+	phrLosingMessageForWordGuessingPlayer                       ("{{losingArt}}The word was {{word}}. Now challenge {{wordProvidingPlayerNickname}}: send INVITE {{wordProvidingPlayerNickname}} to {{shortCode}}"),
+	phrLosingMessageForWordProvidingPlayer                      ("Good one! {{wordGuessingPlayerNickname}} wasn't able to guessed your word! P {{wordGuessingPlayerNickname}} [MSG] to provoke him/her or INVITE {{wordGuessingPlayerNickname}} for a new match"),
+	phrMatchGiveupNotificationForWordGuessingPlayer             ("Your match with {{wordProvidingPlayerNickname}} has been canceled. Send P {{wordProvidingPlayerNickname}} [MSG] to talk to him/her or LIST to play with someone else"),
+	phrMatchGiveupNotificationForWordProvidingPlayer            ("{{wordGuessingPlayerNickname}} cancelled the match. To find other users to play with, sent LIST to {{shortCode}}"),
 	
 	;
 	
@@ -113,7 +113,7 @@ public enum SMSAppModulePhrasingsHangman {
 	}
 	
 	/** @see SMSAppModuleConfigurationHangman#HANGMANphr_gallowsArt */
-	public static String getGallowsArt(boolean drawHead, boolean drawLeftArm, boolean drawRightArm,
+	private static String getGallowsArt(boolean drawHead, boolean drawLeftArm, boolean drawRightArm,
 	                                   boolean drawChest, boolean drawLeftLeg, boolean drawRightLeg) {
 		return phr_gallowsArt.getPhrase("head",     (drawHead     ? phr_headCharacter    .getPhrase():""),
 		                                "leftArm",  (drawLeftArm  ? phr_leftArmCharacter .getPhrase():" "),
@@ -121,6 +121,16 @@ public enum SMSAppModulePhrasingsHangman {
 		                                "rightArm", (drawRightArm ? phr_rightArmCharacter.getPhrase():""),
 		                                "leftLeg",  (drawLeftLeg  ? phr_leftLegCharacter .getPhrase():" "),
 		                                "rightLeg", (drawRightLeg ? phr_rightLegCharacter.getPhrase():""));
+	}
+	
+	/** @see SMSAppModuleConfigurationHangman#HANGMANphr_winningArt */
+	private static String getWinningArt() {
+		return phr_winningArt.getPhrase();
+	}
+	
+	/** @see SMSAppModuleConfigurationHangman#HANGMANphr_losingArt */
+	private static String getLosingArt() {
+		return phr_losingArt.getPhrase();
 	}
 
 	/** @see SMSAppModuleConfigurationHangman#HANGMANphrWordGuessingPlayerMatchStart */
@@ -139,6 +149,79 @@ public enum SMSAppModulePhrasingsHangman {
 		                                                  "gallowsArt",                 getGallowsArt(false, false, false, false, false, false),
 		                                                  "guessedWordSoFar",           guessedWordSoFar,
 		                                                  "wordGuessingPlayerNickname", wordGuessingPlayerNickname);
+	}
+
+	/** @see SMSAppModuleConfigurationHangman#HANGMANphrWordGuessingPlayerStatus */
+	public static String getWordGuessingPlayerStatus(boolean drawHead, boolean drawLeftArm, boolean drawRightArm,
+                                                     boolean drawChest, boolean drawLeftLeg, boolean drawRightLeg,
+                                                     String guessedWordSoFar, String usedLetters) {
+		return phrWordGuessingPlayerStatus.getPhrase("shortCode",        SMSAppModuleConfiguration.APPShortCode,
+                                                     "appName",          SMSAppModuleConfiguration.APPName,
+                                                     "gallowsArt",       getGallowsArt(drawHead, drawLeftArm, drawRightArm, drawChest, drawLeftLeg, drawRightLeg),
+                                                     "guessedWordSoFar", guessedWordSoFar,
+                                                     "usedLetters",      usedLetters);
+		
+	}
+	
+	/** @see SMSAppModuleConfigurationHangman#HANGMANphrWordProvidingPlayerStatus */
+	public static String getWordProvidingPlayerStatus(boolean drawHead, boolean drawLeftArm, boolean drawRightArm,
+                                                      boolean drawChest, boolean drawLeftLeg, boolean drawRightLeg,
+                                                      String guessedWordSoFar, String guessedLetter, String usedLetters, String wordGuessingPlayerNickname) {
+		return phrWordProvidingPlayerStatus.getPhrase("shortCode",                  SMSAppModuleConfiguration.APPShortCode,
+                                                      "appName",                    SMSAppModuleConfiguration.APPName,
+                                                      "gallowsArt",                 getGallowsArt(drawHead, drawLeftArm, drawRightArm, drawChest, drawLeftLeg, drawRightLeg),
+                                                      "guessedWordSoFar",           guessedWordSoFar,
+                                                      "guessedLetter",              guessedLetter,
+                                                      "usedLetters",                usedLetters,
+                                                      "wordGuessingPlayerNickname", wordGuessingPlayerNickname);
+	}
+	
+	/** @see SMSAppModuleConfigurationHangman#HANGMANphrWinningMessageForWordGuessingPlayer */
+	public static String getWinningMessageForWordGuessingPlayer(String word, String wordProvidingPlayerNickname) {
+		return phrWinningMessageForWordGuessingPlayer.getPhrase("shortCode",                   SMSAppModuleConfiguration.APPShortCode,
+		                                                        "appName",                     SMSAppModuleConfiguration.APPName,
+		                                                        "winningArt",                  getWinningArt(),
+		                                                        "word",                        word,
+		                                                        "wordProvidingPlayerNickname", wordProvidingPlayerNickname);
+	}
+	
+	/** @see SMSAppModuleConfigurationHangman#HANGMANphrWinningMessageForWordProvidingPlayer */
+	public static String getWinningMessageForWordProvidingPlayer(String wordGuessingPlayerNickname) {
+		return phrWinningMessageForWordProvidingPlayer.getPhrase("shortCode",                  SMSAppModuleConfiguration.APPShortCode,
+		                                                         "appName",                    SMSAppModuleConfiguration.APPName,
+		                                                         "winningArt",                 getWinningArt(),
+		                                                         "wordGuessingPlayerNickname", wordGuessingPlayerNickname);
+	}
+	
+	/** @see SMSAppModuleConfigurationHangman#HANGMANphrLosingMessageForWordGuessingPlayer */
+	public static String getLosingMessageForWordGuessingPlayer(String word, String wordProvidingPlayerNickname) {
+		return phrLosingMessageForWordGuessingPlayer.getPhrase("shortCode",                   SMSAppModuleConfiguration.APPShortCode,
+		                                                       "appName",                     SMSAppModuleConfiguration.APPName,
+		                                                       "losingArt",                   getLosingArt(),
+		                                                       "word",                        word,
+		                                                       "wordProvidingPlayerNickname", wordProvidingPlayerNickname);
+	}
+	
+	/** @see SMSAppModuleConfigurationHangman#HANGMANphrLosingMessageForWordProvidingPlayer */
+	public static String getLosingMessageForWordProvidingPlayer(String wordGuessingPlayerNickname) {
+		return phrLosingMessageForWordProvidingPlayer.getPhrase("shortCode",                  SMSAppModuleConfiguration.APPShortCode,
+		                                                        "appName",                    SMSAppModuleConfiguration.APPName,
+		                                                        "losingArt",                  getLosingArt(), 
+		                                                        "wordGuessingPlayerNickname", wordGuessingPlayerNickname);
+	}
+	
+	/** @see SMSAppModuleConfigurationHangman#HANGMANphrMatchGiveupNotificationForWordGuessingPlayer */
+	public static String getMatchGiveupNotificationForWordGuessingPlayer(String wordProvidingPlayerNickname) {
+		return phrMatchGiveupNotificationForWordGuessingPlayer.getPhrase("shortCode",                   SMSAppModuleConfiguration.APPShortCode,
+		                                                                 "appName",                     SMSAppModuleConfiguration.APPName,
+		                                                                 "wordProvidingPlayerNickname", wordProvidingPlayerNickname);
+	}
+	
+	/** @see SMSAppModuleConfigurationHangman#HANGMANphrMatchGiveupNotificationForWordProvidingPlayer */
+	public static String getMatchGiveupNotificationForWordProvidingPlayer(String wordGuessingPlayerNickname) {
+		return phrMatchGiveupNotificationForWordProvidingPlayer.getPhrase("shortCode",                  SMSAppModuleConfiguration.APPShortCode,
+		                                                                  "appName",                    SMSAppModuleConfiguration.APPName,
+		                                                                  "wordGuessingPlayerNickname", wordGuessingPlayerNickname);
 	}
 
 }

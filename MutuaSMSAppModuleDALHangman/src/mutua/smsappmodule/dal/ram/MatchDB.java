@@ -54,7 +54,7 @@ public class MatchDB implements IMatchDB {
 	}
 
 	@Override
-	public void updateMatchStatus(MatchDto match, EMatchStatus status) {
+	public void updateMatchStatus(MatchDto match, EMatchStatus status, String serializedGame) {
 		int matchId = match.getMatchId();
 		MatchDto storedMatch = matches.get(matchId);
 		MatchDto newMatch = storedMatch.getNewMatch(status);

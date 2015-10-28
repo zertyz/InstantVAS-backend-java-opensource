@@ -245,6 +245,11 @@ public class HangmanSMSModulesConfiguration {
 			{cmdAcceptMatchInvitation,         HANGMANtrgLocalAcceptMatchInvitation},
 			{cmdShowExistingUsersFallbackHelp, ".*"},
 		});
+		nstGuessingWordFromHangmanHumanOpponent.setCommandTriggers(new Object[][] {
+			{cmdSuggestLetterOrWordForHuman, HANGMANtrgLocalNewLetterOrWordSuggestion},
+			{cmdSendPrivateMessage,          CHATtrgGlobalSendPrivateMessage},
+			{cmdShowExistingUsersFallbackHelp, ".*"},
+		});
 		
 		SMSAppModuleConfigurationSubscription.subscriptionEngine = subscriptionEngine;
 		SMSAppModuleConfigurationSubscription.subscriptionToken  = subscriptionToken;
@@ -290,15 +295,13 @@ public class HangmanSMSModulesConfiguration {
 		///////////////////////////////////
 		
 		// phrasing
-		HANGMANphrAskOpponentNicknameOrPhone                                = "{{appName}}: Name registered: {{invitingPlayerNickname}}. Send your friend's phone to {{shortCode}} or LIST to see online players. NICK [NEW NICK] to change your name.";
-		HANGMANphrAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation = "{{appName}}: Inviting {{opponentNickname}}. Think of a word without special digits and send it now to {{shortCode}}. After the invitation, you'll get a lucky number";
-		HANGMANphrInvitationNotificationForInvitingPlayer                   = "{{invitedPlayerNickname}} was invited to play with you. while you wait, you can provoke {{invitedPlayerNickname}} by sending a message to {{shortCode}} (0.31+tax) or send SIGNUP to provoke for free how many times you want";
-		HANGMANphrInvitationNotificationForInvitedPlayer                    = "{{appName}}: {{invitingPlayerNickname}} is inviting you for a hangman match. Do you accept? Send YES to {{shortCode}} or PROFILE to see {{invitingPlayerNickname}} information";
+		// (default phrases won't need to be change for testing purposes. Only when it comes the time this file will allow them to be mapped by the configuration file
 		
 		// command patterns
 		HANGMANtrgGlobalInviteNicknameOrPhoneNumber = new String[] {"INVITE +(.*)"};
 		HANGMANtrgLocalHoldMatchWord                = new String[] {"([^ ]+)"};
 		HANGMANtrgLocalAcceptMatchInvitation        = new String[] {"YES"};
+		HANGMANtrgLocalNewLetterOrWordSuggestion    = new String[] {"([A-Z]+)"};
 
 		DEFAULT_NICKNAME_PREFIX = "Guest";
 		//SMSAppModuleConfigurationHangman.log = null;	// to come from a parameter. BTW, where is the log for this module?

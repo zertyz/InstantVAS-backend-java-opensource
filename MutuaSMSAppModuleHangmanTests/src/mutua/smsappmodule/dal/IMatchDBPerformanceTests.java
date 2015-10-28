@@ -90,7 +90,7 @@ public class IMatchDBPerformanceTests {
 				matchDB.storeNewMatch(matches[i]);
 			}
 			public void updateLoopCode(int i) throws SQLException {
-				matchDB.updateMatchStatus(matches[i], EMatchStatus.CLOSED_WORD_GUESSED);
+				matchDB.updateMatchStatus(matches[i], EMatchStatus.CLOSED_WORD_GUESSED, "abcdefg");
 			}
 			public void selectLoopCode(int i) throws SQLException {
 				matchDB.retrieveMatch(matches[i].getMatchId());

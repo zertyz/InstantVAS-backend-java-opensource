@@ -73,7 +73,7 @@ public class IMatchDBBehavioralTests {
 		assertEquals("Storing & Retrieving first  match failed", firstExpectedMatch,  firstObservedMatch);
 		assertEquals("Storing & Retrieving second match failed", secondExpectedMatch, secondObservedMatch);
 		
-		matchDB.updateMatchStatus(firstExpectedMatch, EMatchStatus.CLOSED_WORD_GUESSED);
+		matchDB.updateMatchStatus(firstExpectedMatch, EMatchStatus.CLOSED_WORD_GUESSED, "abcdefg");
 		
 		MatchDto expectedTaintedMatch = new MatchDto(firstMatchId, firstExpectedMatchWordProvidingPlayer,
 		                                             firstExpectedMatchWordGuessingPlayer,

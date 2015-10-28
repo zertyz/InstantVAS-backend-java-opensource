@@ -1,7 +1,6 @@
 package mutua.smsappengine.logic;
 
 import static mutua.smsappengine.config.HangmanSMSModulesConfiguration.*;
-
 import static org.junit.Assert.*;
 
 import java.sql.SQLException;
@@ -18,6 +17,11 @@ import mutua.smsappmodule.dal.IProfileDB;
 import mutua.smsappmodule.dal.ISessionDB;
 import mutua.smsappmodule.dal.ISubscriptionDB;
 import mutua.smsappmodule.dal.IUserDB;
+import mutua.smsappmodule.hangmangame.HangmanGame;
+import mutua.smsappmodule.i18n.SMSAppModulePhrasingsChat;
+import mutua.smsappmodule.i18n.SMSAppModulePhrasingsHangman;
+import mutua.smsappmodule.i18n.SMSAppModulePhrasingsProfile;
+import mutua.smsappmodule.i18n.SMSAppModulePhrasingsSubscription;
 import mutua.subscriptionengine.TestableSubscriptionAPI;
 
 import org.junit.Before;
@@ -74,6 +78,99 @@ public class HangmanAppEngineBehavioralTests {
 		nextBotWordsDB.reset();
 	}
 
+	
+	/*********************
+	** AUXILIAR METHODS **
+	*********************/
+    
+    /** for NEW_USERs, register a new player's 'phone' and give it the provided 'nickname' */
+    public void registerUser(String phone, String nickname) {
+    	tc.checkResponse(phone, "forca",            SMSAppModulePhrasingsSubscription.getSuccessfullySubscribed());
+		tc.checkResponse(phone, "nick " + nickname, SMSAppModulePhrasingsProfile.getNicknameRegistrationNotification(nickname));
+    }
+    
+//    /** for EXISTING_USERs, send 'play' to start playing with a bot */
+//    public void playWithBot(String phone, String expectedWord) {
+//    	HangmanGame game = new HangmanGame(expectedWord, 6);
+//    	tc.checkResponse(phone, "play", testPhraseology.PLAYINGWordGuessingPlayerStart(game.getGuessedWordSoFar(), game.getAttemptedLettersSoFar()));
+//    }
+    
+    /** for EXISTING_USERs, send the 'invite' by nickname command from the word providing to the word guessing already registered players */
+    public void invitePlayerByNick(String wordProvidingPlayerPhone, String wordGuessingPlayerNickname) {
+		tc.checkResponse(wordProvidingPlayerPhone, "invite " + wordGuessingPlayerNickname, SMSAppModulePhrasingsHangman.getAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation(wordGuessingPlayerNickname));		
+    }
+    
+//    /** for EXISTING_USERs, send the 'invite' by phone command from the word providing to the word guessing already registered players */
+//    public void invitePlayerByPhone(String wordProvidingPlayerPhone, String wordGuessingPlayerPhone) {
+//		tc.checkResponse(wordProvidingPlayerPhone, "invite " + wordGuessingPlayerPhone, SMSAppModulePhrasingsHangman.getAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation(wordGuessingPlayerPhone));		
+//    }
+    
+    /** for an ENTERING_MATCH_WORD word providing player, send the word for a match */
+    public void sendWordToBeGuessed(String wordProvidingPlayerPhone, String wordProvidingPlayerNickname,
+                                    String word, String wordGuessingPlayerNickname) {
+		// provide the word
+    	tc.checkResponse(wordProvidingPlayerPhone, word,
+			SMSAppModulePhrasingsHangman.getInvitationNotificationForInvitingPlayer(wordGuessingPlayerNickname),
+			SMSAppModulePhrasingsHangman.getInvitationNotificationForInvitedPlayer(wordProvidingPlayerNickname));
+    }
+    
+    /** for an ANSWERING_TO_INVITATION word guessing player, send YES to accept the match */
+    public void acceptInvitation(String wordGuessingPlayerPhone, String word, String wordGuessingPlayerNick) {
+    	HangmanGame game = new HangmanGame(word, 6);
+    	String guessedWordSoFar = game.getGuessedWordSoFar();
+    	String usedLetters = game.getAttemptedLettersSoFar();
+		tc.checkResponse(wordGuessingPlayerPhone, "yes",
+			SMSAppModulePhrasingsHangman.getWordGuessingPlayerMatchStart(guessedWordSoFar, usedLetters),
+			SMSAppModulePhrasingsHangman.getWordProvidingPlayerMatchStart(guessedWordSoFar, wordGuessingPlayerNick));
+    }
+    
+    /** for REGISTERED_USERs, send chat messages */
+    public void sendPrivateMessage(String fromPhone, String toNickname, String message) throws SQLException {
+    	String fromNickname = profileDB.getProfileRecord(userDB.assureUserIsRegistered(fromPhone)).getNickname();
+		tc.checkResponse(fromPhone, "P " + toNickname + " " + message,
+			SMSAppModulePhrasingsChat.getPrivateMessage(fromNickname, message),
+			SMSAppModulePhrasingsChat.getPrivateMessageDeliveryNotification(toNickname));
+    }
+    
+    /** for NEW_USERS, register the two players and invite "word guessing player" to play with the provided 'word' */
+    public void invitePlayerForAMatch(String wordProvidingPlayerPhone, String wordProvidingPlayerNick, String word,
+                                      String wordGuessingPlayerPhone,  String wordGuessingPlayerNick) {
+
+    	// register word providing player
+    	registerUser(wordProvidingPlayerPhone, wordProvidingPlayerNick);
+
+    	// register word guessing player
+    	registerUser(wordGuessingPlayerPhone, wordGuessingPlayerNick);
+    	
+    	// invite
+    	invitePlayerByNick(wordProvidingPlayerPhone, wordGuessingPlayerNick);
+
+		// provide the word
+    	sendWordToBeGuessed(wordProvidingPlayerPhone, wordProvidingPlayerNick, word, wordGuessingPlayerNick);
+    }
+    
+    /** for NEW_USERS, start a match between them */
+    public void startAPlayerMatch(String wordProvidingPlayerPhone, String wordProvidingPlayerNick, String word,
+                                  String wordGuessingPlayerPhone, String wordGuessingPlayerNick) {
+		
+    	// invite
+    	invitePlayerForAMatch(wordProvidingPlayerPhone, wordProvidingPlayerNick, word, wordGuessingPlayerPhone, wordGuessingPlayerNick);
+
+    	// accept
+    	acceptInvitation(wordGuessingPlayerPhone, word, wordGuessingPlayerNick);		
+    }
+    
+//    /** for a NEW_USER, start a match with a bot */
+//    public void startABotMatch(String phone, String nick, String expectedWord) {
+//		registerUser(phone, nick);
+//		playWithBot(phone, expectedWord);
+//    }
+	
+	
+	/*******************************
+	** EXPECTED USAGE PATHS TESTS **
+	*******************************/
+    
 	@Test
 	public void testDefaultPhrasings() throws SQLException {
 
@@ -129,7 +226,7 @@ public class HangmanAppEngineBehavioralTests {
 			"HardCodedNick: " + expectedChatMessage + " - To answer, text P HardCodedNick [MSG] to 9714"
 		);
 		
-		// back to the invitation...
+		// back to the invitation... lets play the match!
 		tc.checkResponse("21991234899", "YES", "+-+\n" +
 		                                       "| \n" +
 		                                       "|  \n" +
@@ -146,7 +243,58 @@ public class HangmanAppEngineBehavioralTests {
 		                                       "|  \n" +
 		                                       "|\n" +
 		                                       "====\n" +
-		                                       "Send P HardCodedNick MSG to give him/her clues");
+		                                       "Send P HardCodedNick [MSG] to give him/her clues");
+		tc.checkResponse("21991234899", "o", "+-+\n" +
+		                                     "| \n" +
+		                                     "|  \n" +
+		                                     "|  \n" +
+		                                     "|\n" +
+		                                     "====\n" +
+		                                     "Word: COCO---S\n" +
+		                                     "Used: COS\n" +
+		                                     "Send a letter, the complete word or END to cancel the game",
+		                                     "HardCodedNick guessed letter o\n" +
+		                                     "+-+\n" +
+		                                     "| \n" +
+		                                     "|  \n" +
+		                                     "|  \n" +
+		                                     "|\n" +
+		                                     "====\n" +
+		                                     "Word: COCO---S\n" +
+		                                     "Used: COS\n" +
+		                                     "Send P HardCodedNick [MSG] to provoke him/her");
+		
+		// continue playing, with eventually some wrong letters, until HardCodedNick wins
+		tc.checkResponse("21991234899", "a",
+			SMSAppModulePhrasingsHangman.getWordGuessingPlayerStatus (true, false, false, false, false, false, "COCO---S", "ACOS"),
+			SMSAppModulePhrasingsHangman.getWordProvidingPlayerStatus(true, false, false, false, false, false, "COCO---S", "a", "ACOS", expectedNickname));
+		tc.checkResponse("21991234899", "nu",
+			SMSAppModulePhrasingsHangman.getWordGuessingPlayerStatus (true, false, false, false, false, false, "COCONU-S", "ACNOSU"),
+			SMSAppModulePhrasingsHangman.getWordProvidingPlayerStatus(true, false, false, false, false, false, "COCONU-S", "nu", "ACNOSU", expectedNickname));
+		tc.checkResponse("21991234899", "xyz",
+			SMSAppModulePhrasingsHangman.getWordGuessingPlayerStatus (true, true, true, true, false, false, "COCONU-S", "ACNOSUXYZ"),
+			SMSAppModulePhrasingsHangman.getWordProvidingPlayerStatus(true, true, true, true, false, false, "COCONU-S", "xyz", "ACNOSUXYZ", expectedNickname));
+		
+		// test the winning phrase
+		tc.checkResponse("21991234899", "t", "\\0/\n" +
+                                             " |\n" +
+                                             "/ \\\n" +
+                                             "COCONUTS! You got it! Here is your lucky number: xxx.xx.xx.xxx. Send: J to play or A for help",
+                                             "HardCodedNick guessed your word! P HardCodedNick [MSG] to provoke him/her or INVITE HardCodedNick for a new match");
+		
+		// start a new game to test the losing phrase
+		invitePlayerByNick("21991234899", "pAtRiCiA");
+		sendWordToBeGuessed("21991234899", "HardCodedNick", "Muggles", "pAtRiCiA");
+		acceptInvitation("21998019167", "Muggles", "pAtRiCiA");
+
+		// lose the game
+		tc.checkResponse("21998019167", "muskratramblesong", "+-+\n" +
+                                                             "| x\n" +
+                                                             "|/|\\\n" +
+                                                             "|/ \\\n" +
+                                                             "====\n" +
+                                                             "The word was MUGGLES. Now challenge HardCodedNick: send INVITE HardCodedNick to 9714",
+                                                             "Good one! pAtRiCiA wasn't able to guessed your word! P pAtRiCiA [MSG] to provoke him/her or INVITE pAtRiCiA for a new match");
 
 	}
 

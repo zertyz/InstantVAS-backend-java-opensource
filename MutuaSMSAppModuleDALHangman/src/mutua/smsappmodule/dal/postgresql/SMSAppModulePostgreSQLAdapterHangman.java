@@ -119,7 +119,7 @@ public class SMSAppModulePostgreSQLAdapterHangman extends PostgreSQLAdapter {
 			                           "       m.serializedGame AS serializedGame, m.matchStartMillis AS matchStartMillis, " +
 			                           "       m.status AS status FROM Matches m, Users wp, Users wg " + 
 			                           "WHERE m.matchId=${MATCH_ID} AND m.wordProvidingPlayerUserId=wp.userId AND m.wordGuessingPlayerUserId=wg.userId"},
-			{"UpdateMatchStatusById",  "UPDATE Matches SET status=${STATUS}::MatchStatuses WHERE matchId=${MATCH_ID}"},
+			{"UpdateMatchStatusById",  "UPDATE Matches SET (status, serializedGame) = (${STATUS}::MatchStatuses, ${SERIALIZED_GAME}) WHERE matchId=${MATCH_ID}"},
 		});
 	}
 

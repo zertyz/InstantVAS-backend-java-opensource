@@ -29,7 +29,7 @@ public interface IMatchDB {
 	/** Retrieves a 'MatchDto' from the database */
 	MatchDto retrieveMatch(int matchId) throws SQLException;
 	
-	/** Used to mark a match as over, for instance */
-	void updateMatchStatus(MatchDto match, EMatchStatus status) throws SQLException;
+	/** Updates the game evolution for a match */
+	void updateMatchStatus(MatchDto match, EMatchStatus status, String serializedGame) throws SQLException;
 	
 }
