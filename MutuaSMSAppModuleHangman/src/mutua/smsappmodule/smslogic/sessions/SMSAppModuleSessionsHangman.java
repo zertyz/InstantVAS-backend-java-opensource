@@ -18,11 +18,11 @@ import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates
 
 public enum SMSAppModuleSessionsHangman implements ISessionProperty {
 
-	/** Session property used to keep track of the opponent phone number, when inviting a human
-	 *  opponent for a match */
+	/** Session property used to keep track of the opponent phone number, when the inviting wizard of a human
+	 *  opponent for a match. It is cleared after the match starts and information is kept on the {@link #sprHangmanMatchId} session */
 	sprOpponentPhoneNumber,
 	
-	/** Session property used to keep track of {@link IMatchDB} matchId, when on the
+	/** Session property used by the word guessing user to keep track of {@link IMatchDB} matchId, when on the
 	 *  {@link SMSAppModuleNavigationStatesHangman#nstGuessingWordFromHangmanHumanOpponent} state. */
 	sprHangmanMatchId,
 	

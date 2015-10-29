@@ -144,15 +144,15 @@ public enum SMSAppModuleCommandsHangman implements ICommandProcessor {
 			opponentSession.setProperty(sprHangmanMatchId, match.getMatchId());
 			sessionDB.setSession(opponentSession.getChangedSessionDto());
 			//session.setProperty(sprHangmanMatchId, match.getMatchId());
-			session.setProperty(sprOpponentPhoneNumber, "");
+			session.deleteProperty(sprOpponentPhoneNumber);
 			session.setNavigationState(nstExistingUser);
 			// TODO a mensagem enviada ao convidado pode conter o telefone do proponente, caso o convite seja baseado em número de telefone, para facilitar a identificação do amigo proponente.
-			return getSameStateReplyWithAnAdditionalMessageToAnotherUserCommandAnswer(getInvitationNotificationForInvitingPlayer(opponentPlayerNickName),
+			return getSameStateReplyWithAnAdditionalMessageToAnotherUserCommandAnswer(getInvitationResponseForInvitingPlayer(opponentPlayerNickName),
 			                                                                          userDB.assureUserIsRegistered(opponentPlayerPhoneNumber), getInvitationNotificationForInvitedPlayer(invitingPlayerNickname));
 		}
 	},
 	
-	/** Command triggered by messages matched by {@link #trgLocalAcceptInvitation}, invoked by the invited user who wants to accept
+	/** Command triggered by messages matched by {@link #trgLocalAcceptMatchInvitation}, invoked by the invited user who wants to accept
 	 *  a hangman match invitation.
 	 *  Receives no parameters */
 	cmdAcceptMatchInvitation {
@@ -169,7 +169,26 @@ public enum SMSAppModuleCommandsHangman implements ICommandProcessor {
 		}
 	},
 	
-	/** */
+	/** Command triggered by messages matched by {@link #trgLocalAcceptMatchInvitation}, invoked by the invited user who wants to refuse
+	 *  a hangman match invitation.
+	 *  Receives no parameters */
+	cmdRefuseMatchInvitation {
+		@Override
+		public CommandAnswerDto processCommand(SessionModel session, ESMSInParserCarrier carrier, String[] parameters) throws SQLException {
+			MatchDto match = matchDB.retrieveMatch(session.getIntProperty(sprHangmanMatchId));
+			UserDto wordProvidingPlayer = match.getWordProvidingPlayer();
+			String wordGuessingPlayerNickname = profileDB.getProfileRecord(session.getUser()).getNickname();
+			String wordProvidingPlayerNickname = profileDB.getProfileRecord(wordProvidingPlayer).getNickname();
+			session.deleteProperty(sprHangmanMatchId);
+			return getNewStateReplyWithAnAdditionalMessageToAnotherUserCommandAnswer(session, nstExistingUser,
+			                                                                         getInvitationRefusalResponseForInvitedPlayer(wordProvidingPlayerNickname),
+			                                                                         wordProvidingPlayer,
+			                                                                         getInvitationRefusalNotificationForInvitingPlayer(wordGuessingPlayerNickname));
+		}
+	},
+	
+	/** Command triggered by messages matched by {@link #trgLocalNewLetterOrWordSuggestion}, issued by the user who is playing a hangman match against a human and is trying to guess the word.
+	 *  Receives 1 parameter: the letter, set of characters or word attempted */
 	cmdSuggestLetterOrWordForHuman {
 		@Override
 		public CommandAnswerDto processCommand(SessionModel session, ESMSInParserCarrier carrier, String[] parameters) throws SQLException {
@@ -284,6 +303,8 @@ public enum SMSAppModuleCommandsHangman implements ICommandProcessor {
 	public static String[] trgLocalHoldMatchWord                  = {"([^ ]+)"};
 	/** {@link SMSAppModuleNavigationStatesHangman#nstAnsweringToHangmanMatchInvitation} triggers that activates {@link #cmdAcceptMatchInvitation} */
 	public static String[] trgLocalAcceptMatchInvitation          = {"YES"};
+	/** {@link SMSAppModuleNavigationStatesHangman#nstAnsweringToHangmanMatchInvitation} triggers that activates {@link #cmdRefuseMatchInvitation} */
+	public static String[] trgLocalRefuseMatchInvitation          = {"NO"};
 	/** {@link SMSAppModuleNavigationStatesHangman#nstGuessingWordFromHangmanBotOpponent} and {@link SMSAppModuleNavigationStatesHangman#nstGuessingWordFromHangmanHumanOpponent} triggers
 	 *  that activates {@link #cmdSuggestLetterOrWordForHuman} */
 	public static String[] trgLocalNewLetterOrWordSuggestion      = {"([A-Z]+)"};

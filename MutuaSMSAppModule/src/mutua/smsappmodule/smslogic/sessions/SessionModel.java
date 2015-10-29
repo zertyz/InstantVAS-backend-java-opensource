@@ -96,6 +96,10 @@ public class SessionModel {
 		pendingProperties.put(property.getPropertyName(), value.toString());
 	}
 	
+	public void deleteProperty(ISessionProperty property) {
+		setProperty(property, "");
+	}
+	
 	public void setNavigationState(INavigationState navigationStateName) {
 		setProperty(NAVIGATION_STATE_PROPERTY, navigationStateName.getNavigationStateName());
 	}

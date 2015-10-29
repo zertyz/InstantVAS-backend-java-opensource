@@ -53,12 +53,22 @@ public class SMSAppModuleConfigurationHangman {
 	public static String HANGMANphr_losingArt                                                = phr_losingArt.toString();
 	@ConfigurableElement("Response to the request of inviting a human opponent to play -- Asks for his/her phone or nickname. Variables: {{shortCode}}, {{appName}}, {{invitingPlayerNickname}}")
 	public static String HANGMANphrAskOpponentNicknameOrPhone                                = phrAskOpponentNicknameOrPhone.toString();
-	@ConfigurableElement("Response to the request of inviting a human opponent to play -- Asks for the word he/she wants to be guessed. Variables: {{shortCode}}, {{appName}}, {{opponentNickname}}")
+	@ConfigurableElement("Response to the request of inviting an internal human opponent to play -- Asks for the word he/she wants to be guessed. Variables: {{shortCode}}, {{appName}}, {{opponentNickname}}")
 	public static String HANGMANphrAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation = phrAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation.toString();
+	@ConfigurableElement("Response to the request of inviting an external human opponent to play (by giving his/her phone number) -- Asks for the word he/she wants to be guessed. Variables: {{shortCode}}, {{appName}}, {{opponentPhoneNumber}}")
+	public static String HANGMANphrAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation    = phrAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation.toString();
 	@ConfigurableElement("Phrase to notify the inviting player that the notification has been sent to the opponent. Variables: {{shortCode}}, {{appName}}, {{invitedPlayerNickname}}")
-	public static String HANGMANphrInvitationNotificationForInvitingPlayer                   = phrInvitationNotificationForInvitingPlayer.toString();
+	public static String HANGMANphrInvitationResponseForInvitingPlayer                       = phrInvitationResponseForInvitingPlayer.toString();
 	@ConfigurableElement("Phrase to notify the invited player that he/she has been invited for a hangman match. Variables: {{shortCode}}, {{appName}}, {{invitingPlayerNickname}}")
 	public static String HANGMANphrInvitationNotificationForInvitedPlayer                    = phrInvitationNotificationForInvitedPlayer.toString();
+	@ConfigurableElement("Notification sent to the inviting player when the invited player doesn't answer to the invitation request within a certain ammount of time. Variables: {{shortCode}}, {{appName}}, {{invitedPlayerNickname}}, {{suggestedNewPlayersNickname}}")
+	public static String HANGMANphrTimeoutNotificationForInvitingPlayer                      = phrTimeoutNotificationForInvitingPlayer.toString();
+	@ConfigurableElement("Respose sent to the invited player when he/she refuses a match. Variables: {{shortCode}}, {{appName}}, {{invitingPlayerNickname}}")
+	public static String HANGMANphrInvitationRefusalResponseForInvitedPlayer                 = phrInvitationRefusalResponseForInvitedPlayer.toString();
+	@ConfigurableElement("Notification sent to the word providing player when the opponent refuses the match. Variables: {{shortCode}}, {{appName}}, {{gallowsArt}}, {{guessedWordSoFar}}, {{wordGuessingPlayerNickname}}")
+	public static String HANGMANphrInvitationRefusalNotificationForInvitingPlayer            = phrInvitationRefusalNotificationForInvitingPlayer.toString();
+	@ConfigurableElement("Error Respose sent to the invited player when he/she accepts a match. Variables: {{shortCode}}, {{appName}}, {{gallowsArt}}, {{guessedWordSoFar}}, {{usedLetters}}")
+	public static String HANGMANphrNotAGoodWord                                              = phrNotAGoodWord.toString();
 	@ConfigurableElement("Respose sent to the invited player when he/she accepts a match. Variables: {{shortCode}}, {{appName}}, {{gallowsArt}}, {{guessedWordSoFar}}, {{usedLetters}}")
 	public static String HANGMANphrWordGuessingPlayerMatchStart                              = phrWordGuessingPlayerMatchStart.toString();
 	@ConfigurableElement("Notification sent to the word providing player when the opponent accepts the match. Variables: {{shortCode}}, {{appName}}, {{gallowsArt}}, {{guessedWordSoFar}}, {{wordGuessingPlayerNickname}}")
@@ -75,7 +85,7 @@ public class SMSAppModuleConfigurationHangman {
 	public static String HANGMANphrLosingMessageForWordGuessingPlayer                        = phrLosingMessageForWordGuessingPlayer.toString();
 	@ConfigurableElement("Notification sent to the word providing player when the opponent loses the match. Variables: {{shortCode}}, {{appName}}, {{losingArt}}, {{wordGuessingPlayerNickname}}")
 	public static String HANGMANphrLosingMessageForWordProvidingPlayer                       = phrLosingMessageForWordProvidingPlayer.toString();
-	@ConfigurableElement("Notification sent to the word guessing player when the match has been canceled -- tipically due to an action from him/herself. Variables: {{shortCode}}, {{appName}}, {{wordProviderPlayerNickname}}")
+	@ConfigurableElement("Notification sent to the word guessing player when his/her actions lead to the cancel of the match. Variables: {{shortCode}}, {{appName}}, {{wordProviderPlayerNickname}}")
 	public static String HANGMANphrMatchGiveupNotificationForWordGuessingPlayer              = phrMatchGiveupNotificationForWordGuessingPlayer.toString();
 	@ConfigurableElement("Notification sent to the word providing player when the match has been canceled -- tipically due to an action of the opponent. Variables: {{shortCode}}, {{appName}}, {{wordGuessingPlayerNickname}}")
 	public static String HANGMANphrMatchGiveupNotificationForWordProvidingPlayer             = phrMatchGiveupNotificationForWordProvidingPlayer.toString();
@@ -90,6 +100,8 @@ public class SMSAppModuleConfigurationHangman {
 	public static String[] HANGMANtrgLocalHoldMatchWord                   = trgLocalHoldMatchWord;
 	@ConfigurableElement("Local triggers (available only to the 'answering invitation' navigation state) that should be interpreted as the invited user having accepted to play a hangman match")
 	public static String[] HANGMANtrgLocalAcceptMatchInvitation           = trgLocalAcceptMatchInvitation;
+	@ConfigurableElement("Local triggers (available only to the 'answering invitation' navigation state) that should be interpreted as the invited user having refused to play a hangman match")
+	public static String[] HANGMANtrgLocalRefuseMatchInvitation           = trgLocalRefuseMatchInvitation;
 	@ConfigurableElement("Local triggers (available only to the 'playing a hangman match to a bot or human' navigation state) that will recognize patterns to be interpreted as a letter or word of a hangman match")
 	public static String[] HANGMANtrgLocalNewLetterOrWordSuggestion       = trgLocalNewLetterOrWordSuggestion;
 
@@ -100,6 +112,7 @@ public class SMSAppModuleConfigurationHangman {
 	
 	/** Apply on-the-fly phrasing changes */
 	public static void applyPhrasingConfiguration() {
+		// TODO possibly this can be done via reflection. This way, we would loop through it and the loop might warn us if some HANGMANphr... was forgotten. Seems to be a very good idea to apply on all other modules
 		phr_headCharacter                                            .setPhrases(HANGMANphr_headCharacter);
 	    phr_leftArmCharacter                                         .setPhrases(HANGMANphr_leftArmCharacter);
 	    phr_chestCharacter                                           .setPhrases(HANGMANphr_chestCharacter);
@@ -111,8 +124,13 @@ public class SMSAppModuleConfigurationHangman {
 	    phr_losingArt                                                .setPhrases(HANGMANphr_losingArt);
 	    phrAskOpponentNicknameOrPhone                                .setPhrases(HANGMANphrAskOpponentNicknameOrPhone);
 	    phrAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation .setPhrases(HANGMANphrAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation);
-	    phrInvitationNotificationForInvitingPlayer                   .setPhrases(HANGMANphrInvitationNotificationForInvitingPlayer);
+	    phrAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation    .setPhrases(HANGMANphrAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation);
+	    phrInvitationResponseForInvitingPlayer                       .setPhrases(HANGMANphrInvitationResponseForInvitingPlayer);
 	    phrInvitationNotificationForInvitedPlayer                    .setPhrases(HANGMANphrInvitationNotificationForInvitedPlayer);
+	    phrTimeoutNotificationForInvitingPlayer                      .setPhrases(HANGMANphrTimeoutNotificationForInvitingPlayer);
+	    phrInvitationRefusalResponseForInvitedPlayer                 .setPhrases(HANGMANphrInvitationRefusalResponseForInvitedPlayer);
+	    phrInvitationRefusalNotificationForInvitingPlayer            .setPhrases(HANGMANphrInvitationRefusalNotificationForInvitingPlayer);
+	    phrNotAGoodWord                                              .setPhrases(HANGMANphrNotAGoodWord);
 	    phrWordGuessingPlayerMatchStart                              .setPhrases(HANGMANphrWordGuessingPlayerMatchStart);
 	    phrWordProvidingPlayerMatchStart                             .setPhrases(HANGMANphrWordProvidingPlayerMatchStart);
 	    phrWordGuessingPlayerStatus                                  .setPhrases(HANGMANphrWordGuessingPlayerStatus);
@@ -122,10 +140,12 @@ public class SMSAppModuleConfigurationHangman {
 	    phrLosingMessageForWordGuessingPlayer                        .setPhrases(HANGMANphrLosingMessageForWordGuessingPlayer);
 	    phrLosingMessageForWordProvidingPlayer                       .setPhrases(HANGMANphrLosingMessageForWordProvidingPlayer);
 	    phrMatchGiveupNotificationForWordGuessingPlayer              .setPhrases(HANGMANphrMatchGiveupNotificationForWordGuessingPlayer);
-	    phrMatchGiveupNotificationForWordProvidingPlayer             .setPhrases(HANGMANphrMatchGiveupNotificationForWordProvidingPlayer);	}
+	    phrMatchGiveupNotificationForWordProvidingPlayer             .setPhrases(HANGMANphrMatchGiveupNotificationForWordProvidingPlayer);
+	}
 	
 	/** Apply on-the-fly command trigger changes */
 	public static void applyTriggerConfiguration() {
+		// TODO this implementation couples the configuration class to the triggers. We should do it like on the phrasing. Including the new suggested reflection approach
 		for (INavigationState navigationState : SMSAppModuleNavigationStatesHangman.values()) {
 			navigationState.setCommandTriggersFromConfigurationValues();
 		}

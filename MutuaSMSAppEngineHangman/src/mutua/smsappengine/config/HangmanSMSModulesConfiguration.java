@@ -243,6 +243,7 @@ public class HangmanSMSModulesConfiguration {
 		nstAnsweringToHangmanMatchInvitation.setCommandTriggers(new Object[][] {
 			{cmdSendPrivateMessage,            CHATtrgGlobalSendPrivateMessage},
 			{cmdAcceptMatchInvitation,         HANGMANtrgLocalAcceptMatchInvitation},
+			{cmdRefuseMatchInvitation,         HANGMANtrgLocalRefuseMatchInvitation},
 			{cmdShowExistingUsersFallbackHelp, ".*"},
 		});
 		nstGuessingWordFromHangmanHumanOpponent.setCommandTriggers(new Object[][] {

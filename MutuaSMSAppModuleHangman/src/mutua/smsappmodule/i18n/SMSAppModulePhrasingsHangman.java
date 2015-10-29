@@ -33,11 +33,11 @@ public enum SMSAppModulePhrasingsHangman {
 	phrAskOpponentNicknameOrPhone                               ("{{appName}}: Name registered: {{invitingPlayerNickname}}. Send your friend's phone to {{shortCode}} or LIST to see online players. NICK [NEW NICK] to change your name."),
 	phrAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation("{{appName}}: Inviting {{opponentNickname}}. Think of a word without special digits and send it now to {{shortCode}}. After the invitation, you'll get a lucky number"),
 	phrAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation   ("{{appName}}: Your friend's phone: {{opponentPhoneNumber}}. Think of a word without special digits and send it now to {{shortCode}}. After the invitation, you'll get a lucky number"),
-	phrInvitationNotificationForInvitingPlayer                  ("{{invitedPlayerNickname}} was invited to play with you. while you wait, you can provoke {{invitedPlayerNickname}} by sending a message to {{shortCode}} (0.31+tax) or send SIGNUP to provoke for free how many times you want"),
-	phrTimeoutNotificationForInvitingPlayer                     ("{{appName}}: {{invitedPlayerNickname}} is taking too long to answer. However, a new player, {{suggestedNewPlayersNickname}}, is available. Play with {{suggestedNewPlayersNickname}}? Send YES to {{shortCode}}"),
+	phrInvitationResponseForInvitingPlayer                      ("{{invitedPlayerNickname}} was invited to play with you. while you wait, you can provoke {{invitedPlayerNickname}} by sending a message to {{shortCode}} (0.31+tax) or send SIGNUP to provoke for free how many times you want"),
 	phrInvitationNotificationForInvitedPlayer                   ("{{appName}}: {{invitingPlayerNickname}} is inviting you for a hangman match. Do you accept? Send YES to {{shortCode}} or PROFILE to see {{invitingPlayerNickname}} information"),
+	phrTimeoutNotificationForInvitingPlayer                     ("{{appName}}: {{invitedPlayerNickname}} is taking too long to answer. However, a new player, {{suggestedNewPlayersNickname}}, is available. Play with {{suggestedNewPlayersNickname}}? Send YES to {{shortCode}}"),
+	phrInvitationRefusalResponseForInvitedPlayer                ("The invitation to play the Hangman Game made by {{invitingPlayerNickname}} was refused. Send LIST to {{shortCode}} to see online users"),
 	phrInvitationRefusalNotificationForInvitingPlayer           ("{{invitedPlayerNickname}} refused your invitation to play. Send LIST to 9714 and pick someone else"),
-	phrInvitationRefusalNotificationForInvitedPlayer            ("The invitation to play the Hangman Game made by {{invitingPlayerNickname}} was refused. Send LIST to {{shortCode}} to see online users"),
 	phrNotAGoodWord                                             ("You selected '{{word}}'. This is possily not a good word. Please think of one only with A-Z letters, without accents, digits, ponctuation or any other special characters and send it to {{shortCode}}"),
 	phrWordProvidingPlayerMatchStart                            ("Game started with {{wordGuessingPlayerNickname}}.\n{{gallowsArt}}Send P {{wordGuessingPlayerNickname}} [MSG] to give him/her clues"),
 	phrWordGuessingPlayerMatchStart                             ("{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nSend a letter, the complete word or END to cancel the game"),
@@ -84,34 +84,6 @@ public enum SMSAppModulePhrasingsHangman {
 	** PHRASING METHODS **
 	*********************/
 	
-	/** @see SMSAppModuleConfigurationHangman#HANGMANphrAskOpponentNicknameOrPhone */
-	public static String getAskOpponentNicknameOrPhone(String invitingPlayerNickname) {
-		return phrAskOpponentNicknameOrPhone.getPhrase("shortCode",              SMSAppModuleConfiguration.APPShortCode,
-                                                       "appName",                SMSAppModuleConfiguration.APPName,
-                                                       "invitingPlayerNickname", invitingPlayerNickname);
-	}
-	
-	/** @see SMSAppModuleConfigurationHangman#HANGMANphrAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation */
-	public static String getAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation(String opponentNickname) {
-		return phrAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation.getPhrase("shortCode",        SMSAppModuleConfiguration.APPShortCode,
-                                                                                      "appName",          SMSAppModuleConfiguration.APPName,
-                                                                                      "opponentNickname", opponentNickname);
-	}
-	
-	/** @see SMSAppModuleConfigurationHangman#HANGMANphrInvitationNotificationForInvitingPlayer */
-	public static String getInvitationNotificationForInvitingPlayer(String invitedPlayerNickname) {
-		return phrInvitationNotificationForInvitingPlayer.getPhrase("shortCode",             SMSAppModuleConfiguration.APPShortCode,
-		                                                            "appName",               SMSAppModuleConfiguration.APPName,
-		                                                            "invitedPlayerNickname", invitedPlayerNickname);
-	}
-	
-	/** @see SMSAppModuleConfigurationHangman#HANGMANphrInvitationNotificationForInvitedPlayer */
-	public static String getInvitationNotificationForInvitedPlayer(String invitingPlayerNickname) {
-		return phrInvitationNotificationForInvitedPlayer.getPhrase("shortCode",              SMSAppModuleConfiguration.APPShortCode,
-		                                                           "appName",                SMSAppModuleConfiguration.APPName,
-		                                                           "invitingPlayerNickname", invitingPlayerNickname);
-	}
-	
 	/** @see SMSAppModuleConfigurationHangman#HANGMANphr_gallowsArt */
 	private static String getGallowsArt(boolean drawHead, boolean drawLeftArm, boolean drawRightArm,
 	                                   boolean drawChest, boolean drawLeftLeg, boolean drawRightLeg) {
@@ -133,6 +105,69 @@ public enum SMSAppModulePhrasingsHangman {
 		return phr_losingArt.getPhrase();
 	}
 
+	/** @see SMSAppModuleConfigurationHangman#HANGMANphrAskOpponentNicknameOrPhone */
+	public static String getAskOpponentNicknameOrPhone(String invitingPlayerNickname) {
+		return phrAskOpponentNicknameOrPhone.getPhrase("shortCode",              SMSAppModuleConfiguration.APPShortCode,
+                                                       "appName",                SMSAppModuleConfiguration.APPName,
+                                                       "invitingPlayerNickname", invitingPlayerNickname);
+	}
+	
+	/** @see SMSAppModuleConfigurationHangman#HANGMANphrAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation */
+	public static String getAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation(String opponentNickname) {
+		return phrAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation.getPhrase("shortCode",        SMSAppModuleConfiguration.APPShortCode,
+                                                                                      "appName",          SMSAppModuleConfiguration.APPName,
+                                                                                      "opponentNickname", opponentNickname);
+	}
+	
+	/** @see SMSAppModuleConfigurationHangman#HANGMANphrAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation */
+	public static String getAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation(String opponentPhoneNumber) {
+		return phrAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation.getPhrase("shortCode",           SMSAppModuleConfiguration.APPShortCode,
+		                                                                           "appName",             SMSAppModuleConfiguration.APPName,
+		                                                                           "opponentPhoneNumber", opponentPhoneNumber);
+	}
+	
+	/** @see SMSAppModuleConfigurationHangman#HANGMANphrInvitationResponseForInvitingPlayer */
+	public static String getInvitationResponseForInvitingPlayer(String invitedPlayerNickname) {
+		return phrInvitationResponseForInvitingPlayer.getPhrase("shortCode",             SMSAppModuleConfiguration.APPShortCode,
+		                                                            "appName",               SMSAppModuleConfiguration.APPName,
+		                                                            "invitedPlayerNickname", invitedPlayerNickname);
+	}
+	
+	/** @see SMSAppModuleConfigurationHangman#HANGMANphrInvitationNotificationForInvitedPlayer */
+	public static String getInvitationNotificationForInvitedPlayer(String invitingPlayerNickname) {
+		return phrInvitationNotificationForInvitedPlayer.getPhrase("shortCode",              SMSAppModuleConfiguration.APPShortCode,
+		                                                           "appName",                SMSAppModuleConfiguration.APPName,
+		                                                           "invitingPlayerNickname", invitingPlayerNickname);
+	}
+	
+	public static String getTimeoutNotificationForInvitingPlayer(String invitedPlayerNickname, String suggestedNewPlayersNickname) {
+		return phrTimeoutNotificationForInvitingPlayer.getPhrase("shortCode",                   SMSAppModuleConfiguration.APPShortCode,
+		                                                         "appName",                     SMSAppModuleConfiguration.APPName,
+		                                                         "invitedPlayerNickname",       invitedPlayerNickname,
+		                                                         "suggestedNewPlayersNickname", suggestedNewPlayersNickname);
+	}
+	
+	/** @see SMSAppModuleConfigurationHangman#HANGMANphrInvitationRefusalNotificationForInvitingPlayer */
+	public static String getInvitationRefusalNotificationForInvitingPlayer(String invitedPlayerNickname) {
+		return phrInvitationRefusalNotificationForInvitingPlayer.getPhrase("shortCode",             SMSAppModuleConfiguration.APPShortCode,
+                                                                           "appName",               SMSAppModuleConfiguration.APPName,
+                                                                           "invitedPlayerNickname", invitedPlayerNickname);
+	}
+	
+	/** @see SMSAppModuleConfigurationHangman#HANGMANphrInvitationRefusalResponseForInvitedPlayer */
+	public static String getInvitationRefusalResponseForInvitedPlayer(String invitingPlayerNickname) {
+		return phrInvitationRefusalResponseForInvitedPlayer.getPhrase("shortCode",              SMSAppModuleConfiguration.APPShortCode,
+		                                                              "appName",                SMSAppModuleConfiguration.APPName,
+		                                                              "invitingPlayerNickname", invitingPlayerNickname);
+	}
+	
+	/** @see SMSAppModuleConfigurationHangman#HANGMANphrNotAGoodWord */
+	public static String getNotAGoodWord(String word) {
+		return phrNotAGoodWord.getPhrase("shortCode", SMSAppModuleConfiguration.APPShortCode,
+		                                 "appName",   SMSAppModuleConfiguration.APPName,
+		                                 "word",      word);
+	}
+	
 	/** @see SMSAppModuleConfigurationHangman#HANGMANphrWordGuessingPlayerMatchStart */
 	public static String getWordGuessingPlayerMatchStart(String guessedWordSoFar, String usedLetters) {
 		return phrWordGuessingPlayerMatchStart.getPhrase("shortCode",              SMSAppModuleConfiguration.APPShortCode,

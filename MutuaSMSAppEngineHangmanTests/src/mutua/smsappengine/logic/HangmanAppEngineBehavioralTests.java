@@ -20,6 +20,7 @@ import mutua.smsappmodule.dal.IUserDB;
 import mutua.smsappmodule.hangmangame.HangmanGame;
 import mutua.smsappmodule.i18n.SMSAppModulePhrasingsChat;
 import mutua.smsappmodule.i18n.SMSAppModulePhrasingsHangman;
+import mutua.smsappmodule.i18n.SMSAppModulePhrasingsHelp;
 import mutua.smsappmodule.i18n.SMSAppModulePhrasingsProfile;
 import mutua.smsappmodule.i18n.SMSAppModulePhrasingsSubscription;
 import mutua.subscriptionengine.TestableSubscriptionAPI;
@@ -76,6 +77,7 @@ public class HangmanAppEngineBehavioralTests {
 		chatDB.reset();
 		matchDB.reset();
 		nextBotWordsDB.reset();
+		subscriptionEngine.reset();
 	}
 
 	
@@ -85,7 +87,7 @@ public class HangmanAppEngineBehavioralTests {
     
     /** for NEW_USERs, register a new player's 'phone' and give it the provided 'nickname' */
     public void registerUser(String phone, String nickname) {
-    	tc.checkResponse(phone, "forca",            SMSAppModulePhrasingsSubscription.getSuccessfullySubscribed());
+    	tc.checkResponse(phone, "hangman",          SMSAppModulePhrasingsSubscription.getSuccessfullySubscribed());
 		tc.checkResponse(phone, "nick " + nickname, SMSAppModulePhrasingsProfile.getNicknameRegistrationNotification(nickname));
     }
     
@@ -110,7 +112,7 @@ public class HangmanAppEngineBehavioralTests {
                                     String word, String wordGuessingPlayerNickname) {
 		// provide the word
     	tc.checkResponse(wordProvidingPlayerPhone, word,
-			SMSAppModulePhrasingsHangman.getInvitationNotificationForInvitingPlayer(wordGuessingPlayerNickname),
+			SMSAppModulePhrasingsHangman.getInvitationResponseForInvitingPlayer(wordGuessingPlayerNickname),
 			SMSAppModulePhrasingsHangman.getInvitationNotificationForInvitedPlayer(wordProvidingPlayerNickname));
     }
     
@@ -128,8 +130,8 @@ public class HangmanAppEngineBehavioralTests {
     public void sendPrivateMessage(String fromPhone, String toNickname, String message) throws SQLException {
     	String fromNickname = profileDB.getProfileRecord(userDB.assureUserIsRegistered(fromPhone)).getNickname();
 		tc.checkResponse(fromPhone, "P " + toNickname + " " + message,
-			SMSAppModulePhrasingsChat.getPrivateMessage(fromNickname, message),
-			SMSAppModulePhrasingsChat.getPrivateMessageDeliveryNotification(toNickname));
+			SMSAppModulePhrasingsChat.getPrivateMessageDeliveryNotification(toNickname),
+			SMSAppModulePhrasingsChat.getPrivateMessage(fromNickname, message));
     }
     
     /** for NEW_USERS, register the two players and invite "word guessing player" to play with the provided 'word' */
@@ -297,5 +299,82 @@ public class HangmanAppEngineBehavioralTests {
                                                              "Good one! pAtRiCiA wasn't able to guessed your word! P pAtRiCiA [MSG] to provoke him/her or INVITE pAtRiCiA for a new match");
 
 	}
+	
+	@Test
+	public void testAnswersToInvitation() throws SQLException {
+		String invitingPlayerPhone    = "21991234899";
+		String invitingPlayerNickname = "Dom";
+		String invitedPlayerPhone     = "21998019167";
+		String invitedPlayerNickname  = "pAtY";
+		String word                   = "cacatua";
+		String guessedWordSoFar       = "CACA--A";
+		String usedLetters            = "AC";
+		
+		// usual yes
+		resetStates();
+		invitePlayerForAMatch(invitingPlayerPhone, invitingPlayerNickname, word, invitedPlayerPhone, invitedPlayerNickname);
+		tc.checkResponse(invitedPlayerPhone, "yes",
+		                 SMSAppModulePhrasingsHangman.getWordGuessingPlayerMatchStart(guessedWordSoFar, usedLetters),
+		                 SMSAppModulePhrasingsHangman.getWordProvidingPlayerMatchStart(guessedWordSoFar, invitedPlayerNickname));
+		
+		
+		// usual no
+		resetStates();
+		invitePlayerForAMatch(invitingPlayerPhone, invitingPlayerNickname, "cacatua", invitedPlayerPhone, invitedPlayerNickname);
+		tc.checkResponse(invitedPlayerPhone, "no",
+		                 SMSAppModulePhrasingsHangman.getInvitationRefusalResponseForInvitedPlayer(invitingPlayerNickname),
+		                 SMSAppModulePhrasingsHangman.getInvitationRefusalNotificationForInvitingPlayer(invitedPlayerNickname));
+		
+		// some other commands before the no
+		resetStates();
+		invitePlayerForAMatch(invitingPlayerPhone, invitingPlayerNickname, "cacatua", invitedPlayerPhone, invitedPlayerNickname);
+		// send and receive a chat
+		sendPrivateMessage(invitedPlayerPhone, invitingPlayerNickname, "Why do you want to play with me?");
+		sendPrivateMessage(invitingPlayerPhone, invitedPlayerNickname, "'Cause you're the only one on my test list 8-)");
+		// also, see the profile... but that is not implemented yet, I'm affraid
+		//tc.checkResponse("21998019167", "profile DOM", "HANGMAN: Dom: Subscribed, RJ, 0 lucky numbers. Send SIGNUP to provoke for free or INVITE Dom for a match.");
+		// the no
+		tc.checkResponse(invitedPlayerPhone, "no",
+		                 SMSAppModulePhrasingsHangman.getInvitationRefusalResponseForInvitedPlayer(invitingPlayerNickname),
+		                 SMSAppModulePhrasingsHangman.getInvitationRefusalNotificationForInvitingPlayer(invitedPlayerNickname));
+
+	}
+	
+	@Test
+	public void testProfileCommand() throws SQLException {
+		invitePlayerForAMatch("21991234899", "Dom", "cacatua", "21998019167", "pAtY");
+		
+		// profile on the "playing" state
+		tc.checkResponse("21998019167", "profile DOM", "HANGMAN: Dom: Subscribed, RJ, 0 lucky numbers. Send SIGNUP to provoke for free or INVITE Dom for a match.");
+		
+		tc.checkResponse("21998019167", "no",
+			"pAtY refused your invitation to play. Send LIST to 9714 and pick someone else",
+			"The invitation to play the Hangman Game made by Dom was refused. Send LIST to 9714 to see online users");
+		
+		// profile on the "existing player" state
+		// also, profile on the "new user" state? what other commands there?
+	}
+
+	
+	/**************************************
+	** COMMANDS & STATES EXAUSTIVE TESTS **
+	**************************************/
+    
+	@Test
+	public void testUnrecognizedCommandSubtleties() {
+		// send 'NEW_USER's help on an unknown command, help or any other
+		tc.checkResponse("21991234899", "HJKS",        SMSAppModulePhrasingsSubscription.getDoubleOptinStart());
+		tc.checkResponse("21991234899", "list",        SMSAppModulePhrasingsSubscription.getDoubleOptinStart());
+		tc.checkResponse("21991234899", "invite",      SMSAppModulePhrasingsSubscription.getDoubleOptinStart());
+		tc.checkResponse("21991234899", "p dombot hi", SMSAppModulePhrasingsSubscription.getDoubleOptinStart());
+		tc.checkResponse("21991234899", "help",        SMSAppModulePhrasingsHelp.getNewUsersFallbackHelp());
+		
+		// send 'EXISTING_USER's help likewise
+		registerUser("21991234899", "Dom");
+		tc.checkResponse("21991234899", "HJKS", SMSAppModulePhrasingsSubscription.getSuccessfullySubscribed());
+
+	}
+	
+
 
 }
