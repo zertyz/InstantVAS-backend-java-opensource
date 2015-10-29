@@ -45,7 +45,7 @@ public class SubscriptionModuleSMSProcessorTests {
 	@Test
 	public void testFullpathSubscriptionAndUnsubscription() throws SQLException {
 		
-		tc.resetTables();
+		SMSAppModuleTestCommons.resetTables();
 		
 		// test double opt-in subscription refusal
 		tc.checkResponse("991234899", "SubscriptionTest", getDoubleOptinStart());
@@ -60,6 +60,16 @@ public class SubscriptionModuleSMSProcessorTests {
 		// test unsubscription
 		tc.checkResponse("991234899", "unsubscribe", getUserRequestedUnsubscriptionNotification());
 		tc.checkNavigationState("991234899", nstNewUser);
+		
+		SMSAppModuleTestCommons.resetTables();
+		
+		// test answering neither yes nor no to the double opt-in acceptance and, then, staring it over
+		tc.checkResponse("991234899", "SubscriptionTest", getDoubleOptinStart());
+		tc.checkResponse("991234899", "dods", getDisagreeToSubscribe());
+		tc.checkResponse("991234899", "SubscriptionTest", getDoubleOptinStart());
+		tc.checkResponse("991234899", "yes", getSuccessfullySubscribed());
+		tc.checkNavigationState("991234899", nstExistingUser);
+
 	}
 
 }

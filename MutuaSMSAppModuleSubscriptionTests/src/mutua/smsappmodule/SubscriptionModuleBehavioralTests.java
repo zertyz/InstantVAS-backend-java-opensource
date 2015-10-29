@@ -45,6 +45,7 @@ public class SubscriptionModuleBehavioralTests {
 		String observedMessage;
 		SessionModel session = new SessionModel((UserDto)null);
 		
+		// first (and normal) interaction
 		observedMessage = cmdStartDoubleOptinProcess.processCommand(session, null, null).getResponseMessages()[0].getText();
 		assertEquals("Command didn't start the double opt-in process", getDoubleOptinStart(), observedMessage);
 		assertEquals("Navigation State wasn't correctly set", nstAnsweringDoubleOptin, session.getNavigationState());

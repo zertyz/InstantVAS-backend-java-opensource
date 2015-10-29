@@ -31,8 +31,8 @@ public class SMSAppModuleConfigurationSubscriptionTests {
 		"SubscriptionModuleTests", DefaultInstrumentationProperties.DIP_MSG, EInstrumentationDataPours.CONSOLE, null);
 	
 	// database
-	public static SMSAppModuleDALFactorySubscription  DEFAULT_SUBSCRIPTION_DAL = SMSAppModuleDALFactorySubscription.POSTGRESQL;
-	public static SMSAppModuleDALFactory              DEFAULT_MODULE_DAL       = SMSAppModuleDALFactory.            POSTGRESQL;
+	public static SMSAppModuleDALFactorySubscription  DEFAULT_SUBSCRIPTION_DAL = SMSAppModuleDALFactorySubscription.RAM;
+	public static SMSAppModuleDALFactory              DEFAULT_MODULE_DAL       = SMSAppModuleDALFactory.            RAM;
 	public static Boolean POSTGRESQL_DEBUG_QUERIES                 = false;
 	public static Boolean POSTGRESQL_ALLOW_DATABASE_ADMINISTRATION = true;
 	public static String  POSTGRESQL_CONNECTION_HOSTNAME      = "venus";

@@ -23,6 +23,9 @@ import mutua.smsappmodule.i18n.SMSAppModulePhrasingsHangman;
 import mutua.smsappmodule.i18n.SMSAppModulePhrasingsHelp;
 import mutua.smsappmodule.i18n.SMSAppModulePhrasingsProfile;
 import mutua.smsappmodule.i18n.SMSAppModulePhrasingsSubscription;
+import mutua.smsappmodule.smslogic.SMSAppModuleCommandsChat;
+import mutua.smsappmodule.smslogic.SMSAppModuleCommandsHangman;
+import mutua.smsappmodule.smslogic.SMSAppModuleCommandsSubscription;
 import mutua.subscriptionengine.TestableSubscriptionAPI;
 
 import org.junit.Before;
@@ -189,8 +192,13 @@ public class HangmanAppEngineBehavioralTests {
 		subscriptionEngine.subscribeUser("21998019166", subscriptionChannel);
 		tc.checkResponse("21998019166", "unsubscribe", "You are now unsubscribed from the HANGMAN GAME and will no longer receive invitations to play nor lucky numbers. To join again, send HANGMAN to 9714");
 		assertFalse("User should not be still subscribed on the backend", subscriptionEngine._isUserSubscribed("21998019166", subscriptionChannel));
-		
-		// help
+
+		// desperate help
+		tc.checkResponse("21991234899", "how can I use this stuff??",
+		                                "HANGMAN: unknown command. Please send HELP to see the full command set. Some examples: LIST to see online users; P [NICK] [MSG] to send a private message; " +
+                                        "INVITE [NICK] to invite a listed player; INVITE [PHONE] to invite a friend of yours; PLAY to play with a random user. Choose an option and send it to 9714");
+
+		// desired help
 		tc.checkResponse("21991234899", "help",
 			"You can play the HANGMAN game in 2 ways: guessing someone's word or inviting someone to play with your word " +
 			"You'll get 1 lucky number each word you guess. Whenever you invite a friend or user to play, you win another lucky number " +
@@ -298,6 +306,12 @@ public class HangmanAppEngineBehavioralTests {
                                                              "The word was MUGGLES. Now challenge HardCodedNick: send INVITE HardCodedNick to 9714",
                                                              "Good one! pAtRiCiA wasn't able to guessed your word! P pAtRiCiA [MSG] to provoke him/her or INVITE pAtRiCiA for a new match");
 
+		// unsubscribe
+		tc.checkResponse("21998019167", "unsubscribe", "You are now unsubscribed from the HANGMAN GAME and will no longer receive invitations to play nor lucky numbers. To join again, send HANGMAN to 9714");
+		tc.checkResponse("21991234899", "unsubscribe", "You are now unsubscribed from the HANGMAN GAME and will no longer receive invitations to play nor lucky numbers. To join again, send HANGMAN to 9714");
+		assertFalse("User should not be still subscribed on the backend", subscriptionEngine._isUserSubscribed("21998019167", subscriptionChannel));
+		assertFalse("User should not be still subscribed on the backend", subscriptionEngine._isUserSubscribed("21991234899", subscriptionChannel));
+
 	}
 	
 	@Test
@@ -359,22 +373,40 @@ public class HangmanAppEngineBehavioralTests {
 	/**************************************
 	** COMMANDS & STATES EXAUSTIVE TESTS **
 	**************************************/
-    
-	@Test
-	public void testUnrecognizedCommandSubtleties() {
-		// send 'NEW_USER's help on an unknown command, help or any other
-		tc.checkResponse("21991234899", "HJKS",        SMSAppModulePhrasingsSubscription.getDoubleOptinStart());
-		tc.checkResponse("21991234899", "list",        SMSAppModulePhrasingsSubscription.getDoubleOptinStart());
-		tc.checkResponse("21991234899", "invite",      SMSAppModulePhrasingsSubscription.getDoubleOptinStart());
-		tc.checkResponse("21991234899", "p dombot hi", SMSAppModulePhrasingsSubscription.getDoubleOptinStart());
-		tc.checkResponse("21991234899", "help",        SMSAppModulePhrasingsHelp.getNewUsersFallbackHelp());
-		
-		// send 'EXISTING_USER's help likewise
-		registerUser("21991234899", "Dom");
-		tc.checkResponse("21991234899", "HJKS", SMSAppModulePhrasingsSubscription.getSuccessfullySubscribed());
-
-	}
 	
-
+	@Test
+	public void testSubscriptionSubtleties() {
+		
+		// struggle to subscribe
+		tc.checkResponse("21991234899", "help",                 SMSAppModulePhrasingsSubscription.getDoubleOptinStart());
+		tc.checkResponse("21991234899", "no",                   SMSAppModulePhrasingsSubscription.getDisagreeToSubscribe());
+		tc.checkResponse("21991234899", "come again?",          SMSAppModulePhrasingsSubscription.getDoubleOptinStart());
+		tc.checkResponse("21991234899", "well, not yet...",     SMSAppModulePhrasingsSubscription.getDisagreeToSubscribe());
+		tc.checkResponse("21991234899", "what is this, again?", SMSAppModulePhrasingsSubscription.getDoubleOptinStart());
+		tc.checkResponse("21991234899", "hangman",              SMSAppModulePhrasingsSubscription.getSuccessfullySubscribed());
+		// struggle to find one's first steps after subscription
+		tc.checkResponse("21991234899", "HJKS", SMSAppModulePhrasingsHelp.getExistingUsersFallbackHelp());
+		
+		// even new users should be able to unsubscribe
+		tc.checkResponse("21998019167", "unsubscribe", SMSAppModulePhrasingsSubscription.getUserRequestedUnsubscriptionNotification());
+		
+		// now a user that was registered attempts to play, but he/she has been secretly unsubscribed due to life cycle rules
+		SMSAppModuleCommandsSubscription.apiUnsubscribe... implement this and proceed on mapping the old 'testUserRegistrationSubtleties' tests
+	}
+    
 
 }
+
+/* test mappings:
+ * =============
+ * leggend: --> -- new test name
+ *          x   -- test doesn't make sense on the new platform
+ *          NA  -- functionality (and test) not not configured on the new hangman
+ *          OK  -- test implemented with same name
+ * 
+ * testUnrecognizedCommandSubtleties --> testSubscriptionSubtleties
+ * testGameRestartSubtleties --> x
+ * testHelpCommandSubtleties --> NA
+ * testUserRegistrationSubtleties    --> testSubscriptionSubtleties
+ * 
+ */
