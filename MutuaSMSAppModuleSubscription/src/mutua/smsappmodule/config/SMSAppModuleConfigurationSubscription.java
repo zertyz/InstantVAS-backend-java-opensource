@@ -61,6 +61,8 @@ public class SMSAppModuleConfigurationSubscription {
 	public static String[] SUBSCRIPTIONtrgLocalStartDoubleOptin   = trgLocalStartDoubleOptin;
 	@ConfigurableElement("Local triggers (available only to the 'answering double opt-in' navigation state) to execute the 'subscribe' process")
 	public static String[] SUBSCRIPTIONtrgLocalAcceptDoubleOptin  = trgLocalAcceptDoubleOptin;
+	@ConfigurableElement("Local triggers (available only to the 'answering double opt-in' navigation state) to quit the 'subscription' process")
+	public static String[] SUBSCRIPTIONtrgLocalRefuseDoubleOptin  = trgLocalRefuseDoubleOptin;
 	@ConfigurableElement("Global triggers (available to all navigation states) to execute the 'unsubscribe' command")
 	public static String[] SUBSCRIPTIONtrgGlobalUnsubscribe = trgGlobalUnsubscribe;
 		

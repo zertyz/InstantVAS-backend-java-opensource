@@ -58,7 +58,7 @@ public class ProfileDB implements IProfileDB {
 	}
 
 	@Override
-	public ProfileDto setProfileRecord(ProfileDto profile) throws SQLException {
+	public synchronized ProfileDto setProfileRecord(ProfileDto profile) throws SQLException {
 		UserDto user = profile.getUser();
 		// detect nickname collision
 		String baseNickname      = profile.getNickname();

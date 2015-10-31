@@ -30,11 +30,15 @@ public class SMSAppModuleConfigurationProfile {
 	// phrasing
 	///////////
 	
-	@ConfigurableElement(sameAsMethod="mutua.smsappmodule.i18n.SMSAppModulePhrasingsProfile.phrAskNickname")
-	public static String PROFILEphrAskNickname                      = phrAskNickname.toString();
-	@ConfigurableElement(sameAsMethod="mutua.smsappmodule.i18n.SMSAppModulePhrasingsProfile.phrNicknameRegistrationNotification")
+	@ConfigurableElement("Phrase sent when the system wants the user to inform his/her nickname for the first time. Variables: {{shortCode}}, {{appName}}")
+	public static String PROFILEphrAskForFirstNickname              = phrAskForFirstNickname.toString();
+	@ConfigurableElement("Phrase sent when the system wants the user to change his/her nickname (for the case when he/she already has a valid nickname). Variables: {{shortCode}}, {{appName}}, {{currentNickname}}")
+	public static String PROFILEphrAskForNewNickname                = phrAskForNewNickname.toString();
+	@ConfigurableElement("Phrase sent when the change nickname dialog has been deliberately cancelled by the user. Consider the opportunity to present some possible next commands. Variables: {{shortCode}}, {{appName}}, {{currentNickname}}")
+	public static String PROFILEphrAskForNicknameCancelation        = phrAskForNicknameCancelation.toString();
+	@ConfigurableElement("Phrase sent in response to the request of changing the nickname -- the text should confirm the nickname registered on the system. Variables: {{shortCode}}, {{appName}}, {{registeredNickname}}")
 	public static String PROFILEphrNicknameRegistrationNotification = phrNicknameRegistrationNotification.toString();
-	@ConfigurableElement(sameAsMethod="mutua.smsappmodule.i18n.SMSAppModulePhrasingsProfile.phrUserProfilePresentation")
+	@ConfigurableElement("Text sent to present the details of a user profile. Variables: {{shortCode}}, {{appName}}, {{nickname}} and others, from extensions, such as {{subscriptionState}}, {{geoUserLocation}} and {{numberOfLuckyNumbers}}")
 	public static String PROFILEphrPresentation                     = phrUserProfilePresentation.toString();
 	// show players?
 	
@@ -44,10 +48,14 @@ public class SMSAppModuleConfigurationProfile {
 	
 	@ConfigurableElement("Global triggers (available to all navigation states) to execute the 'ask for a nickname' dialog")
 	public static String[] PROFILEtrgGlobalStartAskForNicknameDialog    = trgGlobalStartAskForNicknameDialog;
+	@ConfigurableElement("Local triggers (available only to the 'ask for a nickname' navigation state) to cancel the 'ask for a nickname' dialog")
+	public static String[] PROFILEtrgLocalNicknameDialogCancelation     = trgLocalNicknameDialogCancelation;
 	@ConfigurableElement("Local triggers (available only to the 'ask for a nickname' navigation state) to execute the 'register user nickname' command")
 	public static String[] PROFILEtrgLocalRegisterNickname              = trgLocalRegisterNickname;
 	@ConfigurableElement("Global triggers (available to all navigation states) to execute the 'register user nickname' command. Receives 1 parameter: the nickname")
 	public static String[] PROFILEtrgGlobalRegisterNickname             = trgGlobalRegisterNickname;
+	@ConfigurableElement("Global triggers (available to all navigation states) to execute the 'show user profile' command. Receives 1 optional parameter: the nickname. If called without a parameter, the user gets his/her own information instead")
+	public static String[] PROFILEtrgGlobalShowUserProfile              = trgGlobalShowUserProfile;
 
 	
 	/************
@@ -56,7 +64,7 @@ public class SMSAppModuleConfigurationProfile {
 	
 	/** Apply on-the-fly phrasing changes */
 	public static void applyPhrasingConfiguration() {
-		phrAskNickname                     .setPhrases(PROFILEphrAskNickname);
+		phrAskForFirstNickname             .setPhrases(PROFILEphrAskForFirstNickname);
 		phrNicknameRegistrationNotification.setPhrases(PROFILEphrNicknameRegistrationNotification);
 		phrUserProfilePresentation         .setPhrases(PROFILEphrPresentation);
 	}

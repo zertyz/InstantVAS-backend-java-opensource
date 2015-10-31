@@ -41,7 +41,8 @@ public enum SMSAppModuleNavigationStatesSubscription implements INavigationState
 	},
 	
 	;
-	
+
+	// TODO this should be deleted from here and placed into the test class. The same should be done for all navigation state definition classes 
 	static {
 		// set triggers for the "new" and "existing" user navigation states. Applications must extend them even further
 		SMSAppModuleNavigationStates.nstNewUser.setCommandTriggers(new Object[][] {

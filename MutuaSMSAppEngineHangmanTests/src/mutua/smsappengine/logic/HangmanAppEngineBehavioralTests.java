@@ -10,6 +10,7 @@ import mutua.icc.instrumentation.Instrumentation;
 import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
 import mutua.smsappengine.config.HangmanSMSModulesConfiguration;
 import mutua.smsappmodule.SMSAppModuleTestCommons;
+import mutua.smsappmodule.config.SMSAppModuleConfigurationTests;
 import mutua.smsappmodule.dal.IChatDB;
 import mutua.smsappmodule.dal.IMatchDB;
 import mutua.smsappmodule.dal.INextBotWordsDB;
@@ -17,6 +18,7 @@ import mutua.smsappmodule.dal.IProfileDB;
 import mutua.smsappmodule.dal.ISessionDB;
 import mutua.smsappmodule.dal.ISubscriptionDB;
 import mutua.smsappmodule.dal.IUserDB;
+import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
 import mutua.smsappmodule.hangmangame.HangmanGame;
 import mutua.smsappmodule.i18n.SMSAppModulePhrasingsChat;
 import mutua.smsappmodule.i18n.SMSAppModulePhrasingsHangman;
@@ -63,12 +65,13 @@ public class HangmanAppEngineBehavioralTests {
 	
 	private static TestableSubscriptionAPI subscriptionEngine  = new TestableSubscriptionAPI(log);
 	private static String                  subscriptionChannel = "behavioralTests";
-
+	
 	
 	@BeforeClass
 	public static void setDefaultHangmanConfigurationParameters() {
-		tc = new SMSAppModuleTestCommons(log, HangmanSMSModulesConfiguration.navigationStates);
+		SMSAppModuleConfigurationTests.DEFAULT_MODULE_DAL = SMSAppModuleDALFactory.RAM;
 		HangmanSMSModulesConfiguration.setDefaults(log, subscriptionEngine, subscriptionChannel);
+		tc = new SMSAppModuleTestCommons(log, HangmanSMSModulesConfiguration.navigationStates);
 	}
 	
 	@Before
@@ -359,11 +362,11 @@ public class HangmanAppEngineBehavioralTests {
 		invitePlayerForAMatch("21991234899", "Dom", "cacatua", "21998019167", "pAtY");
 		
 		// profile on the "playing" state
-		tc.checkResponse("21998019167", "profile DOM", "HANGMAN: Dom: Subscribed, RJ, 0 lucky numbers. Send SIGNUP to provoke for free or INVITE Dom for a match.");
+		tc.checkResponse("21998019167", "profile DOM", "HANGMAN: Dom: Subscribed; Online; RJ. Text INVITE Dom to play a hangman match; P Dom [MSG] to chat; LIST to see online players; P to play with a random user.");
 		
 		tc.checkResponse("21998019167", "no",
-			"pAtY refused your invitation to play. Send LIST to 9714 and pick someone else",
-			"The invitation to play the Hangman Game made by Dom was refused. Send LIST to 9714 to see online users");
+			"The invitation to play the Hangman Game made by Dom was refused. Send LIST to 9714 to see online users",
+			"pAtY refused your invitation to play. Send LIST to 9714 and pick someone else");
 		
 		// profile on the "existing player" state
 		// also, profile on the "new user" state? what other commands there?
@@ -381,7 +384,7 @@ public class HangmanAppEngineBehavioralTests {
 		tc.checkResponse("21991234899", "help",                 SMSAppModulePhrasingsSubscription.getDoubleOptinStart());
 		tc.checkResponse("21991234899", "no",                   SMSAppModulePhrasingsSubscription.getDisagreeToSubscribe());
 		tc.checkResponse("21991234899", "come again?",          SMSAppModulePhrasingsSubscription.getDoubleOptinStart());
-		tc.checkResponse("21991234899", "well, not yet...",     SMSAppModulePhrasingsSubscription.getDisagreeToSubscribe());
+		tc.checkResponse("21991234899", "well, not yet...",     SMSAppModulePhrasingsSubscription.getDoubleOptinStart());
 		tc.checkResponse("21991234899", "what is this, again?", SMSAppModulePhrasingsSubscription.getDoubleOptinStart());
 		tc.checkResponse("21991234899", "hangman",              SMSAppModulePhrasingsSubscription.getSuccessfullySubscribed());
 		// struggle to find one's first steps after subscription
@@ -391,7 +394,7 @@ public class HangmanAppEngineBehavioralTests {
 		tc.checkResponse("21998019167", "unsubscribe", SMSAppModulePhrasingsSubscription.getUserRequestedUnsubscriptionNotification());
 		
 		// now a user that was registered attempts to play, but he/she has been secretly unsubscribed due to life cycle rules
-		SMSAppModuleCommandsSubscription.apiUnsubscribe... implement this and proceed on mapping the old 'testUserRegistrationSubtleties' tests
+		//SMSAppModuleCommandsSubscription.apiUnsubscribe... implement this and proceed on mapping the old 'testUserRegistrationSubtleties' tests
 	}
     
 

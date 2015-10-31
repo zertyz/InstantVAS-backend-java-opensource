@@ -116,6 +116,8 @@ public enum SMSAppModuleCommandsSubscription implements ICommandProcessor {
 	public static String[] trgLocalStartDoubleOptin  = {SMSAppModuleConfiguration.APPName};
 	/** {@link #nstAnsweringDoubleOptin} triggers that activates {@link #cmdSubscribe} */
 	public static String[] trgLocalAcceptDoubleOptin = {"YES"};
+	/** {@link #nstAnsweringDoubleOptin} triggers that activates {@link #cmdDoNotAgreeToSubscribe} */
+	public static String[] trgLocalRefuseDoubleOptin = {"NO"};
 	/** global triggers that activates {@link #cmdUnsubscribe} */
 	public static String[] trgGlobalUnsubscribe      = {"UNSUBSCRIBE", "QUIT", "EXIT"};
 	

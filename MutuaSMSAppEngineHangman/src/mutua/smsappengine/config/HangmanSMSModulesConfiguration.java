@@ -83,6 +83,12 @@ public class HangmanSMSModulesConfiguration {
 		SMSAppModuleDALFactoryChat.        DEFAULT_DAL = SMSAppModuleDALFactoryChat.        POSTGRESQL;
 		SMSAppModuleDALFactoryHangman.     DEFAULT_DAL = SMSAppModuleDALFactoryHangman.     POSTGRESQL;
 
+		SMSAppModuleDALFactory.            DEFAULT_DAL = SMSAppModuleDALFactory.            RAM;
+		SMSAppModuleDALFactorySubscription.DEFAULT_DAL = SMSAppModuleDALFactorySubscription.RAM;
+		SMSAppModuleDALFactoryProfile.     DEFAULT_DAL = SMSAppModuleDALFactoryProfile.     RAM;
+		SMSAppModuleDALFactoryChat.        DEFAULT_DAL = SMSAppModuleDALFactoryChat.        RAM;
+		SMSAppModuleDALFactoryHangman.     DEFAULT_DAL = SMSAppModuleDALFactoryHangman.     RAM;
+		
 		     DEFAULT_MODULE_DAL  = SMSAppModuleDALFactory.            DEFAULT_DAL;
 		SUBSCRIPTION_MODULE_DAL  = SMSAppModuleDALFactorySubscription.DEFAULT_DAL;
 		     PROFILE_MODULE_DAL  = SMSAppModuleDALFactoryProfile.     DEFAULT_DAL;
@@ -198,7 +204,7 @@ public class HangmanSMSModulesConfiguration {
 		
 		// phrasing
 		SUBSCRIPTIONphrDoubleOptinStart            = "You are at the {{appName}} game. To continue, you must subscribe. Send {{appName}} now to {{shortCode}} and compete for prizes. You will be charged at $ every week."; 
-		SUBSCRIPTIONphrDisagreeToSubscribe         = "";
+		SUBSCRIPTIONphrDisagreeToSubscribe         = "To fully use the {{appName}} game you need to subscribe. Please text {{appName}} to do so. In the mean time, you may consult the list of players. Text LIST to {{shortCode}}. Send RULES to learn how it worls.";
 		SUBSCRIPTIONphrSuccessfullySubscribed      = "{{appName}}: Registration succeeded. Send HELP to {{shortCode}} to know the rules and how to play, or simply send PLAY to {{shortCode}}";
 		SUBSCRIPTIONphrCouldNotSubscribe           = "";
 		SUBSCRIPTIONphrUserRequestedUnsubscription = "You are now unsubscribed from the {{appName}} GAME and will no longer receive invitations to play nor lucky numbers. To join again, send {{appName}} to {{shortCode}}";
@@ -208,50 +214,6 @@ public class HangmanSMSModulesConfiguration {
 		SUBSCRIPTIONtrgLocalStartDoubleOptin   = new String[] {".*"};
 		SUBSCRIPTIONtrgLocalAcceptDoubleOptin  = new String[] {"HANGMAN"};
 		SUBSCRIPTIONtrgGlobalUnsubscribe       = new String[] {"UNSUBSCRIBE"};
-		
-		/* estes estados são o que define a aplicação. Estivessem em um arquivo de configurações, uma só aplicação, com todos os módulos compilados juntos,
-		 * atenderia a todos os serviços possíveis. Uma forma interessante de conseguir isso é carregar estes dados através da rede, toda vez que o servidor
-		 * de aplicações der boot -- desta maneira nós garantimos que o serviço "instant vas" será sempre necessário para executar o software e evitam-se
-		 * possíveis problemas com pirataria.
-		 * Hoje em dia já é possível que os cmds sejam chamados de forma a imitar o serviço africano 'iText'. Por exemplo, para o envio de emails,
-		 * o comando cmdSendEmail (que recebe dois parâmetros) pode ser usado, mesmo que se esteja enviando sempre email para uma única pessoa,
-		 * situação na qual a regular expression deve ser trocada de algo como "M (%w+) (.*)" para "M (.*)" e a chamada do comando seria trocada de
-		 * cmdSendEmail("$1", "$2") para cmdSendEmail("luiz@InstantVAS.com", "$1") -- esta forma de chamar ainda tem que ser implementada, na verdade. */
-		// navigation states
-		nstNewUser.setCommandTriggers(new Object[][] {
-			{cmdSubscribe,                SUBSCRIPTIONtrgLocalAcceptDoubleOptin},	// the double opt-in process starts with a broadcast message
-			{cmdUnsubscribe,              SUBSCRIPTIONtrgGlobalUnsubscribe},
-			{cmdStartDoubleOptinProcess,  SUBSCRIPTIONtrgLocalStartDoubleOptin},	// for some of known wrong commands, start the double opt-in process again
-			{cmdShowNewUsersFallbackHelp, ".*"},									// fallback help
-		});
-		nstAnsweringDoubleOptin.setCommandTriggers(new Object[][] {
-			{cmdSubscribe,                SUBSCRIPTIONtrgLocalAcceptDoubleOptin},
-			{cmdDoNotAgreeToSubscribe,    SUBSCRIPTIONtrgGlobalUnsubscribe},
-			{cmdShowNewUsersFallbackHelp, ".*"},
-		});
-		nstExistingUser.setCommandTriggers(new Object[][] {
-			{cmdUnsubscribe,                   SUBSCRIPTIONtrgGlobalUnsubscribe},
-			{cmdShowStatelessHelp,             HELPtrgGlobalShowStatelessHelpMessage},
-			{cmdRegisterNickname,              PROFILEtrgGlobalRegisterNickname},
-			{cmdInviteNicknameOrPhoneNumber,   HANGMANtrgGlobalInviteNicknameOrPhoneNumber},
-			{cmdSendPrivateMessage,            CHATtrgGlobalSendPrivateMessage},
-			{cmdShowExistingUsersFallbackHelp, ".*"},
-		});
-		nstEnteringMatchWord.setCommandTriggers(new Object[][] {
-			{cmdHoldMatchWord,                 HANGMANtrgLocalHoldMatchWord},
-			{cmdShowExistingUsersFallbackHelp, ".*"},
-		});
-		nstAnsweringToHangmanMatchInvitation.setCommandTriggers(new Object[][] {
-			{cmdSendPrivateMessage,            CHATtrgGlobalSendPrivateMessage},
-			{cmdAcceptMatchInvitation,         HANGMANtrgLocalAcceptMatchInvitation},
-			{cmdRefuseMatchInvitation,         HANGMANtrgLocalRefuseMatchInvitation},
-			{cmdShowExistingUsersFallbackHelp, ".*"},
-		});
-		nstGuessingWordFromHangmanHumanOpponent.setCommandTriggers(new Object[][] {
-			{cmdSuggestLetterOrWordForHuman, HANGMANtrgLocalNewLetterOrWordSuggestion},
-			{cmdSendPrivateMessage,          CHATtrgGlobalSendPrivateMessage},
-			{cmdShowExistingUsersFallbackHelp, ".*"},
-		});
 		
 		SMSAppModuleConfigurationSubscription.subscriptionEngine = subscriptionEngine;
 		SMSAppModuleConfigurationSubscription.subscriptionToken  = subscriptionToken;
@@ -263,14 +225,14 @@ public class HangmanSMSModulesConfiguration {
 		///////////////////////////////////
 		
 		// phrasing
-		PROFILEphrAskNickname                      = "";
+		PROFILEphrAskForFirstNickname              = "todo";
 		PROFILEphrNicknameRegistrationNotification = "{{appName}}: Name registered: {{registeredNickname}}. Send LIST to {{shortCode}} to see online players. NICK [NEW NICK] to change your name.";
-		PROFILEphrPresentation                     = "";
+		PROFILEphrPresentation                     = "{{appName}}: {{nickname}}: Subscribed; Online; RJ. Text INVITE {{nickname}} to play a hangman match; P {{nickname}} [MSG] to chat; LIST to see online players; P to play with a random user.";
 		
 		// command patterns
-		PROFILEtrgGlobalStartAskForNicknameDialog = new String[] {""};
-		PROFILEtrgLocalRegisterNickname           = new String[] {""};
-		PROFILEtrgGlobalRegisterNickname          = new String[] {""};
+		PROFILEtrgGlobalStartAskForNicknameDialog = new String[] {"todo"};
+		PROFILEtrgLocalRegisterNickname           = new String[] {"todo"};
+		//PROFILEtrgGlobalRegisterNickname          = new String[] {""};
 		
 		//SMSAppModuleConfigurationProfile.log = null; // to come from a parameter. BTW, where is the log for this module?
 		SMSAppModuleConfigurationProfile.applyConfiguration();
@@ -308,6 +270,61 @@ public class HangmanSMSModulesConfiguration {
 		DEFAULT_NICKNAME_PREFIX = "Guest";
 		//SMSAppModuleConfigurationHangman.log = null;	// to come from a parameter. BTW, where is the log for this module?
 		SMSAppModuleConfigurationHangman.applyConfiguration();
+		
+		
+		// navigation
+		/////////////
+		
+		/* estes estados são o que define a aplicação. Estivessem em um arquivo de configurações, uma só aplicação, com todos os módulos compilados juntos,
+		 * atenderia a todos os serviços possíveis. Uma forma interessante de conseguir isso é carregar estes dados através da rede, toda vez que o servidor
+		 * de aplicações der boot -- desta maneira nós garantimos que o serviço "instant vas" será sempre necessário para executar o software e evitam-se
+		 * possíveis problemas com pirataria.
+		 * Hoje em dia já é possível que os cmds sejam chamados de forma a imitar o serviço africano 'iText'. Por exemplo, para o envio de emails,
+		 * o comando cmdSendEmail (que recebe dois parâmetros) pode ser usado, mesmo que se esteja enviando sempre email para uma única pessoa,
+		 * situação na qual a regular expression deve ser trocada de algo como "M (%w+) (.*)" para "M (.*)" e a chamada do comando seria trocada de
+		 * cmdSendEmail("$1", "$2") para cmdSendEmail("luiz@InstantVAS.com", "$1") -- esta forma de chamar ainda tem que ser implementada, na verdade. */
+		
+		// TODO aqui é preciso ter um array compartilhado com todos os global triggers pra gente não ter que ficar repetindo em cada estado
+		
+		nstNewUser.setCommandTriggers(new Object[][] {
+			{cmdSubscribe,                SUBSCRIPTIONtrgLocalAcceptDoubleOptin},	// the double opt-in process starts with a broadcast message
+			{cmdUnsubscribe,              SUBSCRIPTIONtrgGlobalUnsubscribe},
+			{cmdStartDoubleOptinProcess,  SUBSCRIPTIONtrgLocalStartDoubleOptin},	// for some of known wrong commands, start the double opt-in process again
+			{cmdShowNewUsersFallbackHelp, ".*"},									// fallback help
+		});
+		nstAnsweringDoubleOptin.setCommandTriggers(new Object[][] {
+			{cmdSubscribe,                SUBSCRIPTIONtrgLocalAcceptDoubleOptin},
+			{cmdDoNotAgreeToSubscribe,    SUBSCRIPTIONtrgLocalRefuseDoubleOptin},
+			{cmdUnsubscribe,              SUBSCRIPTIONtrgGlobalUnsubscribe},
+			{cmdStartDoubleOptinProcess,  ".*"},
+		});
+		nstExistingUser.setCommandTriggers(new Object[][] {
+			{cmdUnsubscribe,                   SUBSCRIPTIONtrgGlobalUnsubscribe},
+			{cmdShowStatelessHelp,             HELPtrgGlobalShowStatelessHelpMessage},
+			{cmdRegisterNickname,              PROFILEtrgGlobalRegisterNickname},
+			{cmdInviteNicknameOrPhoneNumber,   HANGMANtrgGlobalInviteNicknameOrPhoneNumber},
+			{cmdSendPrivateMessage,            CHATtrgGlobalSendPrivateMessage},
+			{cmdShowUserProfile,               PROFILEtrgGlobalShowUserProfile},
+			{cmdShowExistingUsersFallbackHelp, ".*"},
+		});
+		nstEnteringMatchWord.setCommandTriggers(new Object[][] {
+			{cmdHoldMatchWord,                 HANGMANtrgLocalHoldMatchWord},
+			{cmdShowExistingUsersFallbackHelp, ".*"},
+		});
+		nstAnsweringToHangmanMatchInvitation.setCommandTriggers(new Object[][] {
+			{cmdSendPrivateMessage,            CHATtrgGlobalSendPrivateMessage},
+			{cmdAcceptMatchInvitation,         HANGMANtrgLocalAcceptMatchInvitation},
+			{cmdRefuseMatchInvitation,         HANGMANtrgLocalRefuseMatchInvitation},
+			{cmdShowUserProfile,               PROFILEtrgGlobalShowUserProfile},
+			{cmdShowExistingUsersFallbackHelp, ".*"},
+		});
+		nstGuessingWordFromHangmanHumanOpponent.setCommandTriggers(new Object[][] {
+			{cmdSuggestLetterOrWordForHuman, HANGMANtrgLocalNewLetterOrWordSuggestion},
+			{cmdSendPrivateMessage,          CHATtrgGlobalSendPrivateMessage},
+			{cmdShowExistingUsersFallbackHelp, ".*"},
+		});
+		
+
 
 	}
 

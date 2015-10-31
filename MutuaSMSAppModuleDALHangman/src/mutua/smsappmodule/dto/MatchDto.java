@@ -75,23 +75,15 @@ public class MatchDto {
 		return status;
 	}
 
-	// TODO: if this really needs to exist, then the update query must receive a 'MatchDto' as parameter (instead of just the 'status')
-	public MatchDto getNewMatch(EMatchStatus status) {
-		return new MatchDto(matchId, wordProvidingPlayer, wordGuessingPlayer, serializedGame, matchStartMillis, status);
-	}
-
 	@Override
 	public boolean equals(Object obj) {
 		MatchDto anotherMatch = (MatchDto)obj;
-		if ((matchId == -1) && (anotherMatch.matchId == -1)) {
-			return wordProvidingPlayer.equals(anotherMatch.wordProvidingPlayer) &&
-			       wordGuessingPlayer.equals(anotherMatch.wordGuessingPlayer) &&
-			       serializedGame.equals(anotherMatch.serializedGame) &&
-			       (matchStartMillis == anotherMatch.matchStartMillis) &&
-			       (status == anotherMatch.status);
-		} else {
-			return matchId == anotherMatch.matchId;
-		}
+		return (matchId == anotherMatch.matchId) &&
+		       wordProvidingPlayer.equals(anotherMatch.wordProvidingPlayer) &&
+		       wordGuessingPlayer.equals(anotherMatch.wordGuessingPlayer) &&
+		       serializedGame.equals(anotherMatch.serializedGame) &&
+		       (matchStartMillis == anotherMatch.matchStartMillis) &&
+		       (status == anotherMatch.status);
 	}
 
 }

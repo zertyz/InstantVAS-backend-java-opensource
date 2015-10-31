@@ -42,12 +42,12 @@ public class SubscriptionModuleBehavioralTests {
 	
 	@Test
 	public void testDoubleOptin() throws SQLException {
-		String observedMessage;
+		String expectedMessage = getDoubleOptinStart();
 		SessionModel session = new SessionModel((UserDto)null);
 		
 		// first (and normal) interaction
-		observedMessage = cmdStartDoubleOptinProcess.processCommand(session, null, null).getResponseMessages()[0].getText();
-		assertEquals("Command didn't start the double opt-in process", getDoubleOptinStart(), observedMessage);
+		String observedMessage = cmdStartDoubleOptinProcess.processCommand(session, null, null).getResponseMessages()[0].getText();
+		assertEquals("Command didn't answer the correct message for starting the double opt-in process", expectedMessage, observedMessage);
 		assertEquals("Navigation State wasn't correctly set", nstAnsweringDoubleOptin, session.getNavigationState());
 	}
 

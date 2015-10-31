@@ -9,7 +9,7 @@ import org.junit.Test;
  * =================================
  * (created by luiz, Sep 15, 2015)
  *
- * Tests the normal-circumstance usage of the help module features
+ * Tests the normal-circumstance usage of the "Hangman" module features
  *
  * @see RelatedClass(es)
  * @version $Id$

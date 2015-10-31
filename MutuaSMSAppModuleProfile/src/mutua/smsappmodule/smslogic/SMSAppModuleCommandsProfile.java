@@ -35,12 +35,32 @@ import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 
 public enum SMSAppModuleCommandsProfile implements ICommandProcessor {
 	
-	/** Command to initiate the inquiry for the user desired nickname, so it can be registered on the system
+	/** Command to initiate the wizard to set/change the user nickname, so he/she can be referenced throughout the system
 	 *  Receives no parameters. */
 	cmdStartAskForNicknameDialog {
 		@Override
 		public CommandAnswerDto processCommand(SessionModel session, ESMSInParserCarrier carrier, String[] parameters) throws SQLException {
-			return getNewStateReplyCommandAnswer(session, nstRegisteringNickname, getAskNickname());
+			ProfileDto registeredProfile = profileDB.getProfileRecord(session.getUser());
+			if (registeredProfile == null) {
+				return getNewStateReplyCommandAnswer(session, nstRegisteringNickname, getAskForFirstNickname());
+			} else {
+				return getNewStateReplyCommandAnswer(session, nstRegisteringNickname, getAskForNewNickname(registeredProfile.getNickname()));
+			}
+		}
+	},
+	
+	/** Command to deal with the user request of canceling the ask for a nickname' wizard.
+	 *  Receives no parameters */
+	cmdAskForNicknameDialogCancelation {
+		@Override
+		public CommandAnswerDto processCommand(SessionModel session, ESMSInParserCarrier carrier, String[] parameters) throws SQLException {
+			ProfileDto registeredProfile = profileDB.getProfileRecord(session.getUser());
+			if (registeredProfile == null) {
+				// TODO possibly this scenario demands for a new configuration "default nickname"
+				return getNewStateReplyCommandAnswer(session, nstExistingUser, getAskForNicknameCancelation("0000"));
+			} else {
+				return getNewStateReplyCommandAnswer(session, nstExistingUser, getAskForNicknameCancelation(registeredProfile.getNickname()));
+			}
 		}
 	},
 	
@@ -54,6 +74,20 @@ public enum SMSAppModuleCommandsProfile implements ICommandProcessor {
 			ProfileDto registeredProfile = profileDB.setProfileRecord(new ProfileDto(session.getUser(), desiredNickname));
 			String registeredNickname = registeredProfile.getNickname();
 			return getNewStateReplyCommandAnswer(session, nstExistingUser, getNicknameRegistrationNotification(registeredNickname));
+		}
+	},
+
+	/** Command to present some interesting and public user information, such as its nickname and some extensible information like
+	 *  his/her geolocation (GeoReference module), subscription state (Subscription module) and quantity of valid lucky numbers (Draw module).
+	 *  Receives 1 optional parameter: the nickname to inquire for. On its abstance, inquire for the own user's information */
+	cmdShowUserProfile {
+		@Override
+		public CommandAnswerDto processCommand(SessionModel session, ESMSInParserCarrier carrier, String[] parameters) throws SQLException {
+			String desiredNickname    = parameters.length == 1  ? parameters[0]                               : null;
+			ProfileDto desiredProfile = desiredNickname != null ? profileDB.getProfileRecord(desiredNickname) : profileDB.getProfileRecord(session.getUser());
+			
+			String registeredNickname = desiredProfile.getNickname();
+			return getSameStateReplyCommandAnswer(getUserProfilePresentation(registeredNickname));
 		}
 	},
 	
@@ -85,9 +119,13 @@ public enum SMSAppModuleCommandsProfile implements ICommandProcessor {
 	
 	/** global triggers that activates {@link #cmdStartAskForNicknameDialog} */
 	public static String[] trgGlobalStartAskForNicknameDialog   = {"NICK"};
+	/** {@link #nstRegisteringNickname} triggers that activates {@link #cmdAskForNicknameDialogCancelation} */
+	public static String[] trgLocalNicknameDialogCancelation    = {"CANCEL"};
 	/** {@link #nstRegisteringNickname} triggers that activates {@link #cmdRegisterNickname} */
 	public static String[] trgLocalRegisterNickname             = {"([A-Za-z0-9]+)"};
 	/** global triggers that activates {@link #cmdRegisterNickname} */
 	public static String[] trgGlobalRegisterNickname            = {"NICK (.*)"};
+	/** global triggers that activates {@link #cmdShowUserProfile} */
+	public static String[] trgGlobalShowUserProfile             = {"PROFILE", "PROFILE (.*)"};
 
 }

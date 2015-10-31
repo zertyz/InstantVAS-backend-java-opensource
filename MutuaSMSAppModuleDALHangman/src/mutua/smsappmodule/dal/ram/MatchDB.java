@@ -41,7 +41,7 @@ public class MatchDB implements IMatchDB {
 	}
 
 	@Override
-	public int storeNewMatch(MatchDto match) {
+	public synchronized int storeNewMatch(MatchDto match) {
 		matches.add(match);
 		int matchId = matches.lastIndexOf(match);
 		match.setMatchId(matchId);
@@ -57,7 +57,9 @@ public class MatchDB implements IMatchDB {
 	public void updateMatchStatus(MatchDto match, EMatchStatus status, String serializedGame) {
 		int matchId = match.getMatchId();
 		MatchDto storedMatch = matches.get(matchId);
-		MatchDto newMatch = storedMatch.getNewMatch(status);
+		MatchDto newMatch = new MatchDto(storedMatch.getMatchId(), storedMatch.getWordProvidingPlayer(), storedMatch.getWordGuessingPlayer(),
+		                                 serializedGame, storedMatch.getMatchStartMillis(), status);
+		
 		matches.set(matchId, newMatch);
 	}
 
