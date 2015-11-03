@@ -50,8 +50,8 @@ public class SMSProcessor {
 	// databases
 	////////////
 	
-	private static ISessionDB sessionDB = SMSAppModuleDALFactory.DEFAULT_DAL.getSessionDB();
 	private static IUserDB    userDB    = SMSAppModuleDALFactory.DEFAULT_DAL.getUserDB();
+	private static ISessionDB sessionDB = SMSAppModuleDALFactory.DEFAULT_DAL.getSessionDB();
 	
 	
 	// message dispatchers
@@ -162,29 +162,34 @@ public class SMSProcessor {
 		}
 	}
 	
+	private SessionModel resolveUserSession(String phone, String text) {
+		UserDto      user;
+		SessionModel session;
+		try {
+			user                  = userDB.assureUserIsRegistered(phone);
+			SessionDto sessionDto = sessionDB.getSession(user);
+			// new user
+			if (sessionDto == null) {
+				session = new SessionModel(user);
+				session.setNavigationState(nstNewUser);
+				log.reportEvent(IE_REQUEST_FROM_NEW_USER, IP_PHONE, phone, IP_TEXT, text);
+			} else {
+				session = new SessionModel(sessionDto);
+				log.reportEvent(IE_REQUEST_FROM_EXISTING_USER, IP_PHONE, phone, IP_STATE, session.getNavigationState(), IP_TEXT, text);
+			}
+		} catch (Exception e) {
+			throw new RuntimeException("Database communication problem: cannot retrieve the session for user '"+phone+"'", e);
+		}
+		return session;
+	}
+	
 	public void process(IncomingSMSDto incomingSMS) throws SMSProcessorException {
 		
 		String incomingPhone = incomingSMS.getPhone();
 		String incomingText = incomingSMS.getText();
 		
 		// get the user state
-		UserDto      user;
-		SessionModel session;
-		try {
-			user                  = userDB.assureUserIsRegistered(incomingPhone);
-			SessionDto sessionDto = sessionDB.getSession(user);
-			// new user
-			if (sessionDto == null) {
-				session = new SessionModel(user);
-				session.setNavigationState(nstNewUser);
-				log.reportEvent(IE_REQUEST_FROM_NEW_USER, IP_PHONE, incomingPhone, IP_TEXT, incomingText);
-			} else {
-				session = new SessionModel(sessionDto);
-				log.reportEvent(IE_REQUEST_FROM_EXISTING_USER, IP_PHONE, incomingPhone, IP_STATE, session.getNavigationState(), IP_TEXT, incomingText);
-			}
-		} catch (Exception e) {
-			throw new RuntimeException("Database communication problem: cannot retrieve the session for user '"+incomingPhone+"'", e);
-		}
+		SessionModel session = resolveUserSession(incomingPhone, incomingText);
 			
 		// determine which command (and arguments) to call
 		CommandInvocationDto invocationHandler = resolveInvocationHandler(session.getNavigationState(), incomingText);

@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.sql.SQLException;
 
 import static mutua.smsappmodule.config.SMSAppModuleConfigurationTests.*;
+import mutua.smsappmodule.SMSAppModuleTestCommons;
 import mutua.smsappmodule.dto.SessionDto;
 import mutua.smsappmodule.dto.UserDto;
 
@@ -43,6 +44,37 @@ public class ISessionDBBehavioralTests {
 		SessionDto session = sessionDB.getSession(user);
 		assertNull("Non-existing sessions must be null", session);
 	}
+	
+	@Test
+	public void testAssureProperty() throws SQLException {
+		
+		sessionDB.reset();
+		
+		UserDto user = userDB.assureUserIsRegistered("21991234899");
+		
+		String firstFavoriteSong  = "Song of the Islands";
+		String secondFavoriteSong = "Don't Rock my Boat";
+		String[][] expectedProperties;
+		SessionDto observedSession;
+		
+		// the case when the property didn't exist
+		sessionDB.assureProperty(user, "favoriteSong", firstFavoriteSong);
+		expectedProperties = new String[][] {
+			{"favoriteSong", firstFavoriteSong},	
+		};
+		observedSession = sessionDB.getSession(user);
+		assertArrayEquals("'AssureProperty' failed for a new property", expectedProperties, observedSession.getStoredProperties());
+
+		// the case when the property exists
+		sessionDB.assureProperty(user, "favoriteSong", secondFavoriteSong);
+		expectedProperties = new String[][] {
+			{"favoriteSong", secondFavoriteSong},	
+		};
+		observedSession = sessionDB.getSession(user);
+		assertArrayEquals("'AssureProperty' failed for an existing property", expectedProperties, observedSession.getStoredProperties());
+
+	}
+
 	
 	@Test
 	public void testSimpleUsage() throws InterruptedException, SQLException {

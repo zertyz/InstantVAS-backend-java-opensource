@@ -1,5 +1,6 @@
 package mutua.smsappmodule.dal.ram;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
@@ -79,6 +80,12 @@ public class SessionDB implements ISessionDB {
 				properties.put(propertyName, propertyValue);
 			}
 		}
+	}
+
+	@Override
+	public void assureProperty(UserDto user, String propertyName, String propertyValue) {
+		Hashtable<String, String> properties = getSessionProperties(user);
+		properties.put(propertyName, propertyValue);
 	}
 
 }

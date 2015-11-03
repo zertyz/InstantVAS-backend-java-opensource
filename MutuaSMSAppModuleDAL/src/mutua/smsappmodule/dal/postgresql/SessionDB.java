@@ -87,4 +87,13 @@ public class SessionDB implements ISessionDB {
 		}
 	}
 
+	@Override
+	public void assureProperty(UserDto user, String propertyName, String propertyValue)	throws SQLException {
+		PreparedProcedureInvocationDto procedure = new PreparedProcedureInvocationDto("AssureProperty");
+		procedure.addParameter("USER_ID", user.getUserId());
+		procedure.addParameter("PROPERTY_NAME", propertyName);
+		procedure.addParameter("PROPERTY_VALUE", propertyValue);
+		dba.invokeScalarProcedure(procedure);
+	}
+
 }

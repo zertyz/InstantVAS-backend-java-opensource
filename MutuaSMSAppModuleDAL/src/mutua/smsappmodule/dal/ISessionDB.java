@@ -28,5 +28,9 @@ public interface ISessionDB {
 	
 	/** Stores a 'SessionDto' on the database */
 	void setSession(SessionDto session) throws SQLException;
+	
+	/** Assures the desired property will have the specified value for a given user.
+	 *  Used to optimize the reset of navigation state without the need to 'get' & 'set' the whole session. */
+	void assureProperty(UserDto user, String propertyName, String propertyValue) throws SQLException;
 
 }

@@ -39,7 +39,7 @@ public class SessionModel {
 	private final HashMap<String, String> storedProperties;
 	private final HashMap<String, String> pendingProperties = new HashMap<String, String>(16);
 	
-	private static final ISessionProperty NAVIGATION_STATE_PROPERTY = new ISessionProperty() {
+	public static final ISessionProperty NAVIGATION_STATE_PROPERTY = new ISessionProperty() {
 		@Override
 		public String getPropertyName() {
 			return "NavState";

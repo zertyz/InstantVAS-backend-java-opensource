@@ -378,7 +378,10 @@ public class HangmanAppEngineBehavioralTests {
 	**************************************/
 	
 	@Test
-	public void testSubscriptionSubtleties() {
+	public void testSubscriptionSubtleties() throws SQLException {
+		
+		// even new users should be able to unsubscribe
+		tc.checkResponse("21998019167", "unsubscribe", SMSAppModulePhrasingsSubscription.getUserRequestedUnsubscriptionNotification());
 		
 		// struggle to subscribe
 		tc.checkResponse("21991234899", "help",                 SMSAppModulePhrasingsSubscription.getDoubleOptinStart());
@@ -390,11 +393,16 @@ public class HangmanAppEngineBehavioralTests {
 		// struggle to find one's first steps after subscription
 		tc.checkResponse("21991234899", "HJKS", SMSAppModulePhrasingsHelp.getExistingUsersFallbackHelp());
 		
-		// even new users should be able to unsubscribe
-		tc.checkResponse("21998019167", "unsubscribe", SMSAppModulePhrasingsSubscription.getUserRequestedUnsubscriptionNotification());
+		// now, when a user that was registered attempts to play (but he/she has been secretly unsubscribed due to life cycle rules), what happens?
+		// he/she must use the game as if their subscription was still valid...
+		subscriptionEngine.unsubscribeUser("21991234899", subscriptionChannel);
+		tc.checkResponse("21991234899", "nick domJon", SMSAppModulePhrasingsProfile.getNicknameRegistrationNotification("domJon"));
+		sendPrivateMessage("21991234899", "domJon", "I believe I would receive this, but... should I?");
 		
-		// now a user that was registered attempts to play, but he/she has been secretly unsubscribed due to life cycle rules
-		//SMSAppModuleCommandsSubscription.apiUnsubscribe... implement this and proceed on mapping the old 'testUserRegistrationSubtleties' tests
+		// ... only when the unsubscription is formally reported, the game notes the change in the state
+		SMSAppModuleCommandsSubscription.unsubscribeUser("21991234899");
+		tc.checkResponse("21991234899", "nick ItsMeMario", SMSAppModulePhrasingsSubscription.getDoubleOptinStart());
+		
 	}
     
 
