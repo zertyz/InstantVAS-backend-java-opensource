@@ -137,12 +137,12 @@ public class SMSAppModulePostgreSQLAdapter extends PostgreSQLAdapter {
 			{"DeleteProperty",      "DELETE FROM Sessions WHERE userId=${USER_ID} AND propertyName=${PROPERTY_NAME}"},
 			{"FetchProperties",     "SELECT propertyName, propertyValue FROM Sessions WHERE userId=${USER_ID}"},
 			{"InsertProperty",      "INSERT INTO Sessions(userId, propertyName, propertyValue) VALUES (${USER_ID}, ${PROPERTY_NAME}, ${PROPERTY_VALUE})"},
-			{"UpdateProperty",      "UPDATE Sessions SET propertyValue = ${PROPERTY_VALUE} WHERE userId=${USER_ID} AND propertyName=${PROPERTY_NAME}"},
-			{"AssureProperty",      "WITH upsert AS ( " +
-			                                        "UPDATE Sessions SET propertyValue = ${PROPERTY_VALUE} WHERE userId=${USER_ID} AND propertyName=${PROPERTY_NAME} " +
+			{"UpdateProperty",      "UPDATE Sessions SET propertyValue=${PROPERTY_VALUE} WHERE userId=${USER_ID} AND propertyName=${PROPERTY_NAME}"},
+			{"AssureProperty",      "WITH upsert AS (" +
+			                                        "UPDATE Sessions SET propertyValue=${PROPERTY_VALUE} WHERE userId=${USER_ID} AND propertyName=${PROPERTY_NAME} " +
 			                                        "RETURNING *) " +
-			                        "INSERT INTO Sessions(userId, propertyName, propertyValue) VALUES (${USER_ID}, ${PROPERTY_NAME}, ${PROPERTY_VALUE}) " + 
-			                        "WHERE NOT EXISTS (SELECT * FROM upsert)"},
+			                        "INSERT INTO Sessions(userId, propertyName, propertyValue) SELECT ${USER_ID}, ${PROPERTY_NAME}, ${PROPERTY_VALUE} " + 
+			                                                                                         "WHERE NOT EXISTS (SELECT * FROM upsert)"},
 		});
 	}
 

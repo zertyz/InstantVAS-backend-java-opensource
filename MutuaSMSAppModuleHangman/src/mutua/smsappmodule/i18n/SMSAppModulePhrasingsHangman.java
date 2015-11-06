@@ -49,6 +49,7 @@ public enum SMSAppModulePhrasingsHangman {
 	phrLosingMessageForWordProvidingPlayer                      ("Good one! {{wordGuessingPlayerNickname}} wasn't able to guessed your word! P {{wordGuessingPlayerNickname}} [MSG] to provoke him/her or INVITE {{wordGuessingPlayerNickname}} for a new match"),
 	phrMatchGiveupNotificationForWordGuessingPlayer             ("Your match with {{wordProvidingPlayerNickname}} has been canceled. Send P {{wordProvidingPlayerNickname}} [MSG] to talk to him/her or LIST to play with someone else"),
 	phrMatchGiveupNotificationForWordProvidingPlayer            ("{{wordGuessingPlayerNickname}} cancelled the match. To find other users to play with, sent LIST to {{shortCode}}"),
+	phrGuessingWordHelp                                         ("You are guessing a word on a {{appName}} match. Please text a letter or: END to quit the match; P [nick] [MSG] to ask for clues; LIST to see other online users"),
 	
 	;
 	
@@ -257,6 +258,12 @@ public enum SMSAppModulePhrasingsHangman {
 		return phrMatchGiveupNotificationForWordProvidingPlayer.getPhrase("shortCode",                  SMSAppModuleConfiguration.APPShortCode,
 		                                                                  "appName",                    SMSAppModuleConfiguration.APPName,
 		                                                                  "wordGuessingPlayerNickname", wordGuessingPlayerNickname);
+	}
+	
+	/** @see SMSAppModuleConfigurationHangman#HANGMANphrGuessingWordHelp */
+	public static String getGuessingWordHelp() {
+		return phrGuessingWordHelp.getPhrase("shortCode",                   SMSAppModuleConfiguration.APPShortCode,
+                                             "appName",                     SMSAppModuleConfiguration.APPName);
 	}
 
 }

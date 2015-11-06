@@ -89,6 +89,8 @@ public class SMSAppModuleConfigurationHangman {
 	public static String HANGMANphrMatchGiveupNotificationForWordGuessingPlayer              = phrMatchGiveupNotificationForWordGuessingPlayer.toString();
 	@ConfigurableElement("Notification sent to the word providing player when the match has been canceled -- tipically due to an action of the opponent. Variables: {{shortCode}}, {{appName}}, {{wordGuessingPlayerNickname}}")
 	public static String HANGMANphrMatchGiveupNotificationForWordProvidingPlayer             = phrMatchGiveupNotificationForWordProvidingPlayer.toString();
+	@ConfigurableElement("Response sent to the word guessing player if he/she fails to send a valid command while on a hangman match. Variables: {{shortCode}}, {{appName}}")
+	public static String HANGMANphrGuessingWordHelp                                          = phrGuessingWordHelp.toString();
 
 
 	// command patterns

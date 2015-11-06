@@ -404,7 +404,54 @@ public class HangmanAppEngineBehavioralTests {
 		tc.checkResponse("21991234899", "nick ItsMeMario", SMSAppModulePhrasingsSubscription.getDoubleOptinStart());
 		
 	}
-    
+	
+	@Test
+	public void testWordSelectionSubtleties() throws SQLException {
+		registerUser("21991234899", "dom");
+		registerUser("21998019167", "donna");
+		invitePlayerByNick("21991234899", "donna");
+		tc.checkResponse("21991234899", "caca123", SMSAppModulePhrasingsHangman.getNotAGoodWord("CACA123"));	// non letter characters
+		tc.checkResponse("21991234899", "coco", SMSAppModulePhrasingsHangman.getNotAGoodWord("COCO"));			// unplayable word
+	}
+
+	@Test
+	public void testAllLettersWhenGuessingWords() throws SQLException {
+		char[] attemptedLetters = {
+			'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i', 'J', 'j', 'K',
+			'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o', 'P', 'p', 'Q', 'q', 'R', 'r', 'S', 's', 'T', 't', 'U', 'u',
+			'V', 'v', 'W', 'w', 'X', 'x', 'Y', 'y', 'Z', 'z',	
+		};
+		String hardWord = "AZCDEFGHIJKLMNOPQRSTUVWXYB";
+		String usedLetters;
+		
+		// test playing with a human letters recognition
+		startAPlayerMatch("21991234899", "dom", hardWord, "21998019167", "paty");
+		usedLetters = "AB";
+		// first, test sending an empty message
+		tc.checkResponse("21998019167", "", SMSAppModulePhrasingsHangman.getGuessingWordHelp());
+		// now loop through all messages
+		for (char letter : attemptedLetters) {
+			String sLetter = Character.toString(letter);
+			if (usedLetters.indexOf(sLetter.toUpperCase()) == -1) {
+				usedLetters += sLetter.toUpperCase();
+			}
+			String hardWordSoFar = hardWord.replaceAll("[^"+usedLetters+"]", "-");
+			if (hardWordSoFar.equals(hardWord)) {
+				tc.checkResponse("21998019167", sLetter,				                 
+		                         SMSAppModulePhrasingsHangman.getWinningMessageForWordGuessingPlayer (hardWord, "xx.xx.xx.xx"),
+		                         SMSAppModulePhrasingsHangman.getWinningMessageForWordProvidingPlayer("paty"));
+				break;
+			} else {
+				tc.checkResponse("21998019167", sLetter,
+				                 SMSAppModulePhrasingsHangman.getWordGuessingPlayerStatus (false, false, false, false, false, false, hardWordSoFar, usedLetters),
+				                 SMSAppModulePhrasingsHangman.getWordProvidingPlayerStatus(false, false, false, false, false, false, hardWordSoFar, sLetter, usedLetters, "paty"));
+			}
+		}
+		
+		// test playing with a bot letters recognition
+		// TODO do the same as for humans... should allow setting bot words on the fly
+	}
+
 
 }
 
@@ -416,8 +463,10 @@ public class HangmanAppEngineBehavioralTests {
  *          OK  -- test implemented with same name
  * 
  * testUnrecognizedCommandSubtleties --> testSubscriptionSubtleties
- * testGameRestartSubtleties --> x
- * testHelpCommandSubtleties --> NA
- * testUserRegistrationSubtleties    --> testSubscriptionSubtleties
+ * testGameRestartSubtleties         --> x
+ * testHelpCommandSubtleties         --> NA
+ * testUserRegistrationSubtleties    --> testSubscriptionSubtleties * falta fazer testes para convite por telefone
+ * testWordSelectionSubtleties       --> testWordSelectionSubtleties
+ * testAllLettersWhenGuessingWords   --> testAllLettersWhenGuessingWords
  * 
  */

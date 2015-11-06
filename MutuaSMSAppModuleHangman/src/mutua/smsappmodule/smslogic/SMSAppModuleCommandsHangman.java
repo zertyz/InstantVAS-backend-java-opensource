@@ -129,11 +129,10 @@ public enum SMSAppModuleCommandsHangman implements ICommandProcessor {
 			String opponentPlayerNickName = opponentProfile.getNickname();
 
 			HangmanGame game = new HangmanGame(wordToPlay, 6);
-			
+
+			// not a good word if it is not entirely made by letters and if putting in the first and last letters the word is revealed
 			if ((!wordToPlay.matches("[A-Za-z]+")) || (game.getGameState() == EHangmanGameStates.WON)) {
-				throw new RuntimeException("not a good word");
-				//CommandMessageDto commandResponse = new CommandMessageDto(phrases.INVITINGNotAGoodWord(game.getWord()), EResponseMessageType.HELP);
-				//return getNewCommandAnswerDto(session, commandResponse);
+				return getSameStateReplyCommandAnswer(getNotAGoodWord(wordToPlay.toUpperCase()));
 			}
 			
 			// set inviting & invited player sessions

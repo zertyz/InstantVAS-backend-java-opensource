@@ -36,6 +36,7 @@ import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterChat;
 import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterHangman;
 import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterProfile;
 import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterSubscription;
+import mutua.smsappmodule.i18n.SMSAppModulePhrasingsHangman;
 import mutua.smsappmodule.smslogic.navigationstates.INavigationState;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesHangman;
@@ -188,11 +189,12 @@ public class HangmanSMSModulesConfiguration {
 		
 		// stateful help messages
 		setStatefulHelpMessages(new Object[][] {
-			{nstNewUser,              "fallback help message for new users"},
-			{nstExistingUser,         "fallback help message for existing users"},
-			{nstAnsweringDoubleOptin, "fallback help message when answering double opt-in"},
-			{nstRegisteringNickname,  "fallback help message when registering a nickname"},
-			{nstChattingWithSomeone,  "help message when statefully chatting with someone"},
+			{nstNewUser,                              "fallback help message for new users"},
+			{nstExistingUser,                         "fallback help message for existing users"},
+			{nstAnsweringDoubleOptin,                 "fallback help message when answering double opt-in"},
+			{nstRegisteringNickname,                  "fallback help message when registering a nickname"},
+			{nstChattingWithSomeone,                  "help message when statefully chatting with someone"},
+			{nstGuessingWordFromHangmanHumanOpponent, SMSAppModulePhrasingsHangman.getGuessingWordHelp()},
 		});
 
 		// SMSAppModuleConfigurationHelp.log = null;  // to come from a parameter. BTW, where is the log for this module?
@@ -319,9 +321,9 @@ public class HangmanSMSModulesConfiguration {
 			{cmdShowExistingUsersFallbackHelp, ".*"},
 		});
 		nstGuessingWordFromHangmanHumanOpponent.setCommandTriggers(new Object[][] {
-			{cmdSuggestLetterOrWordForHuman, HANGMANtrgLocalNewLetterOrWordSuggestion},
-			{cmdSendPrivateMessage,          CHATtrgGlobalSendPrivateMessage},
-			{cmdShowExistingUsersFallbackHelp, ".*"},
+			{cmdSuggestLetterOrWordForHuman,   HANGMANtrgLocalNewLetterOrWordSuggestion},
+			{cmdSendPrivateMessage,            CHATtrgGlobalSendPrivateMessage},
+			{cmdShowStatefulHelp,              ".*"},
 		});
 		
 

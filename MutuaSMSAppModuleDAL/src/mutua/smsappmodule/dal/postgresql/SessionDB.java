@@ -93,7 +93,7 @@ public class SessionDB implements ISessionDB {
 		procedure.addParameter("USER_ID", user.getUserId());
 		procedure.addParameter("PROPERTY_NAME", propertyName);
 		procedure.addParameter("PROPERTY_VALUE", propertyValue);
-		dba.invokeScalarProcedure(procedure);
+		dba.invokeUpdateProcedure(procedure);
 	}
 
 }

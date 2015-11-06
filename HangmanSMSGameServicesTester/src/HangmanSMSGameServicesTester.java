@@ -88,7 +88,7 @@ public class HangmanSMSGameServicesTester {
 	}
 
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		
 		System.out.println("Now testing HangmanSMSGameServices!");
 		
@@ -109,6 +109,9 @@ public class HangmanSMSGameServicesTester {
 				HTTPClientAdapter.requestGet(Configuration.GAME_BASE_URL + Configuration.RELOAD_CONFIG_URL_SUFFIX, null);
 			}
 		});
+		
+		System.out.println("Don't press a shit or the local tests will begin");
+		System.in.read();
 		
 		System.out.println("Executing tests:");
 		execute("\ttesting NEW_USERs subscription", new Fuckable() {
