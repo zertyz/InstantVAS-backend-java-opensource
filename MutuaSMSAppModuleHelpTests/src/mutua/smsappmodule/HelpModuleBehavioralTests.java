@@ -49,7 +49,7 @@ public class HelpModuleBehavioralTests {
 		String observedHelpMessage;
 
 		HelpModuleTestCommons.setStatefulHelpMessages();
-		SessionModel session = new SessionModel((UserDto)null);
+		SessionModel session = new SessionModel((UserDto)null, null, null);
 		
 		session.setNavigationState(ENavStates.STATE1);
 		observedHelpMessage = cmdShowStatefulHelp.processCommand(session, null, null).getResponseMessages()[0].getText();
@@ -75,7 +75,7 @@ public class HelpModuleBehavioralTests {
 			expectedCompositeHelpMessage2,
 		};
 		SMSAppModuleConfigurationHelp.applyPhrasingConfiguration();
-		SessionModel session = new SessionModel((UserDto)null);
+		SessionModel session = new SessionModel((UserDto)null, null, null);
 		
 		observedCompositeHelpMessage = cmdStartCompositeHelpDialog.processCommand(session, null, null).getResponseMessages()[0].getText();
 		assertEquals("First composite help message isn't correct", expectedCompositeHelpMessage1, observedCompositeHelpMessage);

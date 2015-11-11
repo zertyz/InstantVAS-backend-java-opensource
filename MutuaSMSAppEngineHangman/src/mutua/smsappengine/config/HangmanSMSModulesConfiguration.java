@@ -84,11 +84,11 @@ public class HangmanSMSModulesConfiguration {
 		SMSAppModuleDALFactoryChat.        DEFAULT_DAL = SMSAppModuleDALFactoryChat.        POSTGRESQL;
 		SMSAppModuleDALFactoryHangman.     DEFAULT_DAL = SMSAppModuleDALFactoryHangman.     POSTGRESQL;
 
-		SMSAppModuleDALFactory.            DEFAULT_DAL = SMSAppModuleDALFactory.            RAM;
-		SMSAppModuleDALFactorySubscription.DEFAULT_DAL = SMSAppModuleDALFactorySubscription.RAM;
-		SMSAppModuleDALFactoryProfile.     DEFAULT_DAL = SMSAppModuleDALFactoryProfile.     RAM;
-		SMSAppModuleDALFactoryChat.        DEFAULT_DAL = SMSAppModuleDALFactoryChat.        RAM;
-		SMSAppModuleDALFactoryHangman.     DEFAULT_DAL = SMSAppModuleDALFactoryHangman.     RAM;
+//		SMSAppModuleDALFactory.            DEFAULT_DAL = SMSAppModuleDALFactory.            RAM;
+//		SMSAppModuleDALFactorySubscription.DEFAULT_DAL = SMSAppModuleDALFactorySubscription.RAM;
+//		SMSAppModuleDALFactoryProfile.     DEFAULT_DAL = SMSAppModuleDALFactoryProfile.     RAM;
+//		SMSAppModuleDALFactoryChat.        DEFAULT_DAL = SMSAppModuleDALFactoryChat.        RAM;
+//		SMSAppModuleDALFactoryHangman.     DEFAULT_DAL = SMSAppModuleDALFactoryHangman.     RAM;
 		
 		     DEFAULT_MODULE_DAL  = SMSAppModuleDALFactory.            DEFAULT_DAL;
 		SUBSCRIPTION_MODULE_DAL  = SMSAppModuleDALFactorySubscription.DEFAULT_DAL;

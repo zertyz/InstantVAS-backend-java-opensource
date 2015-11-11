@@ -162,7 +162,9 @@ public class SMSProcessor {
 		}
 	}
 	
-	private SessionModel resolveUserSession(String phone, String text) {
+	private SessionModel resolveUserSession(IncomingSMSDto MO) {
+		String phone = MO.getPhone();
+		String text  = MO.getText();
 		UserDto      user;
 		SessionModel session;
 		try {
@@ -170,11 +172,11 @@ public class SMSProcessor {
 			SessionDto sessionDto = sessionDB.getSession(user);
 			// new user
 			if (sessionDto == null) {
-				session = new SessionModel(user);
+				session = new SessionModel(user, MO, null);		// TODO setting 'storedProperties' to null should raise errors... is this working? is this code running?
 				session.setNavigationState(nstNewUser);
 				log.reportEvent(IE_REQUEST_FROM_NEW_USER, IP_PHONE, phone, IP_TEXT, text);
 			} else {
-				session = new SessionModel(sessionDto);
+				session = new SessionModel(sessionDto, MO);
 				log.reportEvent(IE_REQUEST_FROM_EXISTING_USER, IP_PHONE, phone, IP_STATE, session.getNavigationState(), IP_TEXT, text);
 			}
 		} catch (Exception e) {
@@ -183,13 +185,13 @@ public class SMSProcessor {
 		return session;
 	}
 	
-	public void process(IncomingSMSDto incomingSMS) throws SMSProcessorException {
+	public void process(IncomingSMSDto MO) throws SMSProcessorException {
 		
-		String incomingPhone = incomingSMS.getPhone();
-		String incomingText = incomingSMS.getText();
+		String incomingPhone = MO.getPhone();
+		String incomingText = MO.getText();
 		
 		// get the user state
-		SessionModel session = resolveUserSession(incomingPhone, incomingText);
+		SessionModel session = resolveUserSession(MO);
 			
 		// determine which command (and arguments) to call
 		CommandInvocationDto invocationHandler = resolveInvocationHandler(session.getNavigationState(), incomingText);
@@ -198,11 +200,11 @@ public class SMSProcessor {
 			log.reportEvent(IE_PROCESSING_COMMAND, IP_COMMAND_INVOCATION, invocationHandler);
 			
 			// execute
-			CommandAnswerDto commandResponse = invokeCommand(invocationHandler, session, incomingSMS.getPhone(), incomingSMS.getCarrier());
+			CommandAnswerDto commandResponse = invokeCommand(invocationHandler, session, MO.getPhone(), MO.getCarrier());
 			
 			if (commandResponse != null) {
 				// route messages
-				routeMessages(commandResponse.getResponseMessages(), incomingSMS);
+				routeMessages(commandResponse.getResponseMessages(), MO);
 				// set the user state
 				SessionDto newUserSession = session.getChangedSessionDto();
 				if (newUserSession != null) {

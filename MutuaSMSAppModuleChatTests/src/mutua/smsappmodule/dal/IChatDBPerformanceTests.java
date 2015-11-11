@@ -1,8 +1,7 @@
 package mutua.smsappmodule.dal;
 
-import static mutua.smsappmodule.SMSAppModuleChatTestCommons.addMO;
-import static mutua.smsappmodule.SMSAppModuleChatTestCommons.moQueueLink;
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationChatTests.DEFAULT_CHAT_DAL;
+import static mutua.smsappmodule.SMSAppModuleChatTestCommons.*;
+import static mutua.smsappmodule.config.SMSAppModuleConfigurationChatTests.*;
 import static org.junit.Assert.*;
 
 import java.sql.SQLException;
@@ -35,8 +34,6 @@ import org.junit.Test;
 
 public class IChatDBPerformanceTests {
 
-	private static IChatDB chatDB = DEFAULT_CHAT_DAL.getChatDB();
-	
 	// algorithm settings
 	private static int numberOfThreads = 4;
 
@@ -80,7 +77,7 @@ public class IChatDBPerformanceTests {
 					for (int s=(threadNumber*_u)/2; s<((threadNumber+1)*_u)/2; s++) {
 						for (int r=s; r<users.length; r++) {
 							String moText = "M1i "+users[r].getPhoneNumber()+" "+firstMessage;
-							int moId = addMO(chatDB, users[s], moText);
+							int moId = addMO(users[s], moText);
 							pvts[m++] = new PrivateMessageDto(users[s], users[r], moId, firstMessage);
 						}
 					}
@@ -88,7 +85,7 @@ public class IChatDBPerformanceTests {
 					for (int s=users.length-(((threadNumber+1)*_u)/2); s<users.length-((threadNumber*_u)/2); s++) {
 						for (int r=s; r<users.length; r++) {
 							String moText = "M2i "+users[r].getPhoneNumber()+" "+firstMessage;
-							int moId = addMO(chatDB, users[s], moText);
+							int moId = addMO(users[s], moText);
 							pvts[m++] = new PrivateMessageDto(users[s], users[r], moId, firstMessage);
 						}
 					}
@@ -109,7 +106,7 @@ public class IChatDBPerformanceTests {
 					for (int r=(threadNumber*_u)/2; r<((threadNumber+1)*_u)/2; r++) {
 						for (int s=r; s<users.length; s++) {
 							String moText = "M1i "+users[r].getPhoneNumber()+" "+secondMessage;
-							int moId = addMO(chatDB, users[s], moText);
+							int moId = addMO(users[s], moText);
 							pvts[m++] = new PrivateMessageDto(users[s], users[r], moId, secondMessage);
 						}
 					}
@@ -117,7 +114,7 @@ public class IChatDBPerformanceTests {
 					for (int r=users.length-(((threadNumber+1)*_u)/2); r<users.length-((threadNumber*_u)/2); r++) {
 						for (int s=r; s<users.length; s++) {
 							String moText = "M2i "+users[r].getPhoneNumber()+" "+secondMessage;
-							int moId = addMO(chatDB, users[s], moText);
+							int moId = addMO(users[s], moText);
 							pvts[m++] = new PrivateMessageDto(users[s], users[r], moId, secondMessage);
 						}
 					}

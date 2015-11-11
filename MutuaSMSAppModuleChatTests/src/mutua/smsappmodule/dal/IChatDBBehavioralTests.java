@@ -28,23 +28,15 @@ import org.junit.Test;
 
 public class IChatDBBehavioralTests {
 
-	private IUserDB userDB = DEFAULT_MODULE_DAL.getUserDB();
-	private IChatDB chatDB = DEFAULT_CHAT_DAL.getChatDB();
-	
-
-	/*******************
-	** COMMON METHODS **
-	*******************/
-	
-	@Before
-	public void resetTables() throws SQLException {
-		resetChatTables(chatDB);
-	}
-	
 
 	/**********
 	** TESTS **
 	**********/
+	
+	@Before
+	public void resetTables() throws SQLException {
+		resetChatTables();
+	}
 	
 	@Test
 	public void testNonExistingPeers() throws SQLException {
@@ -72,8 +64,8 @@ public class IChatDBBehavioralTests {
 		String mo2PrivateMessage = "yes, I did!";
 		
 		// test ping-pong
-		int mo1Id = addMO(chatDB, dom, mo1Text);
-		int mo2Id = addMO(chatDB, paty, mo2Text);
+		int mo1Id = addMO(dom, mo1Text);
+		int mo2Id = addMO(paty, mo2Text);
 		chatDB.logPrivateMessage(dom, paty, mo1Id, mo1Text, mo1PrivateMessage);
 		chatDB.logPrivateMessage(paty, dom, mo2Id, mo2Text, mo2PrivateMessage);
 		UserDto[] domPeers  = chatDB.getPrivatePeers(dom);
@@ -106,7 +98,7 @@ public class IChatDBBehavioralTests {
 		UserDto dom  = userDB.assureUserIsRegistered("21991234899");
 		UserDto paty = userDB.assureUserIsRegistered("21998019167");
 		String moText = "M paty this is what I sent to you";
-		int moId = addMO(chatDB, dom, moText);
+		int moId = addMO(dom, moText);
 		chatDB.logPrivateMessage(dom, paty, moId, moText, "but this is what the chat system reports to the db I sent instead");
 	}
 
@@ -115,7 +107,7 @@ public class IChatDBBehavioralTests {
 		UserDto dom  = userDB.assureUserIsRegistered("21991234899");
 		UserDto paty = userDB.assureUserIsRegistered("21998019167");
 		String moText = "M paty this is what I sent to you";
-		int moId = addMO(chatDB, dom, moText);
+		int moId = addMO(dom, moText);
 		chatDB.logPrivateMessage(dom, paty, moId, moText, "this is what I sent");
 	}
 

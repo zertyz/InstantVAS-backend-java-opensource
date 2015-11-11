@@ -43,7 +43,7 @@ public class SubscriptionModuleBehavioralTests {
 	@Test
 	public void testDoubleOptin() throws SQLException {
 		String expectedMessage = getDoubleOptinStart();
-		SessionModel session = new SessionModel((UserDto)null);
+		SessionModel session = new SessionModel((UserDto)null, null, null);
 		
 		// first (and normal) interaction
 		String observedMessage = cmdStartDoubleOptinProcess.processCommand(session, null, null).getResponseMessages()[0].getText();

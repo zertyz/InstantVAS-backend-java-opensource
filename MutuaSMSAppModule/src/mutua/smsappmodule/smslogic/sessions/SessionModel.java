@@ -6,6 +6,7 @@ import java.util.HashMap;
 import mutua.smsappmodule.dto.SessionDto;
 import mutua.smsappmodule.dto.UserDto;
 import mutua.smsappmodule.smslogic.navigationstates.INavigationState;
+import mutua.smsin.dto.IncomingSMSDto;
 
 /** <pre>
  * SessionModel.java
@@ -34,7 +35,8 @@ public class SessionModel {
 		navigationStates.put(navigationState.getNavigationStateName(), navigationState);
 	}
 	
-	private final UserDto user;
+	private final UserDto        user;
+	private final IncomingSMSDto MO;
 	
 	private final HashMap<String, String> storedProperties;
 	private final HashMap<String, String> pendingProperties = new HashMap<String, String>(16);
@@ -48,9 +50,10 @@ public class SessionModel {
 
 
 	/** Creates a session for 'user' where 'storedProperties' := {{(ISessionProperty)prop, propVal}, ...} */
-	public SessionModel(SessionDto sessionDto) {
+	public SessionModel(SessionDto sessionDto, IncomingSMSDto MO) {
 		String[][] sessionDtoStoredProperties = sessionDto.getStoredProperties();
 		this.user              = sessionDto.getUser();
+		this.MO                = MO;
 		this.storedProperties  = new HashMap<String, String>(sessionDtoStoredProperties.length+1, 1);
 		for (String[] propertyData : sessionDtoStoredProperties) {
 			String propertyName  = propertyData[0];
@@ -60,14 +63,16 @@ public class SessionModel {
 	}
 	
 	/** Creates a session for 'user' with the 'storedProperties' */
-	public SessionModel(UserDto user, HashMap<String, String> storedProperties) {
+	public SessionModel(UserDto user, IncomingSMSDto MO, HashMap<String, String> storedProperties) {
 		this.user              = user;
+		this.MO                = MO;
 		this.storedProperties  = storedProperties;
 	}
 	
 	/** Creates an empty session (usually, for a new user) */
-	public SessionModel(UserDto user) {
+	public SessionModel(UserDto user, IncomingSMSDto MO) {
 		this.user              = user;
+		this.MO                = MO;
 		this.storedProperties  = new HashMap<String, String>();
 	}
 	
@@ -106,6 +111,10 @@ public class SessionModel {
 
 	public UserDto getUser() {
 		return user;
+	}
+	
+	public IncomingSMSDto getMO() {
+		return MO;
 	}
 	
 	public String[][] getNewProperties() {

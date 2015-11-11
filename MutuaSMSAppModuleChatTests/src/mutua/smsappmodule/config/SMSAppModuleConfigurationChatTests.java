@@ -12,7 +12,9 @@ import mutua.icc.instrumentation.Instrumentation;
 import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactoryChat;
+import mutua.smsappmodule.dal.SMSAppModuleDALFactoryProfile;
 import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterChat;
+import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterProfile;
 
 import org.junit.Assert;
 
@@ -32,15 +34,19 @@ import adapters.PostgreSQLAdapter;
  */
 
 public class SMSAppModuleConfigurationChatTests {
+	
 	// log
 	public static Instrumentation<DefaultInstrumentationProperties, String> log = new Instrumentation<DefaultInstrumentationProperties, String>(
 		"ChatModuleTests", DefaultInstrumentationProperties.DIP_MSG, EInstrumentationDataPours.CONSOLE, null);
 	
+	public static String MO_DATABASE_NAME = "ChatTestMOQueue";
+	
 	// database
-	public static SMSAppModuleDALFactoryChat  DEFAULT_CHAT_DAL   = SMSAppModuleDALFactoryChat.RAM;
-	public static SMSAppModuleDALFactory      DEFAULT_MODULE_DAL = SMSAppModuleDALFactory    .RAM;
-	public static Boolean POSTGRESQL_DEBUG_QUERIES                 = false;
-	public static Boolean POSTGRESQL_ALLOW_DATABASE_ADMINISTRATION = true;
+	public static SMSAppModuleDALFactoryChat    DEFAULT_CHAT_DAL    = SMSAppModuleDALFactoryChat   .RAM;
+	public static SMSAppModuleDALFactoryProfile DEFAULT_PROFILE_DAL = SMSAppModuleDALFactoryProfile.RAM;
+	public static SMSAppModuleDALFactory        DEFAULT_MODULE_DAL  = SMSAppModuleDALFactory       .RAM;
+	public static Boolean POSTGRESQL_DEBUG_QUERIES                  = false;
+	public static Boolean POSTGRESQL_ALLOW_DATABASE_ADMINISTRATION  = true;
 	public static String  POSTGRESQL_CONNECTION_HOSTNAME      = "venus";
 	public static int     POSTGRESQL_CONNECTION_PORT          = 5432;
 	public static String  POSTGRESQL_CONNECTION_DATABASE_NAME = "hangman";
@@ -80,8 +86,26 @@ public class SMSAppModuleConfigurationChatTests {
 		SMSAppModulePostgreSQLAdapterChat.DATABASE              = POSTGRESQL_CONNECTION_DATABASE_NAME;
 		SMSAppModulePostgreSQLAdapterChat.USER                  = POSTGRESQL_CONNECTION_USER;
 		SMSAppModulePostgreSQLAdapterChat.PASSWORD              = POSTGRESQL_CONNECTION_PASSWORD;
-		SMSAppModulePostgreSQLAdapterChat.configureChatDatabaseModule("SpecializedMOQueue", "eventId", "text");	// from 'moQueueLink', 'PostgreSQLQueueEventLink' and 'SpecializedMOQueueDataBureau'
+		SMSAppModulePostgreSQLAdapterChat.configureChatDatabaseModule(MO_DATABASE_NAME, "eventId", "text");	// from 'moQueueLink', 'PostgreSQLQueueEventLink' and 'SpecializedMOQueueDataBureau'
 		SMSAppModuleDALFactoryChat.DEFAULT_DAL                  = DEFAULT_CHAT_DAL;
+		// now force the creation of the queue (if it doesn't already exist)
+		// (based on the 'MutuaEventsAdditionalEventLinksTests' 'SpecializedMOQueue' table specification)
+		try {
+			QueuesPostgreSQLAdapter.getQueuesDBAdapter(null, MO_DATABASE_NAME,
+			                                                 "phone  TEXT NOT NULL, text   TEXT NOT NULL, ",
+			                                                 "phone, text",
+			                                                 "${PHONE}, ${TEXT}");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		SMSAppModulePostgreSQLAdapterProfile.log = log;
+		SMSAppModulePostgreSQLAdapterProfile.HOSTNAME = POSTGRESQL_CONNECTION_HOSTNAME;
+		SMSAppModulePostgreSQLAdapterProfile.PORT     = POSTGRESQL_CONNECTION_PORT;
+		SMSAppModulePostgreSQLAdapterProfile.DATABASE = POSTGRESQL_CONNECTION_DATABASE_NAME;
+		SMSAppModulePostgreSQLAdapterProfile.USER     = POSTGRESQL_CONNECTION_USER;
+		SMSAppModulePostgreSQLAdapterProfile.PASSWORD = POSTGRESQL_CONNECTION_PASSWORD;
+		SMSAppModuleDALFactoryProfile.DEFAULT_DAL     = DEFAULT_PROFILE_DAL;
 
 		PostgreSQLAdapter.CONNECTION_PROPERTIES         = POSTGRESQL_CONNECTION_PROPERTIES;
 		PostgreSQLAdapter.ALLOW_DATABASE_ADMINISTRATION = POSTGRESQL_ALLOW_DATABASE_ADMINISTRATION;

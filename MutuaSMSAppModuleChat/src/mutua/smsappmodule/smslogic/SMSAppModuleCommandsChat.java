@@ -60,16 +60,22 @@ public enum SMSAppModuleCommandsChat implements ICommandProcessor {
 		public CommandAnswerDto processCommand(SessionModel session, ESMSInParserCarrier carrier, String[] parameters) throws SQLException {
 			String targetNickname        = parameters[0];
 			String privateMessage        = parameters[1];
+			
 			UserDto senderUser           = session.getUser();
 			ProfileDto targetUserProfile = profileDB.getProfileRecord(targetNickname);
-			String targetPhoneNumber     = targetUserProfile.getUser().getPhoneNumber();
-			String senderNickname        = profileDB.getProfileRecord(senderUser).getNickname();
+			
+			if (targetUserProfile == null) {
+				throw new RuntimeException("Target user '"+targetNickname+"' not found");
+			}
+			
+			UserDto targetUser           = targetUserProfile.getUser();
+			String  targetPhoneNumber    = targetUser.getPhoneNumber();
+			String  senderNickname       = profileDB.getProfileRecord(senderUser).getNickname();
 			
 			// TODO: in order for 'cmdSendPrivateReply', 'sprLastPrivateMessageSender' and 'nstChattingWithSomeone' to work, we need to set the state of the target user to 'nstChattingWithSomeone'. This may be undesired and, until the dead-lock is solved, that feature won't be further implemented
 			
-			System.out.println("Sending to "+targetPhoneNumber+": "+getPrivateMessage(senderNickname, privateMessage));
+			chatDB.logPrivateMessage(senderUser, targetUser, session.getMO().getMoId(), session.getMO().getText(), privateMessage);
 			
-			//return getNewStateReplyCommandAnswer(session, nstExistingUser, getPrivateMessageDeliveryNotification(targetUserProfile.getNickname()));
 			return getSameStateReplyWithAnAdditionalMessageToAnotherUserCommandAnswer(
 				getPrivateMessageDeliveryNotification(targetUserProfile.getNickname()),
 				targetUserProfile.getUser(), getPrivateMessage(senderNickname, privateMessage));

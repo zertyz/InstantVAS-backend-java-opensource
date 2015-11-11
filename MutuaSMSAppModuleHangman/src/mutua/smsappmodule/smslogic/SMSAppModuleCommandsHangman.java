@@ -136,7 +136,7 @@ public enum SMSAppModuleCommandsHangman implements ICommandProcessor {
 			}
 			
 			// set inviting & invited player sessions
-			SessionModel opponentSession = new SessionModel(sessionDB.getSession(opponentProfile.getUser()));
+			SessionModel opponentSession = new SessionModel(sessionDB.getSession(opponentProfile.getUser()), null);
 			MatchDto match = new MatchDto(session.getUser(), opponentSession.getUser(), game.serializeGameState(), System.currentTimeMillis(), EMatchStatus.ACTIVE);
 			matchDB.storeNewMatch(match);
 			opponentSession.setNavigationState(nstAnsweringToHangmanMatchInvitation);

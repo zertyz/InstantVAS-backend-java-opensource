@@ -1,0 +1,51 @@
+#! /bin/bash
+
+mkdir tmp
+cd tmp
+
+echo "Cleaning previous outputs..."
+rm -f /mnt/xfer/HangmanSMSGameServices.onejar.war
+rm -f /mnt/xfer/HangmanSMSGameServices.proguard.war
+
+echo "* Creating a ONE-JAR WAR file:"
+
+echo "Unzipping /mnt/xfer/HangmanSMSGameServices.war..."
+unzip /mnt/xfer/HangmanSMSGameServices.war || exit 1
+
+cd WEB-INF/lib 
+echo "Unzipping Hangman jar files..."
+for f in [ABCDEFGHIJKLMNOPQRSTUVWXYZ]*.jar; do unzip -o "$f" && rm "$f" || exit 0; done
+cp -a ../classes/* .
+rm -fr ../classes
+
+echo "Creating Hangman.jar..."
+jar cvf Hangman.jar mutua/ adapters/ config/
+
+echo "Creating new WAR file..."
+cd ../..
+rm -fr WEB-INF/lib/mutua WEB-INF/lib/adapters WEB-INF/lib/config
+jar cvf /mnt/xfer/HangmanSMSGameServices.onejar.war META-INF/ WEB-INF/
+
+echo "* Obfuscating:"
+cd ..
+
+echo "Executing proguard..."
+proguard @proguard.config
+
+echo "Generating obfuscated WAR file..."
+cd tmp
+rm WEB-INF/lib/Hangman.jar
+mv WEB-INF/lib/Hangman.proguard.jar WEB-INF/lib/Hangman.jar
+unzip -l WEB-INF/lib/Hangman.jar
+echo -en "General information:\n" >META-INF/README
+echo -en "* Unused:\n" >>META-INF/README
+cat META-INF/*.unused >>META-INF/README
+rm META-INF/*.unused
+echo -en "* Mapping:\n" >>META-INF/README
+cat META-INF/*.mapping >>META-INF/README
+rm META-INF/*.mapping
+jar cvf /mnt/xfer/HangmanSMSGameServices.proguard.war META-INF/ WEB-INF/
+
+echo "Cleaning up..."
+cd ..
+rm -fr tmp

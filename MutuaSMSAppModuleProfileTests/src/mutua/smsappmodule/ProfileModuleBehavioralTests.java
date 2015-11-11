@@ -62,13 +62,13 @@ public class ProfileModuleBehavioralTests {
 		String expectedMessageForNicknamedUser = getAskForNewNickname(nickname);
 		
 		// no nickname yet
-		SessionModel sessionForNotNicknamedUser   = new SessionModel(user);
+		SessionModel sessionForNotNicknamedUser   = new SessionModel(user, null, null);
 		String observedMessageForNotNicknamedUser = cmdStartAskForNicknameDialog.processCommand(sessionForNotNicknamedUser, null, null).getResponseMessages()[0].getText();
 		assertEquals("Command didn't answer the correct message for starting the ask for the first nickname process", expectedMessageForNotNicknamedUser, observedMessageForNotNicknamedUser);
 		assertEquals("Navigation State wasn't correctly set", nstRegisteringNickname, sessionForNotNicknamedUser.getNavigationState());
 
 		// attempting to change a nickname
-		SessionModel sessionForNicknamedUser   = new SessionModel(user);
+		SessionModel sessionForNicknamedUser   = new SessionModel(user, null, null);
 		profileDB.setProfileRecord(new ProfileDto(user, nickname));
 		String observedMessageForNicknamedUser = cmdStartAskForNicknameDialog.processCommand(sessionForNicknamedUser, null, null).getResponseMessages()[0].getText();
 		assertEquals("Command didn't answer the correct message for starting the ask for a nickname change process", expectedMessageForNicknamedUser, observedMessageForNicknamedUser);
@@ -84,12 +84,12 @@ public class ProfileModuleBehavioralTests {
 		String secondExpectedMessage = getNicknameRegistrationNotification(secondExpectedNickname);
 		
 		// first nickname
-		SessionModel firstSession = new SessionModel(userDB.assureUserIsRegistered("21991234899"));
+		SessionModel firstSession = new SessionModel(userDB.assureUserIsRegistered("21991234899"), null, null);
 		String firstObservedMessage = cmdRegisterNickname.processCommand(firstSession, null, new String[] {firstExpectedNickname}).getResponseMessages()[0].getText();
 		assertEquals("Command didn't answer the correct message for setting a nickname", firstExpectedMessage, firstObservedMessage);
 		
 		// second nickname
-		SessionModel secondSession = new SessionModel(userDB.assureUserIsRegistered("21998019167"));
+		SessionModel secondSession = new SessionModel(userDB.assureUserIsRegistered("21998019167"), null, null);
 		String secondObservedMessage = cmdRegisterNickname.processCommand(secondSession, null, new String[] {firstExpectedNickname}).getResponseMessages()[0].getText();
 		assertEquals("Command didn't answer the correct message for setting a nickname", secondExpectedMessage, secondObservedMessage);
 		
@@ -102,8 +102,8 @@ public class ProfileModuleBehavioralTests {
 		String expectedMessage = getUserProfilePresentation(aUserNickname);
 		
 		profileDB.setProfileRecord(new ProfileDto(aUser, aUserNickname));
-		String parameterizedObservedMessage   = cmdShowUserProfile.processCommand(new SessionModel(aUser), null, new String[] {aUserNickname}).getResponseMessages()[0].getText();
-		String unparameterizedObservedMessage = cmdShowUserProfile.processCommand(new SessionModel(aUser), null, new String[] {}).getResponseMessages()[0].getText();
+		String parameterizedObservedMessage   = cmdShowUserProfile.processCommand(new SessionModel(aUser, null, null), null, new String[] {aUserNickname}).getResponseMessages()[0].getText();
+		String unparameterizedObservedMessage = cmdShowUserProfile.processCommand(new SessionModel(aUser, null, null), null, new String[] {}).getResponseMessages()[0].getText();
 		
 		assertEquals("Wrong message for parameterized user profile inquiry",   expectedMessage, parameterizedObservedMessage);
 		assertEquals("Wrong message for unparameterized user profile inquiry", expectedMessage, unparameterizedObservedMessage);

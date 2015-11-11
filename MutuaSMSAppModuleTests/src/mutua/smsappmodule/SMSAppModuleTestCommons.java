@@ -113,7 +113,7 @@ System.err.println("\n");
 	public void checkNavigationState(String phone, INavigationState navigationState) throws SQLException {
 		UserDto user          = userDB.assureUserIsRegistered(phone);
 		SessionDto sessionDto = sessionDB.getSession(user);
-		SessionModel session  = new SessionModel(sessionDto);
+		SessionModel session  = new SessionModel(sessionDto, null);
 		assertEquals("Wrong navigation state", navigationState.getNavigationStateName(), session.getNavigationState().getNavigationStateName());
 	}
 
