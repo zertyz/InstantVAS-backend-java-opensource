@@ -97,9 +97,9 @@ public class ProfileModuleBehavioralTests {
 	
 	@Test
 	public void testInquireUserProfile() throws SQLException {
-		UserDto aUser          = userDB.assureUserIsRegistered("21991234899");
-		String  aUserNickname  = "aUser";
-		String expectedMessage = getUserProfilePresentation(aUserNickname);
+		UserDto aUser           = userDB.assureUserIsRegistered("21991234899");
+		String  aUserNickname   = "aUser";
+		String  expectedMessage = getUserProfilePresentation(aUserNickname);
 		
 		profileDB.setProfileRecord(new ProfileDto(aUser, aUserNickname));
 		String parameterizedObservedMessage   = cmdShowUserProfile.processCommand(new SessionModel(aUser, null, null), null, new String[] {aUserNickname}).getResponseMessages()[0].getText();
@@ -108,5 +108,17 @@ public class ProfileModuleBehavioralTests {
 		assertEquals("Wrong message for parameterized user profile inquiry",   expectedMessage, parameterizedObservedMessage);
 		assertEquals("Wrong message for unparameterized user profile inquiry", expectedMessage, unparameterizedObservedMessage);
 		
+	}
+	
+	@Test
+	public void testInquireInexistentProfile() throws SQLException {
+		UserDto aUser           = userDB.assureUserIsRegistered("21991234899");
+		String  aUserNickname   = "aUser";
+		String  expectedMessage = getNicknameNotFound(aUserNickname);
+		
+		String observedMessage   = cmdShowUserProfile.processCommand(new SessionModel(aUser, null, null), null, new String[] {aUserNickname}).getResponseMessages()[0].getText();
+		
+		assertEquals("Non existing nickname was not correctly reported when referenced in the PROFILE command", expectedMessage, observedMessage);
+
 	}
 }

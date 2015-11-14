@@ -230,6 +230,8 @@ public class HangmanSMSModulesConfiguration {
 		PROFILEphrAskForFirstNickname              = "todo";
 		PROFILEphrNicknameRegistrationNotification = "{{appName}}: Name registered: {{registeredNickname}}. Send LIST to {{shortCode}} to see online players. NICK [NEW NICK] to change your name.";
 		PROFILEphrPresentation                     = "{{appName}}: {{nickname}}: Subscribed; Online; RJ. Text INVITE {{nickname}} to play a hangman match; P {{nickname}} [MSG] to chat; LIST to see online players; P to play with a random user.";
+		PROFILEphrNicknameNotFound                 = "{{appName}}: No player with nickname '{{nickname}}' was found. Maybe he/she changed it? Send LIST to {{shortCode}} to see online players";
+
 		
 		// command patterns
 		PROFILEtrgGlobalStartAskForNicknameDialog = new String[] {"todo"};
@@ -246,7 +248,6 @@ public class HangmanSMSModulesConfiguration {
 		// phrasing
 		CHATphrPrivateMessage                     = "{{senderNickname}}: {{senderMessage}} - To answer, text P {{senderNickname}} [MSG] to {{shortCode}}";
 		CHATphrPrivateMessageDeliveryNotification = "{{appName}}: your message has been delivered to {{targetNickname}}. What can be the command that I'll suggest now?";
-		CHATphrNicknameNotFound                   = "";
 		CHATphrDoNotKnowWhoYouAreChattingTo       = "";
 		
 		// command patterns

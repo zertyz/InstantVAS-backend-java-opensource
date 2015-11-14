@@ -13,6 +13,8 @@ import mutua.smsappmodule.dal.SMSAppModuleDALFactoryChat;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactoryProfile;
 import mutua.smsappmodule.dto.ProfileDto;
 import mutua.smsappmodule.dto.UserDto;
+import mutua.smsappmodule.i18n.SMSAppModulePhrasingsChat;
+import mutua.smsappmodule.i18n.SMSAppModulePhrasingsProfile;
 import mutua.smsappmodule.smslogic.commands.CommandAnswerDto;
 import mutua.smsappmodule.smslogic.commands.CommandMessageDto;
 import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
@@ -65,7 +67,8 @@ public enum SMSAppModuleCommandsChat implements ICommandProcessor {
 			ProfileDto targetUserProfile = profileDB.getProfileRecord(targetNickname);
 			
 			if (targetUserProfile == null) {
-				throw new RuntimeException("Target user '"+targetNickname+"' not found");
+				// TODO log tick: nickname not found
+				return getSameStateReplyCommandAnswer(SMSAppModulePhrasingsProfile.getNicknameNotFound(targetNickname));
 			}
 			
 			UserDto targetUser           = targetUserProfile.getUser();

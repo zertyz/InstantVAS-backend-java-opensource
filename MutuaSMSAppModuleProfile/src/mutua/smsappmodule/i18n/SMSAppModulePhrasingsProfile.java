@@ -27,6 +27,7 @@ public enum SMSAppModulePhrasingsProfile {
 	phrNicknameRegistrationNotification("{{appName}}: Nickname registered: {{registeredNickname}}. Thanks. Now, who is going to tell you what commands may go next? Someone must customize this message."),
 	phrUserProfilePresentation         ("{{appName}}: {{nickname}}: {{subscriptionState}}, from {{geoUserLocation}}, {{numberOfLuckyNumbers}} lucky numbers. Whatever more you want to show through customizations: {{whatever}} -- these new variables may be set as function calls on the phrasing facility, this way we can plug & play new features on all modules, for instance, lucky numbers, which might introduce {{numberOfLuckyNumbers}} and {{generateAndGetNewLuckyNumber}}"),
 	// TODO geoUserLocation should be implemented as a new module, as described on the phrase above
+	phrNicknameNotFound                ("{{appName}}: There is no one like '{{nickname}}'. Maybe he/she changed nickname? Send LIST to {{shortCode}} to see who is online");
 	
 	;
 	
@@ -95,5 +96,13 @@ public enum SMSAppModulePhrasingsProfile {
                                                     "appName",    SMSAppModuleConfiguration.APPName,
                                                     "nickname",   nickname);
 	}
+
+	/** @see SMSAppModuleConfigurationProfile#PROFILEphrNicknameNotFound */
+	public static String getNicknameNotFound(String targetNickname) {
+		return phrNicknameNotFound.getPhrase("shortCode",      SMSAppModuleConfiguration.APPShortCode,
+                                             "appName",        SMSAppModuleConfiguration.APPName,
+                                             "targetNickname", targetNickname);
+	}
+	
 
 }

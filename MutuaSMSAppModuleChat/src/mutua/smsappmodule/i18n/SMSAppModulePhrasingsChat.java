@@ -2,6 +2,7 @@ package mutua.smsappmodule.i18n;
 
 import mutua.icc.configuration.annotations.ConfigurableElement;
 import mutua.smsappmodule.config.SMSAppModuleConfiguration;
+import mutua.smsappmodule.config.SMSAppModuleConfigurationChat;
 
 /** <pre>
  * SMSAppModulePhrasingsChat.java
@@ -22,7 +23,6 @@ public enum SMSAppModulePhrasingsChat {
 	
 	phrPrivateMessage                    ("{{senderNickname}}: {{senderMessage}} - To answer, text P {{senderNickname}} [MSG] to {{shortCode}}"),
 	phrPrivateMessageDeliveryNotification("{{appName}}: Your message has been sent to {{targetNickname}}"),
-	phrNicknameNotFound                  ("{{appName}}: "),
 	phrDoNotKnowWhoYouAreChattingTo      ("{{appName}}: To chat privately, please text M <nickname> <msg> to {{shortCode}}"),
 	
 	;
@@ -59,7 +59,7 @@ public enum SMSAppModulePhrasingsChat {
 	** PHRASING METHODS **
 	*********************/
 	
-	@ConfigurableElement("Phrase sent to the target user when the sender user wants to send a chat private message. Variables: {{shortCode}}, {{appName}}, {{senderNickname}}, {{senderMessage}}")
+	/** @see SMSAppModuleConfigurationChat#CHATphrPrivateMessage */
 	public static String getPrivateMessage(String senderNickname, String senderMessage) {
 		return phrPrivateMessage.getPhrase("shortCode",      SMSAppModuleConfiguration.APPShortCode,
                                            "appName",        SMSAppModuleConfiguration.APPName,
@@ -67,21 +67,14 @@ public enum SMSAppModulePhrasingsChat {
                                            "senderMessage",  senderMessage);
 	}
 	
-	@ConfigurableElement("Phrase sent to the sender user, who sent a private message, to inform of the correct delivery. Variables: {{shortCode}}, {{appName}}, {{targetNickname}}")
+	/** @see SMSAppModuleConfigurationChat#CHATphrPrivateMessageDeliveryNotification */
 	public static String getPrivateMessageDeliveryNotification(String targetNickname) {
 		return phrPrivateMessageDeliveryNotification.getPhrase("shortCode",      SMSAppModuleConfiguration.APPShortCode,
                                                                "appName",        SMSAppModuleConfiguration.APPName,
                                                                "targetNickname", targetNickname);
 	}
 
-	@ConfigurableElement("Phrase sent to the sender user, who sent a private message, to inform that the delivery wasn't possible due to the target nickname currently doesn't exist. Variables: {{shortCode}}, {{appName}}, {{targetNickname}}")
-	public static String getNicknameNotFound(String targetNickname) {
-		return phrNicknameNotFound.getPhrase("shortCode",      SMSAppModuleConfiguration.APPShortCode,
-                                             "appName",        SMSAppModuleConfiguration.APPName,
-                                             "targetNickname", targetNickname);
-	}
-	
-	@ConfigurableElement("Phrase used to inform the sender that the statefull private conversation can no longer be conducted (because we don't know who is the target user), therefore, he/she must try the stateles command. Variables: {{shortCode}}, {{appName}}")
+	/** @see SMSAppModuleConfigurationChat#CHATphrDoNotKnowWhoYouAreChattingTo */
 	public static String getDoNotKnowWhoYouAreChattingTo() {
 		return phrDoNotKnowWhoYouAreChattingTo.getPhrase("shortCode",      SMSAppModuleConfiguration.APPShortCode,
                                                          "appName",        SMSAppModuleConfiguration.APPName);

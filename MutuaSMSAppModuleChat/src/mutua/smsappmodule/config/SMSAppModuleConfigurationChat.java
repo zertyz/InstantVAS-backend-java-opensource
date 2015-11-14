@@ -29,13 +29,11 @@ public class SMSAppModuleConfigurationChat {
 	// phrasing
 	///////////
 	
-	@ConfigurableElement(sameAsMethod="mutua.smsappmodule.i18n.SMSAppModulePhrasingsChat.phrPrivateMessage")
+	@ConfigurableElement("Phrase sent to the target user when the sender user wants to send a chat private message. Variables: {{shortCode}}, {{appName}}, {{senderNickname}}, {{senderMessage}}")
 	public static String CHATphrPrivateMessage                     = phrPrivateMessage.toString();
-	@ConfigurableElement(sameAsMethod="mutua.smsappmodule.i18n.SMSAppModulePhrasingsChat.phrPrivateMessageDeliveryNotification")
+	@ConfigurableElement("Phrase sent to the sender user, who sent a private message, to inform of the correct delivery. Variables: {{shortCode}}, {{appName}}, {{targetNickname}}")
 	public static String CHATphrPrivateMessageDeliveryNotification = phrPrivateMessageDeliveryNotification.toString();
-	@ConfigurableElement(sameAsMethod="mutua.smsappmodule.i18n.SMSAppModulePhrasingsChat.phrNicknameNotFound")
-	public static String CHATphrNicknameNotFound                   = phrNicknameNotFound.toString();
-	@ConfigurableElement(sameAsMethod="mutua.smsappmodule.i18n.SMSAppModulePhrasingsChat.phrDoNotKnowWhoYouAreChattingTo")
+	@ConfigurableElement("Phrase used to inform the sender that the statefull private conversation can no longer be conducted (because we don't know who is the target user), therefore, he/she must try the stateles command. Variables: {{shortCode}}, {{appName}}")
 	public static String CHATphrDoNotKnowWhoYouAreChattingTo       = phrDoNotKnowWhoYouAreChattingTo.toString();
 	
 	
@@ -56,7 +54,6 @@ public class SMSAppModuleConfigurationChat {
 	public static void applyPhrasingConfiguration() {
 		phrPrivateMessage                    .setPhrases(CHATphrPrivateMessage);
 		phrPrivateMessageDeliveryNotification.setPhrases(CHATphrPrivateMessageDeliveryNotification);
-		phrNicknameNotFound                  .setPhrases(CHATphrNicknameNotFound);
 		phrDoNotKnowWhoYouAreChattingTo      .setPhrases(CHATphrDoNotKnowWhoYouAreChattingTo);
 	}
 	

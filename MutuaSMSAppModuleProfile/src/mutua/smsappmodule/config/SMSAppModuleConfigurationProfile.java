@@ -40,7 +40,9 @@ public class SMSAppModuleConfigurationProfile {
 	public static String PROFILEphrNicknameRegistrationNotification = phrNicknameRegistrationNotification.toString();
 	@ConfigurableElement("Text sent to present the details of a user profile. Variables: {{shortCode}}, {{appName}}, {{nickname}} and others, from extensions, such as {{subscriptionState}}, {{geoUserLocation}} and {{numberOfLuckyNumbers}}")
 	public static String PROFILEphrPresentation                     = phrUserProfilePresentation.toString();
-	// show players?
+	@ConfigurableElement("Phrase sent to the sender user, who referenced a user by it's nickname, to inform that the command wasn't executed for the informed nickname was not found. Variables: {{shortCode}}, {{appName}}, {{targetNickname}}")
+	public static String PROFILEphrNicknameNotFound                 = phrNicknameNotFound.toString();
+	// show players? YESS!! When done, delete this comment
 	
 	
 	// command patterns
@@ -65,8 +67,11 @@ public class SMSAppModuleConfigurationProfile {
 	/** Apply on-the-fly phrasing changes */
 	public static void applyPhrasingConfiguration() {
 		phrAskForFirstNickname             .setPhrases(PROFILEphrAskForFirstNickname);
+		phrAskForNewNickname               .setPhrases(PROFILEphrAskForNewNickname);
+		phrAskForNicknameCancelation       .setPhrases(PROFILEphrAskForNicknameCancelation);
 		phrNicknameRegistrationNotification.setPhrases(PROFILEphrNicknameRegistrationNotification);
 		phrUserProfilePresentation         .setPhrases(PROFILEphrPresentation);
+		phrNicknameNotFound                .setPhrases(PROFILEphrNicknameNotFound);
 	}
 	
 	/** Apply on-the-fly command trigger changes */

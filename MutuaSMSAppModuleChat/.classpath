@@ -2,8 +2,9 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/MutuaSMSAppModuleDALChat"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/MutuaSMSAppModule"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/MutuaSMSAppModuleDALProfile"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/MutuaSMSAppModule"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/MutuaSMSAppModuleProfile"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/MutuaSMSAppModuleDALProfile"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
