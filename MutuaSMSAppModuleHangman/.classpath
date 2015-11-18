@@ -7,5 +7,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/MutuaICCConfiguration"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/MutuaICCInstrumentation"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/MutuaSMSAppModule"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/MutuaSMSAppModuleSubscription"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

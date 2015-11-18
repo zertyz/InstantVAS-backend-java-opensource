@@ -32,13 +32,13 @@ public class SMSAppModulePostgreSQLAdapterChat extends PostgreSQLAdapter {
 	public static Instrumentation<?, ?> log;
 	
 	/** The table name that keeps track of 'moTexts' and 'moId's */
-	private static String moQueueTableName      = null;
+	private static String moTableName      = null;
 	
 	/** The field name, within 'moQueueTableName' that keeps track of 'moId's */
-	private static String moQueueIdFieldName   = null;
+	private static String moIdFieldName   = null;
 	
 	/** The field name, within 'MoQueueTableName' that keeps track of 'moText's */
-	private static String moQueueTextFieldName = null;
+	private static String moTextFieldName = null;
 
 	@ConfigurableElement("Hostname (or IP) of the PostgreSQL server")
 	public static String HOSTNAME;
@@ -53,10 +53,10 @@ public class SMSAppModulePostgreSQLAdapterChat extends PostgreSQLAdapter {
 	
 	
 	
-	public static void configureChatDatabaseModule(String moQueueTableName, String moQueueIdFieldName, String moQueueTextFieldName) {
-		SMSAppModulePostgreSQLAdapterChat.moQueueTableName     = moQueueTableName;
-		SMSAppModulePostgreSQLAdapterChat.moQueueIdFieldName   = moQueueIdFieldName;
-		SMSAppModulePostgreSQLAdapterChat.moQueueTextFieldName = moQueueTextFieldName;
+	public static void configureChatDatabaseModule(String moTableName, String moIdFieldName, String moTextFieldName) {
+		SMSAppModulePostgreSQLAdapterChat.moTableName     = moTableName;
+		SMSAppModulePostgreSQLAdapterChat.moIdFieldName   = moIdFieldName;
+		SMSAppModulePostgreSQLAdapterChat.moTextFieldName = moTextFieldName;
 	}
 
 	
@@ -74,7 +74,7 @@ public class SMSAppModulePostgreSQLAdapterChat extends PostgreSQLAdapter {
 		if (!ALLOW_DATABASE_ADMINISTRATION) {
 			return null;
 		}
-		String moIdReference = moQueueTableName+"("+moQueueIdFieldName+")";
+		String moIdReference = moTableName+"("+moIdFieldName+")";
 		return new String[][] {
 			{"PrivateMessages", "CREATE TABLE PrivateMessages(" +
 			                    "moId             INTEGER   PRIMARY KEY REFERENCES "+moIdReference+" ON DELETE CASCADE, " +
@@ -104,10 +104,10 @@ public class SMSAppModulePostgreSQLAdapterChat extends PostgreSQLAdapter {
 			{"SelectPeers",            "SELECT DISTINCT userId, phoneNumber FROM " +
 			                           "(SELECT senderUserId    AS userId, phoneNumber, moId FROM PrivateMessages, Users WHERE PrivateMessages.recipientUserId=${USER_ID} AND Users.userId=${USER_ID} UNION " +
 			                           " SELECT recipientUserId AS userId, phoneNumber, moId FROM PrivateMessages, Users WHERE PrivateMessages.senderUserId=${USER_ID}    AND Users.userId=${USER_ID} ORDER BY moId ASC) uq"},
-			{"SelectPrivateMessages",  "SELECT pm.moId, pm.senderUserID, su.phoneNumber AS senderPhoneNumber, pm.recipientUserID, ru.phoneNumber AS recipientPhoneNumber, SUBSTRING("+moQueueTableName+"."+moQueueTextFieldName+" FROM pm.moTextStartIndex+1) AS message FROM PrivateMessages pm, Users su, Users ru, "+moQueueTableName+" WHERE " +
+			{"SelectPrivateMessages",  "SELECT pm.moId, pm.senderUserID, su.phoneNumber AS senderPhoneNumber, pm.recipientUserID, ru.phoneNumber AS recipientPhoneNumber, SUBSTRING("+moTableName+"."+moTextFieldName+" FROM pm.moTextStartIndex+1) AS message FROM PrivateMessages pm, Users su, Users ru, "+moTableName+" WHERE " +
 			                           "((pm.senderUserId=${USER1_ID} AND pm.recipientUserId=${USER2_ID}) OR " +
 			                           " (pm.senderUserId=${USER2_ID} AND pm.recipientUserId=${USER1_ID})) AND " +
-			                           "su.userId=pm.senderUserId AND ru.userId=pm.recipientUserId AND pm.moId = "+moQueueTableName+"."+moQueueIdFieldName+" ORDER BY pm.moId ASC"},
+			                           "su.userId=pm.senderUserId AND ru.userId=pm.recipientUserId AND pm.moId = "+moTableName+"."+moIdFieldName+" ORDER BY pm.moId ASC"},
 		});
 	}
 

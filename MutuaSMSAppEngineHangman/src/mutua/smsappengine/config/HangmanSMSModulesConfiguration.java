@@ -253,7 +253,7 @@ public class HangmanSMSModulesConfiguration {
 		// command patterns
 		CHATtrgGlobalSendPrivateMessage = new String[] {"[MP] ([^ ]+) (.*)"};
 		CHATtrgLocalSendPrivateReply    = new String[] {""};
-		
+
 		//SMSAppModuleConfigurationChat.log = null;	// to come from a parameter. BTW, where is the log for this module?
 		SMSAppModuleConfigurationChat.applyConfiguration();
 

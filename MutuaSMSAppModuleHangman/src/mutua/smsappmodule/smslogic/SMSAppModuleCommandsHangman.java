@@ -122,7 +122,7 @@ public enum SMSAppModuleCommandsHangman implements ICommandProcessor {
 		@Override
 		public CommandAnswerDto processCommand(SessionModel session, ESMSInParserCarrier carrier, String[] parameters) throws SQLException {
 			String opponentPlayerPhoneNumber = session.getStringProperty(sprOpponentPhoneNumber);
-			String invitingPlayerNickname    = profileDB.getProfileRecord(session.getUser()).getNickname();
+			String invitingPlayerNickname    = assureUserHasANickname(session.getUser()).getNickname();
 			String wordToPlay                = parameters[0];
 			
 			ProfileDto opponentProfile = assurePhoneNumberHasAnUserAndNickname(opponentPlayerPhoneNumber);
@@ -176,8 +176,8 @@ public enum SMSAppModuleCommandsHangman implements ICommandProcessor {
 		public CommandAnswerDto processCommand(SessionModel session, ESMSInParserCarrier carrier, String[] parameters) throws SQLException {
 			MatchDto match = matchDB.retrieveMatch(session.getIntProperty(sprHangmanMatchId));
 			UserDto wordProvidingPlayer = match.getWordProvidingPlayer();
-			String wordGuessingPlayerNickname = profileDB.getProfileRecord(session.getUser()).getNickname();
-			String wordProvidingPlayerNickname = profileDB.getProfileRecord(wordProvidingPlayer).getNickname();
+			String wordGuessingPlayerNickname = assureUserHasANickname(session.getUser()).getNickname();
+			String wordProvidingPlayerNickname = assureUserHasANickname(wordProvidingPlayer).getNickname();
 			session.deleteProperty(sprHangmanMatchId);
 			return getNewStateReplyWithAnAdditionalMessageToAnotherUserCommandAnswer(session, nstExistingUser,
 			                                                                         getInvitationRefusalResponseForInvitedPlayer(wordProvidingPlayerNickname),
@@ -198,9 +198,9 @@ public enum SMSAppModuleCommandsHangman implements ICommandProcessor {
 			
 			UserDto wordProvidingUser     = match.getWordProvidingPlayer();
 			String  wordProvidingPhone    = wordProvidingUser.getPhoneNumber();
-			String  wordProvidingNickname = profileDB.getProfileRecord(wordProvidingUser).getNickname();
+			String  wordProvidingNickname = assureUserHasANickname(wordProvidingUser).getNickname();
 			String  wordGuessingPhone     = session.getUser().getPhoneNumber();
-			String  wordGuessingNickname  = profileDB.getProfileRecord(match.getWordGuessingPlayer()).getNickname();
+			String  wordGuessingNickname  = assureUserHasANickname(match.getWordGuessingPlayer()).getNickname();
 			
 			//MatchPlayersInfo matchPlayersInfo = getMatchPlayersInfo(matchData);
 			HangmanGame game  = new HangmanGame(serializedGameState);
@@ -256,6 +256,15 @@ public enum SMSAppModuleCommandsHangman implements ICommandProcessor {
 	private static ISessionDB sessionDB = SMSAppModuleDALFactory.DEFAULT_DAL.getSessionDB();
 	private static IProfileDB profileDB = SMSAppModuleDALFactoryProfile.DEFAULT_DAL.getProfileDB();
 	private static IMatchDB   matchDB   = SMSAppModuleDALFactoryHangman.DEFAULT_DAL.getMatchDB();
+	
+	
+	static {
+		try {
+			SMSAppModuleListenersHangman.registerEventListeners();
+		} catch (Throwable t) {
+			throw new RuntimeException("Unable to register Hangman event listeners", t);
+		}
+	}
 
 	
 	@Override
@@ -282,9 +291,12 @@ public enum SMSAppModuleCommandsHangman implements ICommandProcessor {
 	 *  formalizes the default nickname registration rule */
 	public static ProfileDto assurePhoneNumberHasAnUserAndNickname(String phoneNumber) throws SQLException {
 		UserDto user = userDB.assureUserIsRegistered(phoneNumber);
+		return assureUserHasANickname(user);
+	}
+	public static ProfileDto assureUserHasANickname(UserDto user) throws SQLException {
 		ProfileDto profile = profileDB.getProfileRecord(user);
 		if (profile == null) {
-			profile = profileDB.setProfileRecord(new ProfileDto(user, DEFAULT_NICKNAME_PREFIX + phoneNumber.substring(Math.max(phoneNumber.length()-4, 0))));
+			profile = profileDB.setProfileRecord(new ProfileDto(user, DEFAULT_NICKNAME_PREFIX + user.getPhoneNumber().substring(Math.max(user.getPhoneNumber().length()-4, 0))));
 		}
 		return profile;
 	}

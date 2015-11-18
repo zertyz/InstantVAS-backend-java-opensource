@@ -172,7 +172,7 @@ public class SMSProcessor {
 			SessionDto sessionDto = sessionDB.getSession(user);
 			// new user
 			if (sessionDto == null) {
-				session = new SessionModel(user, MO, null);		// TODO setting 'storedProperties' to null should raise errors... is this working? is this code running?
+				session = new SessionModel(user, MO);
 				session.setNavigationState(nstNewUser);
 				log.reportEvent(IE_REQUEST_FROM_NEW_USER, IP_PHONE, phone, IP_TEXT, text);
 			} else {

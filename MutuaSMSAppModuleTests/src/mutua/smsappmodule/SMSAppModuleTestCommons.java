@@ -85,11 +85,15 @@ public class SMSAppModuleTestCommons {
 	/********************************
 	** DIALOG VERIFICATION METHODS **
 	********************************/	
-	
+
 	private Random rnd = new Random();
 	public void checkResponse(String phone, String inputText, String... expectedResponsesText) {
+		int moId = rnd.nextInt();
+		checkResponse(moId, phone, inputText, expectedResponsesText);
+	}
+	
+	public void checkResponse(int moId, String phone, String inputText, String... expectedResponsesText) {
 		try {
-			int moId = rnd.nextInt();
 			IncomingSMSDto mo = new IncomingSMSDto(moId, phone, inputText, ESMSInParserCarrier.TEST_CARRIER, "1234");
 			smsP.process(mo);
 			OutgoingSMSDto[] observedResponses = responseReceiver.getLastOutgoingSMSes();

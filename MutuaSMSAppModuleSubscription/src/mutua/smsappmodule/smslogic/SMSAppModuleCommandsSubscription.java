@@ -58,7 +58,9 @@ public enum SMSAppModuleCommandsSubscription implements ICommandProcessor {
 			ESubscriptionOperationStatus subscriptionStatus = subscriptionEngine.subscribeUser(user.getPhoneNumber(), subscriptionToken);
 			if ((subscriptionStatus == ESubscriptionOperationStatus.OK) ||
 			    (subscriptionStatus == ESubscriptionOperationStatus.ALREADY_SUBSCRIBED)) {
-				subscriptionDB.setSubscriptionRecord(new SubscriptionDto(user, ESubscriptionChannel.SMS));
+				SubscriptionDto subscriptionRecord = new SubscriptionDto(user, ESubscriptionChannel.SMS);
+				subscriptionDB.setSubscriptionRecord(subscriptionRecord);
+				SMSAppModuleEventsSubscription.dispatchSubscriptionNotification(subscriptionRecord);
 				return getNewStateReplyCommandAnswer(session, nstExistingUser, getSuccessfullySubscribed());
 			} else {
 				return getSameStateReplyCommandAnswer(getCouldNotSubscribe());
@@ -73,7 +75,9 @@ public enum SMSAppModuleCommandsSubscription implements ICommandProcessor {
 			EUnsubscriptionOperationStatus unsubscriptionStatus = subscriptionEngine.unsubscribeUser(user.getPhoneNumber(), subscriptionToken);
 			if ((unsubscriptionStatus == EUnsubscriptionOperationStatus.OK) ||
 			    (unsubscriptionStatus == EUnsubscriptionOperationStatus.NOT_SUBSCRIBED)) {
-				subscriptionDB.setSubscriptionRecord(new SubscriptionDto(user, EUnsubscriptionChannel.SMS));
+				SubscriptionDto unsubscriptionRecord = new SubscriptionDto(user, EUnsubscriptionChannel.SMS);
+				subscriptionDB.setSubscriptionRecord(unsubscriptionRecord);
+				SMSAppModuleEventsSubscription.dispatchUnsubscriptionNotification(unsubscriptionRecord);
 				return getNewStateReplyCommandAnswer(session, nstNewUser, getUserRequestedUnsubscriptionNotification());
 			} else {
 				throw new RuntimeException("For some reason, the user could not be unsubscribed");
@@ -108,13 +112,15 @@ public enum SMSAppModuleCommandsSubscription implements ICommandProcessor {
 	// public methods
 	/////////////////
 	
-	// TODO assert that when celltick sends us an unsubscribe request, we do (or do not) call them back
+	// TODO assert, on the old web interface, that when celltick sends us an unsubscribe request, we do (or do not) call them back
 	public static boolean unsubscribeUser(String phone) throws SQLException {
 		UserDto user = userDB.assureUserIsRegistered(phone);
 		EUnsubscriptionOperationStatus unsubscriptionStatus = subscriptionEngine.unsubscribeUser(phone, subscriptionToken);
 		if ((unsubscriptionStatus == EUnsubscriptionOperationStatus.OK) ||
 		    (unsubscriptionStatus == EUnsubscriptionOperationStatus.NOT_SUBSCRIBED)) {
-			subscriptionDB.setSubscriptionRecord(new SubscriptionDto(user, EUnsubscriptionChannel.API));
+			SubscriptionDto unsubscriptionRecord = new SubscriptionDto(user, EUnsubscriptionChannel.API);
+			subscriptionDB.setSubscriptionRecord(unsubscriptionRecord);
+			SMSAppModuleEventsSubscription.dispatchUnsubscriptionNotification(unsubscriptionRecord);
 			// optimally set the navigation state for an unregistered user
 			sessionDB.assureProperty(user, SessionModel.NAVIGATION_STATE_PROPERTY.getPropertyName(), nstNewUser.getNavigationStateName());
 			return true;
@@ -122,13 +128,15 @@ public enum SMSAppModuleCommandsSubscription implements ICommandProcessor {
 		return false;
 	}
 	
-	// TODO assert that when celltick sends us a subscribe request, we do (or do not) call them back
+	// TODO assert, on the old web interface, that when celltick sends us a subscribe request, we do (or do not) call them back
 	public static boolean subscribeUser(String phone) throws SQLException {
 		UserDto user = userDB.assureUserIsRegistered(phone);
 		ESubscriptionOperationStatus subscriptionStatus = subscriptionEngine.subscribeUser(phone, subscriptionToken);
 		if ((subscriptionStatus == ESubscriptionOperationStatus.OK) ||
 		    (subscriptionStatus == ESubscriptionOperationStatus.ALREADY_SUBSCRIBED)) {
-			subscriptionDB.setSubscriptionRecord(new SubscriptionDto(user, ESubscriptionChannel.SMS));
+			SubscriptionDto subscriptionRecord = new SubscriptionDto(user, ESubscriptionChannel.SMS);
+			subscriptionDB.setSubscriptionRecord(subscriptionRecord);
+			SMSAppModuleEventsSubscription.dispatchSubscriptionNotification(subscriptionRecord);
 			sessionDB.assureProperty(user, SessionModel.NAVIGATION_STATE_PROPERTY.getPropertyName(), nstExistingUser.getNavigationStateName());
 			return true;
 		}
