@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import java.sql.SQLException;
 
 import mutua.smsappmodule.smslogic.commands.CommandAnswerDto;
-import mutua.smsappmodule.smslogic.commands.CommandTriggersDto;
 import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
 import mutua.smsappmodule.smslogic.sessions.SessionModel;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;

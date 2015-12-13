@@ -2,7 +2,6 @@ package mutua.smsappmodule.smslogic;
 
 import static mutua.smsappmodule.i18n.SMSAppModulePhrasingsChat.*;
 import static mutua.smsappmodule.smslogic.CommandCommons.*;
-import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates.nstExistingUser;
 import static mutua.smsappmodule.smslogic.sessions.SMSAppModuleSessionsChat.sprLastPrivateMessageSender;
 
 import java.sql.SQLException;
@@ -13,10 +12,8 @@ import mutua.smsappmodule.dal.SMSAppModuleDALFactoryChat;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactoryProfile;
 import mutua.smsappmodule.dto.ProfileDto;
 import mutua.smsappmodule.dto.UserDto;
-import mutua.smsappmodule.i18n.SMSAppModulePhrasingsChat;
 import mutua.smsappmodule.i18n.SMSAppModulePhrasingsProfile;
 import mutua.smsappmodule.smslogic.commands.CommandAnswerDto;
-import mutua.smsappmodule.smslogic.commands.CommandMessageDto;
 import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesChat;
 import mutua.smsappmodule.smslogic.sessions.SessionModel;

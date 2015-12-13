@@ -1,10 +1,5 @@
 package mutua.smsappmodule;
 
-import static mutua.smsappmodule.HelpModuleTestCommons.expectedSTATE1HelpMessage;
-import static mutua.smsappmodule.HelpModuleTestCommons.expectedSTATE2HelpMessage;
-import mutua.icc.instrumentation.DefaultInstrumentationProperties;
-import mutua.icc.instrumentation.Instrumentation;
-import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationHelp;
 import mutua.smsappmodule.smslogic.commands.CommandTriggersDto;
 import mutua.smsappmodule.smslogic.commands.ICommandProcessor;

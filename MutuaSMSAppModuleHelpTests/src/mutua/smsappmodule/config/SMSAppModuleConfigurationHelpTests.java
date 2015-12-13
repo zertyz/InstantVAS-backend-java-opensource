@@ -4,7 +4,6 @@ import mutua.icc.instrumentation.DefaultInstrumentationProperties;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
-import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapter;
 import adapters.JDBCAdapter;
 import adapters.PostgreSQLAdapter;
 

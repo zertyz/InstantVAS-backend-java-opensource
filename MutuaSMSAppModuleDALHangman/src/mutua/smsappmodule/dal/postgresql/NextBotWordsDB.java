@@ -4,7 +4,6 @@ import java.sql.SQLException;
 
 import adapters.JDBCAdapter;
 import adapters.dto.PreparedProcedureInvocationDto;
-import mutua.smsappmodule.dal.IMatchDB;
 import mutua.smsappmodule.dal.INextBotWordsDB;
 import mutua.smsappmodule.dto.UserDto;
 

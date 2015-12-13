@@ -1,7 +1,5 @@
 package mutua.smsappmodule.smslogic.navigationstates;
 
-import java.util.HashMap;
-
 import mutua.smsappmodule.smslogic.commands.CommandTriggersDto;
 import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
 

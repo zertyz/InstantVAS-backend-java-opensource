@@ -2,8 +2,6 @@ package mutua.smsappmodule.smslogic;
 
 import java.sql.SQLException;
 
-import mutua.icc.configuration.annotations.ConfigurableElement;
-import mutua.smsappmodule.i18n.SMSAppModulePhrasingsHelp;
 import mutua.smsappmodule.smslogic.commands.CommandAnswerDto;
 import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
 import mutua.smsappmodule.smslogic.navigationstates.INavigationState;

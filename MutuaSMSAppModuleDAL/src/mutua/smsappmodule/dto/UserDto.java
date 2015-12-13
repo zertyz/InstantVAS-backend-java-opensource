@@ -1,8 +1,6 @@
 package mutua.smsappmodule.dto;
 
-import mutua.icc.configuration.annotations.ConfigurableElement;
 import mutua.smsappmodule.dal.IUserDB;
-import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
 
 /** <pre>
  * UserDto.java

@@ -12,7 +12,6 @@ import mutua.hangmansmsgame.smslogic.SMSProcessorException;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.smsappmodule.dal.ISessionDB;
 import mutua.smsappmodule.dal.IUserDB;
-import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
 import mutua.smsappmodule.dto.SessionDto;
 import mutua.smsappmodule.dto.UserDto;
 import mutua.smsappmodule.smslogic.navigationstates.INavigationState;

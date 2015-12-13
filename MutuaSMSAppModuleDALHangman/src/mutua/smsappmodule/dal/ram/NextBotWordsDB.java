@@ -1,11 +1,8 @@
 package mutua.smsappmodule.dal.ram;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Hashtable;
-
 import mutua.smsappmodule.dal.INextBotWordsDB;
-import mutua.smsappmodule.dto.MatchDto;
 import mutua.smsappmodule.dto.UserDto;
 
 /** <pre>

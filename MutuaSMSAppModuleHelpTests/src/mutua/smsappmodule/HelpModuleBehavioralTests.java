@@ -10,14 +10,8 @@ import static org.junit.Assert.assertNull;
 import java.sql.SQLException;
 
 import mutua.icc.configuration.ConfigurationManager;
-import mutua.icc.instrumentation.DefaultInstrumentationProperties;
-import mutua.icc.instrumentation.Instrumentation;
-import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationHelp;
 import mutua.smsappmodule.dto.UserDto;
-import mutua.smsappmodule.smslogic.commands.CommandTriggersDto;
-import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
-import mutua.smsappmodule.smslogic.navigationstates.INavigationState;
 import mutua.smsappmodule.smslogic.sessions.SessionModel;
 
 import org.junit.Test;

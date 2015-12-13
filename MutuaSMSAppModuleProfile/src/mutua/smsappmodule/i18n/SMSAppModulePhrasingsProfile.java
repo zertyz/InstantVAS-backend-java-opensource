@@ -1,6 +1,5 @@
 package mutua.smsappmodule.i18n;
 
-import mutua.icc.configuration.annotations.ConfigurableElement;
 import mutua.smsappmodule.config.SMSAppModuleConfiguration;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationProfile;
 

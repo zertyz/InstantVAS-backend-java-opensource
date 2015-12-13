@@ -5,13 +5,8 @@ import static mutua.smsappmodule.i18n.SMSAppModulePhrasingsSubscription.getDoubl
 import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsSubscription.*;
 import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesSubscription.*;
 import static org.junit.Assert.assertEquals;
-
 import java.sql.SQLException;
-
 import mutua.icc.configuration.ConfigurationManager;
-import mutua.icc.instrumentation.DefaultInstrumentationProperties;
-import mutua.icc.instrumentation.Instrumentation;
-import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationTests;
 import mutua.smsappmodule.dto.UserDto;
 import mutua.smsappmodule.smslogic.sessions.SessionModel;

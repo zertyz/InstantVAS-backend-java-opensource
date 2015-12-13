@@ -4,7 +4,6 @@ import static mutua.smsappmodule.i18n.SMSAppModulePhrasingsProfile.*;
 import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsProfile.*;
 import mutua.icc.configuration.annotations.ConfigurableElement;
 import mutua.smsappmodule.smslogic.navigationstates.INavigationState;
-import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesProfile;
 
 /** <pre>

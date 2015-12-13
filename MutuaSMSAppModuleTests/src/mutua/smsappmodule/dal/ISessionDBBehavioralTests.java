@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import java.sql.SQLException;
 
 import static mutua.smsappmodule.config.SMSAppModuleConfigurationTests.*;
-import mutua.smsappmodule.SMSAppModuleTestCommons;
 import mutua.smsappmodule.dto.SessionDto;
 import mutua.smsappmodule.dto.UserDto;
 

@@ -3,8 +3,6 @@ package mutua.smsappmodule.dal;
 import java.sql.SQLException;
 
 import mutua.icc.configuration.annotations.ConfigurableElement;
-import mutua.smsappmodule.dal.ram.MatchDB;
-import mutua.smsappmodule.dal.ram.NextBotWordsDB;
 
 /** <pre>
  * SMSAppModuleDALFactoryHangman.java

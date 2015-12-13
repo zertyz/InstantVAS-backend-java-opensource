@@ -1,9 +1,6 @@
 package mutua.smsappmodule;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
-
-import org.junit.Test;
 
 /** <pre>
  * SplitRun.java

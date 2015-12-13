@@ -6,7 +6,6 @@ import java.sql.SQLException;
 
 import mutua.hangmansmsgame.dal.DALFactory;
 import mutua.hangmansmsgame.dal.IUserDB;
-import mutua.hangmansmsgame.dal.DALFactory.EDataAccessLayers;
 import mutua.hangmansmsgame.i18n.TestPhraseology;
 
 import org.junit.Test;

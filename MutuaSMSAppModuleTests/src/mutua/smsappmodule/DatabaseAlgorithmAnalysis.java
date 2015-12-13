@@ -1,8 +1,5 @@
 package mutua.smsappmodule;
 
-import java.sql.SQLException;
-
-
 /** <pre>
  * DatabaseAlgorithmAnalysis.java
  * ==============================

@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import mutua.events.annotations.EventConsumer;
 import mutua.hangmansmsgame.dispatcher.IResponseReceiver;
 import mutua.hangmansmsgame.dispatcher.MessageDispatcher;
 import mutua.icc.instrumentation.Instrumentation;

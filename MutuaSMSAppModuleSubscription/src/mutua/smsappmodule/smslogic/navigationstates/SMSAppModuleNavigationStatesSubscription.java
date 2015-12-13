@@ -4,7 +4,6 @@ import static mutua.smsappmodule.config.SMSAppModuleConfigurationSubscription.*;
 import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsSubscription.*;
 import mutua.smsappmodule.smslogic.commands.CommandTriggersDto;
 import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
-import mutua.smsappmodule.smslogic.sessions.SessionModel;
 
 /** <pre>
  * SMSAppModuleNavigationStatesSubscription.java

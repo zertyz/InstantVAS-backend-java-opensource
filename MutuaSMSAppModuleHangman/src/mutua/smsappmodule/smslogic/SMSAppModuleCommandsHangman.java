@@ -18,13 +18,11 @@ import mutua.smsappmodule.dal.SMSAppModuleDALFactoryHangman;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactoryProfile;
 import mutua.smsappmodule.dto.MatchDto;
 import mutua.smsappmodule.dto.ProfileDto;
-import mutua.smsappmodule.dto.SessionDto;
 import mutua.smsappmodule.dto.UserDto;
 import mutua.smsappmodule.dto.MatchDto.EMatchStatus;
 import mutua.smsappmodule.hangmangame.HangmanGame;
 import mutua.smsappmodule.hangmangame.HangmanGame.EHangmanGameStates;
 import mutua.smsappmodule.smslogic.commands.CommandAnswerDto;
-import mutua.smsappmodule.smslogic.commands.CommandMessageDto;
 import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesHangman;
 import mutua.smsappmodule.smslogic.sessions.SMSAppModuleSessionsHangman;
@@ -301,6 +299,9 @@ public enum SMSAppModuleCommandsHangman implements ICommandProcessor {
 		return profile;
 	}
 
+	// TODO the list command must sort among the last users that have sent an MO and should be implemented by the profile module
+	//      -- maybe this is an event catch after every MO processing, if we don't want to consult the MOQueue table (but I guess we do, since it is the best performance) 
+	//      -- ... or we could have an option... ??
 	
 
 		

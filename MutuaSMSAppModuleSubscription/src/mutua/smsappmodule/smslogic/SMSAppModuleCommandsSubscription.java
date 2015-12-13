@@ -14,7 +14,6 @@ import mutua.smsappmodule.dal.ISubscriptionDB;
 import mutua.smsappmodule.dal.IUserDB;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactorySubscription;
-import mutua.smsappmodule.dto.SessionDto;
 import mutua.smsappmodule.dto.SubscriptionDto;
 import mutua.smsappmodule.dto.SubscriptionDto.ESubscriptionChannel;
 import mutua.smsappmodule.dto.SubscriptionDto.EUnsubscriptionChannel;

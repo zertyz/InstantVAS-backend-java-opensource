@@ -7,7 +7,6 @@ import mutua.icc.instrumentation.Instrumentation;
 import mutua.smsappmodule.smslogic.navigationstates.INavigationState;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesSubscription;
 import mutua.subscriptionengine.SubscriptionEngine;
-import mutua.subscriptionengine.TestableSubscriptionAPI;
 
 /** <pre>
  * SMSAppModuleConfigurationSubscription.java

@@ -33,7 +33,6 @@ import mutua.subscriptionengine.TestableSubscriptionAPI;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runners.model.InitializationError;
 
 import adapters.dto.PreparedProcedureInvocationDto;
 

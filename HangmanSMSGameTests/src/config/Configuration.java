@@ -3,12 +3,6 @@ package config;
 import mutua.hangmansmsgame.dal.DALFactory;
 import mutua.hangmansmsgame.dal.DALFactory.EDataAccessLayers;
 import mutua.hangmansmsgame.dal.postgresql.HangmanSMSGamePostgreSQLAdapters;
-import mutua.icc.instrumentation.HangmanSMSGameInstrumentationEvents;
-import mutua.icc.instrumentation.Instrumentation;
-import mutua.icc.instrumentation.TestInstrumentationRequestProperty;
-import mutua.icc.instrumentation.eventclients.InstrumentationProfilingEventsClient;
-import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
-import mutua.imi.IndirectMethodNotFoundException;
 import mutua.subscriptionengine.TestableSubscriptionAPI;
 import static mutua.hangmansmsgame.config.Configuration.log;
 

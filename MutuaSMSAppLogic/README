@@ -1,5 +1,5 @@
 MutuaSMSAppLogic
-====================
+================
 
 Unites all the common logic aspects of a SMS application or game, to know:
 
@@ -12,8 +12,8 @@ Unites all the common logic aspects of a SMS application or game, to know:
 
 A full "Logic" component of an SMS App
 
-The recommended usage for this project is derivate it on a new project, together with
-'MutuaSMSAppModule' derivated modules. For instance:
+The recommended usage for this project is derive it on a new project, together with
+'MutuaSMSAppModule' derived modules. For instance:
 
 	MutuaSMSAppLogicHangman:
 		MutuaSMSAppLogic
@@ -24,5 +24,5 @@ The recommended usage for this project is derivate it on a new project, together
 		MutuaSMSAppModuleRaffle
 		MutuaSMSAppModulePrizes
 
-The 'MutuaSMSAppLogicHangman' newly created project should, then, apply any left to be applyed
+The 'MutuaSMSAppLogicHangman' newly created project should, then, apply any left to be applied
 glue on all of the modules.

@@ -3,7 +3,6 @@ package mutua.smsappmodule.dal;
 import java.sql.SQLException;
 
 import mutua.icc.configuration.annotations.ConfigurableElement;
-import mutua.smsappmodule.dto.UserDto;
 
 /** <pre>
  * SMSAppModuleDALFactory.java

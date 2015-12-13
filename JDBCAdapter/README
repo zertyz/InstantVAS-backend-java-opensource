@@ -2,7 +2,7 @@ JDBCHelper
 ==========
 
 This project belongs to the "helper" family of projects, whose intent is to unify how low-level
-tasks that, otherwhise, should be done in all projects.
+tasks should behave. On the topic: database manipulation.
 
 This JDBC client helper is implemented in a testable, rock solid and easier to use API.
 

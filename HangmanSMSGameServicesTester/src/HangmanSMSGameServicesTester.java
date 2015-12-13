@@ -4,8 +4,6 @@ import java.util.Hashtable;
 import adapters.HTTPClientAdapter;
 import adapters.dto.HTTPRequestDto;
 
-import com.sun.xml.internal.ws.transport.http.HttpAdapter;
-
 import servers.http.ISimpleHTTPServerHandler;
 import servers.http.SimpleHTTPServer;
 

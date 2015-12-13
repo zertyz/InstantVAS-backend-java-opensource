@@ -1,19 +1,11 @@
 package mutua.smsappmodule;
 
-import static mutua.smsappmodule.HelpModuleTestCommons.*;
 import static mutua.smsappmodule.config.SMSAppModuleConfigurationHelpTests.*;
 import static mutua.smsappmodule.i18n.SMSAppModulePhrasingsHelp.*;
 import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHelp.*;
-
 import java.sql.SQLException;
-
-import mutua.hangmansmsgame.smslogic.SMSProcessor;
-import mutua.hangmansmsgame.smslogic.SMSProcessorException;
-import mutua.smsappmodule.dal.ISessionDB;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesHelp;
-import mutua.smsin.dto.IncomingSMSDto;
-import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 
 import org.junit.Test;
 
