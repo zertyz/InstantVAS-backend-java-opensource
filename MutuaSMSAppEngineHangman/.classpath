@@ -9,5 +9,13 @@
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/MutuaSMSAppModuleSubscription"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/MutuaSMSAppModule"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/MutuaEventsAdditionalEventLinks"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/SMSInCelltick"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/SMSInParser"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/SMSOutCelltick"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/SMSOutSender"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/SubscriptionEngine"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/SubscriptionEngineCelltick"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/MutuaICCInstrumentation"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

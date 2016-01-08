@@ -60,13 +60,10 @@ public class SMSAppModuleConfigurationSubscriptionTests {
 		SMSAppModuleConfigurationTests.POSTGRESQL_CONNECTION_PASSWORD      = POSTGRESQL_CONNECTION_PASSWORD;
 		SMSAppModuleConfigurationTests.applyConfiguration();
 
-		SMSAppModulePostgreSQLAdapterSubscription.log = log;
-		SMSAppModulePostgreSQLAdapterSubscription.HOSTNAME              = POSTGRESQL_CONNECTION_HOSTNAME;
-		SMSAppModulePostgreSQLAdapterSubscription.PORT                  = POSTGRESQL_CONNECTION_PORT;
-		SMSAppModulePostgreSQLAdapterSubscription.DATABASE              = POSTGRESQL_CONNECTION_DATABASE_NAME;
-		SMSAppModulePostgreSQLAdapterSubscription.USER                  = POSTGRESQL_CONNECTION_USER;
-		SMSAppModulePostgreSQLAdapterSubscription.PASSWORD              = POSTGRESQL_CONNECTION_PASSWORD;
 		SMSAppModuleDALFactorySubscription.DEFAULT_DAL = DEFAULT_SUBSCRIPTION_DAL;
+		SMSAppModulePostgreSQLAdapterSubscription.configureSubscriptionDatabaseModule(log,
+				POSTGRESQL_CONNECTION_HOSTNAME, POSTGRESQL_CONNECTION_PORT, POSTGRESQL_CONNECTION_DATABASE_NAME,
+				POSTGRESQL_CONNECTION_USER, POSTGRESQL_CONNECTION_PASSWORD);
 
 		PostgreSQLAdapter.CONNECTION_PROPERTIES         = POSTGRESQL_CONNECTION_PROPERTIES;
 		PostgreSQLAdapter.ALLOW_DATABASE_ADMINISTRATION = POSTGRESQL_ALLOW_DATABASE_ADMINISTRATION;

@@ -28,19 +28,32 @@ public class SMSAppModulePostgreSQLAdapterSubscription extends PostgreSQLAdapter
 	// configuration
 	////////////////
 	
-	@ConfigurableElement("The application's instrumentation instance to be used to log PostgreSQL database events for the Subscription Module")
-	public static Instrumentation<?, ?> log;
+	/** The application's instrumentation instance to be used to log PostgreSQL database events */
+	private static Instrumentation<?, ?> log;
 
-	@ConfigurableElement("Hostname (or IP) of the PostgreSQL server")
-	public static String HOSTNAME;
-	@ConfigurableElement("Connection port for the PostgreSQL server")
-	public static int    PORT;
-	@ConfigurableElement("The PostgreSQL database with the application's data scope")
-	public static String DATABASE;
-	@ConfigurableElement("The PostgreSQL user name to access 'DATABASE' -- note: administrative rights, such as the creation of tables, may be necessary")
-	public static String USER;
-	@ConfigurableElement("The PostgreSQL plain text password for 'USER'")
-	public static String PASSWORD;
+	/** Hostname (or IP) of the PostgreSQL server */
+	private static String hostname;
+	/** Connection port for the PostgreSQL server */
+	private static int port;
+	/** The PostgreSQL database with the application's data scope */
+	private static String database;
+	/** The PostgreSQL user name to access 'DATABASE' -- note: administrative rights, such as the creation of tables, might be necessary */
+	private static String user;
+	/** The PostgreSQL plain text password for 'USER' */
+	private static String password;
+	
+	
+	public static void configureSubscriptionDatabaseModule(Instrumentation<?, ?> log,
+	                                                       String hostname, int port, String database, String user, String password) {
+
+		SMSAppModulePostgreSQLAdapterSubscription.log = log;
+		
+		SMSAppModulePostgreSQLAdapterSubscription.hostname = hostname;
+		SMSAppModulePostgreSQLAdapterSubscription.port     = port;
+		SMSAppModulePostgreSQLAdapterSubscription.database = database;
+		SMSAppModulePostgreSQLAdapterSubscription.user     = user;
+		SMSAppModulePostgreSQLAdapterSubscription.password = password;
+	}
 
 	
 	private SMSAppModulePostgreSQLAdapterSubscription(Instrumentation<?, ?> log, String[][] preparedProceduresDefinitions) throws SQLException {
@@ -49,7 +62,7 @@ public class SMSAppModulePostgreSQLAdapterSubscription extends PostgreSQLAdapter
 
 	@Override
 	protected String[] getCredentials() {
-		return new String[] {HOSTNAME, Integer.toString(PORT), DATABASE, USER, PASSWORD};
+		return new String[] {hostname, Integer.toString(port), database, user, password};
 	}
 
 	@Override

@@ -2,10 +2,6 @@ package mutua.smsappmodule.config;
 
 import java.sql.SQLException;
 
-import mutua.events.PostgreSQLQueueEventLink;
-import mutua.events.SpecializedMOQueueDataBureau;
-import mutua.events.TestEventServer;
-import mutua.events.TestEventServer.ETestEventServices;
 import mutua.events.postgresql.QueuesPostgreSQLAdapter;
 import mutua.icc.instrumentation.DefaultInstrumentationProperties;
 import mutua.icc.instrumentation.Instrumentation;
@@ -73,20 +69,15 @@ public class SMSAppModuleConfigurationChatTests {
 		SMSAppModuleConfigurationTests.applyConfiguration();
 
 		// MutuaEventsAdditionalEventLinks configuration
-		QueuesPostgreSQLAdapter.log = log; 
-		QueuesPostgreSQLAdapter.HOSTNAME = POSTGRESQL_CONNECTION_HOSTNAME;
-		QueuesPostgreSQLAdapter.PORT     = POSTGRESQL_CONNECTION_PORT;
-		QueuesPostgreSQLAdapter.DATABASE = POSTGRESQL_CONNECTION_DATABASE_NAME;
-		QueuesPostgreSQLAdapter.USER     = POSTGRESQL_CONNECTION_USER;
-		QueuesPostgreSQLAdapter.PASSWORD = POSTGRESQL_CONNECTION_PASSWORD;
+		QueuesPostgreSQLAdapter.configureQueuesDatabaseModule(log,
+			POSTGRESQL_CONNECTION_HOSTNAME, POSTGRESQL_CONNECTION_PORT, POSTGRESQL_CONNECTION_DATABASE_NAME,
+			POSTGRESQL_CONNECTION_USER, POSTGRESQL_CONNECTION_PASSWORD); 
 
-		SMSAppModulePostgreSQLAdapterChat.log = log;
-		SMSAppModulePostgreSQLAdapterChat.HOSTNAME              = POSTGRESQL_CONNECTION_HOSTNAME;
-		SMSAppModulePostgreSQLAdapterChat.PORT                  = POSTGRESQL_CONNECTION_PORT;
-		SMSAppModulePostgreSQLAdapterChat.DATABASE              = POSTGRESQL_CONNECTION_DATABASE_NAME;
-		SMSAppModulePostgreSQLAdapterChat.USER                  = POSTGRESQL_CONNECTION_USER;
-		SMSAppModulePostgreSQLAdapterChat.PASSWORD              = POSTGRESQL_CONNECTION_PASSWORD;
-		SMSAppModulePostgreSQLAdapterChat.configureChatDatabaseModule(MO_DATABASE_NAME, "eventId", "text");	// from 'moQueueLink', 'PostgreSQLQueueEventLink' and 'SpecializedMOQueueDataBureau'
+		SMSAppModulePostgreSQLAdapterChat.configureChatDatabaseModule(log,
+			POSTGRESQL_CONNECTION_HOSTNAME, POSTGRESQL_CONNECTION_PORT, POSTGRESQL_CONNECTION_DATABASE_NAME,
+			POSTGRESQL_CONNECTION_USER, POSTGRESQL_CONNECTION_PASSWORD,
+			MO_DATABASE_NAME, "eventId", "text");	// from 'moQueueLink', 'PostgreSQLQueueEventLink' and 'SpecializedMOQueueDataBureau'
+		
 		SMSAppModuleDALFactoryChat.DEFAULT_DAL                  = DEFAULT_CHAT_DAL;
 		// now force the creation of the queue (if it doesn't already exist)
 		// (based on the 'MutuaEventsAdditionalEventLinksTests' 'SpecializedMOQueue' table specification)
@@ -99,13 +90,9 @@ public class SMSAppModuleConfigurationChatTests {
 			e.printStackTrace();
 		}
 		
-		SMSAppModulePostgreSQLAdapterProfile.log = log;
-		SMSAppModulePostgreSQLAdapterProfile.HOSTNAME = POSTGRESQL_CONNECTION_HOSTNAME;
-		SMSAppModulePostgreSQLAdapterProfile.PORT     = POSTGRESQL_CONNECTION_PORT;
-		SMSAppModulePostgreSQLAdapterProfile.DATABASE = POSTGRESQL_CONNECTION_DATABASE_NAME;
-		SMSAppModulePostgreSQLAdapterProfile.USER     = POSTGRESQL_CONNECTION_USER;
-		SMSAppModulePostgreSQLAdapterProfile.PASSWORD = POSTGRESQL_CONNECTION_PASSWORD;
-		SMSAppModuleDALFactoryProfile.DEFAULT_DAL     = DEFAULT_PROFILE_DAL;
+		SMSAppModulePostgreSQLAdapterProfile.configureProfileDatabaseModule(log,
+			POSTGRESQL_CONNECTION_HOSTNAME, POSTGRESQL_CONNECTION_PORT, POSTGRESQL_CONNECTION_DATABASE_NAME,
+			POSTGRESQL_CONNECTION_USER, POSTGRESQL_CONNECTION_PASSWORD);
 
 		PostgreSQLAdapter.CONNECTION_PROPERTIES         = POSTGRESQL_CONNECTION_PROPERTIES;
 		PostgreSQLAdapter.ALLOW_DATABASE_ADMINISTRATION = POSTGRESQL_ALLOW_DATABASE_ADMINISTRATION;

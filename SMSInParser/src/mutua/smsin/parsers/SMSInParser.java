@@ -45,6 +45,6 @@ public abstract class SMSInParser<REQUEST_OBJECT, RESPONSE_OBJECT> {
     public abstract IncomingSMSDto parseIncomingSMS(REQUEST_OBJECT request);
         
     /** Responsible for acknowledging the originating gateway how the message was accepted */
-    public abstract void sendReply(ESMSInParserSMSAcceptionStatus status, RESPONSE_OBJECT response);
+    public abstract RESPONSE_OBJECT getReply(ESMSInParserSMSAcceptionStatus status);
 
 }

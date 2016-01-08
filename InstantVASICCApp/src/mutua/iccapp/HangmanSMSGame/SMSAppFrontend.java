@@ -2,6 +2,7 @@ package mutua.iccapp.HangmanSMSGame;
 
 import java.sql.SQLException;
 
+import config.HangmanSMSModulesConfiguration;
 import adapters.dto.PreparedProcedureInvocationDto;
 import mutua.events.postgresql.QueuesPostgreSQLAdapter;
 import mutua.hangmansmsgame.smslogic.SMSProcessor;
@@ -9,7 +10,6 @@ import mutua.icc.instrumentation.Instrumentation;
 import mutua.icc.instrumentation.eventclients.InstrumentationProfilingEventsClient;
 import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
 import mutua.imi.IndirectMethodNotFoundException;
-import mutua.smsappengine.config.HangmanSMSModulesConfiguration;
 import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterChat;
 import mutua.smsin.dto.IncomingSMSDto;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
@@ -58,13 +58,9 @@ public class SMSAppFrontend {
     	
     	// attempt to use the same MO/MT registration as the main web application
     	try {
-    		QueuesPostgreSQLAdapter.log = log;
     		// TODO fix this hard coded info
-    		QueuesPostgreSQLAdapter.HOSTNAME = "venus";
-    		QueuesPostgreSQLAdapter.PORT     = 5432;
-    		QueuesPostgreSQLAdapter.DATABASE = "hangman";
-    		QueuesPostgreSQLAdapter.USER     = "hangman";
-    		QueuesPostgreSQLAdapter.PASSWORD = "hangman";
+    		// MutuaEventsAdditionalEventLinks configuration
+    		QueuesPostgreSQLAdapter.configureQueuesDatabaseModule(log, "venus", 5432, "hangman", "hangman", "hangman");
     		moDB = QueuesPostgreSQLAdapter.getQueuesDBAdapter(null, "MOQueue",
 			                                                  "phone  TEXT NOT NULL, text   TEXT NOT NULL, ",
 			                                                  "phone, text",
@@ -73,7 +69,8 @@ public class SMSAppFrontend {
 			                                                  "moId  INTEGER NOT NULL, phone  TEXT NOT NULL, text   TEXT NOT NULL, ",
 			                                                  "moId, phone, text",
 			                                                  "${MO_ID}, ${PHONE}, ${TEXT}");
-	    	SMSAppModulePostgreSQLAdapterChat.configureChatDatabaseModule("MOQueue", "eventId", "text");
+	    	SMSAppModulePostgreSQLAdapterChat.configureChatDatabaseModule(log, "venus", 5432, "hangman", "hangman", "hangman",
+	    	                                                              "MOQueue", "eventId", "text");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

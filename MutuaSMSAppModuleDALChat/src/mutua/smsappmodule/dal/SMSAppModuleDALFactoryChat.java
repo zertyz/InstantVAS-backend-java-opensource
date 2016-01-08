@@ -44,7 +44,7 @@ public enum SMSAppModuleDALFactoryChat {
 	protected abstract void instantiateDataAccessLayers() throws SQLException;
 	
 	/** this method allows the instantiation of only the desired data access layer
-	/* (preventing unecessary drivers to be loaded) */
+	/* (preventing unnecessary drivers to be loaded) */
 	public void checkDataAccessLayers() {
 		if (!wasInstantiated) try {
 			instantiateDataAccessLayers();

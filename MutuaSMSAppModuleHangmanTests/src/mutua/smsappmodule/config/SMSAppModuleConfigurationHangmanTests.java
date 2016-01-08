@@ -60,13 +60,10 @@ public class SMSAppModuleConfigurationHangmanTests {
 
 		SMSAppModuleConfigurationTests.applyConfiguration();
 
-		SMSAppModulePostgreSQLAdapterHangman.log = log;
-		SMSAppModulePostgreSQLAdapterHangman.HOSTNAME              = POSTGRESQL_CONNECTION_HOSTNAME;
-		SMSAppModulePostgreSQLAdapterHangman.PORT                  = POSTGRESQL_CONNECTION_PORT;
-		SMSAppModulePostgreSQLAdapterHangman.DATABASE              = POSTGRESQL_CONNECTION_DATABASE_NAME;
-		SMSAppModulePostgreSQLAdapterHangman.USER                  = POSTGRESQL_CONNECTION_USER;
-		SMSAppModulePostgreSQLAdapterHangman.PASSWORD              = POSTGRESQL_CONNECTION_PASSWORD;
-		SMSAppModuleDALFactoryHangman.DEFAULT_DAL                  = DEFAULT_HANGMAN_DAL;
+		SMSAppModuleDALFactoryHangman.DEFAULT_DAL = DEFAULT_HANGMAN_DAL;
+		SMSAppModulePostgreSQLAdapterHangman.configureHangmanDatabaseModule(log,
+				POSTGRESQL_CONNECTION_HOSTNAME, POSTGRESQL_CONNECTION_PORT, POSTGRESQL_CONNECTION_DATABASE_NAME,
+				POSTGRESQL_CONNECTION_USER, POSTGRESQL_CONNECTION_PASSWORD);
 
 		PostgreSQLAdapter.CONNECTION_PROPERTIES         = POSTGRESQL_CONNECTION_PROPERTIES;
 		PostgreSQLAdapter.ALLOW_DATABASE_ADMINISTRATION = POSTGRESQL_ALLOW_DATABASE_ADMINISTRATION;

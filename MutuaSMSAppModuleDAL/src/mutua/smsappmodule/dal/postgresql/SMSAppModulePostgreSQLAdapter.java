@@ -2,7 +2,6 @@ package mutua.smsappmodule.dal.postgresql;
 
 import java.sql.SQLException;
 
-import mutua.icc.configuration.annotations.ConfigurableElement;
 import mutua.icc.instrumentation.Instrumentation;
 import adapters.JDBCAdapter;
 import adapters.PostgreSQLAdapter;
@@ -28,19 +27,32 @@ public class SMSAppModulePostgreSQLAdapter extends PostgreSQLAdapter {
 	// configuration
 	////////////////
 	
-	@ConfigurableElement("The application's instrumentation instance to be used to log PostgreSQL database events for the base functionality of all SMS Modules")
-	public static Instrumentation<?, ?> log;
+	/** The application's instrumentation instance to be used to log PostgreSQL database events */
+	private static Instrumentation<?, ?> log;
 
-	@ConfigurableElement("Hostname (or IP) of the PostgreSQL server")
-	public static String HOSTNAME;
-	@ConfigurableElement("Connection port for the PostgreSQL server")
-	public static int    PORT;
-	@ConfigurableElement("The PostgreSQL database with the application's data scope")
-	public static String DATABASE;
-	@ConfigurableElement("The PostgreSQL user name to access 'DATABASE' -- note: administrative rights, such as the creation of tables, may be necessary")
-	public static String USER;
-	@ConfigurableElement("The PostgreSQL plain text password for 'USER'")
-	public static String PASSWORD;
+	/** Hostname (or IP) of the PostgreSQL server */
+	private static String hostname;
+	/** Connection port for the PostgreSQL server */
+	private static int port;
+	/** The PostgreSQL database with the application's data scope */
+	private static String database;
+	/** The PostgreSQL user name to access 'DATABASE' -- note: administrative rights, such as the creation of tables, might be necessary */
+	private static String user;
+	/** The PostgreSQL plain text password for 'USER' */
+	private static String password;
+	
+	
+	public static void configureSMSDatabaseModule(Instrumentation<?, ?> log,
+	                                                  String hostname, int port, String database, String user, String password) {
+
+		SMSAppModulePostgreSQLAdapter.log = log;
+		
+		SMSAppModulePostgreSQLAdapter.hostname = hostname;
+		SMSAppModulePostgreSQLAdapter.port     = port;
+		SMSAppModulePostgreSQLAdapter.database = database;
+		SMSAppModulePostgreSQLAdapter.user     = user;
+		SMSAppModulePostgreSQLAdapter.password = password;
+	}
 
 	
 	private SMSAppModulePostgreSQLAdapter(Instrumentation<?, ?> log, String[][] preparedProceduresDefinitions) throws SQLException {
@@ -49,7 +61,7 @@ public class SMSAppModulePostgreSQLAdapter extends PostgreSQLAdapter {
 
 	@Override
 	protected String[] getCredentials() {
-		return new String[] {HOSTNAME, Integer.toString(PORT), DATABASE, USER, PASSWORD};
+		return new String[] {hostname, Integer.toString(port), database, user, password};
 	}
 
 	@Override
@@ -111,6 +123,8 @@ public class SMSAppModulePostgreSQLAdapter extends PostgreSQLAdapter {
 		                 "cts                   TIMESTAMP   DEFAULT CURRENT_TIMESTAMP," +
 		                 "uts                   TIMESTAMP   DEFAULT NULL," +
 			             "PRIMARY KEY (userId, propertyName));" +
+		                 
+			             // TODO we may wish to consider using enum data types, as in http://www.postgresql.org/docs/9.2/static/datatype-enum.html
 		                  
 		                 // trigger for 'uts' -- the updated timestamp
 		                 "CREATE TRIGGER Sessions_update_timestamp BEFORE UPDATE ON Sessions FOR EACH ROW EXECUTE PROCEDURE set_updated_timestamp();" +

@@ -29,31 +29,39 @@ public class SMSAppModulePostgreSQLAdapterChat extends PostgreSQLAdapter {
 	////////////////
 	
 	/** The application's instrumentation instance to be used to log PostgreSQL database events for the Profile Module */
-	public static Instrumentation<?, ?> log;
+	private static Instrumentation<?, ?> log;
 	
+	/** Hostname (or IP) of the PostgreSQL server */
+	private static String hostname;
+	/** Connection port for the PostgreSQL server */
+	private static int port;
+	/** The PostgreSQL database with the application's data scope */
+	private static String database;
+	/** The PostgreSQL user name to access 'DATABASE' -- note: administrative rights, such as the creation of tables, may be necessary */
+	private static String user;
+	/** The PostgreSQL plain text password for 'USER' */
+	private static String password;
+
 	/** The table name that keeps track of 'moTexts' and 'moId's */
 	private static String moTableName      = null;
-	
 	/** The field name, within 'moQueueTableName' that keeps track of 'moId's */
 	private static String moIdFieldName   = null;
-	
 	/** The field name, within 'MoQueueTableName' that keeps track of 'moText's */
 	private static String moTextFieldName = null;
+	
+	
+	public static void configureChatDatabaseModule(Instrumentation<?, ?> log,
+	                                               String hostname, int port, String database, String user, String password,
+	                                               String moTableName, String moIdFieldName, String moTextFieldName) {
 
-	@ConfigurableElement("Hostname (or IP) of the PostgreSQL server")
-	public static String HOSTNAME;
-	@ConfigurableElement("Connection port for the PostgreSQL server")
-	public static int    PORT;
-	@ConfigurableElement("The PostgreSQL database with the application's data scope")
-	public static String DATABASE;
-	@ConfigurableElement("The PostgreSQL user name to access 'DATABASE' -- note: administrative rights, such as the creation of tables, may be necessary")
-	public static String USER;
-	@ConfigurableElement("The PostgreSQL plain text password for 'USER'")
-	public static String PASSWORD;
-	
-	
-	
-	public static void configureChatDatabaseModule(String moTableName, String moIdFieldName, String moTextFieldName) {
+		SMSAppModulePostgreSQLAdapterChat.log = log;
+		
+		SMSAppModulePostgreSQLAdapterChat.hostname = hostname;
+		SMSAppModulePostgreSQLAdapterChat.port     = port;
+		SMSAppModulePostgreSQLAdapterChat.database = database;
+		SMSAppModulePostgreSQLAdapterChat.user     = user;
+		SMSAppModulePostgreSQLAdapterChat.password = password;
+		
 		SMSAppModulePostgreSQLAdapterChat.moTableName     = moTableName;
 		SMSAppModulePostgreSQLAdapterChat.moIdFieldName   = moIdFieldName;
 		SMSAppModulePostgreSQLAdapterChat.moTextFieldName = moTextFieldName;
@@ -66,7 +74,7 @@ public class SMSAppModulePostgreSQLAdapterChat extends PostgreSQLAdapter {
 
 	@Override
 	protected String[] getCredentials() {
-		return new String[] {HOSTNAME, Integer.toString(PORT), DATABASE, USER, PASSWORD};
+		return new String[] {hostname, Integer.toString(port), database, user, password};
 	}
 
 	@Override

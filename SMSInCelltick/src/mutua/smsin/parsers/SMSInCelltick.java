@@ -1,10 +1,6 @@
 package mutua.smsin.parsers;
 
-import java.io.IOException;
-import java.io.PrintStream;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.util.Map;
 
 import mutua.smsin.dto.IncomingSMSDto;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
@@ -23,29 +19,33 @@ import mutua.smsout.senders.SMSOutCelltick;
  * @author luiz
  */
 
-public class SMSInCelltick extends SMSInParser<HttpServletRequest, HttpServletResponse> {
+public class SMSInCelltick extends SMSInParser<Map<String, String>, byte[]> {
+	
+	public static byte[] ACCEPTED_RESPONSE  = ESMSInParserSMSAcceptionStatus.ACCEPTED.name().getBytes();
+	public static byte[] POSTPONED_RESPONSE = ESMSInParserSMSAcceptionStatus.POSTPONED.name().getBytes();
+	public static byte[] REJECTED_RESPONSE  = ESMSInParserSMSAcceptionStatus.REJECTED.name().getBytes();
 
 	public SMSInCelltick(String smsAppId) {
 		super("SMSInCelltick", smsAppId);
 	}
 
 	@Override
-	public IncomingSMSDto parseIncomingSMS(HttpServletRequest request) {
+	public IncomingSMSDto parseIncomingSMS(Map<String, String> requestParameters) {
 		// http://localhost:8080/HangmanSMSGameServices/AddToMOQueue?AUTHENTICATION_TOKEN=...&MSISDN=(+55)?DDN?NNNNNNNN&CARRIER_NAME=...&LA=...&MO_ID=...&TEXT=...
-		String msisdn       = request.getParameter("MSISDN");
-		String carrierName  = request.getParameter("CARRIER_NAME");
-		String largeAccount = request.getParameter("LA");
-		String originalMoId = request.getParameter("MO_ID");
-		String text         = request.getParameter("TEXT");
+		String msisdn       = requestParameters.get("MSISDN");
+		String carrierName  = requestParameters.get("CARRIER_NAME");
+		String largeAccount = requestParameters.get("LA");
+		String originalMoId = requestParameters.get("MO_ID");
+		String text         = requestParameters.get("TEXT");
 		
 		if ((msisdn == null) || (carrierName == null) || (largeAccount == null) || (originalMoId == null) || (text == null)) {
 			return null;
 		}
 		
 		// extra parameters
-		String account  = request.getParameter("ACCOUNT");
-		String validity = request.getParameter("VALIDITY");
-		String smsc     = request.getParameter("SMSC");
+		String account  = requestParameters.get("ACCOUNT");
+		String validity = requestParameters.get("VALIDITY");
+		String smsc     = requestParameters.get("SMSC");
 		
 		// TODO fix this workarround (if it is really necessary and if not, remove the dependency from SMSOutCelltick project)
 		SMSOutCelltick.ACCOUNT  = account;
@@ -62,26 +62,17 @@ public class SMSInCelltick extends SMSInParser<HttpServletRequest, HttpServletRe
 	}
 
 	@Override
-	public void sendReply(ESMSInParserSMSAcceptionStatus status, HttpServletResponse response) {
-		try {
-			response.setContentType("text/plain");
-			PrintStream out = new PrintStream(response.getOutputStream());
-			switch (status) {
-				case ACCEPTED:
-					out.print("ACCEPTED");
-					break;
-				case POSTPONED:
-					out.print("POSTPONED");
-					break;
-				default:
-					//Instrumentation.reportLocalopInconsistency("Unimplemented switch case statement '"+status.toString()+"'");
-			        // now go on performing as rejected
-				case REJECTED:
-					out.print("REJECTED");
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new RuntimeException("IOException while acknowledging to an MO", e);
+	public byte[] getReply(ESMSInParserSMSAcceptionStatus status) {
+		switch (status) {
+			case ACCEPTED:
+				return ACCEPTED_RESPONSE;
+			case POSTPONED:
+				return POSTPONED_RESPONSE;
+			default:
+				//Instrumentation.reportLocalopInconsistency("Unimplemented switch case statement '"+status.toString()+"'");
+		        // now go on performing as rejected
+			case REJECTED:
+				return REJECTED_RESPONSE;
 		}
 	}
 

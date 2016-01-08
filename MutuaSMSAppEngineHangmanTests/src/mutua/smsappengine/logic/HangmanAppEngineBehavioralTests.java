@@ -1,6 +1,6 @@
 package mutua.smsappengine.logic;
 
-import static mutua.smsappengine.config.HangmanSMSModulesConfiguration.*;
+import static config.HangmanSMSModulesConfiguration.*;
 import static org.junit.Assert.*;
 
 import java.sql.SQLException;
@@ -9,7 +9,6 @@ import mutua.events.postgresql.QueuesPostgreSQLAdapter;
 import mutua.icc.instrumentation.DefaultInstrumentationProperties;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
-import mutua.smsappengine.config.HangmanSMSModulesConfiguration;
 import mutua.smsappmodule.SMSAppModuleTestCommons;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationTests;
 import mutua.smsappmodule.dal.IChatDB;
@@ -34,6 +33,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import config.HangmanSMSModulesConfiguration;
 import adapters.dto.PreparedProcedureInvocationDto;
 
 /** <pre>
@@ -87,14 +87,20 @@ public class HangmanAppEngineBehavioralTests {
 		
 		// chat database configuration
 		//////////////////////////////
-		SMSAppModulePostgreSQLAdapterChat.configureChatDatabaseModule("ChatTestMOQueue", "eventId", "text");
+		SMSAppModulePostgreSQLAdapterChat.configureChatDatabaseModule(log,
+			SMSAppModuleConfigurationTests.POSTGRESQL_CONNECTION_HOSTNAME,
+			SMSAppModuleConfigurationTests.POSTGRESQL_CONNECTION_PORT,
+			SMSAppModuleConfigurationTests.POSTGRESQL_CONNECTION_DATABASE_NAME,
+			SMSAppModuleConfigurationTests.POSTGRESQL_CONNECTION_USER,
+			SMSAppModuleConfigurationTests.POSTGRESQL_CONNECTION_PASSWORD,	
+			"ChatTestMOQueue", "eventId", "text");
 		// MutuaEventsAdditionalEventLinks configuration
-		QueuesPostgreSQLAdapter.log = log; 
-		QueuesPostgreSQLAdapter.HOSTNAME = SMSAppModuleConfigurationTests.POSTGRESQL_CONNECTION_HOSTNAME;
-		QueuesPostgreSQLAdapter.PORT     = SMSAppModuleConfigurationTests.POSTGRESQL_CONNECTION_PORT;
-		QueuesPostgreSQLAdapter.DATABASE = SMSAppModuleConfigurationTests.POSTGRESQL_CONNECTION_DATABASE_NAME;
-		QueuesPostgreSQLAdapter.USER     = SMSAppModuleConfigurationTests.POSTGRESQL_CONNECTION_USER;
-		QueuesPostgreSQLAdapter.PASSWORD = SMSAppModuleConfigurationTests.POSTGRESQL_CONNECTION_PASSWORD;
+		QueuesPostgreSQLAdapter.configureQueuesDatabaseModule(log,
+			SMSAppModuleConfigurationTests.POSTGRESQL_CONNECTION_HOSTNAME,
+			SMSAppModuleConfigurationTests.POSTGRESQL_CONNECTION_PORT,
+			SMSAppModuleConfigurationTests.POSTGRESQL_CONNECTION_DATABASE_NAME,
+			SMSAppModuleConfigurationTests.POSTGRESQL_CONNECTION_USER,
+			SMSAppModuleConfigurationTests.POSTGRESQL_CONNECTION_PASSWORD);
 		qdb = QueuesPostgreSQLAdapter.getQueuesDBAdapter(null, "ChatTestMOQueue",
 		                                                       "phone  TEXT NOT NULL, text   TEXT NOT NULL, ",
 		                                                       "phone, text",

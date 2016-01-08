@@ -1,4 +1,4 @@
-package mutua.smsappengine.config;
+package config;
 
 import static mutua.smsappmodule.config.SMSAppModuleConfiguration.*;
 import static mutua.smsappmodule.config.SMSAppModuleConfigurationHelp.*;
@@ -18,8 +18,11 @@ import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigatio
 import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesProfile.*;
 import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesChat.*;
 import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesHangman.*;
+import instantvas.smsengine.HangmanHTTPInstrumentationRequestProperty;
+import instantvas.smsengine.MOSMSesQueueDataBureau;
 import mutua.icc.configuration.annotations.ConfigurableElement;
 import mutua.icc.instrumentation.Instrumentation;
+import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
 import mutua.smsappmodule.config.SMSAppModuleConfiguration;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationChat;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationHangman;
@@ -45,6 +48,7 @@ import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesSubscription;
 import mutua.subscriptionengine.SubscriptionEngine;
 import adapters.JDBCAdapter;
+import adapters.PostgreSQLAdapter;
 
 /** <pre>
  * HangmanSMSModulesConfiguration.java
@@ -69,11 +73,36 @@ public class HangmanSMSModulesConfiguration {
 		//SMSAppModuleNavigationStatesHangman.values(),
 	};
 	
+	public static Instrumentation<HangmanHTTPInstrumentationRequestProperty, String> log;
+	
+	/** to be defined by the request receivers (servlet, console, tests, icc app, ...) */
+	public static SubscriptionEngine SUBSCRIPTION_ENGINE;
+	
+	public static String SUBSCRIBE_SERVICE_URL               = "http://localhost:8082/celltick/wapAPI?action=subpkg&msisdn=%%MSISDN%%&pkgname=%%pkgname%%&charge=1";
+	public static String UNSUBSCRIBE_SERVICE_URL             = "http://localhost:8082/celltick/wapAPI?action=unsubpkg&msisdn=%%MSISDN%%&pkgname=%%pkgname%%&charge=1";
+	public static String SUBSCRIPTION_CHANNEL_NAME           = "HangMan";
+	public static String MT_SERVICE_URL                      = "http://localhost:15001/cgi-bin/sendsms";
+	public static int    MT_SERVICE_NUMBER_OF_RETRY_ATTEMPTS = 5;
+	public static long   MT_SERVICE_DELAY_BETWEEN_ATTEMPTS   = 5000;
+
+	
 	public static SMSAppModuleDALFactory                  DEFAULT_MODULE_DAL  = SMSAppModuleDALFactory.            DEFAULT_DAL;
 	public static SMSAppModuleDALFactorySubscription SUBSCRIPTION_MODULE_DAL  = SMSAppModuleDALFactorySubscription.DEFAULT_DAL;
 	public static SMSAppModuleDALFactoryProfile           PROFILE_MODULE_DAL  = SMSAppModuleDALFactoryProfile.     DEFAULT_DAL;
 	public static SMSAppModuleDALFactoryChat                 CHAT_MODULE_DAL  = SMSAppModuleDALFactoryChat.        DEFAULT_DAL;
 	public static SMSAppModuleDALFactoryHangman           HANGMAN_MODULE_DAL  = SMSAppModuleDALFactoryHangman.     DEFAULT_DAL;
+	
+	public static String  POSTGRESQL_CONNECTION_HOSTNAME           = "venus";
+	public static int     POSTGRESQL_CONNECTION_PORT               = 5432;
+	public static String  POSTGRESQL_CONNECTION_DATABASE_NAME      = "hangman";
+	public static String  POSTGRESQL_CONNECTION_USER               = "hangman";
+	public static String  POSTGRESQL_CONNECTION_PASSWORD           = "hangman";
+
+	public static EInstrumentationDataPours LOG_STRATEGY                   = EInstrumentationDataPours.CONSOLE;
+	public static String LOG_HANGMAN_FILE_PATH                             = "";
+	public static String LOG_WEBAPP_FILE_PATH                              = "";
+	public static String APPID                                             = "HANGMAN";
+	public static String SHORT_CODE                                        = "9714";
 
 	
 	private static void setDefaultDBToPOSTGRESQL(Instrumentation<?, ?> log, String hostname, int port, String database, String user, String password) {
@@ -100,54 +129,27 @@ public class HangmanSMSModulesConfiguration {
 		// JDBC & PostgreSQL parameter configuration
 		////////////////////////////////////////////
 		     
-		JDBCAdapter.SHOULD_DEBUG_QUERIES = true;
-		JDBCAdapter.CONNECTION_POOL_SIZE = 4;
+		JDBCAdapter.SHOULD_DEBUG_QUERIES                = true;
+		JDBCAdapter.CONNECTION_POOL_SIZE                = 8;
+		PostgreSQLAdapter.ALLOW_DATABASE_ADMINISTRATION = true;
 
 		// default module
-		SMSAppModulePostgreSQLAdapter.log = log;
-		SMSAppModulePostgreSQLAdapter.ALLOW_DATABASE_ADMINISTRATION = true;
-		SMSAppModulePostgreSQLAdapter.HOSTNAME       = hostname;
-		SMSAppModulePostgreSQLAdapter.PORT           = port;
-		SMSAppModulePostgreSQLAdapter.DATABASE       = database;
-		SMSAppModulePostgreSQLAdapter.USER           = user;
-		SMSAppModulePostgreSQLAdapter.PASSWORD       = password;
+		SMSAppModulePostgreSQLAdapter.configureSMSDatabaseModule(log, hostname, port, database, user, password);
 
 		// subscription module
-		SMSAppModulePostgreSQLAdapterSubscription.log = log;
-		SMSAppModulePostgreSQLAdapterSubscription.ALLOW_DATABASE_ADMINISTRATION = true;
-		SMSAppModulePostgreSQLAdapterSubscription.HOSTNAME       = hostname;
-		SMSAppModulePostgreSQLAdapterSubscription.PORT           = port;
-		SMSAppModulePostgreSQLAdapterSubscription.DATABASE       = database;
-		SMSAppModulePostgreSQLAdapterSubscription.USER           = user;
-		SMSAppModulePostgreSQLAdapterSubscription.PASSWORD       = password;
+		SMSAppModulePostgreSQLAdapterSubscription.configureSubscriptionDatabaseModule(log, hostname, port, database, user, password);
 
 		// profile module
-		SMSAppModulePostgreSQLAdapterProfile.log = log;
-		SMSAppModulePostgreSQLAdapterProfile.ALLOW_DATABASE_ADMINISTRATION = true;
-		SMSAppModulePostgreSQLAdapterProfile.HOSTNAME       = hostname;
-		SMSAppModulePostgreSQLAdapterProfile.PORT           = port;
-		SMSAppModulePostgreSQLAdapterProfile.DATABASE       = database;
-		SMSAppModulePostgreSQLAdapterProfile.USER           = user;
-		SMSAppModulePostgreSQLAdapterProfile.PASSWORD       = password;
+		SMSAppModulePostgreSQLAdapterProfile.configureProfileDatabaseModule(log, hostname, port, database, user, password);
 
 		// chat module
-		SMSAppModulePostgreSQLAdapterChat.log = log;
-		SMSAppModulePostgreSQLAdapterChat.ALLOW_DATABASE_ADMINISTRATION = true;
-		SMSAppModulePostgreSQLAdapterChat.HOSTNAME       = hostname;
-		SMSAppModulePostgreSQLAdapterChat.PORT           = port;
-		SMSAppModulePostgreSQLAdapterChat.DATABASE       = database;
-		SMSAppModulePostgreSQLAdapterChat.USER           = user;
-		SMSAppModulePostgreSQLAdapterChat.PASSWORD       = password;
+		SMSAppModulePostgreSQLAdapterChat.configureChatDatabaseModule(log, hostname, port, database, user, password,
+		                                                              MOSMSesQueueDataBureau.MO_TABLE_NAME,
+		                                                              MOSMSesQueueDataBureau.MO_ID_FIELD_NAME,
+		                                                              MOSMSesQueueDataBureau.MO_TEXT_FIELD_NAME);
 
 		// hangman module
-		SMSAppModulePostgreSQLAdapterHangman.log = log;
-		SMSAppModulePostgreSQLAdapterHangman.ALLOW_DATABASE_ADMINISTRATION = true;
-		SMSAppModulePostgreSQLAdapterHangman.HOSTNAME       = hostname;
-		SMSAppModulePostgreSQLAdapterHangman.PORT           = port;
-		SMSAppModulePostgreSQLAdapterHangman.DATABASE       = database;
-		SMSAppModulePostgreSQLAdapterHangman.USER           = user;
-		SMSAppModulePostgreSQLAdapterHangman.PASSWORD       = password;
-
+		SMSAppModulePostgreSQLAdapterHangman.configureHangmanDatabaseModule(log, hostname, port, database, user, password);
 
 	}
 	

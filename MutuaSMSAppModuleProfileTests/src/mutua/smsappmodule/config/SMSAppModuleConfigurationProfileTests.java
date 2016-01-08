@@ -38,8 +38,7 @@ public class SMSAppModuleConfigurationProfileTests {
 	public static String  POSTGRESQL_CONNECTION_USER          = "hangman";
 	public static String  POSTGRESQL_CONNECTION_PASSWORD      = "hangman";
 	public static String  POSTGRESQL_CONNECTION_PROPERTIES    = "charSet=UTF8&tcpKeepAlive=true&connectTimeout=30&loginTimeout=30&socketTimeout=300";
-
-			
+		
 	
 	/************
 	** METHODS **
@@ -60,18 +59,14 @@ public class SMSAppModuleConfigurationProfileTests {
 
 		SMSAppModuleConfigurationTests.applyConfiguration();
 
-		SMSAppModulePostgreSQLAdapterProfile.log = log;
-		SMSAppModulePostgreSQLAdapterProfile.HOSTNAME              = POSTGRESQL_CONNECTION_HOSTNAME;
-		SMSAppModulePostgreSQLAdapterProfile.PORT                  = POSTGRESQL_CONNECTION_PORT;
-		SMSAppModulePostgreSQLAdapterProfile.DATABASE              = POSTGRESQL_CONNECTION_DATABASE_NAME;
-		SMSAppModulePostgreSQLAdapterProfile.USER                  = POSTGRESQL_CONNECTION_USER;
-		SMSAppModulePostgreSQLAdapterProfile.PASSWORD              = POSTGRESQL_CONNECTION_PASSWORD;
-		SMSAppModuleDALFactoryProfile.DEFAULT_DAL                  = DEFAULT_PROFILE_DAL;
-
+		JDBCAdapter.SHOULD_DEBUG_QUERIES = POSTGRESQL_DEBUG_QUERIES;
 		PostgreSQLAdapter.CONNECTION_PROPERTIES         = POSTGRESQL_CONNECTION_PROPERTIES;
 		PostgreSQLAdapter.ALLOW_DATABASE_ADMINISTRATION = POSTGRESQL_ALLOW_DATABASE_ADMINISTRATION;
-		
-		JDBCAdapter.SHOULD_DEBUG_QUERIES = POSTGRESQL_DEBUG_QUERIES;
+
+		SMSAppModuleDALFactoryProfile.DEFAULT_DAL = DEFAULT_PROFILE_DAL;
+		SMSAppModulePostgreSQLAdapterProfile.configureProfileDatabaseModule(log,
+			POSTGRESQL_CONNECTION_HOSTNAME, POSTGRESQL_CONNECTION_PORT, POSTGRESQL_CONNECTION_DATABASE_NAME,
+			POSTGRESQL_CONNECTION_USER, POSTGRESQL_CONNECTION_PASSWORD);
 
 		// set the 'APPName' before 'SUBSCRIPTIONtrgLocalStartDoubleOptin' is defined
 		SMSAppModuleConfiguration.APPName = "ProfileTest";

@@ -50,18 +50,17 @@ public class SMSAppModuleConfigurationTests {
 	/** Apply on-the-fly configuration changes */
 	public static void applyConfiguration() {
 		
-		SMSAppModulePostgreSQLAdapter.log = log;
-		SMSAppModulePostgreSQLAdapter.HOSTNAME              = POSTGRESQL_CONNECTION_HOSTNAME;
-		SMSAppModulePostgreSQLAdapter.PORT                  = POSTGRESQL_CONNECTION_PORT;
-		SMSAppModulePostgreSQLAdapter.DATABASE              = POSTGRESQL_CONNECTION_DATABASE_NAME;
-		SMSAppModulePostgreSQLAdapter.USER                  = POSTGRESQL_CONNECTION_USER;
-		SMSAppModulePostgreSQLAdapter.PASSWORD              = POSTGRESQL_CONNECTION_PASSWORD;
-		SMSAppModuleDALFactory.DEFAULT_DAL                  = DEFAULT_MODULE_DAL;
-
+		JDBCAdapter.SHOULD_DEBUG_QUERIES = POSTGRESQL_DEBUG_QUERIES;
 		PostgreSQLAdapter.CONNECTION_PROPERTIES         = POSTGRESQL_CONNECTION_PROPERTIES;
 		PostgreSQLAdapter.ALLOW_DATABASE_ADMINISTRATION = POSTGRESQL_ALLOW_DATABASE_ADMINISTRATION;
-		
-		JDBCAdapter.SHOULD_DEBUG_QUERIES = POSTGRESQL_DEBUG_QUERIES;
+
+		SMSAppModuleDALFactory.DEFAULT_DAL = DEFAULT_MODULE_DAL;
+		SMSAppModulePostgreSQLAdapter.configureSMSDatabaseModule(log,
+			POSTGRESQL_CONNECTION_HOSTNAME,
+			POSTGRESQL_CONNECTION_PORT,
+			POSTGRESQL_CONNECTION_DATABASE_NAME,
+			POSTGRESQL_CONNECTION_USER,
+			POSTGRESQL_CONNECTION_PASSWORD);
 
 		SMSAppModuleConfiguration.APPName = "ModuleTest";
 		

@@ -7,37 +7,22 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.catalina.connector.RequestFacade;
-
 import config.WebAppConfiguration;
 import mutua.events.EventClient;
 import mutua.events.EventServer;
 import mutua.events.IEventLink;
-import mutua.events.QueueEventLink;
 import mutua.events.annotations.EventConsumer;
-import mutua.hangmansmsgame.HangmanHTTPInstrumentationRequestProperty;
 import mutua.hangmansmsgame.config.Configuration;
 import mutua.hangmansmsgame.dispatcher.IResponseReceiver;
 import mutua.hangmansmsgame.smslogic.HangmanSMSGameProcessor;
 import mutua.hangmansmsgame.smslogic.HangmanSMSGameProcessor.EHangmanSMSGameEvents;
-import mutua.icc.configuration.ConfigurationManager;
-import mutua.icc.instrumentation.HangmanSMSGameInstrumentationEvents;
-import mutua.icc.instrumentation.Instrumentation;
-import mutua.icc.instrumentation.eventclients.InstrumentationProfilingEventsClient;
-import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
 import mutua.imi.IndirectMethodNotFoundException;
 import mutua.smsin.dto.IncomingSMSDto;
-import mutua.smsin.parsers.SMSInCelltick;
-import mutua.smsin.parsers.SMSInParser;
 import mutua.smsin.parsers.SMSInParser.ESMSInParserSMSAcceptionStatus;
 import mutua.smsout.dto.OutgoingSMSDto;
 import mutua.smsout.senders.SMSOutCelltick;
 import mutua.smsout.senders.SMSOutSender;
-import mutua.subscriptionengine.CelltickLiveScreenSubscriptionAPI;
-import mutua.subscriptionengine.TestableSubscriptionAPI;
 import static config.WebAppConfiguration.*;
-import static mutua.icc.instrumentation.DefaultInstrumentationEvents.*;
-import static mutua.icc.instrumentation.DefaultInstrumentationProperties.*;
 import static mutua.hangmansmsgame.HangmanSMSGameServicesInstrumentationProperties.*;
 import static mutua.hangmansmsgame.HangmanSMSGameServicesInstrumentationEvents.*;
 
@@ -72,24 +57,27 @@ public class AddToMOQueue extends HttpServlet {
 	protected static MOProducer                         gameMOProducer    = new MOProducer(gameMOProducerAndConsumerLink, gameMOConsumer);
 	
 
-	private void process(HttpServletRequest request, HttpServletResponse response) {
+	private void process(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		log.reportRequestStart(request.getQueryString());
-		IncomingSMSDto mo = smsParser.parseIncomingSMS(request);
+		IncomingSMSDto mo = smsParser.parseIncomingSMS(request.getParameterMap());
+		byte[] contents;
 		if (mo == null) {
-			smsParser.sendReply(ESMSInParserSMSAcceptionStatus.REJECTED, response);
+			contents = smsParser.getReply(ESMSInParserSMSAcceptionStatus.REJECTED);
 			log.reportEvent(IE_MESSAGE_REJECTED);
 		} else {
 			try {
 				gameMOProducer.addToMOQueue(mo);
 				log.reportEvent(IE_MESSAGE_ACCEPTED, IP_MO_MESSAGE, mo);
-				smsParser.sendReply(ESMSInParserSMSAcceptionStatus.ACCEPTED, response);
+				contents = smsParser.getReply(ESMSInParserSMSAcceptionStatus.ACCEPTED);
 			} catch (Throwable t) {
-				smsParser.sendReply(ESMSInParserSMSAcceptionStatus.POSTPONED, response);
+				contents = smsParser.getReply(ESMSInParserSMSAcceptionStatus.POSTPONED);
 				log.reportThrowable(t, "Error detected while attempting to add an MO to the queue");
 			}
-				
 		}
 		log.reportRequestFinish();
+		response.setContentType("text/plain");
+		response.setContentLength(contents.length);
+		response.getOutputStream().write(contents);
 	}
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
