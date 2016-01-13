@@ -8,7 +8,7 @@ import java.util.ArrayList;
  * (created by luiz, Jul 25, 2015)
  *
  * Allows several threads to run, simultaneously, their tasks -- waiting for all of them
- * to finish, ideal for profiling/tuning and reentrancy tests purposes.
+ * to finish. Made for profiling/tuning and reentrancy tests purposes.
  * 
  * @see RelatedClass(es)
  * @version $Id$
@@ -47,13 +47,14 @@ public abstract class SplitRun extends Thread {
 		reset();
 	}
 	
-	public abstract void splitRun(int arg) throws Throwable;
-
 	private int arg;
 	
 	public SplitRun(int arg) {
 		this.arg = arg;
 	}
+
+	/** This is the function that needs to be overridden to perform the work. When it returns, the work is considered done */
+	public abstract void splitRun(int arg) throws Throwable;
 
 	public boolean running = true;
 	@Override

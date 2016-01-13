@@ -1,0 +1,38 @@
+
+Esperado:
+
+- Se 1 envia a, 1 deve receber b dentro de x segundos
+
+Observado:
+
+- 1 envia a as X horas. Ainda é esperado 1 receber mensagens enquanto o timeout não estourar
+- 2 envia c as X horas
+- 1 recebe b as X horas
+- 2 recebe c as X horas
+
+Quando o timeout rolar, ninguém será acusado
+
+
+-- Expected events
+
+
+1) Subsistema de agendamento de eventos e controle de realização de eventos
+2) Subsistema de interpretação de MOs e MTs, transformando-os em requisições e input para o subsistema 1
+
+1) Agendamento e controle de eventos:
+- Se eu digo que A deve acontecer em até X segundos, eu posso perguntar a cada instante:
+	- A já aconteceu? Se sim, quando? Alternativamente, eu posso ser notificado exatamente quando A acontecer.
+	- Quais eventos aconteceram desde a minha última consulta?
+	- Quais eventos não aconteceram no prazo? Alternativamente, eu posso ser notificado também.
+	- Quais eventos ainda espero que aconteçam? -- ou seja: quantos eventos temos em espera?
+	- Além da verificação hash key para identificar que A realmente aconteceu, depois o raw esperado e realizado devem ser compartilhados, dando mais informações à completude do evento: realizado sem ressalvas ou realizado com ressalvas (após o prazo, diferente do esperado)
+- O mecanismo de controle deve estar integrado ao sensor de acontecimentos, que informa, simplesmente:
+	- Espero que A aconteça em até X tempos
+	- A aconteceu agora
+	- Para cada evento registrado, controle ele através desta função de indexação -- que provê o hash key. Desta maneira, a forma de determinar se um evento recebido é o esperado através de, por exemplo, somente o telefone, telefone + mensagem inteira, telefone + alguns elementos da mensagem. Quando um evento A for notificado como acontecido, ele deve ser indexado por todas as funções de indexação em vigor e verificado.
+- Alguns casos de erro -- já que nossa função é controlar:
+	- A aconteceu, mas não estava sendo esperado.
+	- A aconteceu, embora com atraso
+	- Tentativa de registrar novamente A -- com respeito ao mecanismo de indexação descrito acima, A deve ser indexado não somente pela sua função anunciada de indexação, mas também pelas outras funções disponíveis. Caso alguma delas gere um key já existente, este erro é dado.
+
+- A função de indexação dos MTs visa transformar a mensagem textual de volta nas chamadas às funções de Phrases

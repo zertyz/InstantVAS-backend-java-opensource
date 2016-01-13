@@ -3,14 +3,10 @@ package instantvas.nativewebserver;
 import instantvas.smsengine.web.AddToMOQueue;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
-import java.text.NumberFormat;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.WeakHashMap;
 import java.util.concurrent.Executors;
 
@@ -55,19 +51,82 @@ public class NativeHTTPServer {
 	public static long READ_TIMEOUT       = 100;
 
 	public static void main(String[] args) throws IOException {
-		HttpServer server = HttpServer.create(new InetSocketAddress(80), 9999);
-		server.createContext("/AddToMOQueue", handlers.addToMOQueue);
-		server.setExecutor(Executors.newFixedThreadPool(NUMBER_OF_THREADS));
-		server.start();
+		startServer(80, 9999, InstantVASSMSWebHandlers.values());
 		System.out.println("Started a :80 server. Please, request!");
 	}
 	
-	public enum handlers implements HttpHandler {
+	public static void startServer(int port, int socketBacklogQueueSlots, INativeHTTPServerHandler[]... handlerArrays) throws IOException {
+		HttpServer server = HttpServer.create(new InetSocketAddress(port), socketBacklogQueueSlots);
+		for (INativeHTTPServerHandler[] handlers : handlerArrays) {
+			for (INativeHTTPServerHandler handler : handlers) {
+				server.createContext(handler.getContextPath(), handler);
+			}
+		}
+		server.setExecutor(Executors.newFixedThreadPool(NUMBER_OF_THREADS));
+		server.start();
+	}
+	
+	private static WeakHashMap<Thread, HashMap<String, String>> parametersMaps = new WeakHashMap<Thread, HashMap<String, String>>(NUMBER_OF_THREADS);
+	
+	public static synchronized HashMap<String, String> getParametersHash() {
+		HashMap<String, String> parameters = parametersMaps.get(Thread.currentThread());
+		if (parameters == null) {
+			parameters = new HashMap<String, String>(PARAMETERS_HASH_CAPACITY);
+			parametersMaps.put(Thread.currentThread(), parameters);
+		}
+		return parameters;
+	}
+	
+	public static HashMap<String, String> retrieveGetParameters(String queryString) throws UnsupportedEncodingException {
+		
+		HashMap<String, String> parameters = getParametersHash();
+		parameters.clear();
+		
+		int state          = 0;	// 0: building parameter name; 1: building parameter value
+		int nextTokenStart = 0;
+		int nextTokenEnd   = -1;
+		boolean stillParsing = true;
+		
+		String parameterName  = null;
+		String parameterValue = null;
+		
+		while (stillParsing) {
+			if (state == 0) {
+				// gathering parameter name state
+				nextTokenEnd = queryString.indexOf('=', nextTokenStart);
+				if (nextTokenEnd == -1) {
+					nextTokenEnd = queryString.length();
+					stillParsing = false;
+				}
+				// note: for performance reasons, we: 1) do not 'URLDecoder' parameter names; 2) use .intern() for parameter names minimize the heap strings
+				parameterName = queryString.substring(nextTokenStart, nextTokenEnd).intern();
+				state = 1;
+				nextTokenStart = nextTokenEnd+1;		// skip the '=' character
+			} else if (state == 1) {
+				// gathering parameter value state
+				nextTokenEnd = queryString.indexOf('&', nextTokenStart);
+				if (nextTokenEnd == -1) {
+					nextTokenEnd = queryString.length();
+					stillParsing = false;
+				}
+				parameterValue = URLDecoder.decode(queryString.substring(nextTokenStart, nextTokenEnd).intern(), "UTF-8");
+				state = 0;
+				nextTokenStart = nextTokenEnd+1;		// skip the '&' character
+				parameters.put(parameterName, parameterValue);
+			}
+		}
+
+		return parameters;
+	}
+
+	
+	public enum InstantVASSMSWebHandlers implements INativeHTTPServerHandler {
 				
-		addToMOQueue {
+		addToMOQueue("/AddToMOQueue") {
 			@Override
 			public void handle(HttpExchange he) throws IOException {
-				byte[] response = AddToMOQueue.process(retrieveGetParameters(he), he.getRequestURI().getRawQuery());
+				String queryString = he.getRequestURI().getRawQuery();
+				byte[] response = AddToMOQueue.process(retrieveGetParameters(queryString), queryString);
 				he.sendResponseHeaders(200, response.length);
 				he.getResponseBody().write(response);
 		        he.close();
@@ -76,15 +135,14 @@ public class NativeHTTPServer {
 		
 		;
 		
-		private static WeakHashMap<Thread, HashMap<String, String>> parametersMaps = new WeakHashMap<Thread, HashMap<String, String>>(NUMBER_OF_THREADS);
+		private String contextPath;
 		
-		public static synchronized HashMap<String, String> getParametersHash() {
-			HashMap<String, String> parameters = parametersMaps.get(Thread.currentThread());
-			if (parameters == null) {
-				parameters = new HashMap<String, String>(PARAMETERS_HASH_CAPACITY);
-				parametersMaps.put(Thread.currentThread(), parameters);
-			}
-			return parameters;
+		private InstantVASSMSWebHandlers(String contextPath) {
+			this.contextPath = contextPath;
+		}
+		
+		public String getContextPath() {
+			return contextPath;
 		}
 		
 //		private static WeakHashMap<Thread, byte[]> inputBuffers = new WeakHashMap<Thread, byte[]>(NUMBER_OF_THREADS);
@@ -110,53 +168,6 @@ public class NativeHTTPServer {
 //			return 0;
 //		}
 		
+	}
 		
-		
-		public static HashMap<String, String> retrieveGetParameters(HttpExchange he) throws UnsupportedEncodingException {
-			
-			HashMap<String, String> parameters = getParametersHash();
-			parameters.clear();
-			
-			int state          = 0;	// 0: building parameter name; 1: building parameter value
-			int nextTokenStart = 0;
-			int nextTokenEnd   = -1;
-			boolean stillParsing = true;
-			
-			String parameterName  = null;
-			String parameterValue = null;
-			
-			String rawQueryString = he.getRequestURI().getRawQuery();
-			while (stillParsing) {
-				if (state == 0) {
-					// gathering parameter name state
-					nextTokenEnd = rawQueryString.indexOf('=', nextTokenStart);
-					if (nextTokenEnd == -1) {
-						nextTokenEnd = rawQueryString.length();
-						stillParsing = false;
-					} else {
-						nextTokenEnd++;		// skip the '=' character
-					}
-					// note: for performance reasons, we: 1) do not 'URLDecoder' parameter names; 2) use .intern() for parameter names minimize the heap strings
-					parameterName = rawQueryString.substring(nextTokenStart, nextTokenEnd).intern();
-					state = 1;
-				} else if (state == 1) {
-					// gathering parameter value state
-					nextTokenEnd = rawQueryString.indexOf('&', nextTokenStart);
-					if (nextTokenEnd == -1) {
-						nextTokenEnd = rawQueryString.length();
-						stillParsing = false;
-					} else {
-						nextTokenEnd++;		// skip the '&' character
-					}
-					parameterValue = URLDecoder.decode(rawQueryString.substring(nextTokenStart, nextTokenEnd).intern(), "UTF-8");
-					state = 0;
-					parameters.put(parameterName, parameterValue);
-				}
-			}
-
-			return parameters;
-		}
-		
-	};
-
 }
