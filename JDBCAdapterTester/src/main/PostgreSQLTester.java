@@ -27,7 +27,7 @@ public class PostgreSQLTester {
 		log.reportRequestStart("PostgreSQLTester");
 		log.reportDebug("Attempting to get a PostgreSQL connection...");
 		PostgreSQLAdapter db = PostgreSQLAdapterConfiguration.getDBAdapter();
-		db.resetDatabases();
+		db.resetDatabase();
 
 		// INSERT
 		PreparedProcedureInvocationDto invocation = new PreparedProcedureInvocationDto("InsertSimpleRecord");

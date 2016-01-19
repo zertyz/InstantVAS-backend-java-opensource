@@ -11,7 +11,7 @@ import mutua.icc.instrumentation.Instrumentation;
  * =================
  * (created by luiz, Jun 29, 2010)
  *
- * Specializes 'JDBCHelper' to deal with the particularities of the MySQL database
+ * Specializes 'JDBCHelper' to deal with the peculiarities of the MySQL database
  * and MySQL JDBC Driver
  */
 
@@ -36,8 +36,8 @@ public abstract class MySQLAdapter extends JDBCAdapter {
 	}
 
 	@Override
-	protected String getDropDatabaseCommand() {
-		return "DROP DATABASE " + DATABASE_NAME;
+	protected String[] getDropDatabaseCommand() {
+		return new String[] {"DROP DATABASE " + DATABASE_NAME};
 	}
 
 	@Override

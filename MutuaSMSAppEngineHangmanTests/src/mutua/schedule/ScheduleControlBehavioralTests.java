@@ -17,7 +17,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  * ===================================
  * (created by luiz, Jan 8, 2016)
  *
- * Tests the scueduling control subsystem
+ * Tests the scheduling control subsystem
  *
  * @see RelatedClass(es)
  * @version $Id$
@@ -37,7 +37,7 @@ public class ScheduleControlBehavioralTests {
 			}
 		};
 		
-		ScheduleControl<String> schedule = new ScheduleControl<String>(1000, sif);
+		ScheduleControl<String> schedule = new ScheduleControl<String>(sif);
 		
 		assertFalse("Events that were not registered yet should be considered as not pending", schedule.isEventPending("A"));
 		schedule.registerEvent("A");		
@@ -65,7 +65,7 @@ public class ScheduleControlBehavioralTests {
 	
 	@Test
 	public void testTimeout() throws EventAlreadyScheduledException, EventNotScheduledException, InterruptedException {
-		ScheduleControl<String> schedule = new ScheduleControl<String>(1000, new IScheduleIndexingFunction<String>() {
+		ScheduleControl<String> schedule = new ScheduleControl<String>(new IScheduleIndexingFunction<String>() {
 			@Override
 			public String getKey(String event) {
 				return event.toLowerCase();
@@ -76,24 +76,24 @@ public class ScheduleControlBehavioralTests {
 		schedule.registerEvent("Late B");
 		
 		Thread.sleep(500);
-		assertEquals("Wrong number of events awaiting to be executed (before any timeout)", 2, schedule.getScheduledEventsCount());
+		assertEquals("Wrong number of events awaiting to be executed (before any timeout)", 2, schedule.getUnnotifiedEventsCount());
 		schedule.notifyEvent("on time a");
-		assertEquals("Wrong number of events awaiting to be executed (after one execution)", 1, schedule.getScheduledEventsCount());
+		assertEquals("Wrong number of events awaiting to be executed (after one execution)", 1, schedule.getUnnotifiedEventsCount());
 		Thread.sleep(1000);
-		assertEquals("Wrong number of events awaiting to be executed (after one execution and one timeout)", 1, schedule.getScheduledEventsCount());
+		assertEquals("Wrong number of events awaiting to be executed (after one execution and one timeout)", 1, schedule.getUnnotifiedEventsCount());
 		schedule.notifyEvent("late b");
-		assertEquals("Wrong number of events awaiting to be executed (after one on time and another timed out execution)", 0, schedule.getScheduledEventsCount());
+		assertEquals("Wrong number of events awaiting to be executed (after one on time and another timed out execution)", 0, schedule.getUnnotifiedEventsCount());
 		
-		for (ScheduleEntryInfo<String> executedEvent : schedule.consumeExecutedEvents()) {
-			System.out.println("Scheduled: "+executedEvent.getScheduledEvent());
-			System.out.println("Executed:  "+executedEvent.getExecutedEvent());
-			System.out.println("Elapsed:   "+executedEvent.getElapsedMillis()+"\n");
-		}
+		ScheduleEntryInfo<String>[] executedEvents = schedule.consumeExecutedEvents();
+		assertEquals("Wrong first executed event",              "On time A", executedEvents[0].getScheduledEvent());
+		assertTrue("Wrong first executed event elapsed time -- "+executedEvents[0].getElapsedMillis()+"ms", Math.abs(500-executedEvents[0].getElapsedMillis()) < 10);
+		assertEquals("Wrong first executed event",              "late b", executedEvents[1].getExecutedEvent());
+		assertTrue("Wrong first executed event elapsed time -- "+executedEvents[1].getElapsedMillis()+"ms", Math.abs(1500-executedEvents[1].getElapsedMillis()) < 10);
 	}
 	
 	@Test
 	public void testErrorConditions() throws EventAlreadyScheduledException, EventNotScheduledException {
-		ScheduleControl<String> schedule = new ScheduleControl<String>(1000, new IScheduleIndexingFunction<String>() {
+		ScheduleControl<String> schedule = new ScheduleControl<String>(new IScheduleIndexingFunction<String>() {
 			@Override
 			public String getKey(String event) {
 				return event;
@@ -188,7 +188,7 @@ public class ScheduleControlBehavioralTests {
 			}
 		};
 		
-		final ScheduleControl<SMS> schedule = new ScheduleControl<SMS>(1000, mtKeyGenerator);
+		final ScheduleControl<SMS> schedule = new ScheduleControl<SMS>(mtKeyGenerator);
 		
 		
 		// SMS & Events generators code
@@ -218,12 +218,14 @@ public class ScheduleControlBehavioralTests {
 					}
 					MOQueue.put(new SMS(phoneNumbers[n], MOs[m]));
 				}
-				System.out.println("generateMOsAndRegisterEvents is done");
+//				System.out.println("generateMOsAndRegisterEvents is done");
 			}
 		};
 		
+		final long[] scheduledEventsCount = {-1};
 		final SplitRun consumeMOsAndGenerateMTs = new SplitRun(-1) {
 			public void splitRun(int arg) throws Throwable {
+				scheduledEventsCount[0] = 0;
 				for (int i=0; i<testLoopCount; i++) {
 					SMS mo = MOQueue.take();
 					SMS mt1 = null;
@@ -244,26 +246,32 @@ public class ScheduleControlBehavioralTests {
 					}
 					// add to the queue and register the events
 					MTQueue.put(mt1);
+					scheduledEventsCount[0]++;
 					if (mt2 != null) {
 						MTQueue.put(mt2);
+						scheduledEventsCount[0]++;
 					}
 				}
-				System.out.println("consumeMOsAndGenerateMTs is done");
+//				System.out.println("consumeMOsAndGenerateMTs is done");
 			}
 		};
 		
+		final long[] notifiedEventsCount = {-12};
 		final SplitRun consumeMTsAndNotifyEvents = new SplitRun(-1) {
 			public void splitRun(int arg) throws Throwable {
+				notifiedEventsCount[0] = 0;
 				while (consumeMOsAndGenerateMTs.running || (MTQueue.isEmpty() == false)) {
 					SMS mt = MTQueue.poll(1000, TimeUnit.MILLISECONDS);
 					if (mt != null) {
 						schedule.notifyEvent(mt);
+						notifiedEventsCount[0]++;
 					}
 				}
-				System.out.println("consumeMTsAndNotifyEvents is done");
+//				System.out.println("consumeMTsAndNotifyEvents is done");
 			}
 		};
 		
+		final long[] consumedEventsCount = {-123};
 		final SplitRun consolidateStatistics = new SplitRun(-1) {
 			public void splitRun(int arg) throws Throwable {
 				double elapsedAverage = 0;
@@ -275,9 +283,10 @@ public class ScheduleControlBehavioralTests {
 						n++;
 						elapsedAverage += ((((double)elapsedMillis) - elapsedAverage) / ((double)n));
 					}
-					System.err.println("elapsedAverage("+n+") = "+elapsedAverage);
+//					System.err.println("elapsedAverage("+n+") = "+elapsedAverage);
 				}
-				System.out.println("consolidateStatistics is done");
+//				System.out.println("consolidateStatistics is done");
+				consumedEventsCount[0] = n;
 			}
 		};
 		
@@ -289,6 +298,10 @@ public class ScheduleControlBehavioralTests {
 		SplitRun.add(consolidateStatistics);
 		
 		SplitRun.runAndWaitForAll();
+		
+		assertEquals("Scheduled and Notified events should be the same", scheduledEventsCount[0], notifiedEventsCount[0]);
+		assertEquals("All notified events should have been consumed",    notifiedEventsCount[0], consumedEventsCount[0]);
+		assertEquals("No events should have been left unnotified after the test", 0, schedule.getUnnotifiedEventsCount());
 	}
 
 }

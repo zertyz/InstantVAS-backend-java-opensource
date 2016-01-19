@@ -33,7 +33,7 @@ public abstract class SQLServerAdapter extends JDBCAdapter {
 	}
 	
 	@Override
-	protected String getDropDatabaseCommand() {
+	protected String[] getDropDatabaseCommand() {
 		return null;
 	}
 

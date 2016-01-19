@@ -17,13 +17,17 @@ public class Main {
 
 		try {
 			
-			// test MySQL conectivity
+			// test MySQL connectivity
 			//MySQLTester.mysqltesterMain(args);
 			
-			// test SQL Server conectivity
+			// test SQL Server connectivity
 			//SQLServerTester.sqlserverMain(args);
 			
-			PostgreSQLTester.postgreSQLTesterMain(args);
+			// test PostgreSQL connectivity
+			//PostgreSQLTester.postgreSQLTesterMain(args);
+			
+			// test embedded Derby connectivity
+			DerbyEmbeddedTester.embeddedDerbyTesterMain(args);
 			
 		} catch (Throwable e) {
 			e.printStackTrace();

@@ -66,7 +66,7 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 	protected String PASSWORD;
 	
 	// instance variables
-	private Instrumentation<?, ?> log;
+	protected Instrumentation<?, ?> log;
 	private JDBCAdapterPreparedProcedures preparedProcedures;
 	
 	
@@ -211,7 +211,7 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 		return returnBuffer.toArray(new Object[returnBuffer.size()][Math.max(columnCount, 0)]);
 	}
 	
-	private static Object[][] getArrayFromQueryExecution(Connection connection, String sql) throws SQLException {
+	protected static Object[][] getArrayFromQueryExecution(Connection connection, String sql) throws SQLException {
 		PreparedStatement ps = connection.prepareStatement(sql);
 		Object[][] result = getArrayFromQueryExecution(ps);
 		ps.close();
@@ -249,7 +249,7 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 	protected abstract String getShowDatabasesCommand();
 
 	/** Returns the statement that will make the server delete all tables -- and possibly the database itself */
-	protected abstract String getDropDatabaseCommand();
+	protected abstract String[] getDropDatabaseCommand();
 
 	/** tells what is the database structure, so we can manage to verify & create it
 	/*  example:
@@ -421,14 +421,17 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 	}
 
 	/** erases all database contents -- solo for testing purposes */
-	public void resetDatabases() {
+	public void resetDatabase() {
 		try {
 			// erase all
 			log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "ATTENDING TO THE REQUEST OF ERASING ALL DATA OF DATABASE '"+DATABASE_NAME+"'");
 			Connection conn = createAdministrativeConnection();
 			Statement stm = conn.createStatement();
 			
-			stm.execute(getDropDatabaseCommand());
+			for (String sql : getDropDatabaseCommand()) {
+				stm.addBatch(sql);
+			}
+			stm.executeBatch();
 			stm.close();
 			conn.close();
 			

@@ -12,9 +12,8 @@ import mutua.icc.instrumentation.Instrumentation;
  * =======================
  * (created by luiz, Jan 26, 2015)
  *
- * Specializes 'JDBCHelper' to deal with the particularities of the PostgreSQL database
+ * Specializes {@link JDBCAdapter} to deal with the peculiarities of the PostgreSQL database and it's JDBC driver
  *
- * @see RelatedClass(es)
  * @version $Id$
  * @author luiz
  */
@@ -47,13 +46,14 @@ public abstract class PostgreSQLAdapter extends JDBCAdapter {
 	
 	@Override
 	/** For postgreSQL, a different strategy is used to "drop" the database -- drop all tables instead */
-	protected String getDropDatabaseCommand() {
-		String statements = "";
+	protected String[] getDropDatabaseCommand() {
 		String[][] tableDefinitions = getTableDefinitions();
 		
+		String[] statements = new String[tableDefinitions.length];
+		int i = 0;
 		for (String[] tableDefinition : tableDefinitions) {
 			String databaseName = tableDefinition[0];
-			statements += "DROP TABLE " + databaseName + " CASCADE;";
+			statements[i++] = "DROP TABLE " + databaseName + " CASCADE";
 		}
 		return statements;
 	}

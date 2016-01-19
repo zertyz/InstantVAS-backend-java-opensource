@@ -82,38 +82,33 @@ public class NativeHTTPServer {
 		HashMap<String, String> parameters = getParametersHash();
 		parameters.clear();
 		
-		int state          = 0;	// 0: building parameter name; 1: building parameter value
 		int nextTokenStart = 0;
 		int nextTokenEnd   = -1;
-		boolean stillParsing = true;
 		
-		String parameterName  = null;
-		String parameterValue = null;
+		String parameterName  = "";
+		String parameterValue = "";
 		
-		while (stillParsing) {
-			if (state == 0) {
-				// gathering parameter name state
-				nextTokenEnd = queryString.indexOf('=', nextTokenStart);
-				if (nextTokenEnd == -1) {
-					nextTokenEnd = queryString.length();
-					stillParsing = false;
-				}
-				// note: for performance reasons, we: 1) do not 'URLDecoder' parameter names; 2) use .intern() for parameter names minimize the heap strings
-				parameterName = queryString.substring(nextTokenStart, nextTokenEnd).intern();
-				state = 1;
-				nextTokenStart = nextTokenEnd+1;		// skip the '=' character
-			} else if (state == 1) {
-				// gathering parameter value state
-				nextTokenEnd = queryString.indexOf('&', nextTokenStart);
-				if (nextTokenEnd == -1) {
-					nextTokenEnd = queryString.length();
-					stillParsing = false;
-				}
-				parameterValue = URLDecoder.decode(queryString.substring(nextTokenStart, nextTokenEnd).intern(), "UTF-8");
-				state = 0;
-				nextTokenStart = nextTokenEnd+1;		// skip the '&' character
-				parameters.put(parameterName, parameterValue);
+		while (true) try {
+			// gathering parameter name state
+			nextTokenEnd = queryString.indexOf('=', nextTokenStart);
+			if (nextTokenEnd == -1) {
+				parameterName = queryString.substring(nextTokenStart).intern();
+				break;
 			}
+			// note: for performance reasons, we: 1) do not 'URLDecoder' parameter names; 2) use .intern() for parameter names minimize the heap strings
+			parameterName = queryString.substring(nextTokenStart, nextTokenEnd).intern();
+			nextTokenStart = nextTokenEnd+1;		// skip the '=' character
+
+			// gathering parameter value state
+			nextTokenEnd = queryString.indexOf('&', nextTokenStart);
+			if (nextTokenEnd == -1) {
+				parameterValue = URLDecoder.decode(queryString.substring(nextTokenStart), "UTF-8");
+				break;
+			}
+			parameterValue = URLDecoder.decode(queryString.substring(nextTokenStart, nextTokenEnd), "UTF-8");
+			nextTokenStart = nextTokenEnd+1;		// skip the '&' character
+		} finally {
+			parameters.put(parameterName, parameterValue);
 		}
 
 		return parameters;
