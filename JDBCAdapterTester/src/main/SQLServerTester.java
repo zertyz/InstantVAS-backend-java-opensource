@@ -1,10 +1,8 @@
 package main;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import adapters.SQLServerAdapter;
-import adapters.dto.PreparedProcedureInvocationDto;
 
 /** <pre>
  * SQLServerTester.java  --  $Id: SQLServerTester.java,v 1.1 2010/07/01 22:03:06 luiz Exp $
@@ -15,7 +13,7 @@ import adapters.dto.PreparedProcedureInvocationDto;
  */
 
 public class SQLServerTester {
-
+/*
 	public static void sqlserverMain(String[] args) throws SQLException {
 		System.out.println("SQLServerHelperTester is running...");
 		SQLServerAdapter db = SQLServerAdapterConfiguration.getDBAdapter();
@@ -43,5 +41,5 @@ public class SQLServerTester {
 			rs.close();
 		}
 	}
-
+*/
 }

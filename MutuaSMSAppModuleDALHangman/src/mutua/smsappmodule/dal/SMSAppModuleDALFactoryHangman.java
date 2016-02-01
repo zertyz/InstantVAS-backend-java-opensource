@@ -35,8 +35,8 @@ public enum SMSAppModuleDALFactoryHangman {
 	
 	;
 	
-	@ConfigurableElement("The desired data access handler for the 'User Profile SMS Module' facilities")
-	public static SMSAppModuleDALFactoryHangman DEFAULT_DAL = SMSAppModuleDALFactoryHangman.RAM;
+//	@ConfigurableElement("The desired data access handler for the 'User Hangman SMS Module' facilities")
+//	public static SMSAppModuleDALFactoryHangman DEFAULT_DAL = SMSAppModuleDALFactoryHangman.RAM;
 	
 	private IMatchDB        matchDB;
 	private INextBotWordsDB nextBotWordsDB;

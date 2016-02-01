@@ -21,22 +21,43 @@ import mutua.icc.instrumentation.Instrumentation;
 public abstract class PostgreSQLAdapter extends JDBCAdapter {
 
 	
-	// configuration
-	////////////////
+	// Mutua Configurable Class pattern
+	///////////////////////////////////
 	
-	@ConfigurableElement("Additional URL parameters for PostgreSQL JDBC driver connection properties")
+	/** Additional URL parameters for PostgreSQL JDBC driver connection properties */
 	public static String  CONNECTION_PROPERTIES = "charSet=UTF8&tcpKeepAlive=true&connectTimeout=30&loginTimeout=30&socketTimeout=300";
-	@ConfigurableElement("Indicates whether or not to perform needed administrative tasks, such as database creation")
-	public static boolean ALLOW_DATABASE_ADMINISTRATION = true;
+	/** The number of concurrent connections allowed to each PostgreSQL server. Suggestion: fine tune to get the optimum number for this particular app/database, paying attention to the fact that a pool smaller than the sum of all consumer threads may be suboptimal, and that a greater than it can be a waste. As an initial value, set this to nDbCPUs * nDbHDs and adjust the consumer threads accordingly */
+	public static int CONNECTION_POOL_SIZE = 8;
+	
+	private static Connection[] connectionPool = null;
+	
+	/** method to be called when attempting to configure the default behavior for new instances of 'PostgreSQLAdapter'.
+	 *  @param connectionProperties if null, the default value won't be touched. See {@link #CONNECTION_PROPERTIES}
+	 *  @param connectionPoolSize   if <= 0, the default value won't be touched. See {@link #CONNECTION_POOL_SIZE} */
+	public static void configureDefaultValuesForNewInstances(String connectionProperties, int connectionPoolSize) {
+		
+		CONNECTION_PROPERTIES         = connectionProperties != null ? connectionProperties : CONNECTION_PROPERTIES;
+		CONNECTION_POOL_SIZE          = connectionPoolSize   >  0    ? connectionPoolSize   : CONNECTION_POOL_SIZE;
+		
+		// prepare the connection pool
+		if ((connectionPool == null) || (connectionPool.length != CONNECTION_POOL_SIZE)) {
+			connectionPool = new Connection[CONNECTION_POOL_SIZE];
+		}
+	}
+	
+	static {
+		configureDefaultValuesForNewInstances(null, -1);
+	}
 
-
-	public PostgreSQLAdapter(Instrumentation<?, ?> log, String[][] preparedProceduresDefinitions) throws SQLException {
-		super(log, new org.postgresql.Driver().getClass(), preparedProceduresDefinitions);
+	
+	public PostgreSQLAdapter(Instrumentation<?, ?> log, boolean allowDataStructuresAssertion, boolean shouldDebugQueries,
+	                         String hostname, int port, String database, String user, String password) throws SQLException {
+		super(log, new org.postgresql.Driver().getClass(), allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password, connectionPool);
 	}
 	
 	@Override
 	protected String getShowTablesCommand() {
-		return "SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema' AND tableowner='"+USER+"';";
+		return "SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema' AND tableowner='"+user+"';";
 	};
 
 	@Override
@@ -60,21 +81,17 @@ public abstract class PostgreSQLAdapter extends JDBCAdapter {
 
 	@Override
 	protected Connection createAdministrativeConnection() throws SQLException {
-		if (ALLOW_DATABASE_ADMINISTRATION) {
-			return createDatabaseConnection();	// it seems it is impossible to connect to PostgreSQL without a database
-		} else {
-			return null;
-		}
+		return createDatabaseConnection();	// it is impossible to connect to PostgreSQL without a database
 	}
 
 	@Override
 	protected Connection createDatabaseConnection() throws SQLException {
-		String url = "jdbc:postgresql://" + HOSTNAME + ":"+PORT+"/" +
-		             DATABASE_NAME + "?" + CONNECTION_PROPERTIES; 
+		String url = "jdbc:postgresql://" + hostname + ":"+port+"/" +
+		             database + "?" + CONNECTION_PROPERTIES; 
 
 		return DriverManager.getConnection(url,
-		                                   USER,
-		                                   PASSWORD);
+		                                   user,
+		                                   password);
 	}
 	
 	

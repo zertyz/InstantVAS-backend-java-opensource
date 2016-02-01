@@ -1,5 +1,6 @@
 package mutua.smsappmodule;
 
+import static instantvas.tests.InstantVASSMSAppModuleTestsConfiguration.*;
 import static org.junit.Assert.*;
 
 import java.sql.SQLException;
@@ -20,8 +21,6 @@ import mutua.smsin.dto.IncomingSMSDto;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 import mutua.smsout.dto.OutgoingSMSDto;
 
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationTests.*;
-
 /** <pre>
  * SMSAppModuleTestCommons.java
  * ============================
@@ -41,8 +40,8 @@ public class SMSAppModuleTestCommons {
 	private Instrumentation<?, ?> log;
 	private TestResponseReceiver responseReceiver;
 	
-	private static IUserDB    userDB    = DEFAULT_MODULE_DAL.getUserDB();
-	private static ISessionDB sessionDB = DEFAULT_MODULE_DAL.getSessionDB();
+	private static IUserDB    userDB    = DEFAULT_SMS_MODULE_DAL.getUserDB();
+	private static ISessionDB sessionDB = DEFAULT_SMS_MODULE_DAL.getSessionDB();
 
 	
 	public SMSAppModuleTestCommons(Instrumentation<?, ?> log, INavigationState[]... navigationStatesArrays) {

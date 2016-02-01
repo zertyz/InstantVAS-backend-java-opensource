@@ -1,7 +1,8 @@
 package adapters;
 
-import static mutua.icc.instrumentation.DefaultInstrumentationProperties.DIP_MSG;
-import static mutua.icc.instrumentation.JDBCAdapterInstrumentationEvents.IE_DATABASE_ADMINISTRATION_WARNING;
+import static mutua.icc.instrumentation.DefaultInstrumentationProperties.*;
+import static mutua.icc.instrumentation.JDBCAdapterInstrumentationEvents.*;
+import static mutua.icc.instrumentation.JDBCAdapterInstrumentationProperties.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 
 import mutua.events.annotations.EventListener;
-import mutua.icc.configuration.annotations.ConfigurableElement;
 import mutua.icc.instrumentation.DefaultInstrumentationEvents;
 import mutua.icc.instrumentation.InstrumentableEvent;
 import mutua.icc.instrumentation.Instrumentation;
@@ -25,9 +25,7 @@ import mutua.icc.instrumentation.JDBCAdapterInstrumentationEvents;
 import mutua.icc.instrumentation.dto.InstrumentationEventDto;
 import mutua.icc.instrumentation.eventclients.InstrumentationPropagableEventsClient;
 import mutua.imi.IndirectMethodNotFoundException;
-import adapters.dto.PreparedProcedureInvocationDto;
 import adapters.exceptions.JDBCAdapterError;
-import adapters.exceptions.JDBCAdapterException;
 
 /** <pre>
  * JDBCAdapter.java  --  $Id: JDBCHelper.java,v 1.1 2010/07/01 22:02:14 luiz Exp $
@@ -46,28 +44,24 @@ import adapters.exceptions.JDBCAdapterException;
 public abstract class JDBCAdapter implements InstrumentationPropagableEventsClient<EInstrumentationPropagableEvents> {
 	
 	
-	// configuration
-	////////////////	
-
-	@ConfigurableElement("Whether or not to show SQL queries sent to the database server")
-	public static boolean SHOULD_DEBUG_QUERIES = true;
-	@ConfigurableElement("The number of concurrent connections to the database. Suggestion: fine tune to get the optimum number for this particular app/database, paying attention to the fact that pool number grater than the number of consumer threads is useless. As the initial value, set this as a multiple of the product: nDbCPUs * nDbHDs")
-	public static int CONNECTION_POOL_SIZE = 8;
-
-
-	// common variables
-	private static Connection[] pool = {};
-	
-	// to be defined in the 'getCredentials' method
-	protected String HOSTNAME;
-	protected String PORT;
-	protected String DATABASE_NAME;
-	protected String USER;
-	protected String PASSWORD;
-	
 	// instance variables
 	protected Instrumentation<?, ?> log;
-	private JDBCAdapterPreparedProcedures preparedProcedures;
+	/**  Indicates whether or not to perform any needed administrative tasks, such as database creation */
+	protected boolean allowDataStructuresAssertion;
+	/** Set to true to have all database queries logged */
+	protected boolean shouldDebugQueries;
+	/** Hostname (or IP) of the database server */
+	protected String hostname;
+	/** Connection port for the database server */
+	protected int    port;
+	/** The database name to connect to, containing the whole model needed by this application */
+	protected String database;
+	/** The user name to access the given 'DATABASE' -- note: administrative rights, such as the creation of tables, might be necessary */
+	protected String user;
+	/** The database plain text password for provided 'USER' */
+	protected String password;
+	/** the connection pool. Should be set to the statically defined pool set on each specialized adapter's class */ 
+	private Connection[] pool = null;
 	
 	
 	protected JDBCAdapter() {}
@@ -86,7 +80,7 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 	private void assureDatabaseIsOk() throws SQLException {
 		Connection con = createAdministrativeConnection();
 		if (con == null) {
-			log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "Specialized 'JDBCAdapter' class '"+getClass().getName()+"' states it won't handle database administration features -- therefore we are not going to check if the database '"+DATABASE_NAME+"' exists");
+			log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "Specialized 'JDBCAdapter' class '"+getClass().getName()+"' states it can't handle database administration features -- therefore we are not going to check if the database '"+database+"' exists");
 			return;
 		}
 		Statement stm = con.createStatement();
@@ -95,16 +89,16 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 		// search
 		for (int i=0; i<databases.length; i++) {
 			String fetchedDatabase = ((String)databases[i][0]).toLowerCase();
-			if (DATABASE_NAME.toLowerCase().equals(fetchedDatabase)) {
+			if (database.toLowerCase().equals(fetchedDatabase)) {
 				// already exists, do nothing
 				return;
 			}
 		}
 		
 		// database does not exist. Create it
-		log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "Database '"+DATABASE_NAME+"' seems not to exist. Attempting to create it...");
-		stm.executeUpdate("CREATE DATABASE "+DATABASE_NAME+";");
-		log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "Database '"+DATABASE_NAME+"': created.");
+		log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "Database '"+database+"' seems not to exist. Attempting to create it...");
+		stm.executeUpdate("CREATE DATABASE "+database+";");
+		log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "Database '"+database+"': created.");
 		
 		stm.close();
 		con.close();
@@ -112,43 +106,53 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 
 	// verifies that the appropriate tables exist, creating if needed
 	private void assureTablesAreOk() throws SQLException {
+		SQLException t = null;
 		String[][] tableDefinitions = getTableDefinitions();
 		if (tableDefinitions == null) {
-			log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "Specialized 'JDBCAdapter' class '"+getClass().getName()+"' states it won't handle table administration features -- therefore we are not going to check if the needed tables exist");
+			log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "Specialized 'JDBCAdapter' class '"+getClass().getName()+"' states it can't handle table administration features -- therefore we are not going to check if the needed tables exist");
 			return;
 		}
+
 		Connection con = createDatabaseConnection();
 		Statement stm = con.createStatement();
-		Object[][] tables = getArrayFromQueryExecution(con, getShowTablesCommand());
-
-		// match
-		for (int i=0; i<tableDefinitions.length; i++) {
-			String requiredTableName    = tableDefinitions[i][0];
-			String tableCreationCommand = tableDefinitions[i][1];
-			boolean hasInitialData      = (tableDefinitions[i].length > 2);
-			// find it
-			boolean found = false;
-			for (int j=0; j<tables.length; j++) {
-				String observedTableName = ((String)tables[j][0]).toLowerCase();
-				if (requiredTableName.toLowerCase().equals(observedTableName)) {
-					found = true;
+		String requiredTableName = null;
+		try {
+			Object[][] tables = getArrayFromQueryExecution(con, getShowTablesCommand());
+	
+			// match
+			for (int i=0; i<tableDefinitions.length; i++) {
+				requiredTableName         = tableDefinitions[i][0];
+				String[] tableCreationStatements = tableDefinitions[i];		// to be used from [1] on
+				// find it
+				boolean found = false;
+				for (int j=0; j<tables.length; j++) {
+					String observedTableName = ((String)tables[j][0]).toLowerCase();
+					if (requiredTableName.toLowerCase().equals(observedTableName)) {
+						found = true;
+					}
 				}
-			}
-			if (!found) {
-				log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "Table '"+requiredTableName+"' seems not to exist. Attempting to create it...");
-				stm.executeUpdate(tableCreationCommand);
-				log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "Table '"+requiredTableName+"': created.");
-				if (hasInitialData) {
-					for (int j=2; j<tableDefinitions[i].length; j++) {
-						stm.addBatch(tableDefinitions[i][j]);
+				if (!found) {
+					log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "Table '"+requiredTableName+"' seems not to exist. Attempting to create it...");
+					for (int j=1; j<tableCreationStatements.length; j++) {
+						stm.addBatch(tableCreationStatements[j]);
 					}
 					int[] result = stm.executeBatch();
-					log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "Table '"+requiredTableName+"' borned with "+result.length+" record"+(result.length==1 ? "":"s"));
+					log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "Table '"+requiredTableName+"': created uppon the execution of "+tableCreationStatements.length+" statement(s).");
 				}
 			}
+		} catch (SQLException e) {
+			t = e;
+			log.reportThrowable(e, "Error creating table '"+requiredTableName+"'");
+			for (SQLException nextException = e.getNextException(); nextException != null; nextException = nextException.getNextException()) {
+				log.reportThrowable(nextException, "Neasted exception while creating table '"+requiredTableName+"'");
+			}
+		} finally {
+			stm.close();
+			con.close();
 		}
-		stm.close();
-		con.close();
+		if (t != null) {
+			throw t;
+		}
 	}
 
 
@@ -219,16 +223,10 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 	}
 
 	private static Hashtable<String, Boolean> assuredDatabases = new Hashtable<String, Boolean>();
-	/** check database and tables presence... create if needed
+	/** check database and tables presence... create if needed.
 	/* assure it will be done only once during the life of the virtual machine */
-	private void assureDataStructures() {
-		String[][] tableDefinitions = getTableDefinitions();
-		if (tableDefinitions == null) {
-			// do not verify if a structure was not provided
-			log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "WARNING: '"+this.getClass().getName()+"' user class states we should not perform any database administration");
-			return;
-		}
-		String key = HOSTNAME + "_" + PORT + "_" + DATABASE_NAME + "_" + tableDefinitions[0][0] + "#" + tableDefinitions.length;
+	protected void assureDataStructures() {
+		String key = hostname + "_" + port + "_" + database + "_" + getClass().getCanonicalName();
 		if (!assuredDatabases.containsKey(key)) try {
 			assureDatabaseIsOk();
 			assureTablesAreOk();
@@ -252,48 +250,40 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 	protected abstract String[] getDropDatabaseCommand();
 
 	/** tells what is the database structure, so we can manage to verify & create it
-	/*  example:
-	    return new String[][] {
-	   		{"SimpleTable", "CREATE TABLE SimpleTable (id int, phone char(20))"},
-	   		{"NotSoSimple", "CREATE TABLE NotSoSimple (id int NOT NULL AUTO_INCREMENT PRIMARY KEY, phone char(20) UNIQUE)",
-	   		                "INSERT INTO NotSoSimple VALUES (0, '2191234899')"},
-	    }; */
+	 *  example:<pre>
+	 *  return new String[][] {
+	 * 	    {"SimpleTable", "CREATE TABLE SimpleTable (id int, phone char(20))"},
+	 * 	    {"NotSoSimple", "CREATE TABLE NotSoSimple (id int NOT NULL AUTO_INCREMENT PRIMARY KEY, phone char(20) UNIQUE)",
+	 * 	                    "INSERT INTO NotSoSimple VALUES (0, '2191234899')"},
+	 *  }; */
 	protected abstract String[][] getTableDefinitions();
 	
-	/** tells where and on behalf of whom to connect
-	/*  this method must return a string array in the form:
-	/*  {hostname, port, database_name, user, password} */
-	protected abstract String[] getCredentials();
-	
-	/** instantiate a brand new object to deal with the database
-	/*  defines the ways by which one will deal with the database -- defining PrepareadProcedures,
-	/*  which documentation can be found on 'JDBCPreparedProceduresHelper' constructor. Example:
-	    return new String[][] {
-	   		{"Update", "UPDATE FROM SimpleTable SET phone='${PHONE}'"},
-	   		{"Insert", "INSERT INTO SimpleTable VALUES (0, '${PHONE}'"},
-	    }; */
-	
-	protected JDBCAdapter(Instrumentation<?, ?> log, Class<?> jdbcDriverClass, String[][] preparedProceduresDefinitions) throws SQLException {
+	/** instantiate a brand new object to deal with the database, with it's own 'log' and data structure assertion option */	
+	protected JDBCAdapter(
+		Instrumentation<?, ?> log, Class<?> jdbcDriverClass,
+		boolean allowDataStructuresAssertion, boolean shouldDebugQueries,
+		String hostname, int port, String database, String user, String password, Connection[] pool) throws SQLException {
 
-		this.log = log;
+		this.log  = log;
+		this.allowDataStructuresAssertion = allowDataStructuresAssertion;
+		this.shouldDebugQueries           = shouldDebugQueries;
+		this.hostname      = hostname;
+		this.port          = port;
+		this.database      = database;
+		this.user          = user;
+		this.password      = password;
+		this.pool = pool;
+		
+		
 		log.addInstrumentableEvents(JDBCAdapterInstrumentationEvents.values());
 		
 		loadDriverClasses(jdbcDriverClass);
 		
-		String[] credentials = getCredentials();
-		if (credentials.length != 5) {
-			throw new JDBCAdapterException("the provided 'getCredentials' didn't respect the convention in returning " + 
-			                              "hostname, port, database_name, user and password");
+		if (allowDataStructuresAssertion) {
+			assureDataStructures();
+		} else {
+			log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "WARNING: '"+this.getClass().getName()+"' instance initiated without data structures verification");
 		}
-		this.HOSTNAME      = credentials[0];
-		this.PORT          = credentials[1];
-		this.DATABASE_NAME = credentials[2];
-		this.USER          = credentials[3];
-		this.PASSWORD      = credentials[4];
-		
-		preparedProcedures = new JDBCAdapterPreparedProcedures(log, preparedProceduresDefinitions);
-
-		assureDataStructures();
 		checkAndPopulatePoolOfConnections();
 		
 		// detect exceptions to repopulate the pool of connections
@@ -305,9 +295,6 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 	}
 	
 	private void checkAndPopulatePoolOfConnections() throws SQLException {
-		if (CONNECTION_POOL_SIZE != pool.length) {
-			pool = new Connection[CONNECTION_POOL_SIZE];
-		}
 		for (int i=0; i<pool.length; i++) {
 			if (pool[i] != null) try {
 				if (pool[i].isValid(30)) {
@@ -327,9 +314,9 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 	** EXCEPTION NOTIFICATION **
 	***************************/
 	
-	private InstrumentableEvent REPORTED_THROWABLE          = DefaultInstrumentationEvents.DIE_REPORTED_THROWABLE.getInstrumentableEvent();
-	private InstrumentableEvent REPORTED_UNCOUGHT_EXCEPTION = DefaultInstrumentationEvents.DIE_UNCOUGHT_EXCEPTION.getInstrumentableEvent();
-	private InstrumentableEvent REPORTED_ERROR              = DefaultInstrumentationEvents.DIE_ERROR.getInstrumentableEvent();
+	private final static InstrumentableEvent REPORTED_THROWABLE          = DefaultInstrumentationEvents.DIE_REPORTED_THROWABLE.getInstrumentableEvent();
+	private final static InstrumentableEvent REPORTED_UNCOUGHT_EXCEPTION = DefaultInstrumentationEvents.DIE_UNCOUGHT_EXCEPTION.getInstrumentableEvent();
+	private final static InstrumentableEvent REPORTED_ERROR              = DefaultInstrumentationEvents.DIE_ERROR.getInstrumentableEvent();
 	@EventListener({"INTERNAL_FRAMEWORK_INSTRUMENTATION_EVENT"})
 	public void handleInstrumentationNotifications(InstrumentationEventDto applicationEvent) {
 		InstrumentableEvent instrumentableEvent = applicationEvent.getEvent();
@@ -350,18 +337,24 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 	**************************/
 	
 	/** executes an INSERT, UPDATE, DELETE, and possibly other commands */
-	public int invokeUpdateProcedure(PreparedProcedureInvocationDto invocation) throws SQLException {
+	public int invokeUpdateProcedure(AbstractPreparedProcedure abstractPreparedProcedure, Object... parametersAndValuesPairs) throws SQLException {
+		if (shouldDebugQueries) {
+			log.reportEvent(IE_DATABASE_QUERY, IP_PREPARED_SQL, abstractPreparedProcedure.getPreparedProcedureSQL(), IP_SQL_TEMPLATE_PARAMETERS, parametersAndValuesPairs);
+		}
 		Connection conn = getConnection();
-		PreparedStatement ps = preparedProcedures.buildPreparedStatement(invocation, conn);
+		PreparedStatement ps = abstractPreparedProcedure.getPreparedStatement(conn, parametersAndValuesPairs);
 		int result = ps.executeUpdate();
 		ps.close();
 		return result;
 	}
 	
 	/** executes SELECT statements that return a single value */
-	public Object invokeScalarProcedure(PreparedProcedureInvocationDto invocation) throws SQLException {
+	public Object invokeScalarProcedure(AbstractPreparedProcedure abstractPreparedProcedure, Object... parametersAndValuesPairs) throws SQLException {
+		if (shouldDebugQueries) {
+			log.reportEvent(IE_DATABASE_QUERY, IP_PREPARED_SQL, abstractPreparedProcedure.getPreparedProcedureSQL(), IP_SQL_TEMPLATE_PARAMETERS, parametersAndValuesPairs);
+		}
 		Connection conn = getConnection();
-		PreparedStatement ps = preparedProcedures.buildPreparedStatement(invocation, conn);
+		PreparedStatement ps = abstractPreparedProcedure.getPreparedStatement(conn, parametersAndValuesPairs);
 		ResultSet resultSet = ps.executeQuery();
 		try {
 			if (resultSet.next()) {
@@ -375,8 +368,7 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 				    is.close();
 				    return javaObject;
 				} catch (IOException e1) {
-				} catch (ClassNotFoundException e2) {
-				}
+				} catch (ClassNotFoundException e2) {}
 				Object result = resultSet.getObject(1);
 				return result;
 			} else {
@@ -390,9 +382,12 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 	
 	/** executes a query (typically via SELECT statement) that will return a single row, with some number of fields
 	 *  in it, which the order is known -- possibly via SELECT a, b, c... clause */
-	public Object[] invokeRowProcedure(PreparedProcedureInvocationDto invocation) throws SQLException {
+	public Object[] invokeRowProcedure(AbstractPreparedProcedure abstractPreparedProcedure, Object... parametersAndValuesPairs) throws SQLException {
+		if (shouldDebugQueries) {
+			log.reportEvent(IE_DATABASE_QUERY, IP_PREPARED_SQL, abstractPreparedProcedure.getPreparedProcedureSQL(), IP_SQL_TEMPLATE_PARAMETERS, parametersAndValuesPairs);
+		}
 		Connection conn = getConnection();
-		PreparedStatement ps = preparedProcedures.buildPreparedStatement(invocation, conn);
+		PreparedStatement ps = abstractPreparedProcedure.getPreparedStatement(conn, parametersAndValuesPairs);
 		Object[][] result = getArrayFromQueryExecution(ps);
 		ps.close();
 		if ((result == null) || (result.length == 0)) {
@@ -404,9 +399,12 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 	
 	/** executes a query (typically via SELECT statement) that will return a virtual table that can be contained into RAM -- that is, has a
 	 *  few and foreseeable amount of elements -- possibly using the LIMIT clause */
-	public Object[][] invokeArrayProcedure(PreparedProcedureInvocationDto invocation) throws SQLException {
+	public Object[][] invokeArrayProcedure(AbstractPreparedProcedure abstractPreparedProcedure, Object... parametersAndValuesPairs) throws SQLException {
+		if (shouldDebugQueries) {
+			log.reportEvent(IE_DATABASE_QUERY, IP_PREPARED_SQL, abstractPreparedProcedure.getPreparedProcedureSQL(), IP_SQL_TEMPLATE_PARAMETERS, parametersAndValuesPairs);
+		}
 		Connection conn = getConnection();
-		PreparedStatement ps = preparedProcedures.buildPreparedStatement(invocation, conn);
+		PreparedStatement ps = abstractPreparedProcedure.getPreparedStatement(conn, parametersAndValuesPairs);
 		Object[][] result = getArrayFromQueryExecution(ps);
 		ps.close();
 		return result;
@@ -414,9 +412,12 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 	
 	/** executes a query (typically via SELECT statement) that will produce huge quantities of results and, thus, won't fit into RAM
 	 *  the returned 'ResultSet' needs to be closed after use */
-	public ResultSet invokeVirtualTableProcedure(PreparedProcedureInvocationDto invocation) throws SQLException {
+	public ResultSet invokeVirtualTableProcedure(AbstractPreparedProcedure abstractPreparedProcedure, Object... parametersAndValuesPairs) throws SQLException {
+		if (shouldDebugQueries) {
+			log.reportEvent(IE_DATABASE_QUERY, IP_PREPARED_SQL, abstractPreparedProcedure.getPreparedProcedureSQL(), IP_SQL_TEMPLATE_PARAMETERS, parametersAndValuesPairs);
+		}
 		Connection conn = getConnection();
-		PreparedStatement ps = preparedProcedures.buildPreparedStatement(invocation, conn);
+		PreparedStatement ps = abstractPreparedProcedure.getPreparedStatement(conn, parametersAndValuesPairs);
 		return ps.executeQuery();
 	}
 
@@ -424,7 +425,7 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 	public void resetDatabase() {
 		try {
 			// erase all
-			log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "ATTENDING TO THE REQUEST OF ERASING ALL DATA OF DATABASE '"+DATABASE_NAME+"'");
+			log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "ATTENDING TO THE REQUEST OF ERASING ALL DATA OF DATABASE '"+database+"'");
 			Connection conn = createAdministrativeConnection();
 			Statement stm = conn.createStatement();
 			

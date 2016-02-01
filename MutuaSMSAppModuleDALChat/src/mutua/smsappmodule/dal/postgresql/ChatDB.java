@@ -5,8 +5,8 @@ import java.sql.SQLException;
 import mutua.smsappmodule.dal.IChatDB;
 import mutua.smsappmodule.dto.PrivateMessageDto;
 import mutua.smsappmodule.dto.UserDto;
-import adapters.JDBCAdapter;
-import adapters.dto.PreparedProcedureInvocationDto;
+
+import static mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterChat.Parameters.*;
 
 /** <pre>
  * ChatDB.java
@@ -22,7 +22,7 @@ import adapters.dto.PreparedProcedureInvocationDto;
 
 public class ChatDB extends IChatDB {
 	
-	private JDBCAdapter dba;
+	private SMSAppModulePostgreSQLAdapterChat dba;
 	
 	
 	public ChatDB() throws SQLException {
@@ -31,27 +31,21 @@ public class ChatDB extends IChatDB {
 
 	@Override
 	public void reset() throws SQLException {
-		PreparedProcedureInvocationDto procedure = new PreparedProcedureInvocationDto("ResetTable");
-		dba.invokeUpdateProcedure(procedure);
+		dba.invokeUpdateProcedure(dba.ResetTables);
 	}
 
 	@Override
 	public void logPrivateMessage(UserDto sender, UserDto recipient, int moId, int moTextStartIndex) throws SQLException {
-		PreparedProcedureInvocationDto procedure;
-		procedure = new PreparedProcedureInvocationDto("InsertPrivateMessage");
-		procedure.addParameter("MO_ID", moId);
-		procedure.addParameter("SENDER_USER_ID",         sender.getUserId());
-		procedure.addParameter("RECIPIENT_USER_ID",   recipient.getUserId());
-		procedure.addParameter("MO_TEXT_START_INDEX", moTextStartIndex);
-		dba.invokeUpdateProcedure(procedure);
+		dba.invokeUpdateProcedure(dba.InsertPrivateMessage,
+			MO_ID, moId,
+			SENDER_USER_ID,      sender.getUserId(),
+			RECIPIENT_USER_ID,   recipient.getUserId(),
+			MO_TEXT_START_INDEX, moTextStartIndex);
 	}
 
 	@Override
 	public UserDto[] getPrivatePeers(UserDto user) throws SQLException {
-		PreparedProcedureInvocationDto procedure;
-		procedure = new PreparedProcedureInvocationDto("SelectPeers");
-		procedure.addParameter("USER_ID", user.getUserId());
-		Object[][] rows = dba.invokeArrayProcedure(procedure);
+		Object[][] rows = dba.invokeArrayProcedure(dba.SelectPeers, USER_ID, user.getUserId());
 		if (rows.length == 0) {
 			return null;
 		}
@@ -67,11 +61,9 @@ public class ChatDB extends IChatDB {
 
 	@Override
 	public PrivateMessageDto[] getPrivateMessages(UserDto user1, UserDto user2) throws SQLException {
-		PreparedProcedureInvocationDto procedure;
-		procedure = new PreparedProcedureInvocationDto("SelectPrivateMessages");
-		procedure.addParameter("USER1_ID", user1.getUserId());
-		procedure.addParameter("USER2_ID", user2.getUserId());
-		Object[][] rows = dba.invokeArrayProcedure(procedure);
+		Object[][] rows = dba.invokeArrayProcedure(dba.SelectPrivateMessages,
+			USER1_ID, user1.getUserId(),
+			USER2_ID, user2.getUserId());
 		if (rows.length == 0) {
 			return null;
 		}

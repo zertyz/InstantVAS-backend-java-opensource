@@ -3,16 +3,18 @@ package mutua.smsappmodule.dal.postgresql;
 import java.sql.SQLException;
 
 import adapters.JDBCAdapter;
-import adapters.dto.PreparedProcedureInvocationDto;
 import mutua.smsappmodule.dal.INextBotWordsDB;
 import mutua.smsappmodule.dto.UserDto;
+
+import static mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterHangman.NextBotWordsDBStatements.*;
+import static mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterHangman.Parameters.*;
 
 /** <pre>
  * NextBotWordsDB.java
  * ===================
  * (created by luiz, Aug 14, 2015)
  *
- * Implements the POSTGRESQL version of {@link INextBotWordsDB}
+ * Implements the PostgreSQL version of {@link INextBotWordsDB}
  *
  * @see INextBotWordsDB
  * @version $Id$
@@ -30,15 +32,12 @@ public class NextBotWordsDB implements INextBotWordsDB {
 	
 	@Override
 	public void reset() throws SQLException {
-		PreparedProcedureInvocationDto procedure = new PreparedProcedureInvocationDto("ResetTable");
-		dba.invokeUpdateProcedure(procedure);
+		dba.invokeUpdateProcedure(ResetTable);
 	}
 
 	@Override
 	public int getAndIncNextBotWord(UserDto user) throws SQLException {
-		PreparedProcedureInvocationDto procedure = new PreparedProcedureInvocationDto("SelectAndIncrementNextBotWord");
-		procedure.addParameter("USER_ID", user.getUserId());
-		int cursor = (Integer) dba.invokeScalarProcedure(procedure);
+		int cursor = (Integer) dba.invokeScalarProcedure(SelectAndIncrementNextBotWord, USER_ID, user.getUserId());
 		return cursor;
 	}
 

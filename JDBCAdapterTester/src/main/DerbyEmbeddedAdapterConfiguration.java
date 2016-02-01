@@ -1,8 +1,14 @@
 package main;
 
+import java.io.Serializable;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import adapters.AbstractPreparedProcedure;
 import adapters.DerbyEmbeddedAdapter;
+import adapters.IJDBCAdapterParameterDefinition;
+import adapters.exceptions.PreparedProcedureException;
 import main.config.Configuration;
 
 /** <pre>
@@ -21,18 +27,8 @@ public class DerbyEmbeddedAdapterConfiguration extends DerbyEmbeddedAdapter {
 	// TODO considerar refatorar o JDBCAdapter para rastrear não só a criação de tabelas, mas também de views, indices, procedures, schemas, triggers, etc, e assim permitir um 'clean database' mais facilmente
 	
 	
-	private DerbyEmbeddedAdapterConfiguration(String[][] preparedProceduresDefinitions) throws SQLException {
-		super(Configuration.log, preparedProceduresDefinitions);
-	}
-
-	@Override
-	protected String[] getCredentials() {
-		String hostname     = "--";
-		String port         = "--";
-		String databaseName = "/temp/tmp/DerbyDBSpikes";
-		String user         = "--";
-		String password     = "--";
-		return new String[] {hostname, port, databaseName, user, password};
+	private DerbyEmbeddedAdapterConfiguration() throws SQLException {
+		super(Configuration.log, true, true, null, -1, "/temp/tmp/DerbyDBSpikes", null, null);
 	}
 
 	@Override
@@ -42,13 +38,47 @@ public class DerbyEmbeddedAdapterConfiguration extends DerbyEmbeddedAdapter {
 		};
 	}
 
+	
+	/***************
+	** PARAMETERS **
+	***************/
+	
+	public enum DerbyParameters implements IJDBCAdapterParameterDefinition {
+
+		ID   (Integer.class),
+		PHONE(String.class),
+		
+		;
+		
+		private DerbyParameters(Class<? extends Object> a) {}
+
+		@Override
+		public String getParameterName() {
+			return name();
+		}
+	}
+	
+	/***************
+	** STATEMENTS **
+	***************/
+	
+	public static final class DerbyStatements {
+		/** Inserts an 'ID' and 'PHONE' into the 'DerbyTestTable' */
+		public static final AbstractPreparedProcedure InsertTestRecord = new AbstractPreparedProcedure(
+			"INSERT INTO DerbyTestTable VALUES (",DerbyParameters.ID,", ",DerbyParameters.PHONE,")");
+		/** Returns the 'PHONE' associated with 'ID' */
+		public static final AbstractPreparedProcedure GetPhoneFromId = new AbstractPreparedProcedure(
+			"SELECT phone FROM DerbyTestTable WHERE id=",DerbyParameters.ID);
+		/** Updates the 'PHONE' on the record associated with 'ID' */
+		public static final AbstractPreparedProcedure UpdateTestRecord = new AbstractPreparedProcedure(
+			"UPDATE DerbyTestTable SET phone=",DerbyParameters.PHONE," WHERE id=",DerbyParameters.ID);
+		/** removes the record denoted by 'ID' */
+		public static final AbstractPreparedProcedure DeleteTestRecord = new AbstractPreparedProcedure(
+			"DELETE FROM DerbyTestTable WHERE id=",DerbyParameters.ID);
+	}
+	
 	public static DerbyEmbeddedAdapter getDBAdapter() throws SQLException {
-		return new DerbyEmbeddedAdapterConfiguration(new String[][] {
-			{"InsertTestRecord",   "INSERT INTO DerbyTestTable VALUES (${ID}, ${PHONE})"},
-			{"GetPhoneFromId",     "SELECT phone FROM DerbyTestTable WHERE id=${ID}"},
-			{"UpdateTestRecord",   "UPDATE DerbyTestTable SET phone=${PHONE} WHERE id=${ID}"},
-			{"DeleteTestRecord",   "DELETE FROM DerbyTestTable WHERE id=${ID}"},
-		});
+		return new DerbyEmbeddedAdapterConfiguration();
 	}
 	
 	

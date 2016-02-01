@@ -3,6 +3,7 @@ package main;
 import java.sql.SQLException;
 
 import main.config.Configuration;
+import adapters.JDBCAdapter;
 import adapters.SQLServerAdapter;
 
 /** <pre>
@@ -13,18 +14,18 @@ import adapters.SQLServerAdapter;
  * Provides the needed 'SQLServerAdapter' configuration to access and operate on the database
  */
 
-public class SQLServerAdapterConfiguration extends SQLServerAdapter {
+public class SQLServerAdapterConfiguration /*extends SQLServerAdapter */ { /*
 	
 	
 	// SQLServerAdapter section
 	///////////////////////////
 	
 	static {
-		SQLServerAdapter.SHOULD_DEBUG_QUERIES = true;
+		JDBCAdapter.SHOULD_DEBUG_QUERIES = true;
 	}
 
-	private SQLServerAdapterConfiguration(String[][] preparedProceduresDefinitions) throws SQLException {
-		super(Configuration.log, preparedProceduresDefinitions);
+	private SQLServerAdapterConfiguration() throws SQLException {
+		super(Configuration.log);
 	}
 
 	@Override
@@ -76,4 +77,4 @@ public class SQLServerAdapterConfiguration extends SQLServerAdapter {
 		});
 	}
 
-}
+*/}

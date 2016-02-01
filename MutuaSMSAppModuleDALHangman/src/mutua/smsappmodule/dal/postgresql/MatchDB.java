@@ -7,14 +7,16 @@ import mutua.smsappmodule.dto.MatchDto;
 import mutua.smsappmodule.dto.MatchDto.EMatchStatus;
 import mutua.smsappmodule.dto.UserDto;
 import adapters.JDBCAdapter;
-import adapters.dto.PreparedProcedureInvocationDto;
+
+import static mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterHangman.MatchesDBStatements.*;
+import static mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterHangman.Parameters.*;
 
 /** <pre>
  * MatchDB.java
  * ============
  * (created by luiz, Jan 27, 2015)
  *
- * Implements the POSTGRESQL version of {@link IMatchDB}
+ * Implements the PostgreSQL version of {@link IMatchDB}
  *
  * @see IMatchDB
  * @version $Id$
@@ -32,28 +34,24 @@ public class MatchDB implements IMatchDB {
 	
 	@Override
 	public void reset() throws SQLException {
-		PreparedProcedureInvocationDto procedure = new PreparedProcedureInvocationDto("ResetTable");
-		dba.invokeUpdateProcedure(procedure);
+		dba.invokeUpdateProcedure(ResetTable);
 	}
 
 	@Override
 	public int storeNewMatch(MatchDto match) throws SQLException {
-		PreparedProcedureInvocationDto procedure = new PreparedProcedureInvocationDto("InsertMatch");
-		procedure.addParameter("WORD_PROVIDING_PLAYER_USER_ID", match.getWordProvidingPlayer().getUserId());
-		procedure.addParameter("WORD_GUESSING_PLAYER_USER_ID",  match.getWordGuessingPlayer().getUserId());
-		procedure.addParameter("SERIALIZED_GAME",               match.getSerializedGame());
-		procedure.addParameter("MATCH_START_MILLIS",            match.getMatchStartMillis());
-		procedure.addParameter("STATUS",                        match.getStatus().name());
-		int matchId = (Integer)dba.invokeScalarProcedure(procedure);
+		int matchId = (Integer)dba.invokeScalarProcedure(InsertMatch,
+			WORD_PROVIDING_PLAYER_USER_ID, match.getWordProvidingPlayer().getUserId(),
+			WORD_GUESSING_PLAYER_USER_ID,  match.getWordGuessingPlayer().getUserId(),
+			SERIALIZED_GAME,               match.getSerializedGame(),
+			MATCH_START_MILLIS,            match.getMatchStartMillis(),
+			STATUS,                        match.getStatus().name());
 		match.setMatchId(matchId);
 		return matchId;
 	}
 
 	@Override
 	public MatchDto retrieveMatch(int matchId) throws SQLException {
-		PreparedProcedureInvocationDto procedure = new PreparedProcedureInvocationDto("SelectMatchById");
-		procedure.addParameter("MATCH_ID", matchId);
-		Object[] fields = dba.invokeRowProcedure(procedure);
+		Object[] fields = dba.invokeRowProcedure(SelectMatchById, MATCH_ID, matchId);
 		if (fields == null) {
 			return null;
 		}
@@ -78,11 +76,10 @@ public class MatchDB implements IMatchDB {
 	@Override
 	public void updateMatchStatus(MatchDto match, EMatchStatus status, String serializedGame) throws SQLException {
 		int matchId = match.getMatchId();
-		PreparedProcedureInvocationDto procedure = new PreparedProcedureInvocationDto("UpdateMatchStatusById");
-		procedure.addParameter("MATCH_ID",        matchId);
-		procedure.addParameter("STATUS",          status.name());
-		procedure.addParameter("SERIALIZED_GAME", serializedGame);
-		dba.invokeUpdateProcedure(procedure);
+		dba.invokeUpdateProcedure(UpdateMatchStatusById,
+			MATCH_ID,        matchId,
+			STATUS,          status.name(),
+			SERIALIZED_GAME, serializedGame);
 	}
 
 }

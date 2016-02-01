@@ -11,15 +11,16 @@ import mutua.icc.instrumentation.Instrumentation;
  * =====================
  * (created by luiz, Jun 29, 2010)
  *
- * Specializes 'JDBCHelper' to deal with the particularities of the SQL Server database
+ * Specializes 'JDBCHelper' to deal with the peculiarities of the SQL Server database
  * and JTDS JDBC Driver
  */
 
 public abstract class SQLServerAdapter extends JDBCAdapter {
 
 
-	protected SQLServerAdapter(Instrumentation<?, ?> log, String[][] preparedProceduresDefinitions) throws SQLException {
-		super(log, new net.sourceforge.jtds.jdbc.Driver().getClass(), preparedProceduresDefinitions);
+	protected SQLServerAdapter(Instrumentation<?, ?> log, boolean allowDataStructuresAssertion, boolean shouldDebugQueries,
+                               String hostname, int port, String database, String user, String password) throws SQLException {
+		super(log, new net.sourceforge.jtds.jdbc.Driver().getClass(), allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password, new Connection[1]);
 	}
 	
 	@Override
@@ -44,12 +45,12 @@ public abstract class SQLServerAdapter extends JDBCAdapter {
 
 	@Override
 	protected Connection createDatabaseConnection() throws SQLException {
-		String url = "jdbc:jtds:sqlserver://" + HOSTNAME + ":"+PORT+"/" +
-		             DATABASE_NAME; 
+		String url = "jdbc:jtds:sqlserver://" + hostname + ":"+port+"/" +
+		             database; 
 
 		return DriverManager.getConnection(url,
-		                                   USER,
-		                                   PASSWORD);
+		                                   user,
+		                                   password);
 	}
 
 }

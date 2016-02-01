@@ -33,8 +33,8 @@ public enum SMSAppModuleDALFactoryProfile {
 	
 	;
 	
-	@ConfigurableElement("The desired data access handler for the 'User Profile SMS Module' facilities")
-	public static SMSAppModuleDALFactoryProfile DEFAULT_DAL = SMSAppModuleDALFactoryProfile.RAM;
+//	@ConfigurableElement("The desired data access handler for the 'User Profile SMS Module' facilities")
+//	public static SMSAppModuleDALFactoryProfile DEFAULT_DAL = SMSAppModuleDALFactoryProfile.RAM;
 	
 	private IProfileDB profileDB;
 	

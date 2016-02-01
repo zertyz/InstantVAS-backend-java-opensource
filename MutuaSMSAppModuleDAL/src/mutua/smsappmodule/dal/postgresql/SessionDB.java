@@ -3,10 +3,12 @@ package mutua.smsappmodule.dal.postgresql;
 import java.sql.SQLException;
 
 import adapters.JDBCAdapter;
-import adapters.dto.PreparedProcedureInvocationDto;
 import mutua.smsappmodule.dal.ISessionDB;
 import mutua.smsappmodule.dto.SessionDto;
 import mutua.smsappmodule.dto.UserDto;
+
+import static mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapter.Parameters.*;
+import static mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapter.SessionsDBStatements.*;
 
 /** <pre>
  * SessionDB.java
@@ -24,22 +26,18 @@ public class SessionDB implements ISessionDB {
 
 	private JDBCAdapter dba;
 	
-	
 	public SessionDB() throws SQLException {
 		dba = SMSAppModulePostgreSQLAdapter.getSessionsDBAdapter();
 	}
 
 	@Override
 	public void reset() throws SQLException {
-		PreparedProcedureInvocationDto procedure = new PreparedProcedureInvocationDto("ResetTable");
-		dba.invokeUpdateProcedure(procedure);
+		dba.invokeUpdateProcedure(ResetTable);
 	}
 
 	@Override
 	public SessionDto getSession(UserDto user) throws SQLException {
-		PreparedProcedureInvocationDto procedure = new PreparedProcedureInvocationDto("FetchProperties");
-		procedure.addParameter("USER_ID", user.getUserId());
-		Object[][] rows = dba.invokeArrayProcedure(procedure);
+		Object[][] rows = dba.invokeArrayProcedure(FetchProperties, USER_ID, user.getUserId());
 		if (rows.length == 0) {
 			return null;
 		}
@@ -60,40 +58,36 @@ public class SessionDB implements ISessionDB {
 		
 		// delete
 		for (String toBeDeletedPropertyName : session.getDeletedProperties()) {
-			PreparedProcedureInvocationDto deleteProcedure = new PreparedProcedureInvocationDto("DeleteProperty");
-			deleteProcedure.addParameter("USER_ID",       user.getUserId());
-			deleteProcedure.addParameter("PROPERTY_NAME", toBeDeletedPropertyName);
-			dba.invokeUpdateProcedure(deleteProcedure);
+			dba.invokeUpdateProcedure(DeleteProperty,
+				USER_ID,       user.getUserId(),
+				PROPERTY_NAME, toBeDeletedPropertyName);
 		}
 		// update
 		for (String[] toBeUpdatedProperty : session.getUpdatedProperties()) {
 			String propertyName  = toBeUpdatedProperty[0];
 			String propertyValue = toBeUpdatedProperty[1];
-			PreparedProcedureInvocationDto updateProcedure = new PreparedProcedureInvocationDto("UpdateProperty");
-			updateProcedure.addParameter("USER_ID",        user.getUserId());
-			updateProcedure.addParameter("PROPERTY_NAME",  propertyName);
-			updateProcedure.addParameter("PROPERTY_VALUE", propertyValue);
-			dba.invokeUpdateProcedure(updateProcedure);
+			dba.invokeUpdateProcedure(UpdateProperty,
+				USER_ID,        user.getUserId(),
+				PROPERTY_NAME,  propertyName,
+				PROPERTY_VALUE, propertyValue);
 		}
 		// insert
 		for (String[] toBeInsertedProperty : session.getNewProperties()) {
 			String propertyName  = toBeInsertedProperty[0];
 			String propertyValue = toBeInsertedProperty[1];
-			PreparedProcedureInvocationDto insertedProcedure = new PreparedProcedureInvocationDto("InsertProperty");
-			insertedProcedure.addParameter("USER_ID",        user.getUserId());
-			insertedProcedure.addParameter("PROPERTY_NAME",  propertyName);
-			insertedProcedure.addParameter("PROPERTY_VALUE", propertyValue);
-			dba.invokeUpdateProcedure(insertedProcedure);
+			dba.invokeUpdateProcedure(InsertProperty,
+				USER_ID,        user.getUserId(),
+				PROPERTY_NAME,  propertyName,
+				PROPERTY_VALUE, propertyValue);
 		}
 	}
 
 	@Override
 	public void assureProperty(UserDto user, String propertyName, String propertyValue)	throws SQLException {
-		PreparedProcedureInvocationDto procedure = new PreparedProcedureInvocationDto("AssureProperty");
-		procedure.addParameter("USER_ID", user.getUserId());
-		procedure.addParameter("PROPERTY_NAME", propertyName);
-		procedure.addParameter("PROPERTY_VALUE", propertyValue);
-		dba.invokeUpdateProcedure(procedure);
+		dba.invokeUpdateProcedure(AssureProperty,
+			USER_ID,        user.getUserId(),
+			PROPERTY_NAME,  propertyName,
+			PROPERTY_VALUE, propertyValue);
 	}
 
 }

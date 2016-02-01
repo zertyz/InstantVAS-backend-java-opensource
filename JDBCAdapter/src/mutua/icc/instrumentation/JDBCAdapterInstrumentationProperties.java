@@ -2,6 +2,8 @@ package mutua.icc.instrumentation;
 
 import java.util.ArrayList;
 
+import adapters.IJDBCAdapterParameterDefinition;
+
 
 /** <pre>
  * JDBCAdapterInstrumentationProperties.java
@@ -18,22 +20,23 @@ import java.util.ArrayList;
 public enum JDBCAdapterInstrumentationProperties implements	IInstrumentableProperty {
 
 
-	IP_SQL_TEMPLATE            ("sqlTemplate", String.class),
-	IP_SQL_TEMPLATE_PARAMETERS ("parameters",  ArrayList.class) {
+	IP_PREPARED_SQL            ("preparedSQL", String.class),
+	IP_SQL_TEMPLATE_PARAMETERS ("parameters",  Object[].class) {
 		@Override
+		// code based on 'AbstractPreparedProcedure#buildPreparedStatement'
 		public void appendSerializedValue(StringBuffer buffer, Object value) {
-			ArrayList<?> parameters = (ArrayList<?>)value;
-			boolean first = true;
-			for (Object parameter : parameters) {
-				if (first) {
-					first = false;
-				} else {
+			Object[] parametersAndValuesPairs = (Object[])value;
+			for (int i=0; i<parametersAndValuesPairs.length; i+=2) {
+				if (i>0) {
 					buffer.append(',');
 				}
-				if (parameter instanceof String) {
-					buffer.append('"').append(parameter).append('"');
+				String parameterName  = ((IJDBCAdapterParameterDefinition)parametersAndValuesPairs[i]).getParameterName();
+				buffer.append(parameterName).append('=');
+				Object parameterValue = parametersAndValuesPairs[i+1];
+				if (parameterValue instanceof String) {
+					buffer.append('"').append(parameterValue).append('"');
 				} else {
-					buffer.append(parameter);
+					buffer.append(parameterValue.toString());
 				}
 			}
 		}

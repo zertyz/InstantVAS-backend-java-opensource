@@ -6,7 +6,9 @@ import mutua.smsappmodule.dal.IProfileDB;
 import mutua.smsappmodule.dto.ProfileDto;
 import mutua.smsappmodule.dto.UserDto;
 import adapters.JDBCAdapter;
-import adapters.dto.PreparedProcedureInvocationDto;
+
+import static mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterProfile.ProfileDBStatements.*;
+import static mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterProfile.Parameters.*;
 
 /** <pre>
  * ProfileDB.java
@@ -31,15 +33,12 @@ public class ProfileDB implements IProfileDB {
 	
 	@Override
 	public void reset() throws SQLException {
-		PreparedProcedureInvocationDto procedure = new PreparedProcedureInvocationDto("ResetTable");
-		dba.invokeUpdateProcedure(procedure);
+		dba.invokeUpdateProcedure(ResetTable);
 	}
 
 	@Override
 	public ProfileDto getProfileRecord(UserDto user) throws SQLException {
-		PreparedProcedureInvocationDto procedure = new PreparedProcedureInvocationDto("SelectProfileByUser");
-		procedure.addParameter("USER_ID", user.getUserId());
-		Object[] row = dba.invokeRowProcedure(procedure);
+		Object[] row = dba.invokeRowProcedure(SelectProfileByUser, USER_ID, user.getUserId());
 		if (row == null) {
 			return null;
 		}
@@ -50,9 +49,7 @@ public class ProfileDB implements IProfileDB {
 
 	@Override
 	public ProfileDto getProfileRecord(String nickname) throws SQLException {
-		PreparedProcedureInvocationDto procedure = new PreparedProcedureInvocationDto("SelectProfileByNickname");
-		procedure.addParameter("NICKNAME", nickname);
-		Object[] row = dba.invokeRowProcedure(procedure);
+		Object[] row = dba.invokeRowProcedure(SelectProfileByNickname, NICKNAME, nickname);
 		if (row == null) {
 			return null;
 		}
@@ -64,10 +61,9 @@ public class ProfileDB implements IProfileDB {
 
 	@Override
 	public ProfileDto setProfileRecord(ProfileDto profile) throws SQLException {
-		PreparedProcedureInvocationDto procedure = new PreparedProcedureInvocationDto("AssertProfile");
-		procedure.addParameter("USER_ID",  profile.getUser().getUserId());
-		procedure.addParameter("NICKNAME", profile.getNickname());
-		Object[] row = dba.invokeRowProcedure(procedure);
+		Object[] row = dba.invokeRowProcedure(AssertProfile,
+			USER_ID,  profile.getUser().getUserId(),
+			NICKNAME, profile.getNickname());
 		int    storedUserId   = (Integer) row[0];
 		String storedNickname = (String)  row[1];
 		if (profile.getNickname().equals(storedNickname)) {

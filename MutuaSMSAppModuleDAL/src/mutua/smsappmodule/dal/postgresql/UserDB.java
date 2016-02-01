@@ -5,7 +5,9 @@ import java.sql.SQLException;
 import mutua.smsappmodule.dal.IUserDB;
 import mutua.smsappmodule.dto.UserDto;
 import adapters.JDBCAdapter;
-import adapters.dto.PreparedProcedureInvocationDto;
+
+import static mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapter.Parameters.*;
+import static mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapter.UsersDBStatements.*;
 
 /** <pre>
  * UserDB.java
@@ -23,22 +25,18 @@ public class UserDB implements IUserDB {
 
 	private JDBCAdapter dba;
 	
-	
 	public UserDB() throws SQLException {
 		dba = SMSAppModulePostgreSQLAdapter.getUsersDBAdapter();
 	}
 
 	@Override
 	public void reset() throws SQLException {
-		PreparedProcedureInvocationDto procedure = new PreparedProcedureInvocationDto("ResetTable");
-		dba.invokeUpdateProcedure(procedure);
+		dba.invokeUpdateProcedure(ResetTable);
 	}
 
 	@Override
 	public UserDto assureUserIsRegistered(String phoneNumber) throws SQLException {
-		PreparedProcedureInvocationDto procedure = new PreparedProcedureInvocationDto("AssertUserIsRegistered");
-		procedure.addParameter("PHONE", phoneNumber);
-		int userId = (Integer) dba.invokeScalarProcedure(procedure);
+		int userId = (Integer) dba.invokeScalarProcedure(AssertUserIsRegistered, PHONE, phoneNumber);
 		return new UserDto(userId, phoneNumber);
 	}
 

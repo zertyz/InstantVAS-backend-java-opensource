@@ -3,6 +3,8 @@ package mutua.smsappmodule.dal.postgresql;
 import java.sql.SQLException;
 
 import mutua.icc.instrumentation.Instrumentation;
+import adapters.AbstractPreparedProcedure;
+import adapters.IJDBCAdapterParameterDefinition;
 import adapters.JDBCAdapter;
 import adapters.PostgreSQLAdapter;
 
@@ -19,56 +21,65 @@ import adapters.PostgreSQLAdapter;
  */
 
 public class SMSAppModulePostgreSQLAdapter extends PostgreSQLAdapter {
-
 	
 	// the version information for database tables present on this class, to be stored on the 'Meta' table. Useful for future data conversions.
-	private static String modelVersionForMetaTable = "2015.08.12";
+	private static final String modelVersionForMetaTable = "2015.08.12";
 
-	// configuration
-	////////////////
+	// Mutua Configurable Class pattern
+	///////////////////////////////////
 	
-	/** The application's instrumentation instance to be used to log PostgreSQL database events */
-	private static Instrumentation<?, ?> log;
+	/** this class' singleton instance */
+	private static SMSAppModulePostgreSQLAdapter instance = null;
+	
+	// JDBCAdapter default values
+	private static Instrumentation<?, ?> LOG;
+	/** @see JDBCAdapter#hostname */
+	private static String HOSTNAME;
+	/** @see JDBCAdapter#port */
+	private static int    PORT;
+	/** @see JDBCAdapter#database */
+	private static String DATABASE;
+	/** @see JDBCAdapter#user */
+	private static String USER;
+	/** @see JDBCAdapter#password */
+	private static String PASSWORD;
+	/** @see JDBCAdapter#allowDataStructuresAssertion */
+	private static boolean ALLOW_DATA_STRUCTURES_ASSERTION;
+	/** @see JDBCAdapter#shouldDebugQueries */
+	private static boolean SHOULD_DEBUG_QUERIES;	
+	
+	/** method to be called when attempting to configure the singleton for new instances of 'PostgreSQLAdapter'.
+	 *  @param log
+	 *  @param allowDataStructuresAssertion see {@link #ALLOW_DATA_STRUCTURES_ASSERTION}
+	 *  @param shouldDebugQueries           see {@link #SHOULD_DEBUG_QUERIES}
+	 *  @param hostname                     see {@link #HOSTNAME}
+	 *  @param port                         see {@link #PORT}
+	 *  @param database                     see {@link #DATABASE}
+	 *  @param user                         see {@link #USER}
+	 *  @param password                     see {@link #PASSWORD} */
+	public static void configureDefaultValuesForNewInstances(
+		Instrumentation<?, ?> log, boolean allowDataStructuresAssertion, boolean shouldDebugQueries,
+	    String hostname, int port, String database, String user, String password) throws SQLException {
+				
+		LOG      = log;
+		ALLOW_DATA_STRUCTURES_ASSERTION = allowDataStructuresAssertion;
+		SHOULD_DEBUG_QUERIES            = shouldDebugQueries;
+		HOSTNAME = hostname;
+		PORT     = port;
+		DATABASE = database;
+		USER     = user;
+		PASSWORD = password;
 
-	/** Hostname (or IP) of the PostgreSQL server */
-	private static String hostname;
-	/** Connection port for the PostgreSQL server */
-	private static int port;
-	/** The PostgreSQL database with the application's data scope */
-	private static String database;
-	/** The PostgreSQL user name to access 'DATABASE' -- note: administrative rights, such as the creation of tables, might be necessary */
-	private static String user;
-	/** The PostgreSQL plain text password for 'USER' */
-	private static String password;
-	
-	
-	public static void configureSMSDatabaseModule(Instrumentation<?, ?> log,
-	                                                  String hostname, int port, String database, String user, String password) {
-
-		SMSAppModulePostgreSQLAdapter.log = log;
-		
-		SMSAppModulePostgreSQLAdapter.hostname = hostname;
-		SMSAppModulePostgreSQLAdapter.port     = port;
-		SMSAppModulePostgreSQLAdapter.database = database;
-		SMSAppModulePostgreSQLAdapter.user     = user;
-		SMSAppModulePostgreSQLAdapter.password = password;
+		instance = new SMSAppModulePostgreSQLAdapter();	// start/restart the singleton with the new settings
 	}
-
 	
-	private SMSAppModulePostgreSQLAdapter(Instrumentation<?, ?> log, String[][] preparedProceduresDefinitions) throws SQLException {
-		super(log, preparedProceduresDefinitions);
-	}
-
-	@Override
-	protected String[] getCredentials() {
-		return new String[] {hostname, Integer.toString(port), database, user, password};
+	
+	private SMSAppModulePostgreSQLAdapter() throws SQLException {
+		super(LOG, ALLOW_DATA_STRUCTURES_ASSERTION, SHOULD_DEBUG_QUERIES, HOSTNAME, PORT, DATABASE, USER, PASSWORD);
 	}
 
 	@Override
 	protected String[][] getTableDefinitions() {
-		if (!ALLOW_DATABASE_ADMINISTRATION) {
-			return null;
-		}
 		return new String[][] {
 			
 			{"Meta", // global set_updated_timestamp trigger function
@@ -79,17 +90,17 @@ public class SMSAppModulePostgreSQLAdapter extends PostgreSQLAdapter {
                      "    NEW.uts := now();\n" +
                      "    RETURN NEW;\n" +
                      "END;\n" +
-                     "$$;" +
+                     "$$",
 
                      // the table
 			         "CREATE TABLE Meta(" +
 			         "tableName     TEXT       PRIMARY KEY," +
 			         "modelVersion  TEXT       NOT NULL," +
 			         "cts           TIMESTAMP  DEFAULT CURRENT_TIMESTAMP," +
-			         "uts           TIMESTAMP  DEFAULT NULL);" +
+			         "uts           TIMESTAMP  DEFAULT NULL)",
 
 			         // trigger for 'uts' -- the updated timestamp
-	                 "CREATE TRIGGER Meta_update_timestamp BEFORE UPDATE ON Meta FOR EACH ROW EXECUTE PROCEDURE set_updated_timestamp();" +
+	                 "CREATE TRIGGER Meta_update_timestamp BEFORE UPDATE ON Meta FOR EACH ROW EXECUTE PROCEDURE set_updated_timestamp()",
 			          
 			         // Meta record
 			         "INSERT INTO Meta(tableName, modelVersion) VALUES ('Meta', '"+modelVersionForMetaTable+"')"},
@@ -98,10 +109,10 @@ public class SMSAppModulePostgreSQLAdapter extends PostgreSQLAdapter {
 			          "userId          SERIAL      PRIMARY KEY," +
 			          "phoneNumber     TEXT        NOT NULL UNIQUE," +
 	                  "cts             TIMESTAMP   DEFAULT CURRENT_TIMESTAMP," +
-	                  "uts             TIMESTAMP   DEFAULT NULL);" +
+	                  "uts             TIMESTAMP   DEFAULT NULL)",
 	                  
 	                  // trigger for 'uts' -- the updated timestamp
-	                  "CREATE TRIGGER Users_update_timestamp BEFORE UPDATE ON Users FOR EACH ROW EXECUTE PROCEDURE set_updated_timestamp();" +
+	                  "CREATE TRIGGER Users_update_timestamp BEFORE UPDATE ON Users FOR EACH ROW EXECUTE PROCEDURE set_updated_timestamp()",
 			          
 	                  // stored procedure
 			          "CREATE OR REPLACE FUNCTION AssertUserIsRegistered(p_phone TEXT) RETURNS SETOF INTEGER AS $$\n" + 
@@ -111,7 +122,7 @@ public class SMSAppModulePostgreSQLAdapter extends PostgreSQLAdapter {
 			          "        RETURN QUERY INSERT INTO Users(phoneNumber) VALUES (p_phone) RETURNING userId; \n" + 
 			          "    END IF;\n" + 
 			          "END;\n" +			          
-			          "$$ LANGUAGE plpgsql;" +
+			          "$$ LANGUAGE plpgsql",
 			          
 			          // Meta record
 			          "INSERT INTO Meta(tableName, modelVersion) VALUES ('Users', '"+modelVersionForMetaTable+"')"},
@@ -122,42 +133,97 @@ public class SMSAppModulePostgreSQLAdapter extends PostgreSQLAdapter {
 			             "propertyValue         TEXT        NOT NULL," +
 		                 "cts                   TIMESTAMP   DEFAULT CURRENT_TIMESTAMP," +
 		                 "uts                   TIMESTAMP   DEFAULT NULL," +
-			             "PRIMARY KEY (userId, propertyName));" +
+			             "PRIMARY KEY (userId, propertyName))",
 		                 
 			             // TODO we may wish to consider using enum data types, as in http://www.postgresql.org/docs/9.2/static/datatype-enum.html
 		                  
 		                 // trigger for 'uts' -- the updated timestamp
-		                 "CREATE TRIGGER Sessions_update_timestamp BEFORE UPDATE ON Sessions FOR EACH ROW EXECUTE PROCEDURE set_updated_timestamp();" +
+		                 "CREATE TRIGGER Sessions_update_timestamp BEFORE UPDATE ON Sessions FOR EACH ROW EXECUTE PROCEDURE set_updated_timestamp()",
 				          
 				         // Meta record
 				         "INSERT INTO Meta(tableName, modelVersion) VALUES ('Sessions', '"+modelVersionForMetaTable+"')"}
 		};
 	}
 	
+	/***************
+	** PARAMETERS **
+	***************/
+	
+	public enum Parameters implements IJDBCAdapterParameterDefinition {
+
+		// 'Users' parameters
+		PHONE,
+		// 'Sessions' parameters
+		USER_ID,
+		PROPERTY_NAME,
+		PROPERTY_VALUE,
+		
+		;
+		
+		@Override
+		public String getParameterName() {
+			return name();
+		}
+	}
+	
+	/***************
+	** STATEMENTS **
+	***************/
+
+	public static final class UsersDBStatements {
+		/** Zero the table contents -- for testing purposes only */
+		public final static AbstractPreparedProcedure ResetTable = new AbstractPreparedProcedure(
+			"TRUNCATE Users CASCADE");
+		/** Executes the 'AssertUserIsRegistered' stored procedure, which returns an 'USER_ID' for the given 'PHONE', registering it as a new user as needed */
+		public final static AbstractPreparedProcedure AssertUserIsRegistered = new AbstractPreparedProcedure(
+			"SELECT * FROM AssertUserIsRegistered(",Parameters.PHONE,")");
+	}
+	
+	public static final class SessionsDBStatements {
+		/** Zero the table contents -- for testing purposes only */
+		public final static AbstractPreparedProcedure ResetTable = new AbstractPreparedProcedure(
+			"TRUNCATE Sessions CASCADE");
+		/** Remove the property 'PROPERTY_NAME' from the given 'USER_ID' */
+		public final static AbstractPreparedProcedure DeleteProperty = new AbstractPreparedProcedure(
+			"DELETE FROM Sessions WHERE userId=",Parameters.USER_ID," AND propertyName=",Parameters.PROPERTY_NAME);
+		/** Retrieve all pairs {propertyName, propertyValue} from 'USER_ID' */
+		public final static AbstractPreparedProcedure FetchProperties = new AbstractPreparedProcedure(
+			"SELECT propertyName, propertyValue FROM Sessions WHERE userId=",Parameters.USER_ID);
+		/** Assign a non existing 'PROPERTY_NAME' with the given 'PROPERTY_VALUE' to 'USER_ID' */
+		public final static AbstractPreparedProcedure InsertProperty = new AbstractPreparedProcedure(
+			"INSERT INTO Sessions(userId, propertyName, propertyValue) VALUES (",Parameters.USER_ID,", ",Parameters.PROPERTY_NAME,", ",Parameters.PROPERTY_VALUE,")");
+		/** Update the 'USER_ID' existing 'PROPERTY_NAME' to the desired 'PROPERTY_VALUE' */
+		public final static AbstractPreparedProcedure UpdateProperty = new AbstractPreparedProcedure(
+			"UPDATE Sessions SET propertyValue=",Parameters.PROPERTY_VALUE," WHERE userId=",Parameters.USER_ID," AND propertyName=",Parameters.PROPERTY_NAME);
+		/** Updates or inserts 'PROPERTY_NAME' with the given 'PROPERTY_VALUE' and associate them with 'USER_ID' */
+		public final static AbstractPreparedProcedure AssureProperty = new AbstractPreparedProcedure(
+			"WITH upsert AS (",
+			                 "UPDATE Sessions SET propertyValue=",Parameters.PROPERTY_VALUE," WHERE userId=",Parameters.USER_ID,
+			                 " AND propertyName=",Parameters.PROPERTY_NAME," RETURNING *) ",
+			"INSERT INTO Sessions(userId, propertyName, propertyValue) SELECT ",Parameters.USER_ID,", ",Parameters.PROPERTY_NAME,", ",
+			                                                           Parameters.PROPERTY_VALUE," WHERE NOT EXISTS (SELECT * FROM upsert)");
+	}
+
+	
 	
 	// public methods
 	/////////////////
 	
+	public static JDBCAdapter getInstance() {
+		if (instance == null) {
+			throw new RuntimeException("Class '" + SMSAppModulePostgreSQLAdapter.class.getCanonicalName() + "' was not configured according to the " +
+			                           "'Mutua JDBCAdapter Configuration' pattern -- a preliminar call to 'configureDefaultValuesForNewInstances' " +
+			                           "was not made.");
+		}
+		return instance;
+	}
+	
 	public static JDBCAdapter getUsersDBAdapter() throws SQLException {
-		return new SMSAppModulePostgreSQLAdapter(log, new String[][] {
-			{"ResetTable",                "TRUNCATE Users CASCADE"},
-			{"AssertUserIsRegistered",    "SELECT * FROM AssertUserIsRegistered(${PHONE})"},
-		});
+		return getInstance();
 	}
 
 	public static JDBCAdapter getSessionsDBAdapter() throws SQLException {
-		return new SMSAppModulePostgreSQLAdapter(log, new String[][] {
-			{"ResetTable",          "TRUNCATE Sessions CASCADE"},
-			{"DeleteProperty",      "DELETE FROM Sessions WHERE userId=${USER_ID} AND propertyName=${PROPERTY_NAME}"},
-			{"FetchProperties",     "SELECT propertyName, propertyValue FROM Sessions WHERE userId=${USER_ID}"},
-			{"InsertProperty",      "INSERT INTO Sessions(userId, propertyName, propertyValue) VALUES (${USER_ID}, ${PROPERTY_NAME}, ${PROPERTY_VALUE})"},
-			{"UpdateProperty",      "UPDATE Sessions SET propertyValue=${PROPERTY_VALUE} WHERE userId=${USER_ID} AND propertyName=${PROPERTY_NAME}"},
-			{"AssureProperty",      "WITH upsert AS (" +
-			                                        "UPDATE Sessions SET propertyValue=${PROPERTY_VALUE} WHERE userId=${USER_ID} AND propertyName=${PROPERTY_NAME} " +
-			                                        "RETURNING *) " +
-			                        "INSERT INTO Sessions(userId, propertyName, propertyValue) SELECT ${USER_ID}, ${PROPERTY_NAME}, ${PROPERTY_VALUE} " + 
-			                                                                                         "WHERE NOT EXISTS (SELECT * FROM upsert)"},
-		});
+		return getInstance();
 	}
 
 }

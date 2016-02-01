@@ -2,8 +2,6 @@ package mutua.smsappmodule.dal;
 
 import java.sql.SQLException;
 
-import mutua.icc.configuration.annotations.ConfigurableElement;
-
 /** <pre>
  * SMSAppModuleDALFactoryChat.java
  * ===============================
@@ -33,8 +31,8 @@ public enum SMSAppModuleDALFactoryChat {
 	
 	;
 	
-	@ConfigurableElement("The desired data access handler for the 'Chat SMS Module' facilities")
-	public static SMSAppModuleDALFactoryChat DEFAULT_DAL = SMSAppModuleDALFactoryChat.RAM;
+//	@ConfigurableElement("The desired data access handler for the 'Chat SMS Module' facilities")
+//	public static SMSAppModuleDALFactoryChat DEFAULT_DAL = SMSAppModuleDALFactoryChat.RAM;
 	
 	private IChatDB chatDB;
 	

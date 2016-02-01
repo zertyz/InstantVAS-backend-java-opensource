@@ -2,8 +2,6 @@ package mutua.smsappmodule.dal;
 
 import java.sql.SQLException;
 
-import mutua.icc.configuration.annotations.ConfigurableElement;
-
 /** <pre>
  * SMSAppModuleDALFactorySubscription.java
  * =======================================
@@ -33,9 +31,9 @@ public enum SMSAppModuleDALFactorySubscription {
 	
 	;
 	
-	@ConfigurableElement("The desired data access handler for the 'Subscription SMS Module' facilities")
-	public static SMSAppModuleDALFactorySubscription DEFAULT_DAL = SMSAppModuleDALFactorySubscription.RAM;
-	
+//	@ConfigurableElement("The desired data access handler for the 'Subscription SMS Module' facilities")
+//	public static SMSAppModuleDALFactorySubscription DEFAULT_DAL = SMSAppModuleDALFactorySubscription.RAM;
+//	
 	private ISubscriptionDB subscriptionDB;
 	
 	private boolean wasInstantiated = false;

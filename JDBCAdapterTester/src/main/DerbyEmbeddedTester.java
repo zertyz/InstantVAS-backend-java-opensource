@@ -6,8 +6,9 @@ import java.sql.SQLException;
 
 import adapters.DerbyEmbeddedAdapter;
 import adapters.JDBCAdapter;
-import adapters.PostgreSQLAdapter;
-import adapters.dto.PreparedProcedureInvocationDto;
+
+import static main.DerbyEmbeddedAdapterConfiguration.DerbyStatements.*;
+import static main.DerbyEmbeddedAdapterConfiguration.DerbyParameters.*;
 
 /** <pre>
  * EmbeddedDerbyTester.java
@@ -30,23 +31,24 @@ public class DerbyEmbeddedTester {
 		db.resetDatabase();
 
 		// INSERT
-		PreparedProcedureInvocationDto invocation = new PreparedProcedureInvocationDto("InsertTestRecord");
-		invocation.addParameter("ID",    11);
-		invocation.addParameter("PHONE", "2192820997");
-		int result = db.invokeUpdateProcedure(invocation);
+		System.out.println("InsertTestRecord prepared SQL: " + InsertTestRecord.getPreparedProcedureSQL());
+		int result = db.invokeUpdateProcedure(InsertTestRecord,
+		                                      ID,    11,
+		                                      PHONE, "21991234899");
 		System.out.println("Result: " + result);
 		
 		// QUERY
-		invocation = new PreparedProcedureInvocationDto("GetPhoneFromId");
-		invocation.addParameter("ID", 11);
-		String phone = (String) db.invokeScalarProcedure(invocation);
+		System.out.println("GetPhoneFromId prepared SQL: " + GetPhoneFromId.getPreparedProcedureSQL());
+		String phone = (String) db.invokeScalarProcedure(GetPhoneFromId,
+		                                                 ID, 11);
 		System.out.println("Result: " + phone);
 		
 		// DELETE
-		invocation = new PreparedProcedureInvocationDto("DeleteTestRecord");
-		invocation.addParameter("ID", 11);
-		result = db.invokeUpdateProcedure(invocation);
+		System.out.println("DeleteTestRecord prepared SQL: " + DeleteTestRecord.getPreparedProcedureSQL());
+		result = db.invokeUpdateProcedure(DeleteTestRecord,
+		                                  ID, 11);
 		System.out.println("Result: " + result);
+		
 
 		log.reportRequestFinish();
 	}

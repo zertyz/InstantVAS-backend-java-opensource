@@ -1,6 +1,6 @@
 package mutua.smsappmodule.dal;
 
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationTests.DEFAULT_MODULE_DAL;
+import static instantvas.tests.InstantVASSMSAppModuleTestsConfiguration.DEFAULT_SMS_MODULE_DAL;
 import static org.junit.Assert.*;
 
 import java.sql.SQLException;
@@ -23,7 +23,7 @@ import org.junit.Test;
 
 public class IUserDBBehavioralTests {
 
-	private IUserDB    userDB    = DEFAULT_MODULE_DAL.getUserDB();
+	private IUserDB    userDB    = DEFAULT_SMS_MODULE_DAL.getUserDB();
 
 	
 	/*******************

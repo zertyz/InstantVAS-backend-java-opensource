@@ -7,7 +7,6 @@ import java.util.ArrayList;
 
 import mutua.icc.configuration.annotations.ConfigurableElement;
 import mutua.icc.instrumentation.Instrumentation;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /** <pre>
  * DerbyEmbeddedAdapter.java
@@ -23,20 +22,41 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 public abstract class DerbyEmbeddedAdapter extends JDBCAdapter {
 
 	
-	// configuration
-	////////////////
-	
-	@ConfigurableElement("Additional URL parameters for PostgreSQL JDBC driver connection properties")
-	public static String  CONNECTION_PROPERTIES = "";
-	@ConfigurableElement("Indicates whether or not to perform needed administrative tasks, such as database creation")
-	public static boolean ALLOW_DATABASE_ADMINISTRATION = true;
-	
 	// for the shutdown hook
 	private static DerbyEmbeddedAdapter firstInstance = null;
 	
+	// Mutua Configurable Class pattern
+	///////////////////////////////////
 	
-	public DerbyEmbeddedAdapter(Instrumentation<?, ?> log, String[][] preparedProceduresDefinitions) throws SQLException {
-		super(log, new org.apache.derby.jdbc.EmbeddedDriver().getClass(), preparedProceduresDefinitions);
+	@ConfigurableElement("Additional URL parameters for Embedded Derby JDBC driver connection properties")
+	public static String  CONNECTION_PROPERTIES = "";
+	@ConfigurableElement("The total number of concurrent connections allowed to embedded Derby on this VM. Suggestion: fine tune to get the optimum number for this particular app/database. As an initial value, set this to half the number of all consumer threads")
+	public static int CONNECTION_POOL_SIZE = 4;
+	
+	private static Connection[] connectionPool = null;
+	
+	/** method to be called when attempting to configure the default behavior for new instances of 'DerbyEmbeddedAdapter'.
+	 *  @param connectionProperties if null, the default value won't be touched
+	 *  @param connectionPoolSize   if <= 0, the default value won't be touched */
+	public static void configureDefaultValuesForNewInstances(String connectionProperties, int connectionPoolSize) {
+		
+		CONNECTION_PROPERTIES         = connectionProperties != null ? connectionProperties : CONNECTION_PROPERTIES;
+		CONNECTION_POOL_SIZE          = connectionPoolSize   >  0    ? connectionPoolSize   : CONNECTION_POOL_SIZE;
+		
+		// prepare the connection pool
+		if ((connectionPool == null) || (connectionPool.length != CONNECTION_POOL_SIZE)) {
+			connectionPool = new Connection[CONNECTION_POOL_SIZE];
+		}
+	}
+	
+	static {
+		configureDefaultValuesForNewInstances(null, -1);
+	}
+
+	
+	public DerbyEmbeddedAdapter(Instrumentation<?, ?> log, boolean allowDataStructuresAssertion, boolean shouldDebugQueries,
+	                            String hostname, int port, String database, String user, String password) throws SQLException {
+		super(log, new org.apache.derby.jdbc.EmbeddedDriver().getClass(), allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password, connectionPool);
 		// register the shutdown hook
 		if (firstInstance == null) {
 			firstInstance = this;
@@ -46,16 +66,12 @@ public abstract class DerbyEmbeddedAdapter extends JDBCAdapter {
 
 	@Override
 	protected Connection createAdministrativeConnection() throws SQLException {
-		if (ALLOW_DATABASE_ADMINISTRATION) {
-			return createDatabaseConnection();
-		} else {
-			return null;
-		}
+		return createDatabaseConnection();
 	}
 
 	@Override
 	protected Connection createDatabaseConnection() throws SQLException {
-		String url = "jdbc:derby:" + DATABASE_NAME + ";" + (ALLOW_DATABASE_ADMINISTRATION ? "create=true":"") + ";" +
+		String url = "jdbc:derby:" + database + ";" + (allowDataStructuresAssertion ? "create=true":"") + ";" +
 		             CONNECTION_PROPERTIES;
 	
 		return DriverManager.getConnection(url);
@@ -68,7 +84,7 @@ public abstract class DerbyEmbeddedAdapter extends JDBCAdapter {
 
 	@Override
 	protected String getShowDatabasesCommand() {
-		return "SELECT database FROM (values ('"+DATABASE_NAME+"')) as x(database)";
+		return "SELECT database FROM (values ('"+database+"')) as x(database)";
 	}
 
 	@Override

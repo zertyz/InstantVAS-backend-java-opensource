@@ -9,7 +9,9 @@ import mutua.smsappmodule.dto.SubscriptionDto.ESubscriptionChannel;
 import mutua.smsappmodule.dto.SubscriptionDto.EUnsubscriptionChannel;
 import mutua.smsappmodule.dto.UserDto;
 import adapters.JDBCAdapter;
-import adapters.dto.PreparedProcedureInvocationDto;
+
+import static mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterSubscription.SubscriptionDBStatements.*;
+import static mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterSubscription.Parameters.*;
 
 /** <pre>
  * SubscriptionDB.java
@@ -34,15 +36,12 @@ public class SubscriptionDB implements ISubscriptionDB {
 
 	@Override
 	public void reset() throws SQLException {
-		PreparedProcedureInvocationDto procedure = new PreparedProcedureInvocationDto("ResetTable");
-		dba.invokeUpdateProcedure(procedure);
+		dba.invokeUpdateProcedure(ResetTable);
 	}
 
 	@Override
 	public SubscriptionDto getSubscriptionRecord(UserDto user) throws SQLException {
-		PreparedProcedureInvocationDto procedure = new PreparedProcedureInvocationDto("SelectSubscriptionByUser");
-		procedure.addParameter("USER_ID", user.getUserId());
-		Object[] row = dba.invokeRowProcedure(procedure);
+		Object[] row = dba.invokeRowProcedure(SelectSubscriptionByUser, USER_ID, user.getUserId());
 		if (row == null) {
 			return null;
 		}
@@ -62,16 +61,15 @@ public class SubscriptionDB implements ISubscriptionDB {
 
 	@Override
 	public boolean setSubscriptionRecord(SubscriptionDto subscription) throws SQLException {
-		PreparedProcedureInvocationDto procedure;
 		if (subscription.getIsSubscribed()) {
-			procedure = new PreparedProcedureInvocationDto("AssertSubscribed");
-			procedure.addParameter("CHANNEL", subscription.getSubscriptionChannel().name());
+			dba.invokeRowProcedure(AssertSubscribed,
+				USER_ID, subscription.getUser().getUserId(),
+				CHANNEL, subscription.getSubscriptionChannel().name());
 		} else {
-			procedure = new PreparedProcedureInvocationDto("AssertUnsubscribed");
-			procedure.addParameter("CHANNEL", subscription.getUnsubscriptionChannel().name());
+			dba.invokeRowProcedure(AssertUnsubscribed,
+				USER_ID, subscription.getUser().getUserId(),
+				CHANNEL, subscription.getSubscriptionChannel().name());
 		}
-		procedure.addParameter("USER_ID", subscription.getUser().getUserId());
-		dba.invokeRowProcedure(procedure);
 		return true;
 	}
 }

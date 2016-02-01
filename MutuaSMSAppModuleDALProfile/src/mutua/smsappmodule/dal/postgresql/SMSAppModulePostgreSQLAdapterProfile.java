@@ -3,6 +3,8 @@ package mutua.smsappmodule.dal.postgresql;
 import java.sql.SQLException;
 
 import mutua.icc.instrumentation.Instrumentation;
+import adapters.AbstractPreparedProcedure;
+import adapters.IJDBCAdapterParameterDefinition;
 import adapters.JDBCAdapter;
 import adapters.PostgreSQLAdapter;
 
@@ -24,51 +26,61 @@ public class SMSAppModulePostgreSQLAdapterProfile extends PostgreSQLAdapter {
 	// the version information for database tables present on this class, to be stored on the 'Meta' table. Useful for future data conversions.
 	private static String modelVersionForMetaTable = "2015.08.12";
 	
-	// configuration
-	////////////////
+	// Mutua Configurable Class pattern
+	///////////////////////////////////
 	
-	/** The application's instrumentation instance to be used to log PostgreSQL database events */
-	private static Instrumentation<?, ?> log;
+	/** this class' singleton instance */
+	private static SMSAppModulePostgreSQLAdapterProfile instance = null;
+	
+	// JDBCAdapter default values
+	private static Instrumentation<?, ?> LOG;
+	/** @see JDBCAdapter#hostname */
+	private static String HOSTNAME;
+	/** @see JDBCAdapter#port */
+	private static int    PORT;
+	/** @see JDBCAdapter#database */
+	private static String DATABASE;
+	/** @see JDBCAdapter#user */
+	private static String USER;
+	/** @see JDBCAdapter#password */
+	private static String PASSWORD;
+	/** @see JDBCAdapter#allowDataStructuresAssertion */
+	private static boolean ALLOW_DATA_STRUCTURES_ASSERTION;
+	/** @see JDBCAdapter#shouldDebugQueries */
+	private static boolean SHOULD_DEBUG_QUERIES;	
+	
+	/** method to be called when attempting to configure the singleton for new instances of 'PostgreSQLAdapter'.
+	 *  @param log
+	 *  @param allowDataStructuresAssertion see {@link #ALLOW_DATA_STRUCTURES_ASSERTION}
+	 *  @param shouldDebugQueries           see {@link #SHOULD_DEBUG_QUERIES}
+	 *  @param hostname                     see {@link #HOSTNAME}
+	 *  @param port                         see {@link #PORT}
+	 *  @param database                     see {@link #DATABASE}
+	 *  @param user                         see {@link #USER}
+	 *  @param password                     see {@link #PASSWORD} */
+	public static void configureDefaultValuesForNewInstances(
+		Instrumentation<?, ?> log, boolean allowDataStructuresAssertion, boolean shouldDebugQueries,
+	    String hostname, int port, String database, String user, String password) throws SQLException {
+				
+		LOG      = log;
+		ALLOW_DATA_STRUCTURES_ASSERTION = allowDataStructuresAssertion;
+		SHOULD_DEBUG_QUERIES            = shouldDebugQueries;
+		HOSTNAME = hostname;
+		PORT     = port;
+		DATABASE = database;
+		USER     = user;
+		PASSWORD = password;
 
-	/** Hostname (or IP) of the PostgreSQL server */
-	private static String hostname;
-	/** Connection port for the PostgreSQL server */
-	private static int port;
-	/** The PostgreSQL database with the application's data scope */
-	private static String database;
-	/** The PostgreSQL user name to access 'DATABASE' -- note: administrative rights, such as the creation of tables, might be necessary */
-	private static String user;
-	/** The PostgreSQL plain text password for 'USER' */
-	private static String password;
-	
-	
-	public static void configureProfileDatabaseModule(Instrumentation<?, ?> log,
-	                                                  String hostname, int port, String database, String user, String password) {
-
-		SMSAppModulePostgreSQLAdapterProfile.log = log;
-		
-		SMSAppModulePostgreSQLAdapterProfile.hostname = hostname;
-		SMSAppModulePostgreSQLAdapterProfile.port     = port;
-		SMSAppModulePostgreSQLAdapterProfile.database = database;
-		SMSAppModulePostgreSQLAdapterProfile.user     = user;
-		SMSAppModulePostgreSQLAdapterProfile.password = password;
+		instance = new SMSAppModulePostgreSQLAdapterProfile();	// start/restart the singleton with the new settings
 	}
-
 	
-	private SMSAppModulePostgreSQLAdapterProfile(Instrumentation<?, ?> log, String[][] preparedProceduresDefinitions) throws SQLException {
-		super(log, preparedProceduresDefinitions);
-	}
-
-	@Override
-	protected String[] getCredentials() {
-		return new String[] {hostname, Integer.toString(port), database, user, password};
+	
+	private SMSAppModulePostgreSQLAdapterProfile() throws SQLException {
+		super(LOG, ALLOW_DATA_STRUCTURES_ASSERTION, SHOULD_DEBUG_QUERIES, HOSTNAME, PORT, DATABASE, USER, PASSWORD);
 	}
 
 	@Override
 	protected String[][] getTableDefinitions() {
-		if (!ALLOW_DATABASE_ADMINISTRATION) {
-			return null;
-		}
 		return new String[][] {
 			{"Profiles", "CREATE TABLE Profiles(" +
 			             "userId        INTEGER     PRIMARY KEY REFERENCES Users(userId) ON DELETE CASCADE," +
@@ -131,16 +143,56 @@ public class SMSAppModulePostgreSQLAdapterProfile extends PostgreSQLAdapter {
 		};
 	}
 	
+	/***************
+	** PARAMETERS **
+	***************/
+	
+	public enum Parameters implements IJDBCAdapterParameterDefinition {
+
+		USER_ID,
+		NICKNAME,
+		
+		;
+		
+		@Override
+		public String getParameterName() {
+			return name();
+		}
+	}
+	
+	/***************
+	** STATEMENTS **
+	***************/
+
+	public static final class ProfileDBStatements {
+		/** Zero the table contents -- for testing purposes only */
+		public final static AbstractPreparedProcedure ResetTable = new AbstractPreparedProcedure(
+			"TRUNCATE Users CASCADE");
+		/** Returns the nickname associated with 'USER_ID' */
+		public final static AbstractPreparedProcedure SelectProfileByUser = new AbstractPreparedProcedure(
+			"SELECT userId, nickname FROM Profiles WHERE userId=",Parameters.USER_ID);
+		/** Assures 'USER_ID' has the 'NICKNAME' or a derivative of it, in case it is already taken by another user. The attributed nickname is returned. */
+		public final static AbstractPreparedProcedure AssertProfile = new AbstractPreparedProcedure(
+			"SELECT userId, nickname FROM AssertProfile(",Parameters.USER_ID,", ",Parameters.NICKNAME,")");
+		/** Returns the full user information (id, phone, correctly cased nickname) associated with the given case insensitive 'NICKNAME' */
+		public final static AbstractPreparedProcedure SelectProfileByNickname = new AbstractPreparedProcedure(
+			"SELECT Users.userId, Users.phoneNumber, Profiles.nickname FROM Users, Profiles WHERE lower(nickname)=lower(",Parameters.NICKNAME,") AND Users.userId = Profiles.userId");
+	}
+	
 	
 	// public methods
 	/////////////////
 	
+	public static JDBCAdapter getInstance() {
+		if (instance == null) {
+			throw new RuntimeException("Class '" + SMSAppModulePostgreSQLAdapter.class.getCanonicalName() + "' was not configured according to the " +
+			                           "'Mutua JDBCAdapter Configuration' pattern -- a preliminar call to 'configureDefaultValuesForNewInstances' " +
+			                           "was not made.");
+		}
+		return instance;
+	}
+	
 	public static JDBCAdapter getProfileDBAdapter() throws SQLException {
-		return new SMSAppModulePostgreSQLAdapterProfile(log, new String[][] {
-			{"ResetTable",              "TRUNCATE Profiles CASCADE"},
-			{"SelectProfileByUser",     "SELECT userId, nickname FROM Profiles WHERE userId=${USER_ID}"},
-			{"AssertProfile",           "SELECT userId, nickname FROM AssertProfile(${USER_ID}, ${NICKNAME})"},
-			{"SelectProfileByNickname", "SELECT Users.userId, Users.phoneNumber, Profiles.nickname FROM Users, Profiles WHERE lower(nickname)=lower(${NICKNAME}) AND Users.userId = Profiles.userId"},
-		});
+		return getInstance();
 	}
 }

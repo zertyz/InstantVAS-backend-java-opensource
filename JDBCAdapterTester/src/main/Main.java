@@ -24,7 +24,9 @@ public class Main {
 			//SQLServerTester.sqlserverMain(args);
 			
 			// test PostgreSQL connectivity
-			//PostgreSQLTester.postgreSQLTesterMain(args);
+			PostgreSQLTester.postgreSQLTesterMain(args);
+			
+			// TODO JDBCAdapter does not allow two different database engines to coexist on the same VM due to the connection pool implementation
 			
 			// test embedded Derby connectivity
 			DerbyEmbeddedTester.embeddedDerbyTesterMain(args);

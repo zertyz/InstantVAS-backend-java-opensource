@@ -2,12 +2,13 @@ package main;
 
 import java.sql.SQLException;
 
-import static mutua.icc.instrumentation.DefaultInstrumentationProperties.*;
-import static mutua.icc.instrumentation.DefaultInstrumentationEvents.*;
 import static main.config.Configuration.log;
 import adapters.PostgreSQLAdapter;
-import adapters.dto.PreparedProcedureInvocationDto;
 import adapters.exceptions.PreparedProcedureException;
+
+import static main.PostgreSQLAdapterConfiguration.PostgreSQLStatements.*;
+import static main.PostgreSQLAdapterConfiguration.PostgreSQLParameters.*;
+
 
 /** <pre>
  * PostgreSQLTester.java
@@ -30,34 +31,29 @@ public class PostgreSQLTester {
 		db.resetDatabase();
 
 		// INSERT
-		PreparedProcedureInvocationDto invocation = new PreparedProcedureInvocationDto("InsertSimpleRecord");
-		invocation.addParameter("ID",    11);
-		invocation.addParameter("PHONE", "2192820997");
-		int result = db.invokeUpdateProcedure(invocation);
+		int result = db.invokeUpdateProcedure(InsertSimpleRecord,
+		                                      ID,    11,
+		                                      PHONE, "2192820997");
 		System.out.println("Result: " + result);
 		
 		// QUERY
-		invocation = new PreparedProcedureInvocationDto("GetSimpleIdFromPhone");
-		invocation.addParameter("ID", 11);
-		String phone = (String) db.invokeScalarProcedure(invocation);
+		String phone = (String) db.invokeScalarProcedure(GetSimpleIdFromPhone,
+		                                                 ID, 11);
 		System.out.println("Result: " + phone);
 		
 		// DELETE
-		invocation = new PreparedProcedureInvocationDto("DeleteSimpleRecord");
-		invocation.addParameter("ID", 11);
-		result = db.invokeUpdateProcedure(invocation);
+		result = db.invokeUpdateProcedure(DeleteSimpleRecord,
+		                                  ID, 11);
 		System.out.println("Result: " + result);
 
 		// NO PARAM STORED PROCEDURE
-		invocation = new PreparedProcedureInvocationDto("NoParamStoredProcedure");
-		int sp = (Integer) db.invokeScalarProcedure(invocation);
+		int sp = (Integer) db.invokeScalarProcedure(NoParamStoredProcedure);
 		System.out.println("Result: " + sp);
 
 		// PARAM STORED PROCEDURE
-		invocation = new PreparedProcedureInvocationDto("ParamStoredProcedure");
-		invocation.addParameter("ID",    11);
-		invocation.addParameter("PHONE", "2192820997");
-		db.invokeRowProcedure(invocation);
+		db.invokeRowProcedure(ParamStoredProcedure,
+                              ID,    11,
+                              PHONE, "2192820997");
 		System.out.println("Result: NULL");
 
 		log.reportRequestFinish();

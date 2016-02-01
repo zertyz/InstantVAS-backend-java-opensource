@@ -94,7 +94,7 @@ public class SessionModelTests {
 	
 	@Test
 	public void testEmptySessionProperties() {
-		SessionModel session = new SessionModel((UserDto)null, null, null);
+		SessionModel session = new SessionModel((UserDto)null, null);
 		
 		assertNull("non-existent string prop1 should be null", session.getStringProperty(prop1));
 		assertEquals("non-existent int prop2 should be -1", -1, session.getIntProperty(prop2));
