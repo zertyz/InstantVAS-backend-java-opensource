@@ -25,15 +25,22 @@ import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
  * @author luiz
  */
 
-public interface ICommandProcessor {
+public abstract class ICommandProcessor {
+	
+	private String commandName;
+	
+	public ICommandProcessor(String commandName) {
+		this.commandName = commandName;
+	}
 
-	/** Returns the human readable command name used to reference the command processor instance.
-	 * Must be implemented as 'return this.name();' */
-	String getCommandName();
+	/** Returns the human readable command name used to reference the command processor instance */
+	public String getCommandName() {
+		return commandName;
+	}
 	
 	/** Method to execute the command and get the response message(s) and persistent information.
 	 *  by convention when -- in the 'CommandAnswerInfo' -- the 'phone' is null, the MTs are
 	 *  addressed to the same phone who sent the MO */
-	CommandAnswerDto processCommand(SessionModel session, ESMSInParserCarrier carrier, String[] parameters) throws SQLException;
+	public abstract CommandAnswerDto processCommand(SessionModel session, ESMSInParserCarrier carrier, String[] parameters) throws SQLException;
 
 }

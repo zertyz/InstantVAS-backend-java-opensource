@@ -1,5 +1,7 @@
 package mutua.smsappmodule.smslogic.navigationstates;
 
+import java.util.Arrays;
+
 import mutua.smsappmodule.smslogic.commands.CommandTriggersDto;
 import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
 import mutua.smsappmodule.smslogic.sessions.SessionModel;
@@ -18,31 +20,36 @@ import mutua.smsappmodule.smslogic.sessions.SessionModel;
 
 public class NavigationStateCommons implements INavigationState {
 	
-	
+	private final String navigationStateName;
 	private CommandTriggersDto[] commandTriggers;
 
 
-	// forces the instantiation from the other constructor
-	private NavigationStateCommons() {}
-	
-	/** Prepares the environment for a new navigation state. 1) Register the state on the {@link SessionModel};
-	 * 2) run the command triggers configuration method */
-	public NavigationStateCommons(INavigationState enumItem) {
-		this();
-		SessionModel.registerNewNavigationState(enumItem);
+	public NavigationStateCommons(String navigationStateName) {
+		this.navigationStateName = navigationStateName;
 	}
 	
 	@Override
 	public String getNavigationStateName() {
-		throw new RuntimeException("This method (from the 'NavigationStateCommons' class) cannot be used");
+		return navigationStateName;
+	}
+	
+	private static ICommandProcessor getCommandProcessor(String commandName, ICommandProcessor[] availableCommands) {
+		for (ICommandProcessor cp : availableCommands) {
+			if (commandName.equals(cp.getCommandName())) {
+				return cp;
+			}
+		}
+		throw new RuntimeException("Wanted command named '"+commandName+"' is not present on the availableCommands " + Arrays.toString(availableCommands));
 	}
 
 	@Override
-	public void setCommandTriggers(Object[][] commandsTriggersData) {
+	/** */
+	public void setCommandTriggers(Object[][] commandsTriggersData, ICommandProcessor[] availableCommands) {
 		int commandTriggersIndex = 0;
 		commandTriggers = new CommandTriggersDto[commandsTriggersData.length];
 		for (Object[] commandTriggersData : commandsTriggersData) {
-			ICommandProcessor commandProcessor = (ICommandProcessor) commandTriggersData[0];
+			String commandName = (String)commandTriggersData[0];
+			ICommandProcessor commandProcessor = getCommandProcessor(commandName, availableCommands);
 			String[] regularExpressions = null;
 			long timeout = -1l;
 			for (int i=1; i<commandTriggersData.length; i++) {
@@ -80,11 +87,6 @@ public class NavigationStateCommons implements INavigationState {
 
 	@Override
 	public void deserializeCommandTrigger(String[] serializedData) {
-	}
-
-	@Override
-	public void setCommandTriggersFromConfigurationValues() {
-		throw new RuntimeException("This method (from the 'NavigationStateCommons' class) cannot be used");
 	}
 
 }

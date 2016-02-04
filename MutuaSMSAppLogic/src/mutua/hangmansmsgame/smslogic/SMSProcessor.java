@@ -4,10 +4,11 @@ import static mutua.icc.instrumentation.DefaultInstrumentationEvents.*;
 import static mutua.icc.instrumentation.DefaultInstrumentationProperties.*;
 import static mutua.icc.instrumentation.SMSProcessorInstrumentationEvents.*;
 import static mutua.icc.instrumentation.SMSProcessorInstrumentationProperties.*;
-import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates.*;
+import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates.NavigationStatesNames.*;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,22 +47,32 @@ import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 public class SMSProcessor {
 
 	
-	// databases
-	////////////
+	private static Instrumentation<?, ?> LOG;
+	private static SMSAppModuleDALFactory DEFAULT_MODULE_DAL;
 	
-	private static IUserDB    userDB    = SMSAppModuleDALFactory.DEFAULT_DAL.getUserDB();
-	private static ISessionDB sessionDB = SMSAppModuleDALFactory.DEFAULT_DAL.getSessionDB();
+	// TODO put on the configurable class pattern format
+	// na verdade, todos os valores do construtor podem vir pra cá. De outro modo, não fica complicado
+	// criar os workers? Os parâmetros terão que dar a volta ao mundo... não?
+	public static void configureDefaultValuesForNewInstances(Instrumentation<?, ?> log, SMSAppModuleDALFactory defaultModuleDAL) {
+		LOG                = log;
+		DEFAULT_MODULE_DAL = defaultModuleDAL;
+		log.reportDebug(SMSProcessor.class.getName() + ": new configuration loaded.");
+		
+		// este classe deve ser tratada como uma instancia. Não há motivo para os 10 workers terem 10 copias de nenhum dado contido aqui.
+	}
+	
+	
+	private final Instrumentation<?, ?> log = LOG;
+	private final IUserDB    userDB    = DEFAULT_MODULE_DAL.getUserDB();
+	private final ISessionDB sessionDB = DEFAULT_MODULE_DAL.getSessionDB();
 	
 	
 	// message dispatchers
 	//////////////////////
 	
-	private MessageDispatcher mtDispatcher;
-	
-	
-	private Instrumentation<?, ?> log;
-	private INavigationState[]    navigationStates;
-	
+	private final MessageDispatcher  mtDispatcher;
+	private final INavigationState[] navigationStates;
+		
 	
 	/***********************
 	** PROCESSING METHODS **
@@ -69,9 +80,8 @@ public class SMSProcessor {
 	
 	/** Gets a processor instance which will deliver Output SMSes (MT's) to the 
 	 * provided 'interactionReceiver' MessageReceiver instance */
-	public SMSProcessor(Instrumentation<?, ?> log, IResponseReceiver defaultReceiver, INavigationState[]... navigationStatesArrays) {
+	public SMSProcessor(IResponseReceiver defaultReceiver, INavigationState[]... navigationStatesArrays) {
 		log.addInstrumentableEvents(SMSProcessorInstrumentationEvents.values());
-		this.log              = log;
 		mtDispatcher          = new MessageDispatcher(defaultReceiver);
 		// compute the length
 		int navigationStatesLength = 0;
@@ -161,6 +171,28 @@ public class SMSProcessor {
 		}
 	}
 	
+	private class NavigationStateAwareSessionModel extends SessionModel {
+		public NavigationStateAwareSessionModel(UserDto user, IncomingSMSDto MO) {
+			super(user, MO);
+		}
+		public NavigationStateAwareSessionModel(SessionDto sessionDto, IncomingSMSDto MO) {
+			super(sessionDto, MO);
+		}
+
+		@Override
+		public INavigationState getNavigationStateFromStateName(String navigationStateName) {
+			for (INavigationState navigationState : navigationStates) {
+				if (navigationState.getNavigationStateName().equals(navigationStateName)) {
+					return navigationState;
+				}
+			}
+			throw new RuntimeException(
+				"NavigationState named '" + navigationStateName +
+				"' provided by the sessions table is not present on the instance known values '" +
+				Arrays.toString(navigationStates) + "'");
+		}
+		
+	}
 	private SessionModel resolveUserSession(IncomingSMSDto MO) {
 		String phone = MO.getPhone();
 		String text  = MO.getText();
@@ -171,11 +203,11 @@ public class SMSProcessor {
 			SessionDto sessionDto = sessionDB.getSession(user);
 			// new user
 			if (sessionDto == null) {
-				session = new SessionModel(user, MO);
+				session = new NavigationStateAwareSessionModel(user, MO);
 				session.setNavigationState(nstNewUser);
 				log.reportEvent(IE_REQUEST_FROM_NEW_USER, IP_PHONE, phone, IP_TEXT, text);
 			} else {
-				session = new SessionModel(sessionDto, MO);
+				session = new NavigationStateAwareSessionModel(sessionDto, MO);
 				log.reportEvent(IE_REQUEST_FROM_EXISTING_USER, IP_PHONE, phone, IP_STATE, session.getNavigationState(), IP_TEXT, text);
 			}
 		} catch (Exception e) {

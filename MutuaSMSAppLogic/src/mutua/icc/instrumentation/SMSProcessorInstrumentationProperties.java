@@ -3,6 +3,7 @@ package mutua.icc.instrumentation;
 import mutua.smsappmodule.smslogic.commands.CommandAnswerDto;
 import mutua.smsappmodule.smslogic.commands.CommandInvocationDto;
 import mutua.smsappmodule.smslogic.navigationstates.INavigationState;
+import mutua.smsappmodule.smslogic.navigationstates.NavigationStateCommons;
 
 /** <pre>
  * SMSProcessorInstrumentationProperties.java
@@ -22,7 +23,7 @@ public enum SMSProcessorInstrumentationProperties implements IInstrumentableProp
 	IP_PHONE                 ("phone", String.class),
 	IP_TEXT                  ("text",  String.class),
 	
-	IP_STATE                 ("state", INavigationState.class) {
+	IP_STATE                 ("state", NavigationStateCommons.class) {
 		@Override
 		public void appendSerializedValue(StringBuffer logLine, Object value) {
 			// this method will be called only if 'value' isn't member of any enumeration -- the enumeration serialization will be called otherwise

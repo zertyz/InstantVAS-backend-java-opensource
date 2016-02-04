@@ -30,9 +30,10 @@ public interface INavigationState {
 	 * Must be implemented as 'return this.name();' */
 	String getNavigationStateName();
 
-	/** Reconfigure the 'CommandTriggersDto' for each command supported by the navigation state,
-	 * where 'commandTriggersData' := {{(ICommandProcessor)command, (String[]|long)regular_expressions_array|timeout_millis, ...}, ...} */
-	void setCommandTriggers(Object[][] commandsTriggersData);
+	/** Define the 'CommandTriggersDto' for each command supported by this navigation state,
+	 * where 'commandTriggersData' := {{(String)commandName, (String[]|long)regular_expressions_array|timeout_millis, ...}, ...}
+	 * where 'commandName' is a name of a command present in 'availableCommands' */
+	void setCommandTriggers(Object[][] commandsTriggersData, ICommandProcessor[] availableCommands);
 	
 	/** Returns the 'CommandTriggersDto' for each command supported by the navigation state */
 	CommandTriggersDto[] getCommandTriggers();
@@ -47,9 +48,4 @@ public interface INavigationState {
 	 * the implementation of this method must call 'commandTriggers[command] = NavigationStateCommons.deserializeCommandTrigger(serializedData);' */
 	void deserializeCommandTrigger(String[] serializedData);
 
-	/** invokes 'setCommandTriggers' on instantiation and reconfiguration times, with the configured values --
-	 * tipically called from the configuration class' 'applyTriggerConfiguration' method.
-	 * the implementation must call 'setCommandTriggers(new Object[][] {{cmd, trigger1, ...}, ...}' */
-	void setCommandTriggersFromConfigurationValues();
-	
 }

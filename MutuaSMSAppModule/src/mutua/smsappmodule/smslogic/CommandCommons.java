@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import mutua.smsappmodule.dto.UserDto;
 import mutua.smsappmodule.smslogic.commands.CommandAnswerDto;
 import mutua.smsappmodule.smslogic.commands.CommandMessageDto;
-import mutua.smsappmodule.smslogic.navigationstates.INavigationState;
 import mutua.smsappmodule.smslogic.sessions.ISessionProperty;
 import mutua.smsappmodule.smslogic.sessions.SessionModel;
 
@@ -37,7 +36,7 @@ public class CommandCommons {
 	
 	/** refactored method to be used when a command changes the navigation state and
 	 * only generates a reply (an MT to the same sender as the MO) */
-	protected static CommandAnswerDto getNewStateReplyCommandAnswer(SessionModel session, INavigationState newState, String replyMTText) {
+	protected static CommandAnswerDto getNewStateReplyCommandAnswer(SessionModel session, String newState, String replyMTText) {
 		CommandMessageDto commandMessage = new CommandMessageDto(replyMTText, null);
 		session.setNavigationState(newState);
 		return new CommandAnswerDto(commandMessage, session);
@@ -53,7 +52,7 @@ public class CommandCommons {
 	
 	/** refactored method to be used when a command generates a reply with a change in the navigation state which requires another user
 	 *  to be notified */
-	protected static CommandAnswerDto getNewStateReplyWithAnAdditionalMessageToAnotherUserCommandAnswer(SessionModel session, INavigationState newState,
+	protected static CommandAnswerDto getNewStateReplyWithAnAdditionalMessageToAnotherUserCommandAnswer(SessionModel session, String newState,
 	                                                                                                    String replyMTText, UserDto anotherUser, String anotherMTText) {
 		session.setNavigationState(newState);
 		CommandMessageDto reply          = new CommandMessageDto(replyMTText, null);
@@ -64,7 +63,7 @@ public class CommandCommons {
 	
 	/** Implements rules like warning users that a match was cancelled by commands who would force the user from quitting the playing state (invite, list, ...),
 	 *  possibly issueing messages to both users and taking other actions as well. */
-	protected static CommandMessageDto[] applySessionTransitionRules(SessionModel currentSession, INavigationState newNavigationState) throws SQLException {
+	protected static CommandMessageDto[] applySessionTransitionRules(SessionModel currentSession, String newNavigationState) throws SQLException {
 		return null;
 	}
 	
@@ -83,7 +82,7 @@ public class CommandCommons {
 	}
 	
 	/** Get a new command answer, applying session transition rules */
-	protected static CommandAnswerDto getNewCommandAnswerDto(SessionModel currentSession, CommandMessageDto[] commandMessages, INavigationState newNavigationState, ISessionProperty parameter, String parameterValue) throws SQLException {
+	protected static CommandAnswerDto getNewCommandAnswerDto(SessionModel currentSession, CommandMessageDto[] commandMessages, String newNavigationState, ISessionProperty parameter, String parameterValue) throws SQLException {
 		CommandMessageDto[] transitionMessages = applySessionTransitionRules(currentSession, newNavigationState);
 		currentSession.setNavigationState(newNavigationState);
 		currentSession.setProperty(parameter, parameterValue);
@@ -91,7 +90,7 @@ public class CommandCommons {
 	}
 	
 	/** Get a new command answer, applying session transition rules */
-	protected static CommandAnswerDto getNewCommandAnswerDto(SessionModel currentSession, CommandMessageDto[] commandMessages, INavigationState newNavigationState) throws SQLException {
+	protected static CommandAnswerDto getNewCommandAnswerDto(SessionModel currentSession, CommandMessageDto[] commandMessages, String newNavigationState) throws SQLException {
 		CommandMessageDto[] transitionMessages = applySessionTransitionRules(currentSession, newNavigationState);
 		currentSession.setNavigationState(newNavigationState);
 		return new CommandAnswerDto(addCommandMessages(transitionMessages, commandMessages), currentSession);
@@ -108,11 +107,11 @@ public class CommandCommons {
 		return getNewCommandAnswerDto(currentSession, new CommandMessageDto[] {commandMessage});
 	}
 
-	protected static CommandAnswerDto getNewCommandAnswerDto(SessionModel currentSession, CommandMessageDto commandMessage, INavigationState newNavigationState) throws SQLException {
+	protected static CommandAnswerDto getNewCommandAnswerDto(SessionModel currentSession, CommandMessageDto commandMessage, String newNavigationState) throws SQLException {
 		return getNewCommandAnswerDto(currentSession, new CommandMessageDto[] {commandMessage}, newNavigationState);
 	}
 	
-	protected static CommandAnswerDto getNewCommandAnswerDto(SessionModel currentSession, CommandMessageDto commandMessage, INavigationState newNavigationState, ISessionProperty parameter, String parameterValue) throws SQLException {
+	protected static CommandAnswerDto getNewCommandAnswerDto(SessionModel currentSession, CommandMessageDto commandMessage, String newNavigationState, ISessionProperty parameter, String parameterValue) throws SQLException {
 		return getNewCommandAnswerDto(currentSession, new CommandMessageDto[] {commandMessage}, newNavigationState, parameter, parameterValue);
 	}
 	

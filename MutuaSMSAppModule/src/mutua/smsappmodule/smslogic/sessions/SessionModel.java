@@ -6,6 +6,7 @@ import java.util.HashMap;
 import mutua.smsappmodule.dto.SessionDto;
 import mutua.smsappmodule.dto.UserDto;
 import mutua.smsappmodule.smslogic.navigationstates.INavigationState;
+import mutua.smsappmodule.smslogic.navigationstates.NavigationStateCommons;
 import mutua.smsin.dto.IncomingSMSDto;
 
 /** <pre>
@@ -23,17 +24,7 @@ import mutua.smsin.dto.IncomingSMSDto;
  * @author luiz
  */
 
-public class SessionModel {
-	
-	private static HashMap<String, INavigationState> navigationStates = new HashMap<String, INavigationState>();
-	
-	public static INavigationState getNavigationState(String navigationStateName) {
-		return navigationStates.get(navigationStateName);
-	}
-
-	public static void registerNewNavigationState(INavigationState navigationState) {
-		navigationStates.put(navigationState.getNavigationStateName(), navigationState);
-	}
+public abstract class SessionModel {
 	
 	private final UserDto        user;
 	private final IncomingSMSDto MO;
@@ -48,6 +39,8 @@ public class SessionModel {
 		}
 	};
 
+	/** Should return the {@link INavigationState} associated with the provided 'navigationStateName' */
+	public abstract INavigationState getNavigationStateFromStateName(String navigationStateName);
 
 	/** Creates a session for 'user' where 'storedProperties' := {{(ISessionProperty)prop, propVal}, ...} */
 	public SessionModel(SessionDto sessionDto, IncomingSMSDto MO) {
@@ -94,7 +87,11 @@ public class SessionModel {
 	}
 	
 	public INavigationState getNavigationState() {
-		return getNavigationState(getStringProperty(NAVIGATION_STATE_PROPERTY));
+		String navigationStateName = getStringProperty(NAVIGATION_STATE_PROPERTY);
+		if (navigationStateName == null) {
+			return null;
+		}
+		return getNavigationStateFromStateName(navigationStateName);
 	}
 	
 	public void setProperty(ISessionProperty property, Object value) {
@@ -105,8 +102,8 @@ public class SessionModel {
 		setProperty(property, "");
 	}
 	
-	public void setNavigationState(INavigationState navigationStateName) {
-		setProperty(NAVIGATION_STATE_PROPERTY, navigationStateName.getNavigationStateName());
+	public void setNavigationState(String navigationStateName) {
+		setProperty(NAVIGATION_STATE_PROPERTY, navigationStateName);
 	}
 
 	public UserDto getUser() {
