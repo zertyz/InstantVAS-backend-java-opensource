@@ -37,7 +37,6 @@ public class SMSAppModuleTestCommons {
 	
 	public final SMSProcessor smsP;
 	
-	private Instrumentation<?, ?> log;
 	private TestResponseReceiver responseReceiver;
 	
 	private static IUserDB    userDB    = DEFAULT_SMS_MODULE_DAL.getUserDB();
@@ -45,9 +44,9 @@ public class SMSAppModuleTestCommons {
 
 	
 	public SMSAppModuleTestCommons(Instrumentation<?, ?> log, INavigationState[]... navigationStatesArrays) {
-		this.log = log;
 		responseReceiver = new TestResponseReceiver();
-		smsP = new SMSProcessor(log, responseReceiver, navigationStatesArrays);
+		SMSProcessor.configureDefaultValuesForNewInstances(log, DEFAULT_SMS_MODULE_DAL);
+		smsP = new SMSProcessor(responseReceiver, navigationStatesArrays);
 	}
 	
 	
@@ -55,8 +54,8 @@ public class SMSAppModuleTestCommons {
 	** DATABASE MANIPULATION METHODS **
 	**********************************/
 	
-	/** Reset all databases known to this class */
-	public static void resetTables() throws SQLException {
+	/** Reset all the base module databases */
+	public static void resetBaseTables() throws SQLException {
 		sessionDB.reset();
 		userDB.reset();
 	}
@@ -115,8 +114,18 @@ System.err.println("\n");
 	public void checkNavigationState(String phone, INavigationState navigationState) throws SQLException {
 		UserDto user          = userDB.assureUserIsRegistered(phone);
 		SessionDto sessionDto = sessionDB.getSession(user);
-		SessionModel session  = new SessionModel(sessionDto, null);
-		assertEquals("Wrong navigation state", navigationState.getNavigationStateName(), session.getNavigationState().getNavigationStateName());
+		String navigationStatePropertyName = SessionModel.NAVIGATION_STATE_PROPERTY.getPropertyName();
+		String[][] storedProperties = sessionDto.getStoredProperties();
+		boolean found = false;
+		for (String[] storedPropertyNameAndValuePair : storedProperties) {
+			String storedPropertyName  = storedPropertyNameAndValuePair[0];
+			String storedPropertyValue = storedPropertyNameAndValuePair[1];
+			if (navigationStatePropertyName.equals(storedPropertyName)) {
+				assertEquals("Wrong navigation state", navigationState.getNavigationStateName(), storedPropertyValue);
+				found = true;
+			}
+		}
+		assertTrue("Navigation state information was not found on the stored session properties", found);
 	}
 
 }

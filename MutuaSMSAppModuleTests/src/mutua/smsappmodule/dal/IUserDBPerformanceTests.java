@@ -32,7 +32,7 @@ public class IUserDBPerformanceTests {
 	@Test
 	public void testAlgorithmAnalysis() throws Throwable {
 		
-		SMSAppModuleTestCommons.resetTables();
+		SMSAppModuleTestCommons.resetBaseTables();
 		
 		int numberOfThreads = 4;
 		int inserts = 15000 * InstantVASSMSAppModuleTestsConfiguration.PERFORMANCE_TESTS_LOAD_FACTOR;

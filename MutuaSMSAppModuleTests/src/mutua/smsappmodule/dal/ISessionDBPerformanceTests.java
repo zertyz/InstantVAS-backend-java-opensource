@@ -49,7 +49,7 @@ public class ISessionDBPerformanceTests {
 	@BeforeClass
 	public static void fulfillUsersTable() {
 		try {
-			SMSAppModuleTestCommons.resetTables();
+			SMSAppModuleTestCommons.resetBaseTables();
 			SMSAppModuleTestCommons.insertUsers(phoneStart, users, numberOfThreads);
 		} catch (Throwable t) {
 			t.printStackTrace();

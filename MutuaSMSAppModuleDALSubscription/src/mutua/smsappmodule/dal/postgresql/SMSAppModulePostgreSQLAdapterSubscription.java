@@ -162,8 +162,8 @@ public class SMSAppModulePostgreSQLAdapterSubscription extends PostgreSQLAdapter
 	
 	public static JDBCAdapter getInstance() {
 		if (instance == null) {
-			throw new RuntimeException("Class '" + SMSAppModulePostgreSQLAdapter.class.getCanonicalName() + "' was not configured according to the " +
-			                           "'Mutua JDBCAdapter Configuration' pattern -- a preliminar call to 'configureDefaultValuesForNewInstances' " +
+			throw new RuntimeException("Class '" + SMSAppModulePostgreSQLAdapterSubscription.class.getCanonicalName() + "' was not configured according to the " +
+			                           "'Mutua Configurable Class' pattern -- a preliminar call to 'configureDefaultValuesForNewInstances' " +
 			                           "was not made.");
 		}
 		return instance;

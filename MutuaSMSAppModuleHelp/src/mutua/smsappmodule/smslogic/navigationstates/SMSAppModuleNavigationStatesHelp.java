@@ -1,9 +1,10 @@
 package mutua.smsappmodule.smslogic.navigationstates;
 
-import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHelp.*;
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationHelp.*;
+import mutua.smsappmodule.smslogic.SMSAppModuleCommandsHelp;
 import mutua.smsappmodule.smslogic.commands.CommandTriggersDto;
-import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
+
+import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHelp.CommandTriggersHelp.*;
+import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHelp.CommandNamesHelp.*;
 
 /** <pre>
  * SMSAppModuleNavigationStatesHelp.java
@@ -11,10 +12,10 @@ import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
  * (created by luiz, Jul 17, 2015)
  *
  * Declares the navigation states and the reference {@link CommandTriggersDto} required by
- * the "Help" SMS Application Module
+ * the "Help" SMS Application Module.
  * 
  * Implements the Mutua SMSApp Navigation States design pattern, as described by
- * {@link INavigationState}
+ * {@link NavigationStateCommons} and, additionally, follows "Mutua Configurable Module" pattern.
  *
  * @see INavigationState
  * @see CommandTriggersDto
@@ -22,58 +23,45 @@ import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
  * @author luiz
  */
 
-public enum SMSAppModuleNavigationStatesHelp implements INavigationState {
+public class SMSAppModuleNavigationStatesHelp {
+
 	
-	/** Navigation state used to show the composite help messages.
-	 *  SMS Applications must extend it adding their own command triggers. */
-	nstPresentingCompositeHelp {
-		@Override
-		public void setCommandTriggersFromConfigurationValues() {
-			setCommandTriggers(new Object[][] {
-				{cmdStartCompositeHelpDialog,      HELPtrgGlobalStartCompositeHelpDialog},
-				{cmdShowNextCompositeHelpMessage,  HELPtrgLocalShowNextCompositeHelpMessage},
-				{cmdShowExistingUsersFallbackHelp, new String[] {".*"}},
-			});
-		}
-	},
-	
-	;
-	
-	static {
-		// any redefinition of other modules' navigation states goes here.
-		// please see the "Subscription" module.
+	/** Class to be statically imported by the Commands Implementation to represent the navigation states */
+	public static class NavigationStatesNamesHelp {
+		/** @see SMSAppModuleNavigationStatesHelp#nstPresentingCompositeHelp */
+		public final static String nstPresentingCompositeHelp = "PresentingCompositeHelp";
 	}
 	
-	private NavigationStateCommons nsc;
+	// Navigation States Definitions
+	////////////////////////////////
 	
+	/** The list of all navigation states -- for 'SMSProcessor' to be able to deserialize state names */
+	public final NavigationStateCommons[] values;
 	
-	private SMSAppModuleNavigationStatesHelp() {
-		nsc = new NavigationStateCommons(this);
+	/** Navigation state used to show the composite help messages,
+	 *  containing command triggers to navigate from here on. */
+	public final NavigationStateCommons nstPresentingCompositeHelp;
+	
+	/** Provides the navigation states instance with custom triggers.
+	 *  @param helpCommands                       The instance of commands for this module
+	 *  @param nstPresentingCompositeHelpTriggers The list of commands to execute when on {@link #nstExistingUser} navigation state based on MO matches with the provided regular expressions. See {@link NavigationStateCommons#setCommandTriggers(Object[][], mutua.smsappmodule.smslogic.commands.ICommandProcessor[])}*/
+	public SMSAppModuleNavigationStatesHelp(final SMSAppModuleCommandsHelp helpCommands, final Object[][] nstPresentingCompositeHelpTriggers) {		
+		nstPresentingCompositeHelp = new NavigationStateCommons(NavigationStatesNamesHelp.nstPresentingCompositeHelp) {{
+			setCommandTriggers(nstPresentingCompositeHelpTriggers, helpCommands.values);
+		}};
+		
+		// the list of values
+		values = new NavigationStateCommons[] {
+			nstPresentingCompositeHelp,	
+		};
+
 	}
 
-	@Override
-	public String getNavigationStateName() {
-		return this.name();
+	/** Provides the navigation states instance with the default test values */
+	public SMSAppModuleNavigationStatesHelp(final SMSAppModuleCommandsHelp helpCommands) { 
+		this(helpCommands, new Object[][] {
+			{cmdStartCompositeHelpDialog,      trgGlobalStartCompositeHelpDialog},
+			{cmdShowNextCompositeHelpMessage,  trgLocalShowNextCompositeHelpMessage},
+			{cmdShowExistingUsersFallbackHelp, trgGlobalShowExistingUsersFallbackHelp}});
 	}
-
-	@Override
-	public void setCommandTriggers(Object[][] commandsTriggersData) {
-		nsc.setCommandTriggers(commandsTriggersData);
-	}
-
-	@Override
-	public CommandTriggersDto[] getCommandTriggers() {
-		return nsc.getCommandTriggers();
-	}
-
-	@Override
-	public String[] serializeCommandTrigger(ICommandProcessor command) {
-		return nsc.serializeCommandTrigger(command);
-	}
-
-	@Override
-	public void deserializeCommandTrigger(String[] serializedData) {
-		nsc.deserializeCommandTrigger(serializedData);
-	}
-
 }

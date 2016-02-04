@@ -1,13 +1,12 @@
 package mutua.smsappmodule.config;
 
-import static mutua.smsappmodule.i18n.SMSAppModulePhrasingsHelp.*;
-import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHelp.*;
-
-import java.util.HashMap;
-
-import mutua.icc.configuration.annotations.ConfigurableElement;
+import mutua.icc.instrumentation.DefaultInstrumentationProperties;
+import mutua.icc.instrumentation.Instrumentation;
+import mutua.smsappmodule.i18n.SMSAppModulePhrasingsHelp;
+import mutua.smsappmodule.smslogic.SMSAppModuleCommandsHelp;
+import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
 import mutua.smsappmodule.smslogic.navigationstates.INavigationState;
-import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates;
+import mutua.smsappmodule.smslogic.navigationstates.NavigationStateCommons;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesHelp;
 
 /** <pre>
@@ -15,8 +14,11 @@ import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates
  * ==================================
  * (created by luiz, Jul 14, 2015)
  *
- * Defines the "Help" module configuration variables, implementing the Mutua SMSApp
- * Configuration design pattern, as described in 'SMSAppModuleConfiguration'
+ * Configure the classes' default values for new instances of the "Help SMS Module".
+ * 
+ * The methods of this class are the ones external users should call in order to create the instances needed to use the module.
+ * 
+ * Follows the "Instant VAS SMS Modules" pattern described bellow:
  *
  * @see SMSAppModuleConfiguration
  * @version $Id$
@@ -24,89 +26,55 @@ import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates
  */
 
 public class SMSAppModuleConfigurationHelp {
+	
+	
+	/** Constructs the simple version of this SMS Module, with default values, for testing purposes.
+	 *  Before running these method, one might want to set the defaults for {@link InstantVASSMSAppModuleConfiguration}:<pre>
+	 *   {@link InstantVASSMSAppModuleConfiguration#configureSMSAppModule}</pre> 
+	 *  @param shortCode                            see {@link SMSAppModulePhrasingsHelp#phraseParameters}
+	 *  @param appName                              see {@link SMSAppModulePhrasingsHelp#phraseParameters}
+	 *  @param phrStatefulHelpMessages              see {@link SMSAppModulePhrasingsHelp#SMSAppModulePhrasingsHelp(String, String, String, String, String, Object[][], String[])}
+	 *  @returns {(SMSAppModuleNavigationStatesHelp)navigationStates, (SMSAppModuleCommandsHelp)commands, (SMSAppModulePhrasingsHelp)phrasings} */
+	public static Object[] getHelpModuleInstances(String shortCode, String appName, String[][] phrStatefulHelpMessages) {
 
+		SMSAppModulePhrasingsHelp phrasings               = new SMSAppModulePhrasingsHelp(shortCode, appName, phrStatefulHelpMessages);
+		SMSAppModuleCommandsHelp commands                 = new SMSAppModuleCommandsHelp(phrasings);
+		SMSAppModuleNavigationStatesHelp navigationStates = new SMSAppModuleNavigationStatesHelp(commands);
+		
+		System.err.println(SMSAppModuleConfigurationHelp.class.getName() + ": test configuration loaded.");
+		
+		return new Object[] {navigationStates, commands, phrasings};
+	}
 	
-	// help module specific functionality -- contextualized helps based on the current navigation state
-	private static HashMap<INavigationState, String> statefulHelpMessagesMap = new HashMap<INavigationState, String>();
+	/** Constructs the full version of this SMS Module, with all options set programmatically.
+	 *  When running these method, one might want to set the defaults for {@link InstantVASSMSAppModuleConfiguration}:<pre>
+	 *   {@link InstantVASSMSAppModuleConfiguration#configureSMSAppModule}</pre>
+	 *  @param log
+	 *  @param shortCode
+	 *  @param appName
+	 *  @param phrNewUsersFallbackHelp                   see {@link SMSAppModulePhrasingsHelp#getNewUsersFallbackHelp()}
+	 *  @param phrExistingUsersFallbackHelp              see {@link SMSAppModulePhrasingsHelp#getExistingUsersFallbackHelp()}
+	 *  @param phrStatelessHelp                          see {@link SMSAppModulePhrasingsHelp#getStatelessHelpMessage()}
+	 *  @param phrStatefulHelpMessages                   see {@link SMSAppModulePhrasingsHelp#getStatefulHelpMessage(INavigationState)}
+	 *  @param phrCompositeHelps                         see {@link SMSAppModulePhrasingsHelp#getCompositeHelpMessage(int)}
+	 *  @param nstPresentingCompositeHelpCommandTriggers see {@link NavigationStateCommons#setCommandTriggers(Object[][], ICommandProcessor[])}
+	 *  @returns {(SMSAppModuleNavigationStatesHelp)navigationStates, (SMSAppModuleCommandsHelp)commands, (SMSAppModulePhrasingsHelp)phrasings} */
+	public static Object[] getHelpModuleInstances(Instrumentation<DefaultInstrumentationProperties, String> log, String shortCode, String appName,
+		String phrNewUsersFallbackHelp,
+		String phrExistingUsersFallbackHelp,
+		String phrStatelessHelp,
+		String[][] phrStatefulHelpMessages,
+		String[] phrCompositeHelps,
+		Object[][] nstPresentingCompositeHelpCommandTriggers) {
 
-	
-	/*************************************************
-	** MutuaICConfiguration CONFIGURABLE PROPERTIES **
-	*************************************************/
-	
-	// phrasing
-	///////////
-	
-	@ConfigurableElement(sameAsMethod="mutua.smsappmodule.i18n.SMSAppModulePhrasingsHelp.getFallbackNewUsersHelp")
-	public static String HELPphrNewUsersFallback      = phrNewUsersFallbackHelp.toString();
-	@ConfigurableElement(sameAsMethod="mutua.smsappmodule.i18n.SMSAppModulePhrasingsHelp.getFallbackExistingUsersHelp")
-	public static String HELPphrFallbackExistingUsers = phrExistingUsersFallbackHelp.toString();
-	@ConfigurableElement(sameAsMethod="mutua.smsappmodule.i18n.SMSAppModulePhrasingsHelp.getStatelessHelpMessage")
-	public static String HELPphrStateless             = phrStatelessHelp.toString();
-	@ConfigurableElement(sameAsMethod="mutua.smsappmodule.i18n.SMSAppModulePhrasingsHelp.getStatefulHelpMessage")
-	public static String[] HELPphrComposite           = phrCompositeHelps.toStrings();
-	
-	
-	// command patterns
-	///////////////////
-	
-	@ConfigurableElement("Global triggers (available to all navigation states) to execute the 'composite help dialog', the multiple help/rules/terms of service messages which accepts the MORE keyword (described at 'triggersHELPcmdShowNextCompositeHelpDialog') to present the next one")
-	public static String[] HELPtrgGlobalStartCompositeHelpDialog    = trgGlobalStartCompositeHelpDialog;
-	@ConfigurableElement("Local triggers (available only to the 'composite help dialog' navigation state) to execute the 'show next composite help message'")
-	public static String[] HELPtrgLocalShowNextCompositeHelpMessage = trgLocalShowNextCompositeHelpMessage;
-	@ConfigurableElement("Global triggers (available to all navigation states) to execute the general help message")
-	public static String[] HELPtrgGlobalShowStatelessHelpMessage    = trgGlobalShowStatelessHelpMessage;
-
-	
-	/************
-	** METHODS **
-	************/
-	
-	/** Method to configure & apply state specific help messages, where
-	 *  statefulHelpMessages := {{(INavigationState)navigationState, (String)helpMessage}, ...} */
-	public static void setStatefulHelpMessages(Object[][] statefulHelpMessages) {
-		statefulHelpMessagesMap.clear();
-		for (Object[] statefulHelpMessage : statefulHelpMessages) {
-			INavigationState navigationState = (INavigationState)(statefulHelpMessage[0]);
-			String           helpMessage     = (String)          (statefulHelpMessage[1]);
-			statefulHelpMessagesMap.put(navigationState, helpMessage);
-		}
+		SMSAppModulePhrasingsHelp phrasings               = new SMSAppModulePhrasingsHelp(shortCode, appName, 
+			phrNewUsersFallbackHelp, phrExistingUsersFallbackHelp, phrStatelessHelp, phrStatefulHelpMessages, phrCompositeHelps);
+		SMSAppModuleCommandsHelp commands                 = new SMSAppModuleCommandsHelp(phrasings);
+		SMSAppModuleNavigationStatesHelp navigationStates = new SMSAppModuleNavigationStatesHelp(commands, nstPresentingCompositeHelpCommandTriggers);
+		
+		log.reportDebug(SMSAppModuleConfigurationHelp.class.getName() + ": new configuration loaded.");
+		
+		return new Object[] {navigationStates, commands, phrasings};
 	}
 	
-	/** Method to add & apply navigation state command triggers, where
-	 *  statefulHelpMessages := {{(INavigationState)navigationState, (String)helpMessage}, ...} */
-	public static void addNavigationStateCommandTriggers(SMSAppModuleNavigationStates navigationState) {
-		//navigationState.setCommandTriggers(commandTriggersData);
-	}
-	
-	/** returns the help message for a particular state */
-	public static String getStatefulHelpMessage(INavigationState navigationState) {
-		return statefulHelpMessagesMap.get(navigationState);
-	}
-	
-	/** Apply on-the-fly phrasing changes */
-	public static void applyPhrasingConfiguration() {
-		phrNewUsersFallbackHelp     .setPhrases(HELPphrNewUsersFallback);
-		phrExistingUsersFallbackHelp.setPhrases(HELPphrFallbackExistingUsers);
-		phrStatelessHelp            .setPhrases(HELPphrStateless);
-		phrCompositeHelps           .setPhrases(HELPphrComposite);
-	}
-	
-	/** Apply on-the-fly command trigger changes */
-	public static void applyTriggerConfiguration() {
-		for (INavigationState navigationState : SMSAppModuleNavigationStatesHelp.values()) {
-			navigationState.setCommandTriggersFromConfigurationValues();
-		}
-	}
-	
-	/** Apply the following on-the-fly configuration changes: phrasing, triggers */
-	public static void applyConfiguration() {
-		applyPhrasingConfiguration();
-		applyTriggerConfiguration();
-	}
-	
-	
-	static {
-		applyConfiguration();
-	}
 }

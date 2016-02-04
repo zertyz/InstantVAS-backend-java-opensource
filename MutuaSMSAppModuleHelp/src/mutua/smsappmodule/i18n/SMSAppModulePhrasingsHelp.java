@@ -1,8 +1,7 @@
 package mutua.smsappmodule.i18n;
 
-import mutua.icc.configuration.annotations.ConfigurableElement;
-import mutua.smsappmodule.config.SMSAppModuleConfiguration;
-import mutua.smsappmodule.config.SMSAppModuleConfigurationHelp;
+import java.util.HashMap;
+
 import mutua.smsappmodule.smslogic.navigationstates.INavigationState;
 
 /** <pre>
@@ -20,73 +19,89 @@ import mutua.smsappmodule.smslogic.navigationstates.INavigationState;
  * @author luiz
  */
 
-public enum SMSAppModulePhrasingsHelp {
+public class SMSAppModulePhrasingsHelp {
+	
+	/** phrase parameters -- {{shortCode}} and {{appName}} */
+	private final String[] phraseParameters;
+	
+	// Phrase objects
+	private final Phrase                  newUsersFallbackHelp;
+	private final Phrase                  existingUsersFallbackHelp;
+	private final Phrase                  statelessHelp;
+	private final HashMap<String, Phrase> statefulHelpMessagesMap;	// contextualized helps based on the current navigation state
+	private final Phrase                  compositeHelps;
 
-	phrNewUsersFallbackHelp     ("Welcome to {{appName}}, the service that can provide you whatever this service provides. Text {{appName}} to {{shortCode}} to subscribe"),
-	phrExistingUsersFallbackHelp("{{appName}}: unknown command. Please send HELP to see the full list. Short list: HELP for the list of commands; RULES for the regulation. "),
-	phrStatelessHelp            ("This is the help you can access from anywhere, without changing the usage flow of the game or app -- it will not change the navigation state"),
-//	STATEFUL_HELPS              ("those come from the configuration class"),
-	phrCompositeHelps           ("You can play the {{appName}} game in 2 ways: guessing someone's word or inviting someone to play with your word " +
-	                             "You'll get 1 lucky number each word you guess. Whenever you invite a friend or user to play, you win another lucky number " +
-	                             "Every week, 1 lucky number is selected to win the prize. Send an option to {{shortCode}}: (J)Play online; (C)Invite a friend or user; (R)anking; (A)Help",
-	                             "This is the extended help message... You can place as many as you want."),
-	
-	;
-	
-	public final Phrase phrase;
-	
-	private SMSAppModulePhrasingsHelp(String... phrases) {
-		phrase = new Phrase(phrases);
-	}
-	
-	public String[] toStrings() {
-		return phrase.getPhrases();
-	}
-
-	public String toString() {
-		return toStrings()[0];
-	}
-	
-	public void setPhrases(String... phrases) {
-		phrase.setPhrases(phrases);
-	}
-	
-	public String getPhrase(String... parameters) {
-		return phrase.getPhrase(parameters);
-	}
-
-	public String[] getPhrases(String... parameters) {
-		return phrase.getPhrases(parameters);
+	/** Fulfill the Phrase objects with the given values.
+	 *  @param shortCode                 The application's short code to be used on phrases as {{shortCode}}
+	 *  @param appName                   The application name to be used on phrases as {{appName}}
+	 *  @param newUsersFallbackHelp      see {@link SMSAppModulePhrasingsHelp#getNewUsersFallbackHelp()} 
+	 *  @param existingUsersFallbackHelp see {@link SMSAppModulePhrasingsHelp#getExistingUsersFallbackHelp()}
+	 *  @param statelessHelp             see {@link SMSAppModulePhrasingsHelp#getStatelessHelpMessage()}
+	 *  @param statefulHelpMessages      := {{(String)navigationStateName, (String)text}, ...} -- also, see {@link SMSAppModulePhrasingsHelp#getStatefulHelpMessage(INavigationState)}
+	 *  @param compositeHelps            see {@link SMSAppModulePhrasingsHelp#getCompositeHelpMessage(int)}*/
+	public SMSAppModulePhrasingsHelp(String shortCode, String appName,
+		String newUsersFallbackHelp,
+		String existingUsersFallbackHelp,
+		String statelessHelp,
+		String[][] statefulHelpMessages,
+		String[] compositeHelps) {
+		
+		// parameters
+		this.phraseParameters = new String[] {
+			"shortCode", shortCode,
+			"appName",   appName};
+		
+		// phrases
+		this.newUsersFallbackHelp      = new Phrase(newUsersFallbackHelp);
+		this.existingUsersFallbackHelp = new Phrase(existingUsersFallbackHelp);
+		this.statelessHelp             = new Phrase(statelessHelp);
+		
+		this.statefulHelpMessagesMap   = new HashMap<String, Phrase>();
+		for (String[] statefulHelpMessage : statefulHelpMessages) {
+			String navigationStateName = statefulHelpMessage[0];
+			String stateHelpMessage    = statefulHelpMessage[1];
+			this.statefulHelpMessagesMap.put(navigationStateName, new Phrase(stateHelpMessage));
+		}
+		
+		this.compositeHelps            = new Phrase(compositeHelps);
 	}
 
+	/** Fulfill the Phrase objects with the default test values */
+	public SMSAppModulePhrasingsHelp(String shortCode, String appName, String[][] phrStatefulHelpMessages) {
+		this(shortCode, appName,
+			"Welcome to {{appName}}, the service that can provide you whatever this service provides. Text {{appName}} to {{shortCode}} to subscribe",
+			"{{appName}}: unknown command. Please send HELP to see the full list. Short list: HELP for the list of commands; RULES for the regulation. ",
+			"This is the help you can access from anywhere, without changing the usage flow of the game or app -- it will not change the navigation state",
+			phrStatefulHelpMessages,
+			new String[] {"You can play the {{appName}} game in 2 ways: guessing someone's word or inviting someone to play with your word " +
+		                  "You'll get 1 lucky number each word you guess. Whenever you invite a friend or user to play, you win another lucky number " +
+		                  "Every week, 1 lucky number is selected to win the prize. Send an option to {{shortCode}}: (J)Play online; (C)Invite a friend or user; (R)anking; (A)Help",
+		                  "This is the extended help message... You can place as many as you want."});
+	}
 
 	
 	/*********************
 	** PHRASING METHODS **
 	*********************/
 	
-	@ConfigurableElement("Phrase sent when a new user sends an unrecognized keyword, possibly instructing him/her on how to register. Variables: {{shortCode}}, {{appName}}")
-	public static String getNewUsersFallbackHelp() {
-		return phrNewUsersFallbackHelp.getPhrase("shortCode", SMSAppModuleConfiguration.APPShortCode,
-                                                 "appName",   SMSAppModuleConfiguration.APPName);
+	/** Phrase sent when a new user sends an unrecognized keyword, possibly instructing him/her on how to register. Variables: {{shortCode}}, {{appName}} */
+	public String getNewUsersFallbackHelp() {
+		return newUsersFallbackHelp.getPhrase(phraseParameters);
 	}
 	
-	@ConfigurableElement("Phrase sent when an existing user attempts to send an unrecognized command, to give him/her a quick list of commands. Variables: {{shortCode}}, {{appName}}")
-	public static String getExistingUsersFallbackHelp() {
-		return phrExistingUsersFallbackHelp.getPhrase("shortCode", SMSAppModuleConfiguration.APPShortCode,
-                                                      "appName",   SMSAppModuleConfiguration.APPName);
+	/** Phrase sent when an existing user attempts to send an unrecognized command, to give him/her a quick list of commands. Variables: {{shortCode}}, {{appName}} */
+	public String getExistingUsersFallbackHelp() {
+		return existingUsersFallbackHelp.getPhrase(phraseParameters);
 	}
 
-	@ConfigurableElement("These are the general help messages, sent in response to the HELP command anywhere in the app navigation states. This message will not interrupt the flow and the user may continue normally after receiving this message. Variables: {{shortCode}}, {{appName}}")
-	public static String getStatelessHelpMessage() {
-		return phrStatelessHelp.getPhrase("shortCode", SMSAppModuleConfiguration.APPShortCode,
-                                          "appName",   SMSAppModuleConfiguration.APPName);
+	/** These are the general help messages, sent in response to the HELP command anywhere in the app navigation states. This message will not interrupt the flow and the user may continue normally after receiving this message. Variables: {{shortCode}}, {{appName}} */
+	public String getStatelessHelpMessage() {
+		return statelessHelp.getPhrase(phraseParameters);
 	}
 
-	@ConfigurableElement("These are the detailed help messages, sent in response to the HELP/RULES command that will change the navigation state. You can set a second, third and so on help messages, which will be sent in response to the MORE command. Variables: {{shortCode}}, {{appName}}")
-	public static String getCompositeHelpMessage(int helpMessageNumber) {
-		String[] helps = phrCompositeHelps.getPhrases("shortCode", SMSAppModuleConfiguration.APPShortCode,
-                                                      "appName",   SMSAppModuleConfiguration.APPName);
+	/** These are the detailed help messages, sent in response to the HELP/RULES command that will change the navigation state. You can set a second, third and so on help messages, which will be sent in response to the MORE command. Variables: {{shortCode}}, {{appName}} */
+	public String getCompositeHelpMessage(int helpMessageNumber) {
+		String[] helps = compositeHelps.getPhrases(phraseParameters);
 		if (helps.length > helpMessageNumber) {
 			return helps[helpMessageNumber];
 		} else {
@@ -95,7 +110,8 @@ public enum SMSAppModulePhrasingsHelp {
 	}
 
 	/** Retrieve the navigation state specific help messages set on the configuration class */
-	public static String getStatefulHelpMessage(INavigationState navigationState) {
-		return SMSAppModuleConfigurationHelp.getStatefulHelpMessage(navigationState);
+	public String getStatefulHelpMessage(INavigationState navigationState) {
+		Phrase phrase = statefulHelpMessagesMap.get(navigationState.getNavigationStateName());
+		return phrase != null ? phrase.getPhrase(phraseParameters) : null;
 	}
 }

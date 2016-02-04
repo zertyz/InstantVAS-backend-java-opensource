@@ -1,6 +1,7 @@
 package mutua.smsappmodule.smslogic.navigationstates;
 
 import static org.junit.Assert.*;
+import static instantvas.tests.InstantVASSMSAppModuleTestsConfiguration.*;
 
 import java.sql.SQLException;
 
@@ -24,12 +25,16 @@ import org.junit.Test;
  */
 
 public class NavigationStateCommonsTests {
+	
+	final static String availableCommandName      = "TestCommandProcessor";
+	private ICommandProcessor[] availableCommands = {new TestCommandProcessor()};
 
 	@Test
 	public void testSetCommandTriggers() {
-		NavigationStateCommons nsc = new NavigationStateCommons(SMSAppModuleNavigationStates.nstNewUser);
+		NavigationStateCommons nsc = new NavigationStateCommons("my state");
 		nsc.setCommandTriggers(new Object[][] {
-			{new TestCommandProcessor(), new String[] {"regex1", "regex2"}, 1001l}});
+			{availableCommandName, new String[] {"regex1", "regex2"}, 1001l}},
+			availableCommands);
 		assertEquals("serialization didn't work",
 		             "command='TestCommandProcessor', patterns=[regex1, regex2], timeout=1001",
 		             nsc.serializeCommandTrigger(null)[0]);
@@ -37,32 +42,33 @@ public class NavigationStateCommonsTests {
 	
 	@Test
 	public void testSetNavigationStateCommandTriggers() {
-		SMSAppModuleNavigationStates.nstNewUser.setCommandTriggers(new Object[][] {
-			{new TestCommandProcessor(), new String[] {"regex1", "regex2"}, 1001l}});
+		baseModuleNavigationStates.nstNewUser.setCommandTriggers(new Object[][] {
+			{availableCommandName, new String[] {"regex1", "regex2"}, 1001l}},
+			availableCommands);
 		assertEquals("serialization of regex & timeout didn't work",
 		             "command='TestCommandProcessor', patterns=[regex1, regex2], timeout=1001",
-		             SMSAppModuleNavigationStates.nstNewUser.serializeCommandTrigger(null)[0]);
+		             baseModuleNavigationStates.nstNewUser.serializeCommandTrigger(null)[0]);
 
-		SMSAppModuleNavigationStates.nstNewUser.setCommandTriggers(new Object[][] {
-				{new TestCommandProcessor(), new String[] {"regex1", "regex2"}}});
+		baseModuleNavigationStates.nstNewUser.setCommandTriggers(new Object[][] {
+			{availableCommandName, new String[] {"regex1", "regex2"}}},
+			availableCommands);
 		assertEquals("serialization of regex & without timeout didn't work",
 		             "command='TestCommandProcessor', patterns=[regex1, regex2], timeout=-1",
-		             SMSAppModuleNavigationStates.nstNewUser.serializeCommandTrigger(null)[0]);
+		             baseModuleNavigationStates.nstNewUser.serializeCommandTrigger(null)[0]);
 
-		SMSAppModuleNavigationStates.nstNewUser.setCommandTriggers(new Object[][] {
-				{new TestCommandProcessor(), 101l}});
+		baseModuleNavigationStates.nstNewUser.setCommandTriggers(new Object[][] {
+				{availableCommandName, 101l}}, availableCommands);
 		assertEquals("serialization of timeout & without regex didn't work",
 		             "command='TestCommandProcessor', patterns=null, timeout=101",
-		             SMSAppModuleNavigationStates.nstNewUser.serializeCommandTrigger(null)[0]);
+		             baseModuleNavigationStates.nstNewUser.serializeCommandTrigger(null)[0]);
 	}
 
 }
 
-class TestCommandProcessor implements ICommandProcessor {
+class TestCommandProcessor extends ICommandProcessor {
 
-	@Override
-	public String getCommandName() {
-		return "TestCommandProcessor";
+	public TestCommandProcessor() {
+		super(NavigationStateCommonsTests.availableCommandName);
 	}
 
 	@Override

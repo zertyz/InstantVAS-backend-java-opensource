@@ -1,11 +1,10 @@
 package mutua.smsappmodule;
 
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationHelpTests.*;
-import static mutua.smsappmodule.i18n.SMSAppModulePhrasingsHelp.*;
-import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHelp.*;
+import static instantvas.tests.InstantVASSMSAppModuleHelpTestsConfiguration.*;
+import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHelp.CommandNamesHelp.*;
+import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHelp.CommandTriggersHelp.*;
+
 import java.sql.SQLException;
-import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates;
-import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesHelp;
 
 import org.junit.Test;
 
@@ -28,8 +27,8 @@ public class HelpModuleSMSProcessorTests {
 	////////////
 	
 	private SMSAppModuleTestCommons tc = new SMSAppModuleTestCommons(log,
-		SMSAppModuleNavigationStates.values(),
-		SMSAppModuleNavigationStatesHelp.values());
+		baseModuleNavigationStates.values,
+		helpModuleNavigationStates.values);
 
 	
 	// tests
@@ -37,24 +36,24 @@ public class HelpModuleSMSProcessorTests {
 	
 	@Test
 	public void testStatelessHelps() throws SQLException {
-		tc.resetTables();
-		SMSAppModuleNavigationStates.nstNewUser.setCommandTriggers(new Object[][] {
+		tc.resetBaseTables();
+		baseModuleNavigationStates.nstNewUser.setCommandTriggers(new Object[][] {
 			{cmdShowStatelessHelp, trgGlobalShowStatelessHelpMessage},
-		});
-		tc.checkResponse("+5521991234899", "help", getStatelessHelpMessage());
+		}, helpModuleCommands.values);
+		tc.checkResponse("+5521991234899", "help", helpModulePhrasings.getStatelessHelpMessage());
 	}
 	
 	@Test
 	public void testFallbackHelps() throws SQLException {
-		tc.resetTables();
-		SMSAppModuleNavigationStates.nstNewUser.setCommandTriggers(new Object[][] {
+		tc.resetBaseTables();
+		baseModuleNavigationStates.nstNewUser.setCommandTriggers(new Object[][] {
 			{cmdShowStatelessHelp,        trgGlobalShowStatelessHelpMessage},
 			{cmdStartCompositeHelpDialog, trgGlobalStartCompositeHelpDialog},
 			{cmdShowNewUsersFallbackHelp, ".*"},
-		});
-		tc.checkResponse("+5521991234899", "unknown keyword", getNewUsersFallbackHelp());
-		tc.checkResponse("+5521991234899", "rules",           getCompositeHelpMessage(0));
-		tc.checkResponse("+5521991234899", "unknown keyword", getExistingUsersFallbackHelp());
+		}, helpModuleCommands.values);
+		tc.checkResponse("+5521991234899", "unknown keyword", helpModulePhrasings.getNewUsersFallbackHelp());
+		tc.checkResponse("+5521991234899", "rules",           helpModulePhrasings.getCompositeHelpMessage(0));
+		tc.checkResponse("+5521991234899", "unknown keyword", helpModulePhrasings.getExistingUsersFallbackHelp());
 	}
 	
 }

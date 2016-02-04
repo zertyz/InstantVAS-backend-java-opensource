@@ -194,8 +194,8 @@ public class SMSAppModulePostgreSQLAdapterHangman extends PostgreSQLAdapter {
 	
 	public static JDBCAdapter getInstance() {
 		if (instance == null) {
-			throw new RuntimeException("Class '" + SMSAppModulePostgreSQLAdapter.class.getCanonicalName() + "' was not configured according to the " +
-			                           "'Mutua JDBCAdapter Configuration' pattern -- a preliminar call to 'configureDefaultValuesForNewInstances' " +
+			throw new RuntimeException("Class '" + SMSAppModulePostgreSQLAdapterHangman.class.getCanonicalName() + "' was not configured according to the " +
+			                           "'SMSAppModulePostgreSQLAdapterSubscription' pattern -- a preliminar call to 'configureDefaultValuesForNewInstances' " +
 			                           "was not made.");
 		}
 		return instance;

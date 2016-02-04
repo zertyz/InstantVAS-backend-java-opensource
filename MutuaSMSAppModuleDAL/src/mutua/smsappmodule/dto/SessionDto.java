@@ -49,22 +49,22 @@ public class SessionDto {
 		return user;
 	}
 
-	/** Returns the map of the database stored session properties */
+	/** Returns the map of the database stored session properties, described at {@link SessionDto#SessionDto(UserDto, String[][])} */
 	public String[][] getStoredProperties() {
 		return storedProperties;
 	}
 
-	/** Returns the session properties that should be inserted on the database */
+	/** Returns the session properties that should be inserted on the database, described at {@link SessionDto#SessionDto(UserDto, String[][], String[][], String[])} */
 	public String[][] getNewProperties() {
 		return newProperties;
 	}
 
-	/** Returns the session properties that should be updated on the database */
+	/** Returns the session properties that should be updated on the database, described at {@link SessionDto#SessionDto(UserDto, String[][], String[][], String[])} */
 	public String[][] getUpdatedProperties() {
 		return updatedProperties;
 	}
 
-	/** Returns the session properties that should be deleted on the database */
+	/** Returns the session properties that should be deleted on the database, described at {@link SessionDto#SessionDto(UserDto, String[][], String[][], String[])} */
 	public String[] getDeletedProperties() {
 		return deletedProperties;
 	}

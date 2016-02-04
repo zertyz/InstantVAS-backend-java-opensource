@@ -179,7 +179,7 @@ public class SMSAppModulePostgreSQLAdapterChat extends PostgreSQLAdapter {
 	public static SMSAppModulePostgreSQLAdapterChat getInstance() {
 		if (instance == null) {
 			throw new RuntimeException("Class '" + SMSAppModulePostgreSQLAdapterChat.class.getCanonicalName() + "' was not configured according to the " +
-			                           "'Mutua JDBCAdapter Configuration' pattern -- a preliminar call to 'configureDefaultValuesForNewInstances' " +
+			                           "'SMSAppModulePostgreSQLAdapterHangman' pattern -- a preliminar call to 'configureDefaultValuesForNewInstances' " +
 			                           "was not made.");
 		}
 		return instance;
