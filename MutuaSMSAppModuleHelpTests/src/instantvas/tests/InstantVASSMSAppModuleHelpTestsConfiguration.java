@@ -6,10 +6,12 @@ import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
 import mutua.smsappmodule.config.InstantVASSMSAppModuleConfiguration;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationHelp;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
+import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapter;
 import mutua.smsappmodule.i18n.SMSAppModulePhrasingsHelp;
 import mutua.smsappmodule.smslogic.SMSAppModuleCommandsHelp;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesHelp;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.sql.SQLException;
 
@@ -58,20 +60,34 @@ public class InstantVASSMSAppModuleHelpTestsConfiguration {
 		
 		LOG             = log;
 		BASE_MODULE_DAL = baseModuleDAL;
-		// Suggested by 'InstantVASSMSAppModuleConfiguration.configureSMSAppModule()' */
-		PostgreSQLAdapter.configureDefaultValuesForNewInstances(postgreSQLconnectionProperties, postgreSQLConnectionPoolSize);
+		
+		// database configuration
+		switch (baseModuleDAL) {
+			case POSTGRESQL:
+				PostgreSQLAdapter.configureDefaultValuesForNewInstances(postgreSQLconnectionProperties, postgreSQLConnectionPoolSize);
+				SMSAppModulePostgreSQLAdapter.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postreSQLShouldDebugQueries,
+					postreSQLHostname, postreSQLPort, postreSQLDatabase, postreSQLUser, postreSQLPassword);
+				break;
+			case RAM:
+				break;
+			default:
+				throw new NotImplementedException();
+		}
+
+		// help module
 		Object[] helpModule = SMSAppModuleConfigurationHelp.getHelpModuleInstances(shortCode, appName, new String[][] {
-			{SMSAppModuleNavigationStates.NavigationStatesNames.nstExistingUser,                    expectedNstExistingUserStatefulHelpMessage},
-			{SMSAppModuleNavigationStates.NavigationStatesNames.nstNewUser,                         expectedNstNewUserStatefulHelpMessage}});
+			{SMSAppModuleNavigationStates.NavigationStatesNames.nstExistingUser, expectedNstExistingUserStatefulHelpMessage},
+			{SMSAppModuleNavigationStates.NavigationStatesNames.nstNewUser,      expectedNstNewUserStatefulHelpMessage}});
 		helpModuleNavigationStates = (SMSAppModuleNavigationStatesHelp) helpModule[0];
 		helpModuleCommands         = (SMSAppModuleCommandsHelp)         helpModule[1];
 		helpModulePhrasings        = (SMSAppModulePhrasingsHelp)        helpModule[2];
-		// Suggested by 'SMSAppModuleConfigurationHelp.getHelpModuleNavigationStates' 
-		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(log, baseModuleDAL, postgreSQLAllowDataStructuresAssertion,
-			postreSQLShouldDebugQueries, postreSQLHostname, postreSQLPort, postreSQLDatabase, postreSQLUser, postreSQLPassword,
-			helpModuleCommands.values,
-			new Object[0][] /*nstNewUserTriggers*/,
-			new Object[0][] /*nstExistingUserTriggers*/);
+		
+		// base module -- configured to interact with the Help Module commands
+		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(log, baseModuleDAL, helpModuleCommands.values,
+			/*nstNewUserTriggers*/
+			new Object[0][],	// zeroed since we are not testing the help modules through the command processor
+			/*nstExistingUserTriggers*/
+			new Object[0][]);	// idem
 		baseModuleNavigationStates = (SMSAppModuleNavigationStates) baseModule[0];
 		
 		System.err.println(InstantVASSMSAppModuleHelpTestsConfiguration.class.getName() + ": test configuration loaded.");

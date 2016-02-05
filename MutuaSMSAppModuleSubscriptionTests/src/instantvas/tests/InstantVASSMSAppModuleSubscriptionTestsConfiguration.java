@@ -10,12 +10,17 @@ import mutua.smsappmodule.config.InstantVASSMSAppModuleConfiguration;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationSubscription;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactorySubscription;
+import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapter;
+import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterSubscription;
 import mutua.smsappmodule.i18n.SMSAppModulePhrasingsSubscription;
 import mutua.smsappmodule.smslogic.SMSAppModuleCommandsSubscription;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesSubscription;
-import mutua.subscriptionengine.SubscriptionEngine;
 import mutua.subscriptionengine.TestableSubscriptionAPI;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
+import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsSubscription.CommandNamesSubscription.*;
+import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsSubscription.CommandTriggersSubscription.*;
 
 /** <pre>
  * InstantVASSMSAppModuleSubscriptionTestsConfiguration.java
@@ -60,8 +65,23 @@ public class InstantVASSMSAppModuleSubscriptionTestsConfiguration {
 		LOG              = log;
 		BASE_MODULE_DAL  = baseModuleDAL;
 		SUBSCRIPTION_DAL = subscriptionDAL;
-		// Suggested by 'InstantVASSMSAppModuleConfiguration.configureSMSAppModule()' */
-		PostgreSQLAdapter.configureDefaultValuesForNewInstances(postgreSQLconnectionProperties, postgreSQLConnectionPoolSize);
+		
+		// database configuration
+		switch (baseModuleDAL) {
+			case POSTGRESQL:
+				PostgreSQLAdapter.configureDefaultValuesForNewInstances(postgreSQLconnectionProperties, postgreSQLConnectionPoolSize);
+				SMSAppModulePostgreSQLAdapter.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postreSQLShouldDebugQueries,
+					postreSQLHostname, postreSQLPort, postreSQLDatabase, postreSQLUser, postreSQLPassword);
+				SMSAppModulePostgreSQLAdapterSubscription.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postreSQLShouldDebugQueries,
+					postreSQLHostname, postreSQLPort, postreSQLDatabase, postreSQLUser, postreSQLPassword);
+				break;
+			case RAM:
+				break;
+			default:
+				throw new NotImplementedException();
+		}
+		
+		// subscription module
 		Object[] subscriptionModule = SMSAppModuleConfigurationSubscription.getSubscriptionModuleInstances(shortCode, appName, priceTag,
 		                                                                                                   baseModuleDAL, subscriptionDAL,
 		                                                                                                   new TestableSubscriptionAPI(log),
@@ -69,12 +89,17 @@ public class InstantVASSMSAppModuleSubscriptionTestsConfiguration {
 		subscriptionModuleNavigationStates = (SMSAppModuleNavigationStatesSubscription) subscriptionModule[0];
 		subscriptionModuleCommands         = (SMSAppModuleCommandsSubscription)         subscriptionModule[1];
 		subscriptionModulePhrasings        = (SMSAppModulePhrasingsSubscription)        subscriptionModule[2];
-		// Suggested by 'SMSAppModuleConfigurationHelp.getHelpModuleNavigationStates' 
-		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(log, baseModuleDAL, postgreSQLAllowDataStructuresAssertion,
-			postreSQLShouldDebugQueries, postreSQLHostname, postreSQLPort, postreSQLDatabase, postreSQLUser, postreSQLPassword,
-			subscriptionModuleCommands.values,
-			new Object[0][] /*nstNewUserTriggers*/,
-			new Object[0][] /*nstExistingUserTriggers*/);
+		
+		// base module -- configured to interact with the Subscription Module commands 
+		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(log, baseModuleDAL, subscriptionModuleCommands.values,
+			/*nstNewUserTriggers*/
+			new Object[][] {
+				{cmdStartDoubleOptinProcess, trgLocalStartDoubleOptin},
+			},
+			/*nstExistingUserTriggers*/
+			new Object[][] {
+				{cmdUnsubscribe, trgGlobalUnsubscribe},
+			});
 		baseModuleNavigationStates = (SMSAppModuleNavigationStates) baseModule[0];
 		
 		System.err.println(InstantVASSMSAppModuleSubscriptionTestsConfiguration.class.getName() + ": test configuration loaded.");
@@ -95,7 +120,7 @@ public class InstantVASSMSAppModuleSubscriptionTestsConfiguration {
 				null,	// connection properties
 				-1,		// connection pool size
 				true,	// assert structures
-				true,	// debug queries
+				false,	// debug queries
 				"venus", 5432, "hangman", "hangman", "hangman");
 		} catch (SQLException e) {
 			throw new ExceptionInInitializerError(e);

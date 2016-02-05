@@ -8,8 +8,10 @@ import mutua.icc.instrumentation.Instrumentation;
 import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
 import mutua.smsappmodule.config.InstantVASSMSAppModuleConfiguration;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
+import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapter;
 import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /** <pre>
  * InstantVASSMSAppModuleTestsConfiguration.java
@@ -48,12 +50,22 @@ public class InstantVASSMSAppModuleTestsConfiguration {
 		BASE_MODULE_DAL               = baseModuleDAL;
 		PERFORMANCE_TESTS_LOAD_FACTOR = performanceTestsLoadFactor;
 		
-		// Suggested by 'InstantVASSMSAppModuleConfiguration.configureSMSAppModule' */
-		PostgreSQLAdapter.configureDefaultValuesForNewInstances(null, postgreSQLConnectionPoolSize);
-		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(log, baseModuleDAL, postgreSQLAllowDataStructuresAssertion,
-			postreSQLShouldDebugQueries, postreSQLHostname, postreSQLPort, postreSQLDatabase, postreSQLUser, postreSQLPassword,
-			new ICommandProcessor[0], new Object[0][], new Object[0][]);
-		
+		// database configuration
+		switch (baseModuleDAL) {
+			case POSTGRESQL:
+				PostgreSQLAdapter.configureDefaultValuesForNewInstances(null, postgreSQLConnectionPoolSize);
+				SMSAppModulePostgreSQLAdapter.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postreSQLShouldDebugQueries,
+					postreSQLHostname, postreSQLPort, postreSQLDatabase, postreSQLUser, postreSQLPassword);
+				break;
+			case RAM:
+				break;
+			default:
+				throw new NotImplementedException();
+		}
+
+		// base module
+		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(log, baseModuleDAL, new ICommandProcessor[0],
+			new Object[0][], new Object[0][]);
 		baseModuleNavigationStates = (SMSAppModuleNavigationStates) baseModule[0];
 		
 		System.err.println(InstantVASSMSAppModuleTestsConfiguration.class.getName() + ": test configuration loaded.");

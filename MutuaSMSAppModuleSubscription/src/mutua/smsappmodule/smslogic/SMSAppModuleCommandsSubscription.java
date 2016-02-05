@@ -61,7 +61,7 @@ public class SMSAppModuleCommandsSubscription {
 	public static class CommandTriggersSubscription {
 		/** Local triggers (available only to 'new users' and 'unsubscribed users') to execute the 'start double opt-in' process -- 
 		 *  {@link SMSAppModuleNavigationStates#nstNewUser} triggers that activates {@link SMSAppModuleCommandsSubscription#cmdStartDoubleOptinProcess} */
-		public final static String[] trgLocalStartDoubleOptin  = {"appName"};
+		public final static String[] trgLocalStartDoubleOptin  = {"MyApp"};
 		/** Local triggers (available only to the 'answering double opt-in' navigation state) to execute the 'subscribe' process --
 		 *  {@link SMSAppModuleNavigationStatesSubscription#nstAnsweringDoubleOptin} triggers that activates {@link SMSAppModuleCommandsSubscription#cmdSubscribe} */
 		public final static String[] trgLocalAcceptDoubleOptin = {"YES"};

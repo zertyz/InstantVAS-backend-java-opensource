@@ -2,15 +2,12 @@ package mutua.smsappmodule.config;
 
 import java.sql.SQLException;
 
-import adapters.JDBCAdapter;
 import adapters.PostgreSQLAdapter;
 import mutua.icc.instrumentation.DefaultInstrumentationProperties;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
-import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapter;
 import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /** <pre>
  * InstantVASSMSAppModuleConfiguration.java
@@ -34,42 +31,22 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 public class InstantVASSMSAppModuleConfiguration {
 
 	/** Constructs the full version of 'InstantVASSMSAppModule', with all options set programmatically.
+	 *  This should be the last module to be configured if you will set the 'nstNewUserTriggers' &
+	 *  'nstExistingUserTriggers' to point to commands from all the other modules.
 	 *  Before running these method, one might want to set the defaults for {@link PostgreSQLAdapter}:<pre>
 	 *   {@link PostgreSQLAdapter#configureDefaultValuesForNewInstances}(
 	 *       CONNECTION_PROPERTIES,
 	 *       CONNECTION_POOL_SIZE);</pre> 
 	 *  @param log
-	 *  @param baseModuleDAL                          one of the members of {@link SMSAppModuleDALFactory}
-	 *  @param postgreSQLAllowDataStructuresAssertion see {@link JDBCAdapter#allowDataStructuresAssertion}
-	 *  @param postreSQLShouldDebugQueries            see {@link JDBCAdapter#shouldDebugQueries}
-	 *  @param postreSQLHostname                      see {@link JDBCAdapter#hostname}
-	 *  @param postreSQLPort                          see {@link JDBCAdapter#port}
-	 *  @param postreSQLDatabase                      see {@link JDBCAdapter#database}
-	 *  @param postreSQLUser                          see {@link JDBCAdapter#user}
-	 *  @param postreSQLPassword                      see {@link JDBCAdapter#password}
-	 *  @param availableCommands                      &
-	 *  @param nstNewUserTriggers                     &
-	 *  @param nstExistingUserTriggers                see {@link SMSAppModuleNavigationStates#SMSAppModuleNavigationStates(ICommandProcessor[], Object[][], Object[][])}
+	 * @param baseModuleDAL                          one of the members of {@link SMSAppModuleDALFactory}
+	 * @param availableCommands                      &
+	 * @param nstNewUserTriggers                     &
+	 * @param nstExistingUserTriggers                see {@link SMSAppModuleNavigationStates#SMSAppModuleNavigationStates(ICommandProcessor[], Object[][], Object[][])}
 	 *  @returns {(SMSAppModuleNavigationStates)navigationStates, (SMSAppModuleCommandsHelp)commands, (SMSAppModulePhrasingsHelp)phrasings} */
 	public static Object[] getBaseModuleInstances(Instrumentation<DefaultInstrumentationProperties, String> log, SMSAppModuleDALFactory baseModuleDAL,
-		boolean postgreSQLAllowDataStructuresAssertion, boolean postreSQLShouldDebugQueries,
-		String postreSQLHostname, int postreSQLPort, String postreSQLDatabase, String postreSQLUser, String postreSQLPassword,
-		ICommandProcessor[] availableCommands,
-        Object[][] nstNewUserTriggers,
-        Object[][] nstExistingUserTriggers) throws SQLException {
+		ICommandProcessor[] availableCommands, Object[][] nstNewUserTriggers,
+		Object[][] nstExistingUserTriggers) throws SQLException {
 		
-		// Configure the DAL
-		switch (baseModuleDAL) {
-			case POSTGRESQL:
-				SMSAppModulePostgreSQLAdapter.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postreSQLShouldDebugQueries,
-					postreSQLHostname, postreSQLPort, postreSQLDatabase, postreSQLUser, postreSQLPassword);
-				break;
-			case RAM:
-				break;
-			default:
-				throw new NotImplementedException();
-		}
-
 		SMSAppModuleNavigationStates navigationStates = new SMSAppModuleNavigationStates(availableCommands, nstNewUserTriggers, nstExistingUserTriggers);
 		
 		log.reportDebug(InstantVASSMSAppModuleConfiguration.class.getName() + ": new configuration loaded.");

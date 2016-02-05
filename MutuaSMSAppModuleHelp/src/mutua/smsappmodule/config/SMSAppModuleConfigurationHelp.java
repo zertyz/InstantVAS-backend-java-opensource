@@ -2,7 +2,6 @@ package mutua.smsappmodule.config;
 
 import mutua.icc.instrumentation.DefaultInstrumentationProperties;
 import mutua.icc.instrumentation.Instrumentation;
-import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
 import mutua.smsappmodule.i18n.SMSAppModulePhrasingsHelp;
 import mutua.smsappmodule.smslogic.SMSAppModuleCommandsHelp;
 import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
