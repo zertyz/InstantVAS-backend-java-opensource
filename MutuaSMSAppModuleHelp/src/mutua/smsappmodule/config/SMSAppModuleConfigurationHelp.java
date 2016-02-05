@@ -2,6 +2,7 @@ package mutua.smsappmodule.config;
 
 import mutua.icc.instrumentation.DefaultInstrumentationProperties;
 import mutua.icc.instrumentation.Instrumentation;
+import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
 import mutua.smsappmodule.i18n.SMSAppModulePhrasingsHelp;
 import mutua.smsappmodule.smslogic.SMSAppModuleCommandsHelp;
 import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
@@ -20,7 +21,7 @@ import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates
  * 
  * Follows the "Instant VAS SMS Modules" pattern described bellow:
  *
- * @see SMSAppModuleConfiguration
+ * @see InstantVASSMSAppModuleConfiguration
  * @version $Id$
  * @author luiz
  */
@@ -29,16 +30,14 @@ public class SMSAppModuleConfigurationHelp {
 	
 	
 	/** Constructs the simple version of this SMS Module, with default values, for testing purposes.
-	 *  Before running these method, one might want to set the defaults for {@link InstantVASSMSAppModuleConfiguration}:<pre>
-	 *   {@link InstantVASSMSAppModuleConfiguration#configureSMSAppModule}</pre> 
-	 *  @param shortCode                            see {@link SMSAppModulePhrasingsHelp#phraseParameters}
-	 *  @param appName                              see {@link SMSAppModulePhrasingsHelp#phraseParameters}
+	 *  @param shortCode                            &
+	 *  @param appName                              &
 	 *  @param phrStatefulHelpMessages              see {@link SMSAppModulePhrasingsHelp#SMSAppModulePhrasingsHelp(String, String, String, String, String, Object[][], String[])}
 	 *  @returns {(SMSAppModuleNavigationStatesHelp)navigationStates, (SMSAppModuleCommandsHelp)commands, (SMSAppModulePhrasingsHelp)phrasings} */
 	public static Object[] getHelpModuleInstances(String shortCode, String appName, String[][] phrStatefulHelpMessages) {
 
-		SMSAppModulePhrasingsHelp phrasings               = new SMSAppModulePhrasingsHelp(shortCode, appName, phrStatefulHelpMessages);
-		SMSAppModuleCommandsHelp commands                 = new SMSAppModuleCommandsHelp(phrasings);
+		SMSAppModulePhrasingsHelp        phrasings        = new SMSAppModulePhrasingsHelp(shortCode, appName, phrStatefulHelpMessages);
+		SMSAppModuleCommandsHelp         commands         = new SMSAppModuleCommandsHelp(phrasings);
 		SMSAppModuleNavigationStatesHelp navigationStates = new SMSAppModuleNavigationStatesHelp(commands);
 		
 		System.err.println(SMSAppModuleConfigurationHelp.class.getName() + ": test configuration loaded.");
@@ -47,11 +46,9 @@ public class SMSAppModuleConfigurationHelp {
 	}
 	
 	/** Constructs the full version of this SMS Module, with all options set programmatically.
-	 *  When running these method, one might want to set the defaults for {@link InstantVASSMSAppModuleConfiguration}:<pre>
-	 *   {@link InstantVASSMSAppModuleConfiguration#configureSMSAppModule}</pre>
 	 *  @param log
-	 *  @param shortCode
-	 *  @param appName
+	 *  @param shortCode                                 &
+	 *  @param appName                                   see {@link SMSAppModulePhrasingsHelp#SMSAppModulePhrasingsHelp(String, String, String, String, String, String[][], String[])}
 	 *  @param phrNewUsersFallbackHelp                   see {@link SMSAppModulePhrasingsHelp#getNewUsersFallbackHelp()}
 	 *  @param phrExistingUsersFallbackHelp              see {@link SMSAppModulePhrasingsHelp#getExistingUsersFallbackHelp()}
 	 *  @param phrStatelessHelp                          see {@link SMSAppModulePhrasingsHelp#getStatelessHelpMessage()}
@@ -67,9 +64,9 @@ public class SMSAppModuleConfigurationHelp {
 		String[] phrCompositeHelps,
 		Object[][] nstPresentingCompositeHelpCommandTriggers) {
 
-		SMSAppModulePhrasingsHelp phrasings               = new SMSAppModulePhrasingsHelp(shortCode, appName, 
+		SMSAppModulePhrasingsHelp        phrasings        = new SMSAppModulePhrasingsHelp(shortCode, appName, 
 			phrNewUsersFallbackHelp, phrExistingUsersFallbackHelp, phrStatelessHelp, phrStatefulHelpMessages, phrCompositeHelps);
-		SMSAppModuleCommandsHelp commands                 = new SMSAppModuleCommandsHelp(phrasings);
+		SMSAppModuleCommandsHelp         commands         = new SMSAppModuleCommandsHelp(phrasings);
 		SMSAppModuleNavigationStatesHelp navigationStates = new SMSAppModuleNavigationStatesHelp(commands, nstPresentingCompositeHelpCommandTriggers);
 		
 		log.reportDebug(SMSAppModuleConfigurationHelp.class.getName() + ": new configuration loaded.");

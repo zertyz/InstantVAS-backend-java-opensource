@@ -1,9 +1,10 @@
 package mutua.smsappmodule.smslogic.navigationstates;
 
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationSubscription.*;
-import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsSubscription.*;
+import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsSubscription.CommandNamesSubscription.*;
+import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsSubscription.CommandTriggersSubscription.*;
+
+import mutua.smsappmodule.smslogic.SMSAppModuleCommandsSubscription;
 import mutua.smsappmodule.smslogic.commands.CommandTriggersDto;
-import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
 
 /** <pre>
  * SMSAppModuleNavigationStatesSubscription.java
@@ -13,76 +14,57 @@ import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
  * Declares the navigation states and the reference {@link CommandTriggersDto} required by
  * the "Subscription" SMS Application Module
  * 
- * Implements the Mutua SMSApp Navigation States design pattern, as described by
- * {@link INavigationState}
+ * Implements the "Instant VAS SMSApp Navigation States" design pattern, as described by
+ * {@link NavigationStateCommons}.
  * 
- * Please note that {@link SMSAppModuleNavigationStates#nstNewUser} triggers are redefined here for reference
- * -- they should be extended by the application.
- *
- * @see INavigationState
+ * @see NavigationStateCommons
  * @see CommandTriggersDto
  * @version $Id$
  * @author luiz
  */
 
-public enum SMSAppModuleNavigationStatesSubscription implements INavigationState {
-
+public class SMSAppModuleNavigationStatesSubscription {
+	
+	/** Class to be statically imported by the Commands Implementation to represent the navigation states */
+	public static class NavigationStatesNamesSubscription {
+		/** @see SMSAppModuleNavigationStatesSubscription#nstAnsweringDoubleOptin */
+		public final static String nstAnsweringDoubleOptin = "AnsweringDoubleOptin";
+	}
+	
+	// Navigation States Definitions
+	////////////////////////////////
+	
+	/** The list of all navigation states -- for 'SMSProcessor' to be able to deserialize state names */
+	public final NavigationStateCommons[] values;
+	
 	/** Navigation state used to implement the double opt-in process.
 	 * SMS Applications may extend it adding other commands. */
-	nstAnsweringDoubleOptin() {
-		@Override
-		public void setCommandTriggersFromConfigurationValues() {
-			setCommandTriggers(new Object[][] {
-				{cmdSubscribe,             SUBSCRIPTIONtrgLocalAcceptDoubleOptin},
-				{cmdDoNotAgreeToSubscribe, new String[] {".*"}},
-			});
-		}
-	},
+	public final NavigationStateCommons nstAnsweringDoubleOptin;
 	
-	;
-
-	// TODO this should be deleted from here and placed into the test class. The same should be done for all navigation state definition classes 
-	static {
-		// set triggers for the "new" and "existing" user navigation states. Applications must extend them even further
-		SMSAppModuleNavigationStates.nstNewUser.setCommandTriggers(new Object[][] {
-			{cmdStartDoubleOptinProcess, SUBSCRIPTIONtrgLocalStartDoubleOptin},
-			//{/*fall back help*/,         ".*"},
-		});
-		SMSAppModuleNavigationStates.nstExistingUser.setCommandTriggers(new Object[][] {
-			{cmdUnsubscribe, SUBSCRIPTIONtrgGlobalUnsubscribe},
-			//{/*fall back help*/,         ".*"},
-		});
-	}
-	
-	private NavigationStateCommons nsc;
-	
-	
-	private SMSAppModuleNavigationStatesSubscription() {
-		nsc = new NavigationStateCommons(this);
+	/** Provides the navigation states instance with the default test values.
+	 *  See @{link {@link #SMSAppModuleNavigationStatesSubscription(SMSAppModuleCommandsSubscription, Object[][])} */
+	public SMSAppModuleNavigationStatesSubscription(final SMSAppModuleCommandsSubscription subscriptionCommands) { 
+		this(subscriptionCommands, new Object[][] {
+			{cmdSubscribe,             trgLocalAcceptDoubleOptin},
+			{cmdDoNotAgreeToSubscribe, ".*"}});
 	}
 
-	@Override
-	public String getNavigationStateName() {
-		return this.name();
-	}
+	/** Provides the navigation states instance with custom triggers.
+	 *  Apart from configuring the states defined in this module, one should also configure {@link SMSAppModuleNavigationStates#nstNewUser} and {@link SMSAppModuleNavigationStates#nstExistingUser}:<pre>
+	 *  - {@link SMSAppModuleCommandsSubscription#cmdStartDoubleOptinProcess} should be added to 'nstNewUser'      with triggers {@link SMSAppModuleCommandsSubscription.CommandTriggersSubscription#trgLocalStartDoubleOptin}
+	 *  - {@link SMSAppModuleCommandsSubscription#cmdUnsubscribe}             should be added to 'nstExistingUser' with triggers {@link SMSAppModuleCommandsSubscription.CommandTriggersSubscription#trgGlobalUnsubscribe}</pre>
+	 *  @param subscriptionCommands             The instance of commands for this module
+	 *  @param nstAnsweringDoubleOptinTriggers  The list of commands to execute when on {@link #nstAnsweringDoubleOptin} navigation state based on MO matches with the provided regular expressions. See {@link NavigationStateCommons#setCommandTriggers(Object[][], mutua.smsappmodule.smslogic.commands.ICommandProcessor[])}*/
+	public SMSAppModuleNavigationStatesSubscription(final SMSAppModuleCommandsSubscription subscriptionCommands,
+	                                                final Object[][] nstAnsweringDoubleOptinTriggers) {
 
-	@Override
-	public void setCommandTriggers(Object[][] commandsTriggersData) {
-		nsc.setCommandTriggers(commandsTriggersData);
-	}
-
-	@Override
-	public CommandTriggersDto[] getCommandTriggers() {
-		return nsc.getCommandTriggers();
-	}
-
-	@Override
-	public String[] serializeCommandTrigger(ICommandProcessor command) {
-		return nsc.serializeCommandTrigger(command);
-	}
-
-	@Override
-	public void deserializeCommandTrigger(String[] serializedData) {
-		nsc.deserializeCommandTrigger(serializedData);
+		nstAnsweringDoubleOptin = new NavigationStateCommons(NavigationStatesNamesSubscription.nstAnsweringDoubleOptin) {{
+			setCommandTriggers(nstAnsweringDoubleOptinTriggers, subscriptionCommands.values);
+		}};
+		
+		// the list of values
+		values = new NavigationStateCommons[] {
+			nstAnsweringDoubleOptin,	
+		};
 	}
 }

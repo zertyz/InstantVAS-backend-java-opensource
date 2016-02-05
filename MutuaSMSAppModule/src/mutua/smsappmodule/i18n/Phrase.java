@@ -1,6 +1,5 @@
 package mutua.smsappmodule.i18n;
 
-import java.util.Arrays;
 import java.util.regex.Matcher;
 
 /** <pre>
@@ -12,7 +11,7 @@ import java.util.regex.Matcher;
  * Application's phrasing. It also specifies methods of how to replace
  * parameters.
  * 
- * Serviced classes should use the Mutua SMSApp Phrasing design pattern, described
+ * Serviced classes should use the "Instant VAS SMSApp Phrasing" design pattern, described
  * bellow:
  * 
  * {@code
@@ -31,68 +30,76 @@ public class Phrase {
 	** INSTANCE METHODS **
 	*********************/
 	
+	private final String[] phrasesTemplates;
+	
 	/** Typically a phrase is a single string. It can be two or more strings to specify two or more messages --
 	 * possibly to be sent in sequence, possibly to be picked randomly to alter between different wordings */
-	private String[] phrases;
-	
-	protected Phrase(String... phrases) {
-		this.phrases = phrases;
+	protected Phrase(String... phrasesTemplates) {
+		this.phrasesTemplates = phrasesTemplates;
 	}
 	
-	/** This method is intended to be used by configuration classes to allow changes on the default wordings.
-	 * When changed, the new phrase(s) will be readly available. */
-	public void setPhrases(String... phrases) {
-		this.phrases = phrases;
+	/** This constructor is used to promptly expand the given parameters at instance construction time, allowing
+	 *  the #getPhrases() or #getPhrase() methods to be called without the need of passing the same parameters again.
+	 *  In other words: in order for this constructor to be useful, the passed parameters should be constant through
+	 *  the lifetime of this instance. */
+	protected Phrase(String[] parameters, String... phrasesTemplates) {
+		this.phrasesTemplates = getExpandedPhrases(phrasesTemplates, parameters);
 	}
 	
-	/** Return the phrases defined in this instance */
-	public String[] getPhrases() {
-		return phrases;
+	/** Return the phrases defined in this instance, without any parameter expansion */
+	protected String[] getPhrases() {
+		return phrasesTemplates;
 	}
 
+	/** Returns the phrase passed to the constructor, without any additional parameter expansion */
+	protected String getPhrase() {
+		return phrasesTemplates[0];
+	}
+	
+	/** @see #getExpandedPhrase(String, String...) */
+	protected String[] getPhrases(String... parameters) {
+		return getExpandedPhrases(phrasesTemplates, parameters);
+	}
+
+	/** @see #getExpandedPhrase(String, String...) */
+	protected String getPhrase(String... parameters) {
+		return getExpandedPhrase(phrasesTemplates[0], parameters);
+	}
+	
 	
 	/*******************
 	** GLOBAL METHODS **
 	*******************/
 	
-	/** retrieves the messages for the current 'phrase', fulfilling all parameters, where
+	/** retrieves the messages for the current 'phraseTemplate', fulfilling all parameters, where
 	 *  'parameters' := {"name1", "value1", "name2", "value2", ...}, or 'null' if 'phraseName' wasn't found */
-	protected String[] getPhrases(String... parameters) {
-		if (phrases == null) {
+	public static String getExpandedPhrase(String phraseTemplate, String... parameters) {
+		if (phraseTemplate == null) {
 			return null;
 		}
-		String[] replacedPhrases = new String[phrases.length];
-		for (int i=0; i<phrases.length; i++) {
-			String originalMessage = phrases[i];
-			String fulfilledMessage = originalMessage;
-			// fulfill the parameters
-			for (int j=0; j<(parameters.length-1); j+=2) {
-				String parameterName  = parameters[j+0];
-				String parameterValue = parameters[j+1];
-				if (parameterValue != null) {
-					fulfilledMessage = fulfilledMessage.replaceAll("\\{\\{" + parameterName + "\\}\\}", Matcher.quoteReplacement(parameterValue));
-				}
+		String expandedPhrase = phraseTemplate;
+		// fulfill the parameters
+		for (int j=0; j<(parameters.length-1); j+=2) {
+			String parameterName  = parameters[j+0];
+			String parameterValue = parameters[j+1];
+			if (parameterValue != null) {
+				expandedPhrase = expandedPhrase.replaceAll("\\{\\{" + parameterName + "\\}\\}", Matcher.quoteReplacement(parameterValue));
 			}
-			replacedPhrases[i] = fulfilledMessage;
 		}
-		return replacedPhrases;
+		return expandedPhrase;
 	}
 	
-	/** @see IPhraseology#getPhrases(EPhraseNames, String[][]) */
-	protected String getPhrase(String... parameters) {
-		String[] fullfiledPhrases = getPhrases(parameters);
-		if (fullfiledPhrases == null) {
+	/** @see #getExpandedPhrase(String, String...) */
+	public static  String[] getExpandedPhrases(String[] phraseTemplates, String[] parameters) {
+		if (phraseTemplates == null) {
 			return null;
-		} else {
-			return fullfiledPhrases[0];
 		}
+		String[] expandedPhrases = new String[phraseTemplates.length];
+		for (int i=0; i<phraseTemplates.length; i++) {
+			expandedPhrases[i] = getExpandedPhrase(phraseTemplates[i], parameters);
+		}
+		return expandedPhrases;
 	}
-	
-	/** @see IPhraseology#getPhrases(EPhraseNames, String[][]) */
-	protected String getPhrase() {
-		return getPhrase((String[])null);
-	}
-
 
 	/*********************
 	** AUXILIAR METHODS **
@@ -111,4 +118,5 @@ public class Phrase {
         }
         return list;
 	}
+
 }

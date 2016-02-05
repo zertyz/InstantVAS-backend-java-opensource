@@ -8,15 +8,17 @@ import java.sql.SQLException;
  * (created by luiz, Jul 15, 2015)
  *
  * Enum based implementation of the Factory Pattern, to select among
- * data access layers
+ * data access layers for the "Base SMS Module"
  *
- * @see RelatedClass(es)
+ * @see #RAM
+ * @see #POSTGRESQL
  * @version $Id$
  * @author luiz
  */
 
 public enum SMSAppModuleDALFactory {
 
+	/** The RAM based DAL instances of the "Base SMS Module", for modeling & testing purposes */
 	RAM {
 		protected void instantiateDataAccessLayers() {
 			super.userDB    = new mutua.smsappmodule.dal.ram.UserDB();
@@ -24,6 +26,7 @@ public enum SMSAppModuleDALFactory {
 		}
 	},
 	
+	/** The persistent PostgreSQL DAL instances of the "Base SMS Module", for production */
 	POSTGRESQL {
 		protected void instantiateDataAccessLayers() throws SQLException {
 			super.userDB    = new mutua.smsappmodule.dal.postgresql.UserDB();
@@ -43,7 +46,7 @@ public enum SMSAppModuleDALFactory {
 	protected abstract void instantiateDataAccessLayers() throws SQLException;
 	
 	/** this method allows the instantiation of only the desired data access layer
-	/* (preventing unecessary drivers to be loaded) */
+	/* (preventing unnecessary drivers to be loaded) */
 	public void checkDataAccessLayers() {
 		if (!wasInstantiated) try {
 			instantiateDataAccessLayers();

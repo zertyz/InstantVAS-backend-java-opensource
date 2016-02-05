@@ -14,10 +14,10 @@ import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHelp.CommandNamesH
  * Declares the navigation states and the reference {@link CommandTriggersDto} required by
  * the "Help" SMS Application Module.
  * 
- * Implements the Mutua SMSApp Navigation States design pattern, as described by
- * {@link NavigationStateCommons} and, additionally, follows "Mutua Configurable Module" pattern.
+ * Implements the "Instant VAS SMSApp Navigation States" design pattern, as described by
+ * {@link NavigationStateCommons}.
  *
- * @see INavigationState
+ * @see NavigationStateCommons
  * @see CommandTriggersDto
  * @version $Id$
  * @author luiz
@@ -42,6 +42,14 @@ public class SMSAppModuleNavigationStatesHelp {
 	 *  containing command triggers to navigate from here on. */
 	public final NavigationStateCommons nstPresentingCompositeHelp;
 	
+	/** Provides the navigation states instance with the default test values */
+	public SMSAppModuleNavigationStatesHelp(final SMSAppModuleCommandsHelp helpCommands) { 
+		this(helpCommands, new Object[][] {
+			{cmdStartCompositeHelpDialog,      trgGlobalStartCompositeHelpDialog},
+			{cmdShowNextCompositeHelpMessage,  trgLocalShowNextCompositeHelpMessage},
+			{cmdShowExistingUsersFallbackHelp, trgGlobalShowExistingUsersFallbackHelp}});
+	}
+
 	/** Provides the navigation states instance with custom triggers.
 	 *  @param helpCommands                       The instance of commands for this module
 	 *  @param nstPresentingCompositeHelpTriggers The list of commands to execute when on {@link #nstExistingUser} navigation state based on MO matches with the provided regular expressions. See {@link NavigationStateCommons#setCommandTriggers(Object[][], mutua.smsappmodule.smslogic.commands.ICommandProcessor[])}*/
@@ -54,14 +62,5 @@ public class SMSAppModuleNavigationStatesHelp {
 		values = new NavigationStateCommons[] {
 			nstPresentingCompositeHelp,	
 		};
-
-	}
-
-	/** Provides the navigation states instance with the default test values */
-	public SMSAppModuleNavigationStatesHelp(final SMSAppModuleCommandsHelp helpCommands) { 
-		this(helpCommands, new Object[][] {
-			{cmdStartCompositeHelpDialog,      trgGlobalStartCompositeHelpDialog},
-			{cmdShowNextCompositeHelpMessage,  trgLocalShowNextCompositeHelpMessage},
-			{cmdShowExistingUsersFallbackHelp, trgGlobalShowExistingUsersFallbackHelp}});
 	}
 }

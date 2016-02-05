@@ -48,14 +48,14 @@ public class SMSProcessor {
 
 	
 	private static Instrumentation<?, ?> LOG;
-	private static SMSAppModuleDALFactory DEFAULT_MODULE_DAL;
+	private static SMSAppModuleDALFactory BASE_MODULE_DAL;
 	
 	// TODO put on the configurable class pattern format
 	// na verdade, todos os valores do construtor podem vir pra cá. De outro modo, não fica complicado
 	// criar os workers? Os parâmetros terão que dar a volta ao mundo... não?
-	public static void configureDefaultValuesForNewInstances(Instrumentation<?, ?> log, SMSAppModuleDALFactory defaultModuleDAL) {
+	public static void configureDefaultValuesForNewInstances(Instrumentation<?, ?> log, SMSAppModuleDALFactory baseModuleDAL) {
 		LOG                = log;
-		DEFAULT_MODULE_DAL = defaultModuleDAL;
+		BASE_MODULE_DAL = baseModuleDAL;
 		log.reportDebug(SMSProcessor.class.getName() + ": new configuration loaded.");
 		
 		// este classe deve ser tratada como uma instancia. Não há motivo para os 10 workers terem 10 copias de nenhum dado contido aqui.
@@ -63,8 +63,8 @@ public class SMSProcessor {
 	
 	
 	private final Instrumentation<?, ?> log = LOG;
-	private final IUserDB    userDB    = DEFAULT_MODULE_DAL.getUserDB();
-	private final ISessionDB sessionDB = DEFAULT_MODULE_DAL.getSessionDB();
+	private final IUserDB    userDB    = BASE_MODULE_DAL.getUserDB();
+	private final ISessionDB sessionDB = BASE_MODULE_DAL.getSessionDB();
 	
 	
 	// message dispatchers

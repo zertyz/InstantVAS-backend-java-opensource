@@ -16,41 +16,41 @@ import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates
  * =============================================
  * (created by luiz, Jul 28, 2015)
  *
- * Configures the classes' static options for the base sms applications module.
+ * Configures the classes' static options for the "Base" SMS Module test application.
  * 
- * Follows the "Mutua Configurable Module" pattern.
+ * Follows the "Mutua Configurable Module" pattern tuned for "Instant VAS SMS Modules", described bellow:
+ * 
+ * {@code
+ * 	get it from the help module by now
+ * }
  *
- * @see SMSAppModuleConfiguration
  * @version $Id$
  * @author luiz
  */
 
 public class InstantVASSMSAppModuleTestsConfiguration {
 
-	public static Instrumentation<DefaultInstrumentationProperties, String> log;
+	public static Instrumentation<DefaultInstrumentationProperties, String> LOG;
+	public static SMSAppModuleDALFactory                                    BASE_MODULE_DAL;
+	public static int                                                       PERFORMANCE_TESTS_LOAD_FACTOR;
+
 	public static SMSAppModuleNavigationStates baseModuleNavigationStates;
 	
-	// this module's tests behavior
-	/** The desired data access handler for the 'SMS Module' base features */
-	public static SMSAppModuleDALFactory DEFAULT_SMS_MODULE_DAL;
-	/** how much to load into the performance tests */
-	public static int PERFORMANCE_TESTS_LOAD_FACTOR;
 	
 	/** method to be called to configure all the modules needed to get the desired instance of 'InstantVASSMSAppModule' base modules */
 	public static void configureSMSAppModuleTests(Instrumentation<DefaultInstrumentationProperties, String> log, 
-		int performanceTestsLoadFactor, SMSAppModuleDALFactory defaultModuleDAL,
+		int performanceTestsLoadFactor, SMSAppModuleDALFactory baseModuleDAL,
 		int postgreSQLConnectionPoolSize, boolean postgreSQLAllowDataStructuresAssertion,
 		boolean postreSQLShouldDebugQueries, String postreSQLHostname, int postreSQLPort, String postreSQLDatabase, String postreSQLUser,
 		String postreSQLPassword) throws SQLException {
 		
-		InstantVASSMSAppModuleTestsConfiguration.log = log;
-		
-		PERFORMANCE_TESTS_LOAD_FACTOR  = performanceTestsLoadFactor;
-		DEFAULT_SMS_MODULE_DAL         = defaultModuleDAL;
+		LOG                           = log;
+		BASE_MODULE_DAL               = baseModuleDAL;
+		PERFORMANCE_TESTS_LOAD_FACTOR = performanceTestsLoadFactor;
 		
 		// Suggested by 'InstantVASSMSAppModuleConfiguration.configureSMSAppModule' */
 		PostgreSQLAdapter.configureDefaultValuesForNewInstances(null, postgreSQLConnectionPoolSize);
-		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(log, defaultModuleDAL, postgreSQLAllowDataStructuresAssertion,
+		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(log, baseModuleDAL, postgreSQLAllowDataStructuresAssertion,
 			postreSQLShouldDebugQueries, postreSQLHostname, postreSQLPort, postreSQLDatabase, postreSQLUser, postreSQLPassword,
 			new ICommandProcessor[0], new Object[0][], new Object[0][]);
 		
@@ -82,7 +82,7 @@ public class InstantVASSMSAppModuleTestsConfiguration {
 				// log
 				new Instrumentation<DefaultInstrumentationProperties, String>(
 					"SMSModuleTests", DefaultInstrumentationProperties.DIP_MSG, EInstrumentationDataPours.CONSOLE, null),
-				0, SMSAppModuleDALFactory.POSTGRESQL,
+				1, SMSAppModuleDALFactory.POSTGRESQL,
 				// PostgreSQL properties
 				0,	// don't touch default connection pool size
 				true,

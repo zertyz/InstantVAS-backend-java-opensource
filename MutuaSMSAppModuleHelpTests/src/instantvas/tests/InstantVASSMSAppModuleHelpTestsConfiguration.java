@@ -20,24 +20,23 @@ import adapters.PostgreSQLAdapter;
  * =================================================
  * (created by luiz, Aug 10, 2015)
  *
- * Configure the classes' default values for new instances of the "Help" module test application
+ * Configure the classes' default values for new instances of the "Help" SMS Module test application
  *
  * Typically, the configure* methods on this class must be invoked prior to its usage. 
  * 
- * Follows the "Mutua Configurable Module" pattern tuned for Instant VAS Modules, described bellow:
+ * Follows the "Mutua Configurable Module" pattern tuned for "Instant VAS SMS Modules", described on
+ * the Base Modules Test Application Configuration -- {@link InstantVASSMSAppModuleConfiguration}
  *
- * {@code
- * 	get it from the help module by now
- * }
- *
- *
- * @see InstantVASSMSAppModuleConfiguration
  * @author luiz
  */
 
 public class InstantVASSMSAppModuleHelpTestsConfiguration {
+	
+	private static final String shortCode = "975";
+	private static final String appName   = "HelpTestApp";
 
-	public static Instrumentation<DefaultInstrumentationProperties, String> log;
+	public static Instrumentation<DefaultInstrumentationProperties, String> LOG;
+	public static SMSAppModuleDALFactory                                    BASE_MODULE_DAL;
 	public static SMSAppModuleNavigationStates     baseModuleNavigationStates;
 	public static SMSAppModulePhrasingsHelp        helpModulePhrasings;
 	public static SMSAppModuleCommandsHelp         helpModuleCommands;
@@ -53,21 +52,22 @@ public class InstantVASSMSAppModuleHelpTestsConfiguration {
 	
 	/** method to be called to configure all the modules needed to get the desired instance of 'SMSAppModuleHelp' */
 	public static void configureDefaultValuesForNewInstances(Instrumentation<DefaultInstrumentationProperties, String> log, 
-		SMSAppModuleDALFactory defaultModuleDAL, String postgreSQLconnectionProperties, int postgreSQLConnectionPoolSize,
+		SMSAppModuleDALFactory baseModuleDAL, String postgreSQLconnectionProperties, int postgreSQLConnectionPoolSize,
 		boolean postgreSQLAllowDataStructuresAssertion, boolean postreSQLShouldDebugQueries,
 		String postreSQLHostname, int postreSQLPort, String postreSQLDatabase, String postreSQLUser, String postreSQLPassword) throws SQLException {
 		
-		InstantVASSMSAppModuleHelpTestsConfiguration.log = log;
+		LOG             = log;
+		BASE_MODULE_DAL = baseModuleDAL;
 		// Suggested by 'InstantVASSMSAppModuleConfiguration.configureSMSAppModule()' */
 		PostgreSQLAdapter.configureDefaultValuesForNewInstances(postgreSQLconnectionProperties, postgreSQLConnectionPoolSize);
-		Object[] helpModule = SMSAppModuleConfigurationHelp.getHelpModuleInstances("1234", "HelpApp", new String[][] {
+		Object[] helpModule = SMSAppModuleConfigurationHelp.getHelpModuleInstances(shortCode, appName, new String[][] {
 			{SMSAppModuleNavigationStates.NavigationStatesNames.nstExistingUser,                    expectedNstExistingUserStatefulHelpMessage},
 			{SMSAppModuleNavigationStates.NavigationStatesNames.nstNewUser,                         expectedNstNewUserStatefulHelpMessage}});
 		helpModuleNavigationStates = (SMSAppModuleNavigationStatesHelp) helpModule[0];
 		helpModuleCommands         = (SMSAppModuleCommandsHelp)         helpModule[1];
 		helpModulePhrasings        = (SMSAppModulePhrasingsHelp)        helpModule[2];
 		// Suggested by 'SMSAppModuleConfigurationHelp.getHelpModuleNavigationStates' 
-		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(log, defaultModuleDAL, postgreSQLAllowDataStructuresAssertion,
+		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(log, baseModuleDAL, postgreSQLAllowDataStructuresAssertion,
 			postreSQLShouldDebugQueries, postreSQLHostname, postreSQLPort, postreSQLDatabase, postreSQLUser, postreSQLPassword,
 			helpModuleCommands.values,
 			new Object[0][] /*nstNewUserTriggers*/,
@@ -84,8 +84,8 @@ public class InstantVASSMSAppModuleHelpTestsConfiguration {
 			configureDefaultValuesForNewInstances(
 				// log
 				new Instrumentation<DefaultInstrumentationProperties, String>(
-					"SMSHelpModuleTests", DefaultInstrumentationProperties.DIP_MSG, EInstrumentationDataPours.CONSOLE, null),
-				// default base module DAL
+					appName, DefaultInstrumentationProperties.DIP_MSG, EInstrumentationDataPours.CONSOLE, null),
+				// modules DAL
 				SMSAppModuleDALFactory.POSTGRESQL,
 				// PostgreSQL properties
 				null,	// connection properties

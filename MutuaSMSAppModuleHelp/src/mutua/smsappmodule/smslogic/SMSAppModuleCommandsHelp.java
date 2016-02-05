@@ -18,10 +18,10 @@ import static mutua.smsappmodule.smslogic.CommandCommons.*;
  * =============================
  * (created by luiz, Jul 16, 2015)
  *
- * Enumerates and specifies how to execute each of the commands from the "Help" 'MutuaSMSAppModule' implementation.
+ * Enumerates and specifies how to execute each of the commands from the "Help" SMS Module.
  * It is a good idea, when possible, to make command names match phrase names.
  * 
- * This class implements the Mutua SMSApp Command Processors design pattern,
+ * This class implements the "Instant VAS SMSApp Command Processors" design pattern,
  * as described in {@link ICommandProcessor}
  *
  * @see ICommandProcessor
@@ -50,18 +50,28 @@ public class SMSAppModuleCommandsHelp {
 	
 	/** Class to be used as a reference when customizing the MO commands for this module */
 	public static class CommandTriggersHelp {
-		/** global triggers (to be used on several navigation states) that activates {@link SMSAppModuleCommandsHelp#cmdStartCompositeHelpDialog} */
+		/** Global triggers (to be used on several navigation states) to execute the 'composite help dialog', the multiple help/rules/terms
+		 *  of service messages which accepts the MORE keyword (described at 'trgLocalShowNextCompositeHelpMessage') to present the next one --
+		 *  activates {@link SMSAppModuleCommandsHelp#cmdStartCompositeHelpDialog} */
 		public final static String[] trgGlobalStartCompositeHelpDialog      = {"M?O?R?E? *INFOR?M?A?T?I?O?N?", "RULE.*"};
-		/** {@link SMSAppModuleNavigationStatesHelp#nstPresentingCompositeHelp} triggers that activates {@link SMSAppModuleCommandsHelp#cmdShowNextCompositeHelpMessage} */
+		/** Local triggers (available only to the 'composite help dialog' navigation state) to execute the 'show next composite help message' --
+		 *  {@link SMSAppModuleNavigationStatesHelp#nstPresentingCompositeHelp} triggers that activates {@link SMSAppModuleCommandsHelp#cmdShowNextCompositeHelpMessage} */
 		public final static String[] trgLocalShowNextCompositeHelpMessage   = {"MO?R?E?.*", "\\s*+\\s*", "NE?X?T?.*"};
-		/** global triggers (to be used on several navigation states) that activates {@link SMSAppModuleCommandsHelp#cmdShowExistingUsersFallbackHelp} */
+		/** THIS SHOULD NOT BE CONFIGURABLE SINCE IT IS A FALLBACK AND MUST ALWAYS BE .* ALSO, A SIMILAR TRIGGER IS MISSING FOR THE NEW USERS FALLBACK -- anyway, it activates 
+		 *  {@link SMSAppModuleCommandsHelp#cmdShowExistingUsersFallbackHelp} */
 		public final static String   trgGlobalShowExistingUsersFallbackHelp = ".*";
-		/** global triggers (to be used on several navigation states) that activates {@link SMSAppModuleCommandsHelp#cmdShowStatelessHelp} */
+		/** Global triggers (to be used on several navigation states) to execute the general help message --
+		 *  {@link SMSAppModuleCommandsHelp#cmdShowStatelessHelp} */
 		public final static String   trgGlobalShowStatelessHelpMessage      = "HELP.*";
 	}
 
+	// Instance Fields
+	//////////////////
+
 	private final SMSAppModulePhrasingsHelp helpPhrases;
 	
+	/** Constructs an instance of this module's command processors.
+	 *  @param helpPhrases an instance of the phrasings to be used */
 	public SMSAppModuleCommandsHelp(SMSAppModulePhrasingsHelp helpPhrases) {
 		this.helpPhrases = helpPhrases;
 	}
@@ -146,5 +156,4 @@ public class SMSAppModuleCommandsHelp {
 		cmdShowNewUsersFallbackHelp,
 		cmdShowExistingUsersFallbackHelp,
 	};
-
 }

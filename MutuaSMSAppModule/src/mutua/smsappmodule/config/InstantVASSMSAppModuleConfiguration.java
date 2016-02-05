@@ -39,7 +39,7 @@ public class InstantVASSMSAppModuleConfiguration {
 	 *       CONNECTION_PROPERTIES,
 	 *       CONNECTION_POOL_SIZE);</pre> 
 	 *  @param log
-	 *  @param defaultModuleDAL 
+	 *  @param baseModuleDAL                          one of the members of {@link SMSAppModuleDALFactory}
 	 *  @param postgreSQLAllowDataStructuresAssertion see {@link JDBCAdapter#allowDataStructuresAssertion}
 	 *  @param postreSQLShouldDebugQueries            see {@link JDBCAdapter#shouldDebugQueries}
 	 *  @param postreSQLHostname                      see {@link JDBCAdapter#hostname}
@@ -47,11 +47,11 @@ public class InstantVASSMSAppModuleConfiguration {
 	 *  @param postreSQLDatabase                      see {@link JDBCAdapter#database}
 	 *  @param postreSQLUser                          see {@link JDBCAdapter#user}
 	 *  @param postreSQLPassword                      see {@link JDBCAdapter#password}
-	 *  @param availableCommands                      see {@link SMSAppModuleNavigationStates#SMSAppModuleNavigationStates(ICommandProcessor[], Object[][], Object[][])}
-	 *  @param nstNewUserTriggers                     see {@link SMSAppModuleNavigationStates#SMSAppModuleNavigationStates(ICommandProcessor[], Object[][], Object[][])}
+	 *  @param availableCommands                      &
+	 *  @param nstNewUserTriggers                     &
 	 *  @param nstExistingUserTriggers                see {@link SMSAppModuleNavigationStates#SMSAppModuleNavigationStates(ICommandProcessor[], Object[][], Object[][])}
 	 *  @returns {(SMSAppModuleNavigationStates)navigationStates, (SMSAppModuleCommandsHelp)commands, (SMSAppModulePhrasingsHelp)phrasings} */
-	public static Object[] getBaseModuleInstances(Instrumentation<DefaultInstrumentationProperties, String> log, SMSAppModuleDALFactory defaultModuleDAL,
+	public static Object[] getBaseModuleInstances(Instrumentation<DefaultInstrumentationProperties, String> log, SMSAppModuleDALFactory baseModuleDAL,
 		boolean postgreSQLAllowDataStructuresAssertion, boolean postreSQLShouldDebugQueries,
 		String postreSQLHostname, int postreSQLPort, String postreSQLDatabase, String postreSQLUser, String postreSQLPassword,
 		ICommandProcessor[] availableCommands,
@@ -59,7 +59,7 @@ public class InstantVASSMSAppModuleConfiguration {
         Object[][] nstExistingUserTriggers) throws SQLException {
 		
 		// Configure the DAL
-		switch (defaultModuleDAL) {
+		switch (baseModuleDAL) {
 			case POSTGRESQL:
 				SMSAppModulePostgreSQLAdapter.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postreSQLShouldDebugQueries,
 					postreSQLHostname, postreSQLPort, postreSQLDatabase, postreSQLUser, postreSQLPassword);

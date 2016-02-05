@@ -1,20 +1,20 @@
 package mutua.smsappmodule.dal;
 
+import static instantvas.tests.InstantVASSMSAppModuleSubscriptionTestsConfiguration.*;
+
 import java.sql.SQLException;
 
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationSubscriptionTests.*;
 import mutua.smsappmodule.DatabaseAlgorithmAnalysis;
 import mutua.smsappmodule.SMSAppModuleTestCommons;
-import mutua.smsappmodule.SplitRun;
-import mutua.smsappmodule.config.SMSAppModuleConfigurationTests;
 import mutua.smsappmodule.dto.SubscriptionDto;
 import mutua.smsappmodule.dto.SubscriptionDto.EUnsubscriptionChannel;
 import mutua.smsappmodule.dto.UserDto;
 import mutua.smsappmodule.dto.SubscriptionDto.ESubscriptionChannel;
 
 import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
+
+import instantvas.tests.InstantVASSMSAppModuleTestsConfiguration;
 
 /** <pre>
  * ISubscriptionDBPerformanceTests.java
@@ -31,14 +31,14 @@ import org.junit.Test;
 
 public class ISubscriptionDBPerformanceTests {
 
-	private IUserDB         userDB         = DEFAULT_MODULE_DAL.getUserDB();
-	private ISubscriptionDB subscriptionDB = DEFAULT_SUBSCRIPTION_DAL.getSubscriptionDB();
+	private IUserDB         userDB         = BASE_MODULE_DAL.getUserDB();
+	private ISubscriptionDB subscriptionDB = SUBSCRIPTION_DAL.getSubscriptionDB();
 
 	// algorithm settings
 	private static int numberOfThreads = 4;
 
 	// users table pre-fill
-	private static int       totalNumberOfUsers = SMSAppModuleConfigurationTests.PERFORMANCE_TESTS_LOAD_FACTOR * ((DEFAULT_SUBSCRIPTION_DAL == SMSAppModuleDALFactorySubscription.RAM) ? 1000000 : 40000);	// please, be sure the division between this and 'numberOfThreads' is round
+	private static int       totalNumberOfUsers = InstantVASSMSAppModuleTestsConfiguration.PERFORMANCE_TESTS_LOAD_FACTOR * ((SUBSCRIPTION_DAL == SMSAppModuleDALFactorySubscription.RAM) ? 1000000 : 40000);	// please, be sure the division between this and 'numberOfThreads' is round
 	private static long      phoneStart         = 991230000;
 	private static UserDto[] users              = new UserDto[totalNumberOfUsers];
 
@@ -47,11 +47,13 @@ public class ISubscriptionDBPerformanceTests {
 	** COMMON METHODS **
 	*******************/
 	
-	@BeforeClass
-	public static void fulfillUsersTable() {
+	//@BeforeClass
+	public ISubscriptionDBPerformanceTests() {
+		// fill users table
 		try {
-			SMSAppModuleTestCommons.resetTables();
-			SMSAppModuleTestCommons.insertUsers(phoneStart, users, numberOfThreads);
+			subscriptionDB.reset();
+			userDB.reset();
+			SMSAppModuleTestCommons.insertUsers(userDB, phoneStart, users, numberOfThreads);
 		} catch (Throwable t) {
 			t.printStackTrace();
 			throw new RuntimeException("Could not fulfill users table", t);
@@ -61,6 +63,7 @@ public class ISubscriptionDBPerformanceTests {
 	@AfterClass
 	public static void clearRAM() {
 		users = null;
+		// clear the databases...
 	}
 
 	

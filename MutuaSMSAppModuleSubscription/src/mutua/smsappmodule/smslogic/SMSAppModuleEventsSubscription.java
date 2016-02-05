@@ -17,7 +17,10 @@ import mutua.smsappmodule.smslogic.SMSAppModuleEventsSubscription.ESMSAppModuleE
  * interested entity, as well as managing such entities, which should report this
  * class about their interest.
  * 
- * This class defines the Mutua SMS Module Event Producers Pattern
+ * This class implements "Mutua SMS Module Event Producers" pattern
+ * 
+ * TODO these commands should be tied to an instance of the subscription commands -- the way they are now,
+ *      every subscriber will receive the events for every sms service running on the machine
  *
  * @see SMSAppModuleListenersHangman
  * @version $Id$

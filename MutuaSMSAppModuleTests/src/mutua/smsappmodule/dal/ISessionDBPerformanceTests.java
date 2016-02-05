@@ -8,7 +8,6 @@ import mutua.smsappmodule.dto.SessionDto;
 import mutua.smsappmodule.dto.UserDto;
 
 import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import instantvas.tests.InstantVASSMSAppModuleTestsConfiguration;
@@ -31,14 +30,14 @@ import static org.junit.Assert.*;
 
 public class ISessionDBPerformanceTests {
 
-	private IUserDB    userDB    = DEFAULT_SMS_MODULE_DAL.getUserDB();
-	private ISessionDB sessionDB = DEFAULT_SMS_MODULE_DAL.getSessionDB();
+	private IUserDB    userDB    = BASE_MODULE_DAL.getUserDB();
+	private ISessionDB sessionDB = BASE_MODULE_DAL.getSessionDB();
 
 	// algorithm settings
 	private static int numberOfThreads = 4;
 
 	// users table pre-fill
-	private static int       totalNumberOfUsers = InstantVASSMSAppModuleTestsConfiguration.PERFORMANCE_TESTS_LOAD_FACTOR * ((DEFAULT_SMS_MODULE_DAL == SMSAppModuleDALFactory.RAM) ? 600000 : 30000);	// please, be sure the division between this and 'numberOfThreads' is round
+	private static int       totalNumberOfUsers = InstantVASSMSAppModuleTestsConfiguration.PERFORMANCE_TESTS_LOAD_FACTOR * ((BASE_MODULE_DAL == SMSAppModuleDALFactory.RAM) ? 600000 : 30000);	// please, be sure the division between this and 'numberOfThreads' is round
 	private static long      phoneStart         = 991230000;
 	private static UserDto[] users              = new UserDto[totalNumberOfUsers];
 
@@ -46,11 +45,13 @@ public class ISessionDBPerformanceTests {
 	** COMMON METHODS **
 	*******************/
 	
-	@BeforeClass
-	public static void fulfillUsersTable() {
+	//@BeforeClass
+	public ISessionDBPerformanceTests() {
+		// fill users table
 		try {
-			SMSAppModuleTestCommons.resetBaseTables();
-			SMSAppModuleTestCommons.insertUsers(phoneStart, users, numberOfThreads);
+			sessionDB.reset();
+			userDB.reset();
+			SMSAppModuleTestCommons.insertUsers(userDB, phoneStart, users, numberOfThreads);
 		} catch (Throwable t) {
 			t.printStackTrace();
 			throw new RuntimeException("Could not fulfill users table", t);
@@ -108,7 +109,7 @@ public class ISessionDBPerformanceTests {
 
 	@Test
 	public void testMultiplePropertiesSessionAlgorithmAnalysis() throws Throwable {
-		int totalNumberOfSessions = InstantVASSMSAppModuleTestsConfiguration.PERFORMANCE_TESTS_LOAD_FACTOR * ((DEFAULT_SMS_MODULE_DAL == SMSAppModuleDALFactory.RAM) ? 600000 : 30000);	// please, be sure the division between this and 'numberOfThreads' is round
+		int totalNumberOfSessions = InstantVASSMSAppModuleTestsConfiguration.PERFORMANCE_TESTS_LOAD_FACTOR * ((BASE_MODULE_DAL == SMSAppModuleDALFactory.RAM) ? 600000 : 30000);	// please, be sure the division between this and 'numberOfThreads' is round
 		int inserts = totalNumberOfSessions / 2;
 		int updates = inserts;
 				

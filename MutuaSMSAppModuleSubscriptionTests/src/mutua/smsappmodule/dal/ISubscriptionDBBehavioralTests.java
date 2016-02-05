@@ -1,11 +1,10 @@
 package mutua.smsappmodule.dal;
 
+import static instantvas.tests.InstantVASSMSAppModuleSubscriptionTestsConfiguration.*;
 import static org.junit.Assert.*;
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationSubscriptionTests.*;
 
 import java.sql.SQLException;
 
-import mutua.smsappmodule.SMSAppModuleTestCommons;
 import mutua.smsappmodule.dto.SubscriptionDto;
 import mutua.smsappmodule.dto.SubscriptionDto.ESubscriptionChannel;
 import mutua.smsappmodule.dto.SubscriptionDto.EUnsubscriptionChannel;
@@ -28,13 +27,18 @@ import org.junit.Test;
 public class ISubscriptionDBBehavioralTests {
 	
 	
-	private IUserDB         userDB         = DEFAULT_MODULE_DAL.getUserDB();
-	private ISubscriptionDB subscriptionDB = DEFAULT_SUBSCRIPTION_DAL.getSubscriptionDB();
+	private IUserDB         userDB         = BASE_MODULE_DAL.getUserDB();
+	private ISubscriptionDB subscriptionDB = SUBSCRIPTION_DAL.getSubscriptionDB();
 
 	
 	/*******************
-	** COMMON METHODS ** 
+	** COMMON METHODS **
 	*******************/
+	
+	public void resetTables() throws SQLException {
+		subscriptionDB.reset();
+		userDB.reset();
+	}
 	
 
 	/**********
@@ -43,8 +47,8 @@ public class ISubscriptionDBBehavioralTests {
 	
 	@Test
 	public void testNonExistingSubscriptionRecord() throws SQLException {
-		
-		SMSAppModuleTestCommons.resetTables();
+
+		resetTables();
 
 		UserDto         user         = userDB.assureUserIsRegistered("21991234899");
 		SubscriptionDto subscription = subscriptionDB.getSubscriptionRecord(user);
@@ -54,8 +58,8 @@ public class ISubscriptionDBBehavioralTests {
 	@Test
 	public void testSimpleUsage() throws SQLException {
 		
-		SMSAppModuleTestCommons.resetTables();
-
+		resetTables();
+		
 		UserDto         user                  = userDB.assureUserIsRegistered("21991234899");
 		SubscriptionDto storedSubscription    = null;
 		SubscriptionDto retrievedSubscription = null;

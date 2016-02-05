@@ -26,9 +26,9 @@ public class HelpModuleSMSProcessorTests {
 	// variables
 	////////////
 	
-	private SMSAppModuleTestCommons tc = new SMSAppModuleTestCommons(log,
-		baseModuleNavigationStates.values,
-		helpModuleNavigationStates.values);
+	private SMSAppModuleTestCommons tc = new SMSAppModuleTestCommons(LOG,
+		BASE_MODULE_DAL,
+		baseModuleNavigationStates.values, helpModuleNavigationStates.values);
 
 	
 	// tests

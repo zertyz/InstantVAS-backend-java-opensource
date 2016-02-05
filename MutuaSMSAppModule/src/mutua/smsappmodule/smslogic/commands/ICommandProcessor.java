@@ -13,7 +13,7 @@ import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
  * Represents a command processor, roughly speaking, the entity responsible for the
  * transformation of an incoming into an outgoing message.
  * 
- * Implementing classes must use the Mutua SMSApp Command Processors design pattern, described
+ * Implementing classes must use the "Instant VAS SMSApp Command Processors" design pattern, described
  * bellow:
  * 
  * {@code

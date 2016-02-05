@@ -1,6 +1,5 @@
 package mutua.smsappmodule;
 
-import static instantvas.tests.InstantVASSMSAppModuleTestsConfiguration.*;
 import static org.junit.Assert.*;
 
 import java.sql.SQLException;
@@ -13,6 +12,7 @@ import mutua.hangmansmsgame.smslogic.SMSProcessorException;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.smsappmodule.dal.ISessionDB;
 import mutua.smsappmodule.dal.IUserDB;
+import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
 import mutua.smsappmodule.dto.SessionDto;
 import mutua.smsappmodule.dto.UserDto;
 import mutua.smsappmodule.smslogic.navigationstates.INavigationState;
@@ -34,18 +34,20 @@ import mutua.smsout.dto.OutgoingSMSDto;
  */
 
 public class SMSAppModuleTestCommons {
-	
-	public final SMSProcessor smsP;
-	
-	private TestResponseReceiver responseReceiver;
-	
-	private static IUserDB    userDB    = DEFAULT_SMS_MODULE_DAL.getUserDB();
-	private static ISessionDB sessionDB = DEFAULT_SMS_MODULE_DAL.getSessionDB();
 
-	
-	public SMSAppModuleTestCommons(Instrumentation<?, ?> log, INavigationState[]... navigationStatesArrays) {
+	public final SMSProcessor smsP;
+
+	private TestResponseReceiver responseReceiver;
+
+	private final IUserDB    userDB;
+	private final ISessionDB sessionDB;
+
+
+	public SMSAppModuleTestCommons(Instrumentation<?, ?> log, SMSAppModuleDALFactory baseModuleDAL, INavigationState[]... navigationStatesArrays) {
+		userDB    = baseModuleDAL.getUserDB();
+		sessionDB = baseModuleDAL.getSessionDB();
 		responseReceiver = new TestResponseReceiver();
-		SMSProcessor.configureDefaultValuesForNewInstances(log, DEFAULT_SMS_MODULE_DAL);
+		SMSProcessor.configureDefaultValuesForNewInstances(log, baseModuleDAL);
 		smsP = new SMSProcessor(responseReceiver, navigationStatesArrays);
 	}
 	
@@ -55,14 +57,15 @@ public class SMSAppModuleTestCommons {
 	**********************************/
 	
 	/** Reset all the base module databases */
-	public static void resetBaseTables() throws SQLException {
+	public void resetBaseTables() throws SQLException {
 		sessionDB.reset();
 		userDB.reset();
 	}
 	
 	/** Inserts 'n' users on the database, starting at 'first' and using 'p' concurrent threads.
-	 *  'users.length' must be divisible by 'p'. */
-	public static void insertUsers(final long first, final UserDto[] users, int p) throws SQLException, InterruptedException {
+	 *  'users.length' must be divisible by 'p'. 
+	 * @param userDB TODO*/
+	public static void insertUsers(final IUserDB userDB, final long first, final UserDto[] users, int p) throws SQLException, InterruptedException {
 		final int _n = users.length / p;
 		for (int threadNumber=0; threadNumber<p; threadNumber++) {
 			SplitRun.add(new SplitRun(threadNumber) {
@@ -111,7 +114,7 @@ System.err.println("\n");
 		}
 	}
 
-	public void checkNavigationState(String phone, INavigationState navigationState) throws SQLException {
+	public void checkNavigationState(String phone, String navigationStateName) throws SQLException {
 		UserDto user          = userDB.assureUserIsRegistered(phone);
 		SessionDto sessionDto = sessionDB.getSession(user);
 		String navigationStatePropertyName = SessionModel.NAVIGATION_STATE_PROPERTY.getPropertyName();
@@ -121,7 +124,7 @@ System.err.println("\n");
 			String storedPropertyName  = storedPropertyNameAndValuePair[0];
 			String storedPropertyValue = storedPropertyNameAndValuePair[1];
 			if (navigationStatePropertyName.equals(storedPropertyName)) {
-				assertEquals("Wrong navigation state", navigationState.getNavigationStateName(), storedPropertyValue);
+				assertEquals("Wrong navigation state", navigationStateName, storedPropertyValue);
 				found = true;
 			}
 		}

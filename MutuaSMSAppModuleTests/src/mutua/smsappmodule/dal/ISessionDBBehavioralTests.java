@@ -24,8 +24,8 @@ import org.junit.Test;
 
 public class ISessionDBBehavioralTests {
 	
-	private IUserDB    userDB    = DEFAULT_SMS_MODULE_DAL.getUserDB();
-	private ISessionDB sessionDB = DEFAULT_SMS_MODULE_DAL.getSessionDB();
+	private IUserDB    userDB    = BASE_MODULE_DAL.getUserDB();
+	private ISessionDB sessionDB = BASE_MODULE_DAL.getSessionDB();
 
 	
 	/*******************

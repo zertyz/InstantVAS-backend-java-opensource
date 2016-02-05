@@ -8,7 +8,7 @@ import java.sql.SQLException;
  * (created by luiz, Jul 24, 2015)
  *
  * Enum based implementation of the Factory Pattern, to select among
- * data access layers
+ * data access layers for the "Subscription SMS Module"
  *
  * @see RelatedClass(es)
  * @version $Id$
@@ -17,12 +17,14 @@ import java.sql.SQLException;
 
 public enum SMSAppModuleDALFactorySubscription {
 	
+	/** The RAM based DAL instances of the "Subscription SMS Module", for modeling & testing purposes */
 	RAM {
 		protected void instantiateDataAccessLayers() {
 			super.subscriptionDB = new mutua.smsappmodule.dal.ram.SubscriptionDB();
 		}
 	},
 	
+	/** The persistent PostgreSQL DAL instances of the "Subscription SMS Module", for production */
 	POSTGRESQL {
 		protected void instantiateDataAccessLayers() throws SQLException {
 			super.subscriptionDB = new mutua.smsappmodule.dal.postgresql.SubscriptionDB();
@@ -31,9 +33,6 @@ public enum SMSAppModuleDALFactorySubscription {
 	
 	;
 	
-//	@ConfigurableElement("The desired data access handler for the 'Subscription SMS Module' facilities")
-//	public static SMSAppModuleDALFactorySubscription DEFAULT_DAL = SMSAppModuleDALFactorySubscription.RAM;
-//	
 	private ISubscriptionDB subscriptionDB;
 	
 	private boolean wasInstantiated = false;

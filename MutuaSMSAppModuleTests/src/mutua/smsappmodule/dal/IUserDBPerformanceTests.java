@@ -1,11 +1,10 @@
 package mutua.smsappmodule.dal;
 
-import static instantvas.tests.InstantVASSMSAppModuleTestsConfiguration.DEFAULT_SMS_MODULE_DAL;
+import static instantvas.tests.InstantVASSMSAppModuleTestsConfiguration.BASE_MODULE_DAL;
 
 import java.sql.SQLException;
 
 import mutua.smsappmodule.DatabaseAlgorithmAnalysis;
-import mutua.smsappmodule.SMSAppModuleTestCommons;
 
 import org.junit.Test;
 
@@ -26,13 +25,13 @@ import instantvas.tests.InstantVASSMSAppModuleTestsConfiguration;
 
 public class IUserDBPerformanceTests {
 	
-	private IUserDB userDB = DEFAULT_SMS_MODULE_DAL.getUserDB();
+	private IUserDB userDB = BASE_MODULE_DAL.getUserDB();
 
 	
 	@Test
 	public void testAlgorithmAnalysis() throws Throwable {
 		
-		SMSAppModuleTestCommons.resetBaseTables();
+		userDB.reset();
 		
 		int numberOfThreads = 4;
 		int inserts = 15000 * InstantVASSMSAppModuleTestsConfiguration.PERFORMANCE_TESTS_LOAD_FACTOR;
