@@ -1,6 +1,5 @@
 package mutua.smsappmodule.smslogic;
 
-import static mutua.smsappmodule.i18n.SMSAppModulePhrasingsChat.*;
 import static mutua.smsappmodule.smslogic.CommandCommons.*;
 import static mutua.smsappmodule.smslogic.sessions.SMSAppModuleSessionsChat.sprLastPrivateMessageSender;
 
@@ -12,8 +11,10 @@ import mutua.smsappmodule.dal.SMSAppModuleDALFactoryChat;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactoryProfile;
 import mutua.smsappmodule.dto.ProfileDto;
 import mutua.smsappmodule.dto.UserDto;
+import mutua.smsappmodule.i18n.SMSAppModulePhrasingsChat;
 import mutua.smsappmodule.i18n.SMSAppModulePhrasingsProfile;
 import mutua.smsappmodule.smslogic.commands.CommandAnswerDto;
+import mutua.smsappmodule.smslogic.commands.CommandTriggersDto;
 import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesChat;
 import mutua.smsappmodule.smslogic.sessions.SessionModel;
@@ -24,10 +25,10 @@ import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
  * =============================
  * (created by luiz, Aug 26, 2015)
  *
- * Enumerates and specifies how to execute each of the commands from the "Chat" 'MutuaSMSAppModule' implementation.
+ * Enumerates and specifies how to execute each of the commands from the "Chat" SMS Module.
  * It is a god idea, when possible, to make command names match phrase names.
  * 
- * This class implements the Mutua SMSApp Command Processor design pattern,
+ * This class implements the "Instant VAS SMSApp Command Processors" design pattern,
  * as described in {@link ICommandProcessor}
  *
  * @see ICommandProcessor
@@ -35,26 +36,69 @@ import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
  * @author luiz
  */
 
-public enum SMSAppModuleCommandsChat implements ICommandProcessor {
+public class SMSAppModuleCommandsChat {
+	
+	/** Class to be statically imported by the Configurators to refer to commands when defining the {@link CommandTriggersDto} */
+	public static class CommandNamesChat {
+		/** @see SMSAppModuleCommandsChat#cmdSendPrivateReply */
+		public final static String cmdSendPrivateReply   = "SendPrivateReply";
+		/** @see SMSAppModuleCommandsChat#cmdSendPrivateMessage */
+		public final static String cmdSendPrivateMessage = "SendPrivateMessage";
+	}
+	
+	/** Class to be used as a reference when customizing the MO commands for this module */
+	public static class CommandTriggersChat {
+		/** Global triggers (to be used on several navigation states) to send a private message to a chosen user.
+		 *  Receives 2 parameter: the destination nickname and the message
+		 *  -- activates {@link SMSAppModuleCommandsChat#cmdSendPrivateMessage} */
+		public final static String[] trgGlobalSendPrivateMessage   = {"[MP] ([^ ]+) (.*)"};
+		/** Local triggers (available only to the 'answering to a private message' navigation state) to send the reply. Receives 1 parameter: the message --
+		 *  {@link SMSAppModuleNavigationStatesChat#nstChattingWithSomeone} triggers that activates {@link SMSAppModuleCommandsChat#cmdSendPrivateReply} */
+		public final static String[] trgLocalSendPrivateReply      = {"(.+)"};
+
+	}
+	
+	// Instance Fields
+	//////////////////
+
+	private final SMSAppModulePhrasingsChat chatPhrases;
+	private final IProfileDB profileDB;
+	private final IChatDB    chatDB;
+
+
+	/** Constructs an instance of this module's command processors.
+	 *  @param chatPhrases      an instance of the phrasings to be used
+	 *  @param profileModuleDAL one of the members of {@link SMSAppModuleDALFactoryProfile}
+	 *  @param chatModuleDAL    one of the members of {@link SMSAppModuleDALFactoryChat} */
+	public SMSAppModuleCommandsChat(SMSAppModulePhrasingsChat     chatPhrases,
+	                                SMSAppModuleDALFactoryProfile profileModuleDAL,
+	                                SMSAppModuleDALFactoryChat    chatModuleDAL) {
+		this.chatPhrases = chatPhrases;
+		this.profileDB   = profileModuleDAL.getProfileDB();
+		this.chatDB      = chatModuleDAL.getChatDB();
+	}
+
+	// Command Definitions
+	//////////////////////	
 	
 	/** Just a parameter overload (without the nickname) implementation for {@link #cmdSendPrivateMessage} -- to be
 	 *  used when in {@link SMSAppModuleNavigationStatesChat#nstChattingWithSomeone}.
 	 *  Receives 1 parameter: the message to be sent */
-	cmdSendPrivateReply {
+	public final ICommandProcessor cmdSendPrivateReply = new ICommandProcessor(CommandNamesChat.cmdSendPrivateReply) {
 		@Override
 		public CommandAnswerDto processCommand(SessionModel session, ESMSInParserCarrier carrier, String[] parameters) throws SQLException {
 			String message  = parameters[0];
 			String nickname = session.getStringProperty(sprLastPrivateMessageSender);
 			if (nickname == null) {
-				getSameStateReplyCommandAnswer(getDoNotKnowWhoYouAreChattingTo());
+				getSameStateReplyCommandAnswer(chatPhrases.getDoNotKnowWhoYouAreChattingTo());
 			}
 			return cmdSendPrivateMessage.processCommand(session, carrier, new String[] {nickname, message});
 		}
-	},
+	};
 	
 	/** Command to send a private message to a user. 
 	 *  Receives 2 parameters: the destination nickname and the message */
-	cmdSendPrivateMessage {
+	public final ICommandProcessor cmdSendPrivateMessage = new ICommandProcessor(CommandNamesChat.cmdSendPrivateMessage) {
 		@Override
 		public CommandAnswerDto processCommand(SessionModel session, ESMSInParserCarrier carrier, String[] parameters) throws SQLException {
 			String targetNickname        = parameters[0];
@@ -77,40 +121,22 @@ public enum SMSAppModuleCommandsChat implements ICommandProcessor {
 			chatDB.logPrivateMessage(senderUser, targetUser, session.getMO().getMoId(), session.getMO().getText(), privateMessage);
 			
 			return getSameStateReplyWithAnAdditionalMessageToAnotherUserCommandAnswer(
-				getPrivateMessageDeliveryNotification(targetUserProfile.getNickname()),
-				targetUserProfile.getUser(), getPrivateMessage(senderNickname, privateMessage));
+				chatPhrases.getPrivateMessageDeliveryNotification(targetUserProfile.getNickname()),
+				targetUserProfile.getUser(), chatPhrases.getPrivateMessage(senderNickname, privateMessage));
 		}
-	},
-	
-	
-	;
-	
-	// databases
-	////////////
-	
-	private static IChatDB    chatDB    = SMSAppModuleDALFactoryChat.DEFAULT_DAL.getChatDB();
-	private static IProfileDB profileDB = SMSAppModuleDALFactoryProfile.DEFAULT_DAL.getProfileDB();
+	};
 
-	
-	@Override
-	// this.name is the enumeration property name
-	public String getCommandName() {
-		return this.name();
-	}
-	
 	
 	// SMSAppModuleCommandCommons candidates
 	////////////////////////////////////////
 	
-		
-		
-	/***********************************************************************
-	** GLOBAL COMMAND TRIGGERS -- to be used in several navigation states **
-	***********************************************************************/
 	
-	/** global triggers that executes {@link #cmdSendPrivateMessage} */
-	public static String[] trgGlobalSendPrivateMessage   = {"[MP] ([^ ]+) (.*)"};
-	/** {@link SMSAppModuleNavigationStatesChat#nstChattingWithSomeone} triggers that activates {@link #cmdSendPrivateReply} */
-	public static String[] trgLocalSendPrivateReply      = {"(.+)"};
-
+	// Command List
+	///////////////
+	
+	/** The list of all commands -- to allow deserialization by {@link CommandTriggersDto} */
+	public final ICommandProcessor[] values = {
+		cmdSendPrivateReply,
+		cmdSendPrivateMessage,
+	};
 }

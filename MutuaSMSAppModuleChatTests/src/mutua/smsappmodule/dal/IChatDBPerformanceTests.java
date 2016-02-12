@@ -1,7 +1,7 @@
 package mutua.smsappmodule.dal;
 
+import static instantvas.tests.InstantVASSMSAppModuleChatTestsConfiguration.*;
 import static mutua.smsappmodule.SMSAppModuleChatTestCommons.*;
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationChatTests.*;
 import static org.junit.Assert.*;
 
 import java.sql.SQLException;
@@ -11,13 +11,14 @@ import java.util.Comparator;
 import mutua.smsappmodule.DatabaseAlgorithmAnalysis;
 import mutua.smsappmodule.SMSAppModuleTestCommons;
 import mutua.smsappmodule.SplitRun;
-import mutua.smsappmodule.config.SMSAppModuleConfigurationTests;
 import mutua.smsappmodule.dto.PrivateMessageDto;
 import mutua.smsappmodule.dto.UserDto;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import instantvas.tests.InstantVASSMSAppModuleTestsConfiguration;
 
 /** <pre>
  * IChatDBPerformanceTests.java
@@ -38,7 +39,7 @@ public class IChatDBPerformanceTests {
 	private static int numberOfThreads = 4;
 
 	// users table pre-fill
-	private static int       totalNumberOfUsers = ((int)Math.ceil(Math.pow(SMSAppModuleConfigurationTests.PERFORMANCE_TESTS_LOAD_FACTOR, 1d/2d))) * ((DEFAULT_CHAT_DAL == SMSAppModuleDALFactoryChat.RAM) ? 89 : 18) * (4*numberOfThreads);	// please, pick a reasonable number, since approximately the square number of elements will be created (users + mos + privateMessages)
+	private static int       totalNumberOfUsers = ((int)Math.ceil(Math.pow(InstantVASSMSAppModuleTestsConfiguration.PERFORMANCE_TESTS_LOAD_FACTOR, 1d/2d))) * ((CHAT_MODULE_DAL == SMSAppModuleDALFactoryChat.RAM) ? 89 : 18) * (4*numberOfThreads);	// please, pick a reasonable number, since approximately the square number of elements will be created (users + mos + privateMessages)
 	private static long      phoneStart         = 991230000;
 	private static UserDto[]           users    = new UserDto[totalNumberOfUsers];
 	private static PrivateMessageDto[] pvts     = null;
@@ -135,8 +136,10 @@ public class IChatDBPerformanceTests {
 		
 		// fulfill Users table
 		try {
-			SMSAppModuleTestCommons.resetTables();
-			SMSAppModuleTestCommons.insertUsers(phoneStart, users, numberOfThreads);
+			chatDB.reset();
+			sessionDB.reset();
+			userDB.reset();
+			SMSAppModuleTestCommons.insertUsers(userDB, phoneStart, users, numberOfThreads);
 			// prepare the 'users' list for the tests
 			Arrays.sort(users, new Comparator<UserDto>() {
 				@Override
@@ -152,8 +155,8 @@ public class IChatDBPerformanceTests {
 		
 		// fulfill Queue table
 		try {
-			if (moQueueLink != null) {
-				moQueueLink.resetQueues();
+			if (MO_QUEUE_LINK != null) {
+				MO_QUEUE_LINK.resetQueues();
 			}
 			pvts = insertChatMOs(users, numberOfThreads);
 			

@@ -1,7 +1,7 @@
 package mutua.smsappmodule;
 
+import static instantvas.tests.InstantVASSMSAppModuleChatTestsConfiguration.LOG;
 import static mutua.smsappmodule.SMSAppModuleChatTestCommons.*;
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationChatTests.log;
 import static org.junit.Assert.*;
 
 import java.sql.SQLException;
@@ -42,7 +42,7 @@ public class ChatModuleBehavioralTests {
 
 	@Test
 	public void testConfigurationFile() throws IllegalArgumentException, IllegalAccessException {
-		ConfigurationManager cm = new ConfigurationManager(log, SMSAppModuleConfigurationChat.class);
+		ConfigurationManager cm = new ConfigurationManager(LOG, SMSAppModuleConfigurationChat.class);
 		String serializedFields = cm.serializeConfigurableClasses();
 		System.out.println(serializedFields);
 		cm.deserializeConfigurableClasses(serializedFields);

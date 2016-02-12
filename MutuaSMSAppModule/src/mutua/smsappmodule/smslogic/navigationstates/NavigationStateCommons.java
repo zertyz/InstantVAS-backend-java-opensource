@@ -4,14 +4,21 @@ import java.util.Arrays;
 
 import mutua.smsappmodule.smslogic.commands.CommandTriggersDto;
 import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
-import mutua.smsappmodule.smslogic.sessions.SessionModel;
 
 /** <pre>
  * NavigationStateCommons.java
  * ===========================
  * (created by luiz, Jul 23, 2015)
  *
- * Contains entries common to {@link INavigationState} implementing classes
+ * Represents a navigation state, used by SMS Applications and Games to retain a per user context to help
+ * decide what to do with the next input.
+ * 
+ * Implementing classes must use the "Instant VAS SMSApp Navigation State" design pattern, described
+ * bellow:
+ * 
+ * {@code
+ * 	get it from the help module by now
+ * }
  *
  * @see RelatedClass(es)
  * @version $Id$

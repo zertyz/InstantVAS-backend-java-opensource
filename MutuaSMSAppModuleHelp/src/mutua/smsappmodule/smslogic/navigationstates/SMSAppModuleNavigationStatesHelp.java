@@ -52,7 +52,7 @@ public class SMSAppModuleNavigationStatesHelp {
 
 	/** Provides the navigation states instance with custom triggers.
 	 *  @param helpCommands                       The instance of commands for this module
-	 *  @param nstPresentingCompositeHelpTriggers The list of commands to execute when on {@link #nstExistingUser} navigation state based on MO matches with the provided regular expressions. See {@link NavigationStateCommons#setCommandTriggers(Object[][], mutua.smsappmodule.smslogic.commands.ICommandProcessor[])}*/
+	 *  @param nstPresentingCompositeHelpTriggers The list of regular expression triggers and commands to execute when the user is on the {@link #nstPresentingCompositeHelp} navigation state. See {@link NavigationStateCommons#setCommandTriggers(Object[][], mutua.smsappmodule.smslogic.commands.ICommandProcessor[])}*/
 	public SMSAppModuleNavigationStatesHelp(final SMSAppModuleCommandsHelp helpCommands, final Object[][] nstPresentingCompositeHelpTriggers) {		
 		nstPresentingCompositeHelp = new NavigationStateCommons(NavigationStatesNamesHelp.nstPresentingCompositeHelp) {{
 			setCommandTriggers(nstPresentingCompositeHelpTriggers, helpCommands.values);

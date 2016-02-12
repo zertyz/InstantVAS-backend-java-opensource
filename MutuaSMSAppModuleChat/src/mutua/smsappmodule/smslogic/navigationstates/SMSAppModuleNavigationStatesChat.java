@@ -1,9 +1,10 @@
 package mutua.smsappmodule.smslogic.navigationstates;
 
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationChat.*;
-import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsChat.*;
+import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsChat.CommandNamesChat.*;
+import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsChat.CommandTriggersChat.*;
+
+import mutua.smsappmodule.smslogic.SMSAppModuleCommandsChat;
 import mutua.smsappmodule.smslogic.commands.CommandTriggersDto;
-import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
 
 /** <pre>
  * SMSAppModuleNavigationStatesChat.java
@@ -13,72 +14,50 @@ import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
  * Declares the navigation states and the reference {@link CommandTriggersDto} required by
  * the "Chat" SMS Application Module
  * 
- * Implements the Mutua SMSApp Navigation States design pattern, as described by
- * {@link INavigationState}
+ * Implements the "Instant VAS SMSApp Navigation States" design pattern, as described by
+ * {@link NavigationStateCommons}.
  *
- * @see INavigationState
+ * @see NavigationStateCommons
  * @see CommandTriggersDto
  * @version $Id$
  * @author luiz
  */
 
-public enum SMSAppModuleNavigationStatesChat implements INavigationState {
+public class SMSAppModuleNavigationStatesChat {
 	
-	/** Navigation state used when privately chatting with someone -- allows the user to simply type the message (no need to provide the nickname).
-	 *  SMS Applications must extend it, adding their own command triggers. */
-	nstChattingWithSomeone {
-		@Override
-		public void setCommandTriggersFromConfigurationValues() {
-			setCommandTriggers(new Object[][] {
-				{cmdSendPrivateReply,                           CHATtrgLocalSendPrivateReply},
-//				{SMSAppModuleCommandsHelp.cmdShowStatelessHelp, new String[] {"HELP"}},
-//				{SMSAppModuleCommandsHelp.cmdShowStatefulHelp,  new String[] {".*"}},
-			});
-		}
-	},
-	
-	;
-	
-	static {
-		// defines stateful help messages for the here defined navigation states
-//		SMSAppModuleNavigationStates.nstNewUser.setCommandTriggers(new Object[][] {
-//			{cmdStartDoubleOptinProcess, SUBSCRIPTIONtrgLocalStartDoubleOptin},
-//			//{/*fall back help*/,         ".*"},
-//		});
-//		SMSAppModuleNavigationStates.nstExistingUser.setCommandTriggers(new Object[][] {
-//			{cmdUnsubscribe, SUBSCRIPTIONtrgGlobalUnsubscribe},
-//			//{/*fall back help*/,         ".*"},
-//		});
+	/** Class to be statically imported by the Commands Implementation to represent the navigation states */
+	public static class NavigationStatesNamesChat {
+		/** @see SMSAppModuleNavigationStatesChat#nstChattingWithSomeone */
+		public final static String nstChattingWithSomeone = "ChattingWithSomeone";
 	}
 	
-	private NavigationStateCommons nsc;
+	// Navigation States Definitions
+	////////////////////////////////
 	
-	private SMSAppModuleNavigationStatesChat() {
-		nsc = new NavigationStateCommons(this);
+	/** The list of all navigation states -- for 'SMSProcessor' to be able to deserialize state names */
+	public final NavigationStateCommons[] values;
+	
+	/** Navigation state used when privately chatting with someone -- 
+	 *  allows the user to simply type the message (no need to provide the nickname) */
+	public final NavigationStateCommons nstChattingWithSomeone;
+	
+	/** Provides the navigation states instance with the default test values */
+	public SMSAppModuleNavigationStatesChat(final SMSAppModuleCommandsChat chatCommands) { 
+		this(chatCommands, new Object[][] {
+			{cmdSendPrivateReply,       trgLocalSendPrivateReply}});
 	}
 
-	@Override
-	public String getNavigationStateName() {
-		return this.name();
-	}
-
-	@Override
-	public void setCommandTriggers(Object[][] commandsTriggersData) {
-		nsc.setCommandTriggers(commandsTriggersData);
-	}
-
-	@Override
-	public CommandTriggersDto[] getCommandTriggers() {
-		return nsc.getCommandTriggers();
-	}
-
-	@Override
-	public String[] serializeCommandTrigger(ICommandProcessor command) {
-		return nsc.serializeCommandTrigger(command);
-	}
-
-	@Override
-	public void deserializeCommandTrigger(String[] serializedData) {
-		nsc.deserializeCommandTrigger(serializedData);
+	/** Provides the navigation states instance with custom triggers.
+	 *  @param chatCommands                    The instance of commands for this module
+	 *  @param nstChattingWithSomeoneTriggers  The list of regular expression triggers and commands to execute when the user is on the {@link #nstChattingWithSomeone} navigation state. See {@link NavigationStateCommons#setCommandTriggers(Object[][], mutua.smsappmodule.smslogic.commands.ICommandProcessor[])}*/
+	public SMSAppModuleNavigationStatesChat(final SMSAppModuleCommandsChat chatCommands, final Object[][] nstChattingWithSomeoneTriggers) {		
+		nstChattingWithSomeone = new NavigationStateCommons(NavigationStatesNamesChat.nstChattingWithSomeone) {{
+			setCommandTriggers(nstChattingWithSomeoneTriggers, chatCommands.values);
+		}};
+		
+		// the list of values
+		values = new NavigationStateCommons[] {
+			nstChattingWithSomeone,	
+		};
 	}
 }

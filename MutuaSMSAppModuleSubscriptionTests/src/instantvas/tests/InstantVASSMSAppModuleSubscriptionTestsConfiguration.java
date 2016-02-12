@@ -55,12 +55,12 @@ public class InstantVASSMSAppModuleSubscriptionTestsConfiguration {
 	** METHODS **
 	************/
 	
-	/** method to be called to configure all the modules needed to get the desired instance of 'SMSAppModuleHelp' */
+	/** method to be called to configure all the modules needed to get instances of the test classes */
 	public static void configureDefaultValuesForNewInstances(Instrumentation<DefaultInstrumentationProperties, String> log, 
 		SMSAppModuleDALFactory baseModuleDAL, SMSAppModuleDALFactorySubscription subscriptionDAL,
 		String postgreSQLconnectionProperties, int postgreSQLConnectionPoolSize,
-		boolean postgreSQLAllowDataStructuresAssertion, boolean postreSQLShouldDebugQueries,
-		String postreSQLHostname, int postreSQLPort, String postreSQLDatabase, String postreSQLUser, String postreSQLPassword) throws SQLException {
+		boolean postgreSQLAllowDataStructuresAssertion, boolean postgreSQLShouldDebugQueries,
+		String postgreSQLHostname, int postgreSQLPort, String postgreSQLDatabase, String postgreSQLUser, String postgreSQLPassword) throws SQLException {
 		
 		LOG              = log;
 		BASE_MODULE_DAL  = baseModuleDAL;
@@ -70,10 +70,10 @@ public class InstantVASSMSAppModuleSubscriptionTestsConfiguration {
 		switch (baseModuleDAL) {
 			case POSTGRESQL:
 				PostgreSQLAdapter.configureDefaultValuesForNewInstances(postgreSQLconnectionProperties, postgreSQLConnectionPoolSize);
-				SMSAppModulePostgreSQLAdapter.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postreSQLShouldDebugQueries,
-					postreSQLHostname, postreSQLPort, postreSQLDatabase, postreSQLUser, postreSQLPassword);
-				SMSAppModulePostgreSQLAdapterSubscription.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postreSQLShouldDebugQueries,
-					postreSQLHostname, postreSQLPort, postreSQLDatabase, postreSQLUser, postreSQLPassword);
+				SMSAppModulePostgreSQLAdapter.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
+					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
+				SMSAppModulePostgreSQLAdapterSubscription.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
+					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
 				break;
 			case RAM:
 				break;

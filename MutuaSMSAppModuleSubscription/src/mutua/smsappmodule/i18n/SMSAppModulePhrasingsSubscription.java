@@ -30,7 +30,7 @@ public class SMSAppModulePhrasingsSubscription {
 	/** @see #getLifecycleUnsubscriptionNotification() */
 	private final Phrase phrLifecycleUnsubscription;
 	
-	/** Fulfill the Phrase objects with the default test values */
+	/** Fulfill the 'Phrase' objects with the default test values */
 	public SMSAppModulePhrasingsSubscription(String shortCode, String appName, String priceTag) {
 		this(shortCode, appName, priceTag,
 			"Welcome to {{appName}}. Please confirm your subscription by texting YES to {{shortCode}} -- You'll be able to play & chat unlimitedly and will be billed in ${{priceTag}} every week. For more info about the service, please text HELP.",
@@ -41,7 +41,7 @@ public class SMSAppModulePhrasingsSubscription {
 			"{{appName}}: You could not be billed for 3 consecutive attempts, so your subscription has been revoked -- you will no longer receive invitations to play nor lucky numbers. To join again, please make sure you have enough credits and send {{appName}} to {{shortCode}} -- ${{priceTag}}/week.");
 	}
 
-	/** Fulfill the Phrase objects with the given values.
+	/** Fulfill the 'Phrase' objects with the given values.
 	 *  @param shortCode                       The application's short code to be used on phrases with {{shortCode}}
 	 *  @param appName                         The application name to be used on phrases with {{appName}}
 	 *  @param priceTag                        The application's price to be used on phrases with {{priceTag}}
@@ -59,7 +59,7 @@ public class SMSAppModulePhrasingsSubscription {
 		String phrUserRequestedUnsubscription,
 		String phrLifecycleUnsubscription) {
 		
-		// constant parameters -- defines the common phrase parameters -- {{shortCode}} and {{appName}}
+		// constant parameters -- defines the common phrase parameters -- {{shortCode}}, {{appName}} and {{priceTag}}
 		String[] commonPhraseParameters = new String[] {
 			"shortCode", shortCode,
 			"appName",   appName,
@@ -110,5 +110,4 @@ public class SMSAppModulePhrasingsSubscription {
 	public String getLifecycleUnsubscriptionNotification() {
 		return phrLifecycleUnsubscription.getPhrase();
 	}
-	
 }

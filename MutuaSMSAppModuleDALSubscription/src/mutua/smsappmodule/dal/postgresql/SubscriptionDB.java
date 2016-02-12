@@ -68,7 +68,7 @@ public class SubscriptionDB implements ISubscriptionDB {
 		} else {
 			dba.invokeRowProcedure(AssertUnsubscribed,
 				USER_ID, subscription.getUser().getUserId(),
-				CHANNEL, subscription.getSubscriptionChannel().name());
+				CHANNEL, subscription.getUnsubscriptionChannel().name());
 		}
 		return true;
 	}

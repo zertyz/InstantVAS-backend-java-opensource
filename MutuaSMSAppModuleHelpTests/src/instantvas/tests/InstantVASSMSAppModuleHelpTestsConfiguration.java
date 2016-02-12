@@ -52,7 +52,7 @@ public class InstantVASSMSAppModuleHelpTestsConfiguration {
 	** METHODS **
 	************/
 	
-	/** method to be called to configure all the modules needed to get the desired instance of 'SMSAppModuleHelp' */
+	/** method to be called to configure all the modules needed to get instances of the test classes */
 	public static void configureDefaultValuesForNewInstances(Instrumentation<DefaultInstrumentationProperties, String> log, 
 		SMSAppModuleDALFactory baseModuleDAL, String postgreSQLconnectionProperties, int postgreSQLConnectionPoolSize,
 		boolean postgreSQLAllowDataStructuresAssertion, boolean postreSQLShouldDebugQueries,

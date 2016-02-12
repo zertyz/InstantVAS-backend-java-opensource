@@ -8,14 +8,13 @@ package mutua.smsappmodule.smslogic.sessions;
  * Represents a session entry, used by SMS Applications and Games to store context data. For instance,
  * the current navigation state, the last composite help message show, etc.
  * 
- * Implementing classes must use the Mutua SMSApp Session Properties design pattern, described
+ * Implementing classes must use the "Instant VAS SMSApp Session Properties" design pattern, described
  * bellow:
  * 
  * {@code
  * 	get it from the help module by now
  * }
  *
- * @see RelatedClass(es)
  * @version $Id$
  * @author luiz
  */

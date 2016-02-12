@@ -54,7 +54,7 @@ public class SMSAppModuleNavigationStatesSubscription {
 	 *  - {@link SMSAppModuleCommandsSubscription#cmdStartDoubleOptinProcess} should be added to 'nstNewUser'      with triggers {@link SMSAppModuleCommandsSubscription.CommandTriggersSubscription#trgLocalStartDoubleOptin}
 	 *  - {@link SMSAppModuleCommandsSubscription#cmdUnsubscribe}             should be added to 'nstExistingUser' with triggers {@link SMSAppModuleCommandsSubscription.CommandTriggersSubscription#trgGlobalUnsubscribe}</pre>
 	 *  @param subscriptionCommands             The instance of commands for this module
-	 *  @param nstAnsweringDoubleOptinTriggers  The list of commands to execute when on {@link #nstAnsweringDoubleOptin} navigation state based on MO matches with the provided regular expressions. See {@link NavigationStateCommons#setCommandTriggers(Object[][], mutua.smsappmodule.smslogic.commands.ICommandProcessor[])}*/
+	 *  @param nstAnsweringDoubleOptinTriggers  The list of regular expression triggers and commands to execute when the user is on the {@link #nstAnsweringDoubleOptin} navigation state. See {@link NavigationStateCommons#setCommandTriggers(Object[][], mutua.smsappmodule.smslogic.commands.ICommandProcessor[])}*/
 	public SMSAppModuleNavigationStatesSubscription(final SMSAppModuleCommandsSubscription subscriptionCommands,
 	                                                final Object[][] nstAnsweringDoubleOptinTriggers) {
 

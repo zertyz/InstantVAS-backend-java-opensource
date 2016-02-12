@@ -1,6 +1,6 @@
 package mutua.smsappmodule.dal;
 
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationChatTests.*;
+import static instantvas.tests.InstantVASSMSAppModuleChatTestsConfiguration.*;
 import static mutua.smsappmodule.SMSAppModuleChatTestCommons.*;
 import static org.junit.Assert.*;
 

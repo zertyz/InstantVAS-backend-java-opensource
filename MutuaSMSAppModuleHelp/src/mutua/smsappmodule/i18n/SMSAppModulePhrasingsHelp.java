@@ -32,7 +32,7 @@ public class SMSAppModulePhrasingsHelp {
 	/** @see #getCompositeHelpMessage(int) */
 	private final Phrase                  phrCompositeHelps;
 	
-	/** Fulfill the Phrase objects with the default test values */
+	/** Fulfill the 'Phrase' objects with the default test values */
 	public SMSAppModulePhrasingsHelp(String shortCode, String appName, String[][] phrStatefulHelpMessages) {
 		this(shortCode, appName,
 			"Welcome to {{appName}}, the service that can provide you whatever this service provides. Text {{appName}} to {{shortCode}} to subscribe",
@@ -45,7 +45,7 @@ public class SMSAppModulePhrasingsHelp {
 		                  "This is the extended help message... You can place as many as you want."});
 	}
 
-	/** Fulfill the Phrase objects with the given values.
+	/** Fulfill the 'Phrase' objects with the given values.
 	 *  @param shortCode                    The application's short code to be used on phrases with {{shortCode}}
 	 *  @param appName                      The application name to be used on phrases with {{appName}}
 	 *  @param phrNewUsersFallbackHelp      see {@link #phrNewUsersFallbackHelp} 
