@@ -61,21 +61,25 @@ public class SMSAppModuleCommandsChat {
 	// Instance Fields
 	//////////////////
 
-	private final SMSAppModulePhrasingsChat chatPhrases;
+	private final SMSAppModulePhrasingsProfile profilePhrases;
+	private final SMSAppModulePhrasingsChat    chatPhrases;
 	private final IProfileDB profileDB;
 	private final IChatDB    chatDB;
 
 
 	/** Constructs an instance of this module's command processors.
-	 *  @param chatPhrases      an instance of the phrasings to be used
+	 *  @param profilePhrases   an instance of the "Profile" SMSApp Module Phrasing to be used
+	 *  @param chatPhrases      an instance of the this module's phrasings to be used
 	 *  @param profileModuleDAL one of the members of {@link SMSAppModuleDALFactoryProfile}
 	 *  @param chatModuleDAL    one of the members of {@link SMSAppModuleDALFactoryChat} */
-	public SMSAppModuleCommandsChat(SMSAppModulePhrasingsChat     chatPhrases,
+	public SMSAppModuleCommandsChat(SMSAppModulePhrasingsProfile  profilePhrases,
+	                                SMSAppModulePhrasingsChat     chatPhrases,
 	                                SMSAppModuleDALFactoryProfile profileModuleDAL,
 	                                SMSAppModuleDALFactoryChat    chatModuleDAL) {
-		this.chatPhrases = chatPhrases;
-		this.profileDB   = profileModuleDAL.getProfileDB();
-		this.chatDB      = chatModuleDAL.getChatDB();
+		this.profilePhrases = profilePhrases;
+		this.chatPhrases    = chatPhrases;
+		this.profileDB      = profileModuleDAL.getProfileDB();
+		this.chatDB         = chatModuleDAL.getChatDB();
 	}
 
 	// Command Definitions
@@ -109,7 +113,7 @@ public class SMSAppModuleCommandsChat {
 			
 			if (targetUserProfile == null) {
 				// TODO log tick: nickname not found
-				return getSameStateReplyCommandAnswer(SMSAppModulePhrasingsProfile.getNicknameNotFound(targetNickname));
+				return getSameStateReplyCommandAnswer(profilePhrases.getNicknameNotFound(targetNickname));
 			}
 			
 			UserDto targetUser           = targetUserProfile.getUser();

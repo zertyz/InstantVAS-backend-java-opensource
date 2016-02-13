@@ -62,6 +62,12 @@ public class SMSAppModuleTestCommons {
 		userDB.reset();
 	}
 	
+	/** Reset all the base module databases */
+	public static void resetBaseTables(SMSAppModuleDALFactory baseModuleDAL) throws SQLException {
+		baseModuleDAL.getSessionDB().reset();
+		baseModuleDAL.getUserDB().reset();
+	}
+	
 	/** Inserts 'n' users on the database, starting at 'first' and using 'p' concurrent threads.
 	 *  'users.length' must be divisible by 'p'. 
 	 * @param userDB TODO*/

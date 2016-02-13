@@ -4,14 +4,11 @@ import static instantvas.tests.InstantVASSMSAppModuleSubscriptionTestsConfigurat
 import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesSubscription.NavigationStatesNamesSubscription.*;
 import static org.junit.Assert.assertEquals;
 import java.sql.SQLException;
-import mutua.icc.configuration.ConfigurationManager;
 import mutua.smsappmodule.dto.UserDto;
 import mutua.smsappmodule.smslogic.navigationstates.INavigationState;
 import mutua.smsappmodule.smslogic.sessions.SessionModel;
 
 import org.junit.Test;
-
-import instantvas.tests.InstantVASSMSAppModuleTestsConfiguration;
 
 /** <pre>
  * SubscriptionModuleBehavioralTests.java
@@ -27,14 +24,6 @@ import instantvas.tests.InstantVASSMSAppModuleTestsConfiguration;
 
 public class SubscriptionModuleBehavioralTests {
 
-	@Test
-	public void testConfigurationFile() throws IllegalArgumentException, IllegalAccessException {
-		ConfigurationManager cm = new ConfigurationManager(LOG, InstantVASSMSAppModuleTestsConfiguration.class);
-		String serializedFields = cm.serializeConfigurableClasses();
-		System.out.println(serializedFields);
-		cm.deserializeConfigurableClasses(serializedFields);
-	}
-	
 	@Test
 	public void testDoubleOptin() throws SQLException {
 		String expectedMessage = subscriptionModulePhrasings.getDoubleOptinStart();

@@ -35,17 +35,17 @@ public class SMSAppModuleChatTestCommons {
 	** DATABASES ** 
 	**************/
 	
-	public static IUserDB    userDB    = BASE_MODULE_DAL.getUserDB();
-	public static ISessionDB sessionDB = BASE_MODULE_DAL.getSessionDB();
-	public static IProfileDB profileDB = PROFILE_MODULE_DAL.getProfileDB();
-	public static IChatDB    chatDB    = CHAT_MODULE_DAL.getChatDB();
+	public IUserDB    userDB    = BASE_MODULE_DAL.getUserDB();
+	public ISessionDB sessionDB = BASE_MODULE_DAL.getSessionDB();
+	public IProfileDB profileDB = PROFILE_MODULE_DAL.getProfileDB();
+	public IChatDB    chatDB    = CHAT_MODULE_DAL.getChatDB();
 	
 	/*******************
 	** COMMON METHODS **
 	*******************/
 	
 	/** resets all pertinent databases, including the optional 'moQueue' */
-	public static void resetChatTables() throws SQLException {
+	public void resetChatTables() throws SQLException {
 		chatDB.reset();
 		profileDB.reset();
 		userDB.reset();
@@ -56,7 +56,7 @@ public class SMSAppModuleChatTestCommons {
 	}
 	
 	/** simulates the recording of an MO message, returning the 'moId' -- just like it is done on the webapp */
-	public static int addMO(UserDto user, String moText) throws SQLException {
+	public int addMO(UserDto user, String moText) throws SQLException {
 		if (chatDB instanceof mutua.smsappmodule.dal.postgresql.ChatDB) {
 			return MO_QUEUE_PRODUCER.addToMOQueue(new MO(user.getPhoneNumber(), moText));
 		} else if (chatDB instanceof mutua.smsappmodule.dal.ram.ChatDB) {
@@ -68,14 +68,14 @@ public class SMSAppModuleChatTestCommons {
 	
 	
 	/** registers a user and attribute a nickname to it, so it can be later referenced by private messages */
-	public static UserDto createUserAndNickname(String phone, String nickname) throws SQLException {
+	public UserDto createUserAndNickname(String phone, String nickname) throws SQLException {
 		UserDto user = userDB.assureUserIsRegistered(phone);
 		profileDB.setProfileRecord(new ProfileDto(user, nickname));
 		return user;
 	}
 
 	/** constructs and adds an MO to the queue, issuing the command to send it and returning the resulting MTs */
-	public static CommandMessageDto[] sendPrivateMessage(String senderPhone, String targetNickname, String message) throws SQLException {
+	public CommandMessageDto[] sendPrivateMessage(String senderPhone, String targetNickname, String message) throws SQLException {
 		UserDto sender   = userDB.assureUserIsRegistered(senderPhone);
 		String moText = "P " + targetNickname + " " + message;
 		int moId = addMO(sender, moText);

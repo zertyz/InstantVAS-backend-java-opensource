@@ -330,7 +330,7 @@ public abstract class DatabaseAlgorithmAnalysis {
 		public String toString() {
 			switch (this) {
 				case BetterThanO1:
-					return "Better than O(1) -- aren't the machines idle or there is too little RAM?";
+					return "Better than O(1) -- aren't the machines idle or is there too little RAM?";
 				case O1:
 					return "O(1)";
 				case Ologn:
@@ -342,7 +342,7 @@ public abstract class DatabaseAlgorithmAnalysis {
 				case WorseThanOn:
 					return "Worse than O(n)";
 				default:
-					return "unknown complexity -- update 'DatabaseAlgorithmAnalysis' source code";
+					return "unpredicted algorithm complexity -- update 'DatabaseAlgorithmAnalysis' source code to account for such case";
 			}
 		}
 	};

@@ -1,9 +1,10 @@
 package mutua.smsappmodule.smslogic.navigationstates;
 
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationProfile.*;
-import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsProfile.*;
+import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsProfile.CommandNamesProfile.*;
+import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsProfile.CommandTriggersProfile.*;
+
+import mutua.smsappmodule.smslogic.SMSAppModuleCommandsProfile;
 import mutua.smsappmodule.smslogic.commands.CommandTriggersDto;
-import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
 
 /** <pre>
  * SMSAppModuleNavigationStatesProfile.java
@@ -11,76 +12,56 @@ import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
  * (created by luiz, Aug 3, 2015)
  *
  * Declares the navigation states and the reference {@link CommandTriggersDto} required by
- * the "Profile" SMS Application Module
+ * the "Profile" SMSApp Module
  * 
- * Implements the Mutua SMSApp Navigation States design pattern, as described by
- * {@link INavigationState}
+ * Implements the "Instant VAS SMSApp Navigation States" design pattern, as described by
+ * {@link NavigationStateCommons}.
  *
- * @see INavigationState
+ * @see NavigationStateCommons
  * @see CommandTriggersDto
  * @version $Id$
  * @author luiz
  */
 
-public enum SMSAppModuleNavigationStatesProfile implements INavigationState {
+public class SMSAppModuleNavigationStatesProfile {
 	
-	/** Navigation state used to interact with the user when asking for a nickname.
-	 *  SMS Applications must extend it adding their own command triggers. */
-	nstRegisteringNickname {
-		@Override
-		public void setCommandTriggersFromConfigurationValues() {
-			setCommandTriggers(new Object[][] {
-				{cmdRegisterNickname,                           PROFILEtrgLocalRegisterNickname},
-//				{SMSAppModuleCommandsHelp.cmdShowStatelessHelp, new String[] {"HELP"}},
-//				{SMSAppModuleCommandsHelp.cmdShowStatefulHelp,  new String[] {".*"}},
-			});
-		}
-	},
-	
-	//nstFulfillingProfileWizard,
-	
-	;
-	
-	static {
-		// defines stateful help messages for the here defined navigation states
-//		SMSAppModuleNavigationStates.nstNewUser.setCommandTriggers(new Object[][] {
-//			{cmdStartDoubleOptinProcess, SUBSCRIPTIONtrgLocalStartDoubleOptin},
-//			//{/*fall back help*/,         ".*"},
-//		});
-//		SMSAppModuleNavigationStates.nstExistingUser.setCommandTriggers(new Object[][] {
-//			{cmdUnsubscribe, SUBSCRIPTIONtrgGlobalUnsubscribe},
-//			//{/*fall back help*/,         ".*"},
-//		});
+	/** Class to be statically imported by the Commands Implementation to represent the navigation states */
+	public static class NavigationStatesNamesProfile {
+		/** @see SMSAppModuleNavigationStatesProfile#nstRegisteringNickname */
+		public final static String nstRegisteringNickname = "RegisteringNickname";
 	}
 	
-	private NavigationStateCommons nsc;
+	// Navigation States Definitions
+	////////////////////////////////
 	
-	private SMSAppModuleNavigationStatesProfile() {
-		nsc = new NavigationStateCommons(this);
+	/** The list of all navigation states -- for 'SMSProcessor' to be able to deserialize state names */
+	public final NavigationStateCommons[] values;
+	
+	/** Navigation state used to interact with the user when asking for a nickname */
+	public final NavigationStateCommons nstRegisteringNickname;
+	
+	/** Provides the navigation states instance with the default test values */
+	public SMSAppModuleNavigationStatesProfile(final SMSAppModuleCommandsProfile profileCommands) { 
+		this(profileCommands, new Object[][] {
+			{cmdRegisterNickname,                trgGlobalRegisterNickname},
+			{cmdStartAskForNicknameDialog,       trgGlobalStartAskForNicknameDialog},
+			{cmdAskForNicknameDialogCancelation, trgLocalNicknameDialogCancelation},
+			{cmdShowUserProfile,                 trgGlobalShowUserProfile},
+			{cmdRegisterNickname,                trgLocalRegisterNickname},
+		});
 	}
 
-	@Override
-	public String getNavigationStateName() {
-		return this.name();
-	}
-
-	@Override
-	public void setCommandTriggers(Object[][] commandsTriggersData) {
-		nsc.setCommandTriggers(commandsTriggersData);
-	}
-
-	@Override
-	public CommandTriggersDto[] getCommandTriggers() {
-		return nsc.getCommandTriggers();
-	}
-
-	@Override
-	public String[] serializeCommandTrigger(ICommandProcessor command) {
-		return nsc.serializeCommandTrigger(command);
-	}
-
-	@Override
-	public void deserializeCommandTrigger(String[] serializedData) {
-		nsc.deserializeCommandTrigger(serializedData);
+	/** Provides the navigation states instance with custom triggers.
+	 *  @param profileCommands                 The instance of commands for this module
+	 *  @param nstRegisteringNicknameTriggers  The list of regular expression triggers and commands to execute when the user is on the {@link #nstRegisteringNickname} navigation state. See {@link NavigationStateCommons#setCommandTriggers(Object[][], mutua.smsappmodule.smslogic.commands.ICommandProcessor[])}*/
+	public SMSAppModuleNavigationStatesProfile(final SMSAppModuleCommandsProfile profileCommands, final Object[][] nstRegisteringNicknameTriggers) {		
+		nstRegisteringNickname = new NavigationStateCommons(NavigationStatesNamesProfile.nstRegisteringNickname) {{
+			setCommandTriggers(nstRegisteringNicknameTriggers, profileCommands.values);
+		}};
+		
+		// the list of values
+		values = new NavigationStateCommons[] {
+			nstRegisteringNickname,	
+		};
 	}
 }

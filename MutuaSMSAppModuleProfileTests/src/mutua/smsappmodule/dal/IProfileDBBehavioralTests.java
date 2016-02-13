@@ -1,7 +1,6 @@
 package mutua.smsappmodule.dal;
 
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationProfileTests.DEFAULT_MODULE_DAL;
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationProfileTests.DEFAULT_PROFILE_DAL;
+import static instantvas.tests.InstantVASSMSAppModuleProfileTestsConfiguration.*;
 import static org.junit.Assert.*;
 
 import java.sql.SQLException;
@@ -27,9 +26,8 @@ import org.junit.Test;
 
 public class IProfileDBBehavioralTests {
 	
-	private IUserDB    userDB    = DEFAULT_MODULE_DAL.getUserDB();
-	private IProfileDB profileDB = DEFAULT_PROFILE_DAL.getProfileDB();
-	
+	private IUserDB    userDB    = BASE_MODULE_DAL.getUserDB();
+	private IProfileDB profileDB = PROFILE_MODULE_DAL.getProfileDB();	
 
 	/*******************
 	** COMMON METHODS **
@@ -38,7 +36,7 @@ public class IProfileDBBehavioralTests {
 	@Before
 	public void resetTables() throws SQLException {
 		profileDB.reset();
-		SMSAppModuleTestCommons.resetTables();
+		SMSAppModuleTestCommons.resetBaseTables(BASE_MODULE_DAL);
 	}
 	
 

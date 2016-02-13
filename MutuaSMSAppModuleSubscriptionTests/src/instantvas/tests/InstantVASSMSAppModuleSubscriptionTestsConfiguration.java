@@ -46,6 +46,7 @@ public class InstantVASSMSAppModuleSubscriptionTestsConfiguration {
 	public static Instrumentation<DefaultInstrumentationProperties, String> LOG;
 	public static SMSAppModuleDALFactory                                    BASE_MODULE_DAL;
 	public static SMSAppModuleDALFactorySubscription                        SUBSCRIPTION_DAL;
+	public static int                                                       PERFORMANCE_TESTS_LOAD_FACTOR;
 	public static SMSAppModuleNavigationStates             baseModuleNavigationStates;
 	public static SMSAppModulePhrasingsSubscription        subscriptionModulePhrasings;
 	public static SMSAppModuleCommandsSubscription         subscriptionModuleCommands;
@@ -57,25 +58,29 @@ public class InstantVASSMSAppModuleSubscriptionTestsConfiguration {
 	
 	/** method to be called to configure all the modules needed to get instances of the test classes */
 	public static void configureDefaultValuesForNewInstances(Instrumentation<DefaultInstrumentationProperties, String> log, 
-		SMSAppModuleDALFactory baseModuleDAL, SMSAppModuleDALFactorySubscription subscriptionDAL,
+		int performanceTestsLoadFactor, SMSAppModuleDALFactorySubscription subscriptionDAL,
 		String postgreSQLconnectionProperties, int postgreSQLConnectionPoolSize,
 		boolean postgreSQLAllowDataStructuresAssertion, boolean postgreSQLShouldDebugQueries,
 		String postgreSQLHostname, int postgreSQLPort, String postgreSQLDatabase, String postgreSQLUser, String postgreSQLPassword) throws SQLException {
 		
-		LOG              = log;
-		BASE_MODULE_DAL  = baseModuleDAL;
-		SUBSCRIPTION_DAL = subscriptionDAL;
+		LOG                           = log;
+		SUBSCRIPTION_DAL              = subscriptionDAL;
+		PERFORMANCE_TESTS_LOAD_FACTOR = performanceTestsLoadFactor;
 		
 		// database configuration
-		switch (baseModuleDAL) {
+		switch (subscriptionDAL) {
 			case POSTGRESQL:
 				PostgreSQLAdapter.configureDefaultValuesForNewInstances(postgreSQLconnectionProperties, postgreSQLConnectionPoolSize);
 				SMSAppModulePostgreSQLAdapter.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
 					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
 				SMSAppModulePostgreSQLAdapterSubscription.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
 					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
+				// other databases
+				BASE_MODULE_DAL = SMSAppModuleDALFactory.POSTGRESQL;
 				break;
 			case RAM:
+				// other databases
+				BASE_MODULE_DAL = SMSAppModuleDALFactory.RAM;
 				break;
 			default:
 				throw new NotImplementedException();
@@ -83,7 +88,7 @@ public class InstantVASSMSAppModuleSubscriptionTestsConfiguration {
 		
 		// subscription module
 		Object[] subscriptionModule = SMSAppModuleConfigurationSubscription.getSubscriptionModuleInstances(shortCode, appName, priceTag,
-		                                                                                                   baseModuleDAL, subscriptionDAL,
+		                                                                                                   BASE_MODULE_DAL, subscriptionDAL,
 		                                                                                                   new TestableSubscriptionAPI(log),
 		                                                                                                   "BillingCenterFor_"+appName);
 		subscriptionModuleNavigationStates = (SMSAppModuleNavigationStatesSubscription) subscriptionModule[0];
@@ -91,7 +96,7 @@ public class InstantVASSMSAppModuleSubscriptionTestsConfiguration {
 		subscriptionModulePhrasings        = (SMSAppModulePhrasingsSubscription)        subscriptionModule[2];
 		
 		// base module -- configured to interact with the Subscription Module commands 
-		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(log, baseModuleDAL, subscriptionModuleCommands.values,
+		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(log, BASE_MODULE_DAL, subscriptionModuleCommands.values,
 			/*nstNewUserTriggers*/
 			new Object[][] {
 				{cmdStartDoubleOptinProcess, trgLocalStartDoubleOptin},
@@ -114,8 +119,7 @@ public class InstantVASSMSAppModuleSubscriptionTestsConfiguration {
 				new Instrumentation<DefaultInstrumentationProperties, String>(
 					appName, DefaultInstrumentationProperties.DIP_MSG, EInstrumentationDataPours.CONSOLE, null),
 				// modules DAL
-				SMSAppModuleDALFactory            .POSTGRESQL,
-				SMSAppModuleDALFactorySubscription.POSTGRESQL,
+				1, SMSAppModuleDALFactorySubscription.POSTGRESQL,
 				// PostgreSQL properties
 				null,	// connection properties
 				-1,		// connection pool size

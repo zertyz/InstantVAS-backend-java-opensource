@@ -1,24 +1,20 @@
 package mutua.smsappmodule.dal;
 
 import static instantvas.tests.InstantVASSMSAppModuleChatTestsConfiguration.*;
-import static mutua.smsappmodule.SMSAppModuleChatTestCommons.*;
 import static org.junit.Assert.*;
 
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Comparator;
 
+import mutua.smsappmodule.SMSAppModuleChatTestCommons;
 import mutua.smsappmodule.DatabaseAlgorithmAnalysis;
 import mutua.smsappmodule.SMSAppModuleTestCommons;
 import mutua.smsappmodule.SplitRun;
 import mutua.smsappmodule.dto.PrivateMessageDto;
 import mutua.smsappmodule.dto.UserDto;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
-
-import instantvas.tests.InstantVASSMSAppModuleTestsConfiguration;
 
 /** <pre>
  * IChatDBPerformanceTests.java
@@ -36,22 +32,33 @@ import instantvas.tests.InstantVASSMSAppModuleTestsConfiguration;
 public class IChatDBPerformanceTests {
 
 	// algorithm settings
-	private static int numberOfThreads = 4;
+	private int numberOfThreads = 4;
+	
+	/**************
+	** DATABASES ** 
+	**************/
+	
+	public IUserDB    userDB    = BASE_MODULE_DAL.getUserDB();
+	public ISessionDB sessionDB = BASE_MODULE_DAL.getSessionDB();
+	public IProfileDB profileDB = PROFILE_MODULE_DAL.getProfileDB();
+	public IChatDB    chatDB    = CHAT_MODULE_DAL.getChatDB();
+	
+	private SMSAppModuleChatTestCommons ctc = new SMSAppModuleChatTestCommons();
 
 	// users table pre-fill
-	private static int       totalNumberOfUsers = ((int)Math.ceil(Math.pow(InstantVASSMSAppModuleTestsConfiguration.PERFORMANCE_TESTS_LOAD_FACTOR, 1d/2d))) * ((CHAT_MODULE_DAL == SMSAppModuleDALFactoryChat.RAM) ? 89 : 18) * (4*numberOfThreads);	// please, pick a reasonable number, since approximately the square number of elements will be created (users + mos + privateMessages)
-	private static long      phoneStart         = 991230000;
-	private static UserDto[]           users    = new UserDto[totalNumberOfUsers];
-	private static PrivateMessageDto[] pvts     = null;
+	private int       totalNumberOfUsers = ((int)Math.ceil(Math.pow(PERFORMANCE_TESTS_LOAD_FACTOR, 1d/2d))) * ((CHAT_MODULE_DAL == SMSAppModuleDALFactoryChat.RAM) ? 89 : 18) * (4*numberOfThreads);	// please, pick a reasonable number, since approximately the square number of elements will be created (users + mos + privateMessages)
+	private long      phoneStart         = 991230000;
+	private UserDto[]           users    = new UserDto[totalNumberOfUsers];
+	private PrivateMessageDto[] pvts     = null;
 
 	
-	private static String firstMessage  = "Here is the message...";
-	private static String secondMessage = "...and here is the answer";
+	private String firstMessage  = "Here is the message...";
+	private String secondMessage = "...and here is the answer";
 	/** Inserts a private chat MO from every user to himself and every next one on the 'users' list, using 'p' concurrent threads and
 	 *  computing also the replies. The private messages are placed into 'pvts' list, which will be returned and will have the length of
 	 *  the double triangular number for 'users.length', that is: pvts.length := ((users.length*(users.length+1))/2)*2;
 	 *  'users.length' must be divisible by '2*p' */
-	private static PrivateMessageDto[] insertChatMOs(final UserDto[] users, final int p) throws SQLException, InterruptedException {
+	private PrivateMessageDto[] insertChatMOs(final UserDto[] users, final int p) throws SQLException, InterruptedException {
 		final int _u = users.length / p;                                                        	// the work to be split, in number of 'users'
 		final PrivateMessageDto[] pvts = new PrivateMessageDto[((users.length)*(users.length+1))];	// mos.length is the double triangular number for users.length
 		final int _m = ((users.length+1)*_u)/2;                                                 	// the work to be split, in number of 'pvts'
@@ -78,7 +85,7 @@ public class IChatDBPerformanceTests {
 					for (int s=(threadNumber*_u)/2; s<((threadNumber+1)*_u)/2; s++) {
 						for (int r=s; r<users.length; r++) {
 							String moText = "M1i "+users[r].getPhoneNumber()+" "+firstMessage;
-							int moId = addMO(users[s], moText);
+							int moId = ctc.addMO(users[s], moText);
 							pvts[m++] = new PrivateMessageDto(users[s], users[r], moId, firstMessage);
 						}
 					}
@@ -86,7 +93,7 @@ public class IChatDBPerformanceTests {
 					for (int s=users.length-(((threadNumber+1)*_u)/2); s<users.length-((threadNumber*_u)/2); s++) {
 						for (int r=s; r<users.length; r++) {
 							String moText = "M2i "+users[r].getPhoneNumber()+" "+firstMessage;
-							int moId = addMO(users[s], moText);
+							int moId = ctc.addMO(users[s], moText);
 							pvts[m++] = new PrivateMessageDto(users[s], users[r], moId, firstMessage);
 						}
 					}
@@ -107,7 +114,7 @@ public class IChatDBPerformanceTests {
 					for (int r=(threadNumber*_u)/2; r<((threadNumber+1)*_u)/2; r++) {
 						for (int s=r; s<users.length; s++) {
 							String moText = "M1i "+users[r].getPhoneNumber()+" "+secondMessage;
-							int moId = addMO(users[s], moText);
+							int moId = ctc.addMO(users[s], moText);
 							pvts[m++] = new PrivateMessageDto(users[s], users[r], moId, secondMessage);
 						}
 					}
@@ -115,7 +122,7 @@ public class IChatDBPerformanceTests {
 					for (int r=users.length-(((threadNumber+1)*_u)/2); r<users.length-((threadNumber*_u)/2); r++) {
 						for (int s=r; s<users.length; s++) {
 							String moText = "M2i "+users[r].getPhoneNumber()+" "+secondMessage;
-							int moId = addMO(users[s], moText);
+							int moId = ctc.addMO(users[s], moText);
 							pvts[m++] = new PrivateMessageDto(users[s], users[r], moId, secondMessage);
 						}
 					}
@@ -131,14 +138,13 @@ public class IChatDBPerformanceTests {
 	** COMMON METHODS **
 	*******************/
 	
-	@BeforeClass
-	public static void fulfillTables() {
+	//@BeforeClass, fulfillUsersTable()
+	public IChatDBPerformanceTests() {
 		
 		// fulfill Users table
 		try {
 			chatDB.reset();
-			sessionDB.reset();
-			userDB.reset();
+			SMSAppModuleTestCommons.resetBaseTables(BASE_MODULE_DAL);
 			SMSAppModuleTestCommons.insertUsers(userDB, phoneStart, users, numberOfThreads);
 			// prepare the 'users' list for the tests
 			Arrays.sort(users, new Comparator<UserDto>() {
@@ -188,13 +194,6 @@ public class IChatDBPerformanceTests {
 		}
 	}
 
-	@AfterClass
-	public static void clearRAM() {
-		users = null;
-		pvts = null;
-	}
-
-	
 	/**********
 	** TESTS **
 	**********/

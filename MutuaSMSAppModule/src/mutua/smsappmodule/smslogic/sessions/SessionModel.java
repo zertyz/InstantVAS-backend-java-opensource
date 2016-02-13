@@ -86,6 +86,10 @@ public abstract class SessionModel {
 		return -1;
 	}
 	
+	public String getNavigationStateName() {
+		return getStringProperty(NAVIGATION_STATE_PROPERTY);
+	}
+	
 	public INavigationState getNavigationState() {
 		String navigationStateName = getStringProperty(NAVIGATION_STATE_PROPERTY);
 		if (navigationStateName == null) {

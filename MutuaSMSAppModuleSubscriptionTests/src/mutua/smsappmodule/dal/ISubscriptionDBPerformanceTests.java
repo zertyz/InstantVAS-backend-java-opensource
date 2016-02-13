@@ -11,10 +11,7 @@ import mutua.smsappmodule.dto.SubscriptionDto.EUnsubscriptionChannel;
 import mutua.smsappmodule.dto.UserDto;
 import mutua.smsappmodule.dto.SubscriptionDto.ESubscriptionChannel;
 
-import org.junit.AfterClass;
 import org.junit.Test;
-
-import instantvas.tests.InstantVASSMSAppModuleTestsConfiguration;
 
 /** <pre>
  * ISubscriptionDBPerformanceTests.java
@@ -35,12 +32,12 @@ public class ISubscriptionDBPerformanceTests {
 	private ISubscriptionDB subscriptionDB = SUBSCRIPTION_DAL.getSubscriptionDB();
 
 	// algorithm settings
-	private static int numberOfThreads = 4;
+	private int numberOfThreads = 4;
 
 	// users table pre-fill
-	private static int       totalNumberOfUsers = InstantVASSMSAppModuleTestsConfiguration.PERFORMANCE_TESTS_LOAD_FACTOR * ((SUBSCRIPTION_DAL == SMSAppModuleDALFactorySubscription.RAM) ? 1000000 : 40000);	// please, be sure the division between this and 'numberOfThreads' is round
-	private static long      phoneStart         = 991230000;
-	private static UserDto[] users              = new UserDto[totalNumberOfUsers];
+	private int       totalNumberOfUsers = PERFORMANCE_TESTS_LOAD_FACTOR * ((SUBSCRIPTION_DAL == SMSAppModuleDALFactorySubscription.RAM) ? 1000000 : 40000);	// please, be sure the division between this and 'numberOfThreads' is round
+	private long      phoneStart         = 991230000;
+	private UserDto[] users              = new UserDto[totalNumberOfUsers];
 
 	
 	/*******************
@@ -58,12 +55,6 @@ public class ISubscriptionDBPerformanceTests {
 			t.printStackTrace();
 			throw new RuntimeException("Could not fulfill users table", t);
 		}
-	}
-
-	@AfterClass
-	public static void clearRAM() {
-		users = null;
-		// clear the databases...
 	}
 
 	

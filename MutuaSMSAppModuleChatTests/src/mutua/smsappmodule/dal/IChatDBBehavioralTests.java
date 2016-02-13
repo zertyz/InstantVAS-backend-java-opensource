@@ -1,13 +1,11 @@
 package mutua.smsappmodule.dal;
 
 import static instantvas.tests.InstantVASSMSAppModuleChatTestsConfiguration.*;
-import static mutua.smsappmodule.SMSAppModuleChatTestCommons.*;
 import static org.junit.Assert.*;
 
 import java.sql.SQLException;
 
-import mutua.events.MO;
-import mutua.smsappmodule.SMSAppModuleTestCommons;
+import mutua.smsappmodule.SMSAppModuleChatTestCommons;
 import mutua.smsappmodule.dto.PrivateMessageDto;
 import mutua.smsappmodule.dto.UserDto;
 
@@ -29,13 +27,25 @@ import org.junit.Test;
 public class IChatDBBehavioralTests {
 
 
+	/**************
+	** DATABASES ** 
+	**************/
+	
+	public IUserDB    userDB    = BASE_MODULE_DAL.getUserDB();
+	public ISessionDB sessionDB = BASE_MODULE_DAL.getSessionDB();
+	public IProfileDB profileDB = PROFILE_MODULE_DAL.getProfileDB();
+	public IChatDB    chatDB    = CHAT_MODULE_DAL.getChatDB();
+	
+	private SMSAppModuleChatTestCommons ctc = new SMSAppModuleChatTestCommons();
+
+	
 	/**********
 	** TESTS **
 	**********/
 	
 	@Before
 	public void resetTables() throws SQLException {
-		resetChatTables();
+		ctc.resetChatTables();
 	}
 	
 	@Test
@@ -64,8 +74,8 @@ public class IChatDBBehavioralTests {
 		String mo2PrivateMessage = "yes, I did!";
 		
 		// test ping-pong
-		int mo1Id = addMO(dom, mo1Text);
-		int mo2Id = addMO(paty, mo2Text);
+		int mo1Id = ctc.addMO(dom, mo1Text);
+		int mo2Id = ctc.addMO(paty, mo2Text);
 		chatDB.logPrivateMessage(dom, paty, mo1Id, mo1Text, mo1PrivateMessage);
 		chatDB.logPrivateMessage(paty, dom, mo2Id, mo2Text, mo2PrivateMessage);
 		UserDto[] domPeers  = chatDB.getPrivatePeers(dom);
@@ -98,7 +108,7 @@ public class IChatDBBehavioralTests {
 		UserDto dom  = userDB.assureUserIsRegistered("21991234899");
 		UserDto paty = userDB.assureUserIsRegistered("21998019167");
 		String moText = "M paty this is what I sent to you";
-		int moId = addMO(dom, moText);
+		int moId = ctc.addMO(dom, moText);
 		chatDB.logPrivateMessage(dom, paty, moId, moText, "but this is what the chat system reports to the db I sent instead");
 	}
 
@@ -107,7 +117,7 @@ public class IChatDBBehavioralTests {
 		UserDto dom  = userDB.assureUserIsRegistered("21991234899");
 		UserDto paty = userDB.assureUserIsRegistered("21998019167");
 		String moText = "M paty this is what I sent to you";
-		int moId = addMO(dom, moText);
+		int moId = ctc.addMO(dom, moText);
 		chatDB.logPrivateMessage(dom, paty, moId, moText, "this is what I sent");
 	}
 

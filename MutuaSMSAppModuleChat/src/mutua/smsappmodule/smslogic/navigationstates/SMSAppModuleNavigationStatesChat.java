@@ -12,7 +12,7 @@ import mutua.smsappmodule.smslogic.commands.CommandTriggersDto;
  * (created by luiz, Aug 26, 2015)
  *
  * Declares the navigation states and the reference {@link CommandTriggersDto} required by
- * the "Chat" SMS Application Module
+ * the "Chat" SMSApp Module
  * 
  * Implements the "Instant VAS SMSApp Navigation States" design pattern, as described by
  * {@link NavigationStateCommons}.

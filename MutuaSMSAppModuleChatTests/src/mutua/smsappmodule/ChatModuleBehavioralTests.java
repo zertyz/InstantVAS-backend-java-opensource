@@ -1,16 +1,18 @@
 package mutua.smsappmodule;
 
-import static instantvas.tests.InstantVASSMSAppModuleChatTestsConfiguration.LOG;
-import static mutua.smsappmodule.SMSAppModuleChatTestCommons.*;
+import static instantvas.tests.InstantVASSMSAppModuleChatTestsConfiguration.*;
 import static org.junit.Assert.*;
 
 import java.sql.SQLException;
 
 import mutua.icc.configuration.ConfigurationManager;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationChat;
+import mutua.smsappmodule.dal.IChatDB;
+import mutua.smsappmodule.dal.IProfileDB;
+import mutua.smsappmodule.dal.ISessionDB;
+import mutua.smsappmodule.dal.IUserDB;
 import mutua.smsappmodule.dto.PrivateMessageDto;
 import mutua.smsappmodule.dto.UserDto;
-import mutua.smsappmodule.i18n.SMSAppModulePhrasingsProfile;
 import mutua.smsappmodule.smslogic.commands.CommandMessageDto;
 
 import org.junit.Before;
@@ -31,13 +33,25 @@ import org.junit.Test;
 public class ChatModuleBehavioralTests {
 	
 	
+	/**************
+	** DATABASES ** 
+	**************/
+	
+	public IUserDB    userDB    = BASE_MODULE_DAL.getUserDB();
+	public ISessionDB sessionDB = BASE_MODULE_DAL.getSessionDB();
+	public IProfileDB profileDB = PROFILE_MODULE_DAL.getProfileDB();
+	public IChatDB    chatDB    = CHAT_MODULE_DAL.getChatDB();
+	
+	private SMSAppModuleChatTestCommons ctc = new SMSAppModuleChatTestCommons();
+	
+
 	/**********
 	** TESTS ** 
 	**********/
 
 	@Before
 	public void resetTables() throws SQLException {
-		resetChatTables();
+		ctc.resetChatTables();
 	}
 
 	@Test
@@ -52,9 +66,9 @@ public class ChatModuleBehavioralTests {
 	public void testPrivateMessage() throws SQLException {
 		String expectedPrivateMessage = "this is the message";
 		
-		UserDto sender   = createUserAndNickname("21991234899", "sourceNick");
-		UserDto receiver = createUserAndNickname("21997559595", "destinationNick");
-		CommandMessageDto[] messages = sendPrivateMessage("21991234899", "destinationNick", expectedPrivateMessage);
+		UserDto sender   = ctc.createUserAndNickname("21991234899", "sourceNick");
+		UserDto receiver = ctc.createUserAndNickname("21997559595", "destinationNick");
+		CommandMessageDto[] messages = ctc.sendPrivateMessage("21991234899", "destinationNick", expectedPrivateMessage);
 		
 		// command response checks
 		assertEquals("Response message's target user is wrong",     null, messages[0].getPhone());	// remembering the convention that null target phone means "send back to the same user"
@@ -75,9 +89,9 @@ public class ChatModuleBehavioralTests {
 	
 	@Test
 	public void testPrivateMessageToUnexistingNickname() throws SQLException {
-		createUserAndNickname("21991234899", "dom");
-		CommandMessageDto[] messages = sendPrivateMessage("21991234899", "unexistingNick", "This message should never be delivered to no one...");
-		assertEquals("Wrong response message to tell the nickname was not found", SMSAppModulePhrasingsProfile.getNicknameNotFound("unexistingNick"), messages[0].getText());
+		ctc.createUserAndNickname("21991234899", "dom");
+		CommandMessageDto[] messages = ctc.sendPrivateMessage("21991234899", "unexistingNick", "This message should never be delivered to no one...");
+		assertEquals("Wrong response message to tell the nickname was not found", profileModulePhrasings.getNicknameNotFound("unexistingNick"), messages[0].getText());
 	}
 
 }

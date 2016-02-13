@@ -12,7 +12,7 @@ import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHelp.CommandNamesH
  * (created by luiz, Jul 17, 2015)
  *
  * Declares the navigation states and the reference {@link CommandTriggersDto} required by
- * the "Help" SMS Application Module.
+ * the "Help" SMSApp Module.
  * 
  * Implements the "Instant VAS SMSApp Navigation States" design pattern, as described by
  * {@link NavigationStateCommons}.

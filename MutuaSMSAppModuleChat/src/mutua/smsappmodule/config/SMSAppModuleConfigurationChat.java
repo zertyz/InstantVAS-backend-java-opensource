@@ -1,6 +1,7 @@
 package mutua.smsappmodule.config;
 
 import mutua.smsappmodule.i18n.SMSAppModulePhrasingsChat;
+import mutua.smsappmodule.i18n.SMSAppModulePhrasingsProfile;
 import mutua.smsappmodule.smslogic.SMSAppModuleCommandsChat;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactoryChat;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactoryProfile;
@@ -29,16 +30,17 @@ public class SMSAppModuleConfigurationChat {
 	 *  @param appName           see {@link SMSAppModulePhrasingsChat#SMSAppModulePhrasingsChat(String, String, String, String, String)}
 	 *  @param profileModuleDAL  &
 	 *  @param chatModuleDAL     see {@link SMSAppModuleCommandsChat#SMSAppModuleCommandsChat}
-	 *  @returns {(SMSAppModuleNavigationStatesSubscription)navigationStates, (SMSAppModuleCommandsSubscription)commands, (SMSAppModulePhrasingsSubscription)phrasings} */
+	 *  @returns {(SMSAppModuleNavigationStatesChat)navigationStates, (SMSAppModuleCommandsChat)commands, (SMSAppModulePhrasingsChat)chatPhrasings, (SMSAppModulePhrasingsProfile)profilePhrasings} */
 	public static Object[] getChatModuleInstances(String shortCode, String appName,
 	                                              SMSAppModuleDALFactoryProfile profileModuleDAL,
 	                                              SMSAppModuleDALFactoryChat    chatModuleDAL) {
-		SMSAppModulePhrasingsChat        phrasings        = new SMSAppModulePhrasingsChat(shortCode, appName);
-		SMSAppModuleCommandsChat         commands         = new SMSAppModuleCommandsChat(phrasings, profileModuleDAL, chatModuleDAL);
+		SMSAppModulePhrasingsProfile     profilePhrasings = new SMSAppModulePhrasingsProfile(shortCode, appName);
+		SMSAppModulePhrasingsChat        chatPhrasings    = new SMSAppModulePhrasingsChat(shortCode, appName);
+		SMSAppModuleCommandsChat         commands         = new SMSAppModuleCommandsChat(profilePhrasings, chatPhrasings, profileModuleDAL, chatModuleDAL);
 		SMSAppModuleNavigationStatesChat navigationStates = new SMSAppModuleNavigationStatesChat(commands);
 		
 		System.err.println(SMSAppModuleConfigurationChat.class.getName() + ": test configuration loaded.");
 		
-		return new Object[] {navigationStates, commands, phrasings};
+		return new Object[] {navigationStates, commands, chatPhrasings, profilePhrasings};
 	}
 }

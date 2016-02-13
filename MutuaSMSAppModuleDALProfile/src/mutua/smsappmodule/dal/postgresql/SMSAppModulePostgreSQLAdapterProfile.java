@@ -167,7 +167,7 @@ public class SMSAppModulePostgreSQLAdapterProfile extends PostgreSQLAdapter {
 	public static final class ProfileDBStatements {
 		/** Zero the table contents -- for testing purposes only */
 		public final static AbstractPreparedProcedure ResetTable = new AbstractPreparedProcedure(
-			"TRUNCATE Users CASCADE");
+			"TRUNCATE Profiles CASCADE");
 		/** Returns the nickname associated with 'USER_ID' */
 		public final static AbstractPreparedProcedure SelectProfileByUser = new AbstractPreparedProcedure(
 			"SELECT userId, nickname FROM Profiles WHERE userId=",Parameters.USER_ID);

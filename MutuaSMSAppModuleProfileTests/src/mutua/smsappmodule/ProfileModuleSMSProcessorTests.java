@@ -1,20 +1,14 @@
 package mutua.smsappmodule;
 
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationProfileTests.*;
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationProfile.*;
-import static mutua.smsappmodule.i18n.SMSAppModulePhrasingsProfile.*;
-import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsProfile.*;
-import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates.*;
-import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesProfile.*;
-import static org.junit.Assert.*;
+import static instantvas.tests.InstantVASSMSAppModuleProfileTestsConfiguration.*;
+import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates.NavigationStatesNames.*;
+import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesProfile.NavigationStatesNamesProfile.*;
 
 import java.sql.SQLException;
 
 import mutua.smsappmodule.dal.IProfileDB;
+import mutua.smsappmodule.dal.ISessionDB;
 import mutua.smsappmodule.dal.IUserDB;
-import mutua.smsappmodule.i18n.SMSAppModulePhrasingsProfile;
-import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates;
-import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesProfile;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -36,38 +30,18 @@ public class ProfileModuleSMSProcessorTests {
 	// variables
 	////////////
 	
-	private static IUserDB    userDB    = DEFAULT_MODULE_DAL.getUserDB();
-	private static IProfileDB profileDB = DEFAULT_PROFILE_DAL.getProfileDB();
+	private IUserDB    userDB    = BASE_MODULE_DAL.getUserDB();
+	private ISessionDB sessionDB = BASE_MODULE_DAL.getSessionDB();
+	private IProfileDB profileDB = PROFILE_MODULE_DAL.getProfileDB();
 	
-	private SMSAppModuleTestCommons tc = new SMSAppModuleTestCommons(log, SMSAppModuleNavigationStates.values());
+	private SMSAppModuleTestCommons tc = new SMSAppModuleTestCommons(LOG, BASE_MODULE_DAL, baseModuleNavigationStates.values, profileModuleNavigationStates.values);
 
-	
-	// setup
-	////////
-	
-	static {
-		// set triggers for the "new" and "existing" user navigation states
-		SMSAppModuleNavigationStates.nstNewUser.setCommandTriggers(new Object[][] {
-			{cmdStartAskForNicknameDialog, PROFILEtrgGlobalStartAskForNicknameDialog},
-		});
-		SMSAppModuleNavigationStates.nstExistingUser.setCommandTriggers(new Object[][] {
-			{cmdRegisterNickname,                PROFILEtrgGlobalRegisterNickname},
-			{cmdStartAskForNicknameDialog,       PROFILEtrgGlobalStartAskForNicknameDialog},
-			{cmdShowUserProfile,                 PROFILEtrgGlobalShowUserProfile},
-		});
-		SMSAppModuleNavigationStatesProfile.nstRegisteringNickname.setCommandTriggers(new Object[][] {
-			{cmdRegisterNickname,                PROFILEtrgGlobalRegisterNickname},
-			{cmdStartAskForNicknameDialog,       PROFILEtrgGlobalStartAskForNicknameDialog},
-			{cmdAskForNicknameDialogCancelation, PROFILEtrgLocalNicknameDialogCancelation},
-			{cmdShowUserProfile,                 PROFILEtrgGlobalShowUserProfile},
-			{cmdRegisterNickname,                PROFILEtrgLocalRegisterNickname},
-		});
-	}
 	
 	@Before
 	public void resetTables() throws SQLException {
-		SMSAppModuleTestCommons.resetTables();
 		profileDB.reset();
+		sessionDB.reset();
+		userDB.reset();
 	}
 
 	
@@ -78,27 +52,27 @@ public class ProfileModuleSMSProcessorTests {
 	public void testNicknamesAndProfiles() throws SQLException {
 		
 		// change nickname dialog tests
-		tc.checkResponse("991234899", "nick",     getAskForFirstNickname());
-		tc.checkNavigationState("991234899",      nstRegisteringNickname);
-		tc.checkResponse("991234899", "aspargus", getNicknameRegistrationNotification("aspargus"));
-		tc.checkNavigationState("991234899",      nstExistingUser);
-		tc.checkResponse("991234899", "nick",     getAskForNewNickname("aspargus"));
-		tc.checkResponse("991234899", "tomatoes", getNicknameRegistrationNotification("tomatoes"));
-		tc.checkResponse("991234899", "nick",     getAskForNewNickname("tomatoes"));
-		tc.checkNavigationState("991234899",      nstRegisteringNickname);
-		tc.checkResponse("991234899", "nick",     getAskForNewNickname("tomatoes"));
-		tc.checkResponse("991234899", "cancel",   getAskForNicknameCancelation("tomatoes"));
-		tc.checkNavigationState("991234899",      nstExistingUser);
+		tc.checkResponse("991234899", "nick",     profileModulePhrasings.getAskForFirstNickname());
+		tc.checkNavigationState("991234899", nstRegisteringNickname);
+		tc.checkResponse("991234899", "aspargus", profileModulePhrasings.getNicknameRegistrationNotification("aspargus"));
+		tc.checkNavigationState("991234899", nstExistingUser);
+		tc.checkResponse("991234899", "nick",     profileModulePhrasings.getAskForNewNickname("aspargus"));
+		tc.checkResponse("991234899", "tomatoes", profileModulePhrasings.getNicknameRegistrationNotification("tomatoes"));
+		tc.checkResponse("991234899", "nick",     profileModulePhrasings.getAskForNewNickname("tomatoes"));
+		tc.checkNavigationState("991234899", nstRegisteringNickname);
+		tc.checkResponse("991234899", "nick",     profileModulePhrasings.getAskForNewNickname("tomatoes"));
+		tc.checkResponse("991234899", "cancel",   profileModulePhrasings.getAskForNicknameCancelation("tomatoes"));
+		tc.checkNavigationState("991234899", nstExistingUser);
 		// for other commands (other than cancel), the nickname changing should also skip nickname changing, for instance:
 		// tc.checkResponse("+5521991234899", "nick",     getAskForNewNickname("tomatoes"));
 		// tc.checkResponse("+5521991234899", "help",     SMSAppModulePhrasingsHelp.getDefaultHelpMessage...);
 		
 		// stateless nickname change
-		tc.checkResponse("991234899", "nick donadom", getNicknameRegistrationNotification("donadom"));
+		tc.checkResponse("991234899", "nick donadom", profileModulePhrasings.getNicknameRegistrationNotification("donadom"));
 		
 		// profile inquiry
-		tc.checkResponse("991234899", "profile donadom", getUserProfilePresentation("donadom"));
-		tc.checkResponse("991234899", "profile",         getUserProfilePresentation("donadom"));
+		tc.checkResponse("991234899", "profile donadom", profileModulePhrasings.getUserProfilePresentation("donadom"));
+		tc.checkResponse("991234899", "profile",         profileModulePhrasings.getUserProfilePresentation("donadom"));
 	}
 	
 }
