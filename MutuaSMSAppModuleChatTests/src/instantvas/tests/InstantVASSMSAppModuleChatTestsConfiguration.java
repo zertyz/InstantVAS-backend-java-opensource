@@ -49,23 +49,27 @@ public class InstantVASSMSAppModuleChatTestsConfiguration {
 	
 	public  static final String shortCode = "975";
 	private static final String appName   = "ChatTestApp";
+	
+	private static InstantVASSMSAppModuleChatTestsConfiguration instance = null;
 
 	public static Instrumentation<DefaultInstrumentationProperties, String> LOG;
 	public static SMSAppModuleDALFactory                                    BASE_MODULE_DAL;
 	public static SMSAppModuleDALFactoryProfile                             PROFILE_MODULE_DAL;
 	public static SMSAppModuleDALFactoryChat                                CHAT_MODULE_DAL;
 	public static int                                                       PERFORMANCE_TESTS_LOAD_FACTOR;
-	public static PostgreSQLQueueEventLink<ETestEventServices>              MO_QUEUE_LINK;
-	public static TestEventServer                                           MO_QUEUE_PRODUCER;
-	public static SMSAppModuleNavigationStates     baseModuleNavigationStates;
-	public static SMSAppModulePhrasingsProfile     profileModulePhrasings;
-	public static SMSAppModulePhrasingsChat        chatModulePhrasings;
-	public static SMSAppModuleCommandsChat         chatModuleCommands;
-	public static SMSAppModuleNavigationStatesChat chatModuleNavigationStates;
+	public static String                                                    MO_TABLE_NAME;
 	
-	/************
-	** METHODS **
-	************/
+	public PostgreSQLQueueEventLink<ETestEventServices>  MO_QUEUE_LINK;
+	public TestEventServer                               MO_QUEUE_PRODUCER;
+	public SMSAppModuleNavigationStates                  baseModuleNavigationStates;
+	public SMSAppModulePhrasingsProfile                  profileModulePhrasings;
+	public SMSAppModulePhrasingsChat                     chatModulePhrasings;
+	public SMSAppModuleCommandsChat                      chatModuleCommands;
+	public SMSAppModuleNavigationStatesChat              chatModuleNavigationStates;
+	
+	/**************************
+	** CONFIGURATION METHODS **
+	**************************/
 	
 	/** method to be called to configure all the modules needed to get instances of the test classes */
 	public static void configureDefaultValuesForNewInstances(Instrumentation<DefaultInstrumentationProperties, String> log, 
@@ -75,9 +79,12 @@ public class InstantVASSMSAppModuleChatTestsConfiguration {
 		String postgreSQLHostname, int postgreSQLPort, String postgreSQLDatabase, String postgreSQLUser, String postgreSQLPassword,
 		String moTableName, String moIdFieldName, String moTextFieldName) throws SQLException {
 		
+		instance = null;
+		
 		LOG                           = log;
 		PERFORMANCE_TESTS_LOAD_FACTOR = performanceTestsLoadFactor;
 		CHAT_MODULE_DAL               = chatModuleDAL;
+		MO_TABLE_NAME                 = moTableName;
 		
 		// database configuration
 		switch (chatModuleDAL) {
@@ -90,8 +97,6 @@ public class InstantVASSMSAppModuleChatTestsConfiguration {
 				// MO simulation
 				QueuesPostgreSQLAdapter.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries, postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
 				PostgreSQLQueueEventLink.configureDefaultValuesForNewInstances(log, -1, -1);
-				MO_QUEUE_LINK     = new PostgreSQLQueueEventLink<ETestEventServices>(ETestEventServices.class, moTableName, new SpecializedMOQueueDataBureau());
-				MO_QUEUE_PRODUCER = new TestEventServer(MO_QUEUE_LINK);
 				// chat db
 				SMSAppModulePostgreSQLAdapterChat.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
 					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword,
@@ -104,36 +109,21 @@ public class InstantVASSMSAppModuleChatTestsConfiguration {
 				// other databases
 				BASE_MODULE_DAL    = SMSAppModuleDALFactory       .RAM;
 				PROFILE_MODULE_DAL = SMSAppModuleDALFactoryProfile.RAM;
-				// MO simulation
-				MO_QUEUE_LINK     = null;
-				MO_QUEUE_PRODUCER = null;
 				break;
 			default:
 				throw new NotImplementedException();
 		}
-		
-		// chat module
-		Object[] chatModule = SMSAppModuleConfigurationChat.getChatModuleInstances(shortCode, appName,
-		                                                                           PROFILE_MODULE_DAL, chatModuleDAL);
-		
-		chatModuleNavigationStates = (SMSAppModuleNavigationStatesChat) chatModule[0];
-		chatModuleCommands         = (SMSAppModuleCommandsChat)         chatModule[1];
-		chatModulePhrasings        = (SMSAppModulePhrasingsChat)        chatModule[2];
-		profileModulePhrasings     = (SMSAppModulePhrasingsProfile)     chatModule[3];
-		
-		// base module -- configured to interact with the Chat Module commands 
-		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(log, BASE_MODULE_DAL, chatModuleCommands.values,
-			/*nstNewUserTriggers*/
-			new Object[][] {
-				{cmdSendPrivateMessage, trgGlobalSendPrivateMessage},
-			},
-			/*nstExistingUserTriggers*/
-			new Object[][] {
-				{cmdSendPrivateMessage, trgGlobalSendPrivateMessage},
-			});
-		baseModuleNavigationStates = (SMSAppModuleNavigationStates) baseModule[0];
-		
+
 		System.err.println(InstantVASSMSAppModuleChatTestsConfiguration.class.getName() + ": test configuration loaded.");
+	}
+	
+	public static InstantVASSMSAppModuleChatTestsConfiguration getInstance() {
+		if (instance == null) try {
+			instance = new InstantVASSMSAppModuleChatTestsConfiguration();
+		} catch (Throwable t) {
+			throw new RuntimeException(t);
+		}
+		return instance;
 	}
 
 	static {
@@ -156,5 +146,46 @@ public class InstantVASSMSAppModuleChatTestsConfiguration {
 		} catch (SQLException e) {
 			throw new ExceptionInInitializerError(e);
 		}
+	}
+
+	/*****************
+	** CONSTRUCTORS **
+	*****************/
+	
+	private InstantVASSMSAppModuleChatTestsConfiguration() throws SQLException {
+
+		// mo simulation queue configuration
+		switch (CHAT_MODULE_DAL) {
+			case POSTGRESQL:
+				MO_QUEUE_LINK     = new PostgreSQLQueueEventLink<ETestEventServices>(ETestEventServices.class, MO_TABLE_NAME, new SpecializedMOQueueDataBureau());
+				MO_QUEUE_PRODUCER = new TestEventServer(MO_QUEUE_LINK);
+				break;
+			case RAM:
+				MO_QUEUE_LINK     = null;
+				MO_QUEUE_PRODUCER = null;
+				break;
+			default:
+		}
+
+		Object[] chatModule = SMSAppModuleConfigurationChat.getChatModuleInstances(shortCode, appName,
+		                                                                           PROFILE_MODULE_DAL, CHAT_MODULE_DAL);
+
+		chatModuleNavigationStates = (SMSAppModuleNavigationStatesChat) chatModule[0];
+		chatModuleCommands         = (SMSAppModuleCommandsChat)         chatModule[1];
+		chatModulePhrasings        = (SMSAppModulePhrasingsChat)        chatModule[2];
+		profileModulePhrasings     = (SMSAppModulePhrasingsProfile)     chatModule[3];
+		
+		// base module -- configured to interact with the Chat Module commands 
+		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(LOG, BASE_MODULE_DAL, chatModuleCommands.values,
+			/*nstNewUserTriggers*/
+			new Object[][] {
+				{cmdSendPrivateMessage, trgGlobalSendPrivateMessage},
+			},
+			/*nstExistingUserTriggers*/
+			new Object[][] {
+				{cmdSendPrivateMessage, trgGlobalSendPrivateMessage},
+		});
+		baseModuleNavigationStates = (SMSAppModuleNavigationStates) baseModule[0];
+		
 	}
 }

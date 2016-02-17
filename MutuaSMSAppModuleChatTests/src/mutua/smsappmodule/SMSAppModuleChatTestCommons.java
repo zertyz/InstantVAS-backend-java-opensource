@@ -4,6 +4,7 @@ import static instantvas.tests.InstantVASSMSAppModuleChatTestsConfiguration.*;
 
 import java.sql.SQLException;
 
+import instantvas.tests.InstantVASSMSAppModuleChatTestsConfiguration;
 import mutua.events.MO;
 import mutua.smsappmodule.dal.IChatDB;
 import mutua.smsappmodule.dal.IProfileDB;
@@ -30,6 +31,8 @@ import mutua.smsin.dto.IncomingSMSDto;
 
 public class SMSAppModuleChatTestCommons {
 
+	// configuration
+	InstantVASSMSAppModuleChatTestsConfiguration config = InstantVASSMSAppModuleChatTestsConfiguration.getInstance();
 	
 	/**************
 	** DATABASES ** 
@@ -50,15 +53,15 @@ public class SMSAppModuleChatTestCommons {
 		profileDB.reset();
 		userDB.reset();
 		sessionDB.reset();
-		if (MO_QUEUE_LINK != null) {
-			MO_QUEUE_LINK.resetQueues();
+		if (config.MO_QUEUE_LINK != null) {
+			config.MO_QUEUE_LINK.resetQueues();
 		}
 	}
 	
 	/** simulates the recording of an MO message, returning the 'moId' -- just like it is done on the webapp */
 	public int addMO(UserDto user, String moText) throws SQLException {
 		if (chatDB instanceof mutua.smsappmodule.dal.postgresql.ChatDB) {
-			return MO_QUEUE_PRODUCER.addToMOQueue(new MO(user.getPhoneNumber(), moText));
+			return config.MO_QUEUE_PRODUCER.addToMOQueue(new MO(user.getPhoneNumber(), moText));
 		} else if (chatDB instanceof mutua.smsappmodule.dal.ram.ChatDB) {
 			return ((mutua.smsappmodule.dal.ram.ChatDB)chatDB).addMO(moText);
 		} else {
@@ -82,7 +85,7 @@ public class SMSAppModuleChatTestCommons {
 		SessionModel session = new SessionModel(sender, new IncomingSMSDto(moId, sender.getPhoneNumber(), moText, null, shortCode), null) {
 			public INavigationState getNavigationStateFromStateName(String navigationStateName) {return null;}
 		};
-		return chatModuleCommands.cmdSendPrivateMessage.processCommand(session, null, new String[] {targetNickname, message}).getResponseMessages();
+		return config.chatModuleCommands.cmdSendPrivateMessage.processCommand(session, null, new String[] {targetNickname, message}).getResponseMessages();
 	}
 	
 }

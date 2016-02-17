@@ -13,6 +13,8 @@ import mutua.smsappmodule.dal.IUserDB;
 import org.junit.Before;
 import org.junit.Test;
 
+import instantvas.tests.InstantVASSMSAppModuleProfileTestsConfiguration;
+
 /** <pre>
  * ProfileModuleSMSProcessorTests.java
  * ===================================
@@ -26,15 +28,18 @@ import org.junit.Test;
  */
 
 public class ProfileModuleSMSProcessorTests {
+	
+	// configuration
+	InstantVASSMSAppModuleProfileTestsConfiguration config = InstantVASSMSAppModuleProfileTestsConfiguration.getInstance();
 
-	// variables
+	// databases
 	////////////
 	
 	private IUserDB    userDB    = BASE_MODULE_DAL.getUserDB();
 	private ISessionDB sessionDB = BASE_MODULE_DAL.getSessionDB();
 	private IProfileDB profileDB = PROFILE_MODULE_DAL.getProfileDB();
 	
-	private SMSAppModuleTestCommons tc = new SMSAppModuleTestCommons(LOG, BASE_MODULE_DAL, baseModuleNavigationStates.values, profileModuleNavigationStates.values);
+	private SMSAppModuleTestCommons tc = new SMSAppModuleTestCommons(LOG, BASE_MODULE_DAL, config.baseModuleNavigationStates.values, config.profileModuleNavigationStates.values);
 
 	
 	@Before
@@ -52,27 +57,27 @@ public class ProfileModuleSMSProcessorTests {
 	public void testNicknamesAndProfiles() throws SQLException {
 		
 		// change nickname dialog tests
-		tc.checkResponse("991234899", "nick",     profileModulePhrasings.getAskForFirstNickname());
+		tc.checkResponse("991234899", "nick",     config.profileModulePhrasings.getAskForFirstNickname());
 		tc.checkNavigationState("991234899", nstRegisteringNickname);
-		tc.checkResponse("991234899", "aspargus", profileModulePhrasings.getNicknameRegistrationNotification("aspargus"));
+		tc.checkResponse("991234899", "aspargus", config.profileModulePhrasings.getNicknameRegistrationNotification("aspargus"));
 		tc.checkNavigationState("991234899", nstExistingUser);
-		tc.checkResponse("991234899", "nick",     profileModulePhrasings.getAskForNewNickname("aspargus"));
-		tc.checkResponse("991234899", "tomatoes", profileModulePhrasings.getNicknameRegistrationNotification("tomatoes"));
-		tc.checkResponse("991234899", "nick",     profileModulePhrasings.getAskForNewNickname("tomatoes"));
+		tc.checkResponse("991234899", "nick",     config.profileModulePhrasings.getAskForNewNickname("aspargus"));
+		tc.checkResponse("991234899", "tomatoes", config.profileModulePhrasings.getNicknameRegistrationNotification("tomatoes"));
+		tc.checkResponse("991234899", "nick",     config.profileModulePhrasings.getAskForNewNickname("tomatoes"));
 		tc.checkNavigationState("991234899", nstRegisteringNickname);
-		tc.checkResponse("991234899", "nick",     profileModulePhrasings.getAskForNewNickname("tomatoes"));
-		tc.checkResponse("991234899", "cancel",   profileModulePhrasings.getAskForNicknameCancelation("tomatoes"));
+		tc.checkResponse("991234899", "nick",     config.profileModulePhrasings.getAskForNewNickname("tomatoes"));
+		tc.checkResponse("991234899", "cancel",   config.profileModulePhrasings.getAskForNicknameCancelation("tomatoes"));
 		tc.checkNavigationState("991234899", nstExistingUser);
 		// for other commands (other than cancel), the nickname changing should also skip nickname changing, for instance:
 		// tc.checkResponse("+5521991234899", "nick",     getAskForNewNickname("tomatoes"));
 		// tc.checkResponse("+5521991234899", "help",     SMSAppModulePhrasingsHelp.getDefaultHelpMessage...);
 		
 		// stateless nickname change
-		tc.checkResponse("991234899", "nick donadom", profileModulePhrasings.getNicknameRegistrationNotification("donadom"));
+		tc.checkResponse("991234899", "nick donadom", config.profileModulePhrasings.getNicknameRegistrationNotification("donadom"));
 		
 		// profile inquiry
-		tc.checkResponse("991234899", "profile donadom", profileModulePhrasings.getUserProfilePresentation("donadom"));
-		tc.checkResponse("991234899", "profile",         profileModulePhrasings.getUserProfilePresentation("donadom"));
+		tc.checkResponse("991234899", "profile donadom", config.profileModulePhrasings.getUserProfilePresentation("donadom"));
+		tc.checkResponse("991234899", "profile",         config.profileModulePhrasings.getUserProfilePresentation("donadom"));
 	}
 	
 }

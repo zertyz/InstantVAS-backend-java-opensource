@@ -7,6 +7,8 @@ import java.sql.SQLException;
 
 import org.junit.Test;
 
+import instantvas.tests.InstantVASSMSAppModuleSubscriptionTestsConfiguration;
+
 /** <pre>
  * SubscriptionModuleSMSProcessorTests.java
  * ========================================
@@ -21,13 +23,17 @@ import org.junit.Test;
 
 public class SubscriptionModuleSMSProcessorTests {
 
+	
+	// configuration
+	InstantVASSMSAppModuleSubscriptionTestsConfiguration config = InstantVASSMSAppModuleSubscriptionTestsConfiguration.getInstance();
+	
 
 	// variables
 	////////////
 	
 	private SMSAppModuleTestCommons tc = new SMSAppModuleTestCommons(LOG,
 		BASE_MODULE_DAL,
-		baseModuleNavigationStates.values, subscriptionModuleNavigationStates.values);
+		config.baseModuleNavigationStates.values, config.subscriptionModuleNavigationStates.values);
 	
 	
 	// tests
@@ -39,26 +45,26 @@ public class SubscriptionModuleSMSProcessorTests {
 		tc.resetBaseTables();
 		
 		// test double opt-in subscription refusal
-		tc.checkResponse("991234899", "MyApp", subscriptionModulePhrasings.getDoubleOptinStart());
-		tc.checkResponse("991234899", "no", subscriptionModulePhrasings.getDisagreeToSubscribe());
+		tc.checkResponse("991234899", "MyApp", config.subscriptionModulePhrasings.getDoubleOptinStart());
+		tc.checkResponse("991234899", "no", config.subscriptionModulePhrasings.getDisagreeToSubscribe());
 		tc.checkNavigationState("991234899", nstNewUser);
 
 		// test double opt-in acceptance
-		tc.checkResponse("991234899", "MyApp", subscriptionModulePhrasings.getDoubleOptinStart());
-		tc.checkResponse("991234899", "yes", subscriptionModulePhrasings.getSuccessfullySubscribed());
+		tc.checkResponse("991234899", "MyApp", config.subscriptionModulePhrasings.getDoubleOptinStart());
+		tc.checkResponse("991234899", "yes", config.subscriptionModulePhrasings.getSuccessfullySubscribed());
 		tc.checkNavigationState("991234899", nstExistingUser);
 		
 		// test unsubscription
-		tc.checkResponse("991234899", "unsubscribe", subscriptionModulePhrasings.getUserRequestedUnsubscriptionNotification());
+		tc.checkResponse("991234899", "unsubscribe", config.subscriptionModulePhrasings.getUserRequestedUnsubscriptionNotification());
 		tc.checkNavigationState("991234899", nstNewUser);
 		
 		tc.resetBaseTables();
 		
 		// test answering neither yes nor no to the double opt-in acceptance and, then, staring it over
-		tc.checkResponse("991234899", "MyApp", subscriptionModulePhrasings.getDoubleOptinStart());
-		tc.checkResponse("991234899", "dods", subscriptionModulePhrasings.getDisagreeToSubscribe());
-		tc.checkResponse("991234899", "MyApp", subscriptionModulePhrasings.getDoubleOptinStart());
-		tc.checkResponse("991234899", "yes", subscriptionModulePhrasings.getSuccessfullySubscribed());
+		tc.checkResponse("991234899", "MyApp", config.subscriptionModulePhrasings.getDoubleOptinStart());
+		tc.checkResponse("991234899", "dods", config.subscriptionModulePhrasings.getDisagreeToSubscribe());
+		tc.checkResponse("991234899", "MyApp", config.subscriptionModulePhrasings.getDoubleOptinStart());
+		tc.checkResponse("991234899", "yes", config.subscriptionModulePhrasings.getSuccessfullySubscribed());
 		tc.checkNavigationState("991234899", nstExistingUser);
 
 	}

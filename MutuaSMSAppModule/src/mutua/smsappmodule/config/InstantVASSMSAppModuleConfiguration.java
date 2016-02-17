@@ -3,7 +3,6 @@ package mutua.smsappmodule.config;
 import java.sql.SQLException;
 
 import adapters.PostgreSQLAdapter;
-import mutua.icc.instrumentation.DefaultInstrumentationProperties;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
 import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
@@ -43,7 +42,7 @@ public class InstantVASSMSAppModuleConfiguration {
 	 * @param nstNewUserTriggers                     &
 	 * @param nstExistingUserTriggers                see {@link SMSAppModuleNavigationStates#SMSAppModuleNavigationStates(ICommandProcessor[], Object[][], Object[][])}
 	 *  @returns {(SMSAppModuleNavigationStates)navigationStates, (SMSAppModuleCommandsHelp)commands, (SMSAppModulePhrasingsHelp)phrasings} */
-	public static Object[] getBaseModuleInstances(Instrumentation<DefaultInstrumentationProperties, String> log, SMSAppModuleDALFactory baseModuleDAL,
+	public static Object[] getBaseModuleInstances(Instrumentation<?, ?> log, SMSAppModuleDALFactory baseModuleDAL,
 		ICommandProcessor[] availableCommands, Object[][] nstNewUserTriggers,
 		Object[][] nstExistingUserTriggers) throws SQLException {
 		

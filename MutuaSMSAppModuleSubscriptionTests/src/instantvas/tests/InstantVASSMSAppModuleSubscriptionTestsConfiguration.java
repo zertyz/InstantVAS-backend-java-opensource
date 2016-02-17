@@ -43,18 +43,22 @@ public class InstantVASSMSAppModuleSubscriptionTestsConfiguration {
 	private static final String appName   = "SubscriptionTestApp";
 	private static final String priceTag  = "0.99";
 	
+	private static InstantVASSMSAppModuleSubscriptionTestsConfiguration instance = null;
+
 	public static Instrumentation<DefaultInstrumentationProperties, String> LOG;
 	public static SMSAppModuleDALFactory                                    BASE_MODULE_DAL;
 	public static SMSAppModuleDALFactorySubscription                        SUBSCRIPTION_DAL;
 	public static int                                                       PERFORMANCE_TESTS_LOAD_FACTOR;
-	public static SMSAppModuleNavigationStates             baseModuleNavigationStates;
-	public static SMSAppModulePhrasingsSubscription        subscriptionModulePhrasings;
-	public static SMSAppModuleCommandsSubscription         subscriptionModuleCommands;
-	public static SMSAppModuleNavigationStatesSubscription subscriptionModuleNavigationStates;
+		
+	// instance variables
+	public final SMSAppModuleNavigationStates             baseModuleNavigationStates;
+	public final SMSAppModulePhrasingsSubscription        subscriptionModulePhrasings;
+	public final SMSAppModuleCommandsSubscription         subscriptionModuleCommands;
+	public final SMSAppModuleNavigationStatesSubscription subscriptionModuleNavigationStates;
 	
-	/************
-	** METHODS **
-	************/
+	/**************************
+	** CONFIGURATION METHODS **
+	**************************/
 	
 	/** method to be called to configure all the modules needed to get instances of the test classes */
 	public static void configureDefaultValuesForNewInstances(Instrumentation<DefaultInstrumentationProperties, String> log, 
@@ -62,7 +66,9 @@ public class InstantVASSMSAppModuleSubscriptionTestsConfiguration {
 		String postgreSQLconnectionProperties, int postgreSQLConnectionPoolSize,
 		boolean postgreSQLAllowDataStructuresAssertion, boolean postgreSQLShouldDebugQueries,
 		String postgreSQLHostname, int postgreSQLPort, String postgreSQLDatabase, String postgreSQLUser, String postgreSQLPassword) throws SQLException {
-		
+
+		instance = null;
+
 		LOG                           = log;
 		SUBSCRIPTION_DAL              = subscriptionDAL;
 		PERFORMANCE_TESTS_LOAD_FACTOR = performanceTestsLoadFactor;
@@ -86,31 +92,19 @@ public class InstantVASSMSAppModuleSubscriptionTestsConfiguration {
 				throw new NotImplementedException();
 		}
 		
-		// subscription module
-		Object[] subscriptionModule = SMSAppModuleConfigurationSubscription.getSubscriptionModuleInstances(shortCode, appName, priceTag,
-		                                                                                                   BASE_MODULE_DAL, subscriptionDAL,
-		                                                                                                   new TestableSubscriptionAPI(log),
-		                                                                                                   "BillingCenterFor_"+appName);
-		subscriptionModuleNavigationStates = (SMSAppModuleNavigationStatesSubscription) subscriptionModule[0];
-		subscriptionModuleCommands         = (SMSAppModuleCommandsSubscription)         subscriptionModule[1];
-		subscriptionModulePhrasings        = (SMSAppModulePhrasingsSubscription)        subscriptionModule[2];
-		
-		// base module -- configured to interact with the Subscription Module commands 
-		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(log, BASE_MODULE_DAL, subscriptionModuleCommands.values,
-			/*nstNewUserTriggers*/
-			new Object[][] {
-				{cmdStartDoubleOptinProcess, trgLocalStartDoubleOptin},
-			},
-			/*nstExistingUserTriggers*/
-			new Object[][] {
-				{cmdUnsubscribe, trgGlobalUnsubscribe},
-			});
-		baseModuleNavigationStates = (SMSAppModuleNavigationStates) baseModule[0];
-		
-		System.err.println(InstantVASSMSAppModuleSubscriptionTestsConfiguration.class.getName() + ": test configuration loaded.");
+		System.err.println(InstantVASSMSAppModuleSubscriptionTestsConfiguration.class.getCanonicalName() + ": test configuration loaded.");
 	}
 
+	public static InstantVASSMSAppModuleSubscriptionTestsConfiguration getInstance() {
+		if (instance == null) try {
+			instance = new InstantVASSMSAppModuleSubscriptionTestsConfiguration();
+		} catch (Throwable t) {
+			throw new RuntimeException(t);
+		}
+		return instance;
+	}
 	
+	// preconfigure with default values
 	static {
 		// configure with the default values
 		try {
@@ -129,5 +123,31 @@ public class InstantVASSMSAppModuleSubscriptionTestsConfiguration {
 		} catch (SQLException e) {
 			throw new ExceptionInInitializerError(e);
 		}
+	}
+	
+	/*****************
+	** CONSTRUCTORS **
+	*****************/
+	
+	private InstantVASSMSAppModuleSubscriptionTestsConfiguration() throws SQLException {
+		Object[] subscriptionModule = SMSAppModuleConfigurationSubscription.getSubscriptionModuleInstances(shortCode, appName, priceTag,
+		                                                                                                   BASE_MODULE_DAL, SUBSCRIPTION_DAL,
+		                                                                                                   new TestableSubscriptionAPI(LOG),
+		                                                                                                   "BillingCenterFor_"+appName);
+		subscriptionModuleNavigationStates = (SMSAppModuleNavigationStatesSubscription) subscriptionModule[0];
+		subscriptionModuleCommands         = (SMSAppModuleCommandsSubscription)         subscriptionModule[1];
+		subscriptionModulePhrasings        = (SMSAppModulePhrasingsSubscription)        subscriptionModule[2];
+		
+		// base module -- configured to interact with the Subscription Module commands 
+		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(LOG, BASE_MODULE_DAL, subscriptionModuleCommands.values,
+			/*nstNewUserTriggers*/
+			new Object[][] {
+				{cmdStartDoubleOptinProcess, trgLocalStartDoubleOptin},
+			},
+			/*nstExistingUserTriggers*/
+			new Object[][] {
+				{cmdUnsubscribe, trgGlobalUnsubscribe},
+			});
+		baseModuleNavigationStates = (SMSAppModuleNavigationStates) baseModule[0];
 	}
 }

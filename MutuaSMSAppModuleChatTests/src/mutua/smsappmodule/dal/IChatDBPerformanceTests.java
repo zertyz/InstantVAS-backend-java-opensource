@@ -16,6 +16,8 @@ import mutua.smsappmodule.dto.UserDto;
 
 import org.junit.Test;
 
+import instantvas.tests.InstantVASSMSAppModuleChatTestsConfiguration;
+
 /** <pre>
  * IChatDBPerformanceTests.java
  * ============================
@@ -31,6 +33,9 @@ import org.junit.Test;
 
 public class IChatDBPerformanceTests {
 
+	// configuration
+	InstantVASSMSAppModuleChatTestsConfiguration config = InstantVASSMSAppModuleChatTestsConfiguration.getInstance();
+	
 	// algorithm settings
 	private int numberOfThreads = 4;
 	
@@ -161,8 +166,8 @@ public class IChatDBPerformanceTests {
 		
 		// fulfill Queue table
 		try {
-			if (MO_QUEUE_LINK != null) {
-				MO_QUEUE_LINK.resetQueues();
+			if (config.MO_QUEUE_LINK != null) {
+				config.MO_QUEUE_LINK.resetQueues();
 			}
 			pvts = insertChatMOs(users, numberOfThreads);
 			
@@ -268,6 +273,5 @@ public class IChatDBPerformanceTests {
 			}
 		};
 
-	}
-	
+	}	
 }

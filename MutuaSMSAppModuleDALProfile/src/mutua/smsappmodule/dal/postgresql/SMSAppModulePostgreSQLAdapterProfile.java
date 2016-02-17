@@ -71,7 +71,7 @@ public class SMSAppModulePostgreSQLAdapterProfile extends PostgreSQLAdapter {
 		USER     = user;
 		PASSWORD = password;
 
-		instance = new SMSAppModulePostgreSQLAdapterProfile();	// start/restart the singleton with the new settings
+		instance = null;
 	}
 	
 	
@@ -183,11 +183,12 @@ public class SMSAppModulePostgreSQLAdapterProfile extends PostgreSQLAdapter {
 	// public methods
 	/////////////////
 	
-	public static JDBCAdapter getInstance() {
+	public static JDBCAdapter getInstance() throws SQLException {
 		if (instance == null) {
-			throw new RuntimeException("Class '" + SMSAppModulePostgreSQLAdapterProfile.class.getCanonicalName() + "' was not configured according to the " +
-			                           "'Mutua Configurable Class' pattern -- a preliminar call to 'configureDefaultValuesForNewInstances' " +
-			                           "was not made.");
+			instance = new SMSAppModulePostgreSQLAdapterProfile();
+//			throw new RuntimeException("Class '" + SMSAppModulePostgreSQLAdapterProfile.class.getCanonicalName() + "' was not configured according to the " +
+//			                           "'Mutua Configurable Class' pattern -- a preliminar call to 'configureDefaultValuesForNewInstances' " +
+//			                           "was not made.");
 		}
 		return instance;
 	}

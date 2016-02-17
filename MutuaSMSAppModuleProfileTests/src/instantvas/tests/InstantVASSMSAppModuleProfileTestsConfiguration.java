@@ -41,19 +41,22 @@ public class InstantVASSMSAppModuleProfileTestsConfiguration {
 
 	public  static final String shortCode = "975";
 	private static final String appName   = "ProfileTestApp";
+	
+	private static InstantVASSMSAppModuleProfileTestsConfiguration instance = null;
 
 	public static Instrumentation<DefaultInstrumentationProperties, String> LOG;
 	public static SMSAppModuleDALFactory                                    BASE_MODULE_DAL;
 	public static SMSAppModuleDALFactoryProfile                             PROFILE_MODULE_DAL;
 	public static int                                                       PERFORMANCE_TESTS_LOAD_FACTOR;
-	public static SMSAppModuleNavigationStates        baseModuleNavigationStates;
-	public static SMSAppModulePhrasingsProfile        profileModulePhrasings;
-	public static SMSAppModuleCommandsProfile         profileModuleCommands;
-	public static SMSAppModuleNavigationStatesProfile profileModuleNavigationStates;
 	
-	/************
-	** METHODS **
-	************/
+	public SMSAppModuleNavigationStates        baseModuleNavigationStates;
+	public SMSAppModulePhrasingsProfile        profileModulePhrasings;
+	public SMSAppModuleCommandsProfile         profileModuleCommands;
+	public SMSAppModuleNavigationStatesProfile profileModuleNavigationStates;
+	
+	/**************************
+	** CONFIGURATION METHODS **
+	**************************/
 	
 	/** method to be called to configure all the modules needed to get instances of the test classes */
 	public static void configureDefaultValuesForNewInstances(Instrumentation<DefaultInstrumentationProperties, String> log, 
@@ -61,6 +64,8 @@ public class InstantVASSMSAppModuleProfileTestsConfiguration {
 		String postgreSQLconnectionProperties, int postgreSQLConnectionPoolSize,
 		boolean postgreSQLAllowDataStructuresAssertion, boolean postgreSQLShouldDebugQueries,
 		String postgreSQLHostname, int postgreSQLPort, String postgreSQLDatabase, String postgreSQLUser, String postgreSQLPassword) throws SQLException {
+		
+		instance = null;
 		
 		LOG                           = log;
 		PROFILE_MODULE_DAL            = profileModuleDAL;
@@ -86,28 +91,16 @@ public class InstantVASSMSAppModuleProfileTestsConfiguration {
 				throw new NotImplementedException();
 		}
 		
-		// chat module
-		Object[] profileModule = SMSAppModuleConfigurationProfile.getChatModuleInstances(shortCode, appName, profileModuleDAL);
-		
-		profileModuleNavigationStates = (SMSAppModuleNavigationStatesProfile) profileModule[0];
-		profileModuleCommands         = (SMSAppModuleCommandsProfile)         profileModule[1];
-		profileModulePhrasings        = (SMSAppModulePhrasingsProfile)        profileModule[2];
-		
-		// base module -- configured to interact with the Profile Module commands 
-		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(log, BASE_MODULE_DAL, profileModuleCommands.values,
-			/*nstNewUserTriggers*/
-			new Object[][] {
-				{cmdStartAskForNicknameDialog, trgGlobalStartAskForNicknameDialog},
-			},
-			/*nstExistingUserTriggers*/
-			new Object[][] {
-				{cmdRegisterNickname,                trgGlobalRegisterNickname},
-				{cmdStartAskForNicknameDialog,       trgGlobalStartAskForNicknameDialog},
-				{cmdShowUserProfile,                 trgGlobalShowUserProfile},
-			});
-		baseModuleNavigationStates = (SMSAppModuleNavigationStates) baseModule[0];
-		
 		System.err.println(InstantVASSMSAppModuleProfileTestsConfiguration.class.getName() + ": test configuration loaded.");
+	}
+	
+	public static InstantVASSMSAppModuleProfileTestsConfiguration getInstance() {
+		if (instance == null) try {
+			instance = new InstantVASSMSAppModuleProfileTestsConfiguration();
+		} catch (Throwable t) {
+			throw new RuntimeException(t);
+		}
+		return instance;
 	}
 
 	static {
@@ -128,5 +121,32 @@ public class InstantVASSMSAppModuleProfileTestsConfiguration {
 		} catch (SQLException e) {
 			throw new ExceptionInInitializerError(e);
 		}
+	}
+	
+	/*****************
+	** CONSTRUCTORS **
+	*****************/
+	
+	private InstantVASSMSAppModuleProfileTestsConfiguration() throws SQLException {
+		
+		Object[] profileModule = SMSAppModuleConfigurationProfile.getChatModuleInstances(shortCode, appName, PROFILE_MODULE_DAL);
+		
+		profileModuleNavigationStates = (SMSAppModuleNavigationStatesProfile) profileModule[0];
+		profileModuleCommands         = (SMSAppModuleCommandsProfile)         profileModule[1];
+		profileModulePhrasings        = (SMSAppModulePhrasingsProfile)        profileModule[2];
+		
+		// base module -- configured to interact with the Profile Module commands 
+		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(LOG, BASE_MODULE_DAL, profileModuleCommands.values,
+			/*nstNewUserTriggers*/
+			new Object[][] {
+				{cmdStartAskForNicknameDialog, trgGlobalStartAskForNicknameDialog},
+			},
+			/*nstExistingUserTriggers*/
+			new Object[][] {
+				{cmdRegisterNickname,                trgGlobalRegisterNickname},
+				{cmdStartAskForNicknameDialog,       trgGlobalStartAskForNicknameDialog},
+				{cmdShowUserProfile,                 trgGlobalShowUserProfile},
+			});
+		baseModuleNavigationStates = (SMSAppModuleNavigationStates) baseModule[0];
 	}
 }

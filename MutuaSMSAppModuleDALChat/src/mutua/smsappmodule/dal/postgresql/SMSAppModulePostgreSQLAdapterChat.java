@@ -83,7 +83,7 @@ public class SMSAppModulePostgreSQLAdapterChat extends PostgreSQLAdapter {
 		MO_ID_FIELD_NAME   = moIdFieldName;
 		MO_TEXT_FIELD_NAME = moTextFieldName;
 
-		instance = new SMSAppModulePostgreSQLAdapterChat();	// start/restart the singleton with the new settings
+		instance = null;
 	}
 	
 	@Override
@@ -176,11 +176,12 @@ public class SMSAppModulePostgreSQLAdapterChat extends PostgreSQLAdapter {
 	// public methods
 	/////////////////
 	
-	public static SMSAppModulePostgreSQLAdapterChat getInstance() {
+	public static SMSAppModulePostgreSQLAdapterChat getInstance() throws SQLException {
 		if (instance == null) {
-			throw new RuntimeException("Class '" + SMSAppModulePostgreSQLAdapterChat.class.getCanonicalName() + "' was not configured according to the " +
-			                           "'SMSAppModulePostgreSQLAdapterHangman' pattern -- a preliminar call to 'configureDefaultValuesForNewInstances' " +
-			                           "was not made.");
+			instance = new SMSAppModulePostgreSQLAdapterChat();
+//			throw new RuntimeException("Class '" + SMSAppModulePostgreSQLAdapterChat.class.getCanonicalName() + "' was not configured according to the " +
+//			                           "'SMSAppModulePostgreSQLAdapterHangman' pattern -- a preliminar call to 'configureDefaultValuesForNewInstances' " +
+//			                           "was not made.");
 		}
 		return instance;
 	}

@@ -31,21 +31,28 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  */
 
 public class InstantVASSMSAppModuleTestsConfiguration {
-
-	public static Instrumentation<DefaultInstrumentationProperties, String> LOG;
-	public static SMSAppModuleDALFactory                                    BASE_MODULE_DAL;
-	public static int                                                       PERFORMANCE_TESTS_LOAD_FACTOR;
-
-	public static SMSAppModuleNavigationStates baseModuleNavigationStates;
 	
+	private static InstantVASSMSAppModuleTestsConfiguration instance = null;
+
+	public static Instrumentation<?, ?>   LOG;
+	public static SMSAppModuleDALFactory  BASE_MODULE_DAL;
+	public static int                     PERFORMANCE_TESTS_LOAD_FACTOR;
+
+	public SMSAppModuleNavigationStates baseModuleNavigationStates;
+		
+	/**************************
+	** CONFIGURATION METHODS **
+	**************************/
 	
 	/** method to be called to configure all the modules needed to get the desired instance of 'InstantVASSMSAppModule' base modules */
-	public static void configureSMSAppModuleTests(Instrumentation<DefaultInstrumentationProperties, String> log, 
+	public static void configureDefaultValuesForNewInstances(Instrumentation<?, ?> log, 
 		int performanceTestsLoadFactor, SMSAppModuleDALFactory baseModuleDAL,
-		int postgreSQLConnectionPoolSize, boolean postgreSQLAllowDataStructuresAssertion,
-		boolean postreSQLShouldDebugQueries, String postreSQLHostname, int postreSQLPort, String postreSQLDatabase, String postreSQLUser,
-		String postreSQLPassword) throws SQLException {
+		String postgreSQLConnectionProperties, int postgreSQLConnectionPoolSize,
+		boolean postgreSQLAllowDataStructuresAssertion, boolean postreSQLShouldDebugQueries, String postreSQLHostname, int postreSQLPort, String postreSQLDatabase,
+		String postreSQLUser, String postreSQLPassword) throws SQLException {
 		
+		instance = null;
+
 		LOG                           = log;
 		BASE_MODULE_DAL               = baseModuleDAL;
 		PERFORMANCE_TESTS_LOAD_FACTOR = performanceTestsLoadFactor;
@@ -53,7 +60,7 @@ public class InstantVASSMSAppModuleTestsConfiguration {
 		// database configuration
 		switch (baseModuleDAL) {
 			case POSTGRESQL:
-				PostgreSQLAdapter.configureDefaultValuesForNewInstances(null, postgreSQLConnectionPoolSize);
+				PostgreSQLAdapter.configureDefaultValuesForNewInstances(postgreSQLConnectionProperties, postgreSQLConnectionPoolSize);
 				SMSAppModulePostgreSQLAdapter.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postreSQLShouldDebugQueries,
 					postreSQLHostname, postreSQLPort, postreSQLDatabase, postreSQLUser, postreSQLPassword);
 				break;
@@ -62,45 +69,42 @@ public class InstantVASSMSAppModuleTestsConfiguration {
 			default:
 				throw new NotImplementedException();
 		}
-
-		// base module
-		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(log, baseModuleDAL, new ICommandProcessor[0],
-			new Object[0][], new Object[0][]);
-		baseModuleNavigationStates = (SMSAppModuleNavigationStates) baseModule[0];
 		
 		System.err.println(InstantVASSMSAppModuleTestsConfiguration.class.getName() + ": test configuration loaded.");
 	}
-		// TO DO 1/2/16:
-//		1) Deletar default DAL do factory
-//		2) Deletar o config de cada módulo (manter os dos testes) -- tudo dos módulos deve ser configurado a partir de constructors
-//		3) 
-//
-//		-- Phrasings:
-//		As frases passarão a conter uma interface a uma classe base (que implementa a interface). Com a interface, podemos definir frases a partir de enums. A classe base garante que os enums só serão acessíveis via os métodos de instância.
-//
-//		-- Commands:
-//		Os comandos passão a depender de um construtor para gerar os cmd*, que serão campos da classe
-//
-//		-- Navigation states:
-//		Move-se os trg de comandos para cá. Os métodos dos navigation states precisam agora receber a instância dos comandos para dizer qual é o comando
-//		que precisa ser executado; haverá um método setCommandTriggers(icommand, triggers) onde cada icommand pode ter somente 1 array de triggers -- em outras palavras, acaba-se com os enums
-//
-//		-- Configuration: ainda ver o que fazer, mas manter a linha: configurar para novas instâncias
-
+	
+	public static InstantVASSMSAppModuleTestsConfiguration getInstance() {
+		if (instance == null) try {
+			instance = new InstantVASSMSAppModuleTestsConfiguration();
+		} catch (Throwable t) {
+			throw new RuntimeException(t);
+		}
+		return instance;
+	}
 	
 	static {
 		try {
-			configureSMSAppModuleTests(
+			configureDefaultValuesForNewInstances(
 				// log
 				new Instrumentation<DefaultInstrumentationProperties, String>(
 					"SMSModuleTests", DefaultInstrumentationProperties.DIP_MSG, EInstrumentationDataPours.CONSOLE, null),
 				1, SMSAppModuleDALFactory.POSTGRESQL,
-				// PostgreSQL properties
-				0,	// don't touch default connection pool size
-				true,
-				false, "venus", 5432, "hangman", "hangman", "hangman");
+				// PostgreSQL properties (don't touch default connection properties & pool size)
+				null, 0,
+				true, false, "venus", 5432, "hangman", "hangman", "hangman");
 		} catch (SQLException e) {
 			throw new ExceptionInInitializerError(e);
 		}
+	}
+	
+	/*****************
+	** CONSTRUCTORS **
+	*****************/
+	
+	private InstantVASSMSAppModuleTestsConfiguration() throws SQLException {
+		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(LOG, BASE_MODULE_DAL, new ICommandProcessor[0],
+			new Object[0][], new Object[0][]);
+		baseModuleNavigationStates = (SMSAppModuleNavigationStates) baseModule[0];
+
 	}
 }

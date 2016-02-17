@@ -18,6 +18,8 @@ import mutua.smsappmodule.smslogic.commands.CommandMessageDto;
 import org.junit.Before;
 import org.junit.Test;
 
+import instantvas.tests.InstantVASSMSAppModuleChatTestsConfiguration;
+
 /** <pre>
  * ChatModuleBehavioralTests.java
  * ==============================
@@ -32,6 +34,8 @@ import org.junit.Test;
 
 public class ChatModuleBehavioralTests {
 	
+	// configuration
+	InstantVASSMSAppModuleChatTestsConfiguration config = InstantVASSMSAppModuleChatTestsConfiguration.getInstance();
 	
 	/**************
 	** DATABASES ** 
@@ -91,7 +95,7 @@ public class ChatModuleBehavioralTests {
 	public void testPrivateMessageToUnexistingNickname() throws SQLException {
 		ctc.createUserAndNickname("21991234899", "dom");
 		CommandMessageDto[] messages = ctc.sendPrivateMessage("21991234899", "unexistingNick", "This message should never be delivered to no one...");
-		assertEquals("Wrong response message to tell the nickname was not found", profileModulePhrasings.getNicknameNotFound("unexistingNick"), messages[0].getText());
+		assertEquals("Wrong response message to tell the nickname was not found", config.profileModulePhrasings.getNicknameNotFound("unexistingNick"), messages[0].getText());
 	}
 
 }
