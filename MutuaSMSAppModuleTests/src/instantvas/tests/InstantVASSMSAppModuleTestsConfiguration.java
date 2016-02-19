@@ -70,7 +70,7 @@ public class InstantVASSMSAppModuleTestsConfiguration {
 				throw new NotImplementedException();
 		}
 		
-		System.err.println(InstantVASSMSAppModuleTestsConfiguration.class.getName() + ": test configuration loaded.");
+		System.err.println(InstantVASSMSAppModuleTestsConfiguration.class.getCanonicalName() + ": test configuration loaded.");
 	}
 	
 	public static InstantVASSMSAppModuleTestsConfiguration getInstance() {

@@ -90,7 +90,7 @@ public class InstantVASSMSAppModuleHelpTestsConfiguration {
 			new Object[0][]);	// idem
 		baseModuleNavigationStates = (SMSAppModuleNavigationStates) baseModule[0];
 		
-		System.err.println(InstantVASSMSAppModuleHelpTestsConfiguration.class.getName() + ": test configuration loaded.");
+		System.err.println(InstantVASSMSAppModuleHelpTestsConfiguration.class.getCanonicalName() + ": test configuration loaded.");
 	}
 
 	

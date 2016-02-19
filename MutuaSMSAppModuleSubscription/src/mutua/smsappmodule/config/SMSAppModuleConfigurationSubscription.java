@@ -44,7 +44,7 @@ public class SMSAppModuleConfigurationSubscription {
 		                                                                                                 subscriptionEngine, subscriptionToken);
 		SMSAppModuleNavigationStatesSubscription navigationStates = new SMSAppModuleNavigationStatesSubscription(commands);
 		
-		System.err.println(SMSAppModuleConfigurationSubscription.class.getName() + ": test configuration loaded.");
+		System.err.println(SMSAppModuleConfigurationSubscription.class.getCanonicalName() + ": test configuration loaded.");
 		
 		return new Object[] {navigationStates, commands, phrasings};
 	}

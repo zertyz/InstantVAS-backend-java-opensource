@@ -1,6 +1,7 @@
 package mutua.smsappmodule.smslogic.sessions;
 
 import static org.junit.Assert.*;
+
 import mutua.smsappmodule.dto.SessionDto;
 import mutua.smsappmodule.dto.UserDto;
 import mutua.smsappmodule.smslogic.navigationstates.INavigationState;
@@ -25,8 +26,7 @@ public class SessionModelTests {
 	private static ISessionProperty prop1 = new ISessionProperty() {public String getPropertyName() {return "prop1";}};
 	private static ISessionProperty prop2 = new ISessionProperty() {public String getPropertyName() {return "prop2";}};
 	private static ISessionProperty prop3 = new ISessionProperty() {public String getPropertyName() {return "prop3";}};
-
-
+	
 	@Test
 	public void testInsertedUpdatedAndDeletedSessionProperties() {
 		String expectedProp1Value = "new value1";

@@ -56,7 +56,7 @@ public class SMSProcessor {
 	public static void configureDefaultValuesForNewInstances(Instrumentation<?, ?> log, SMSAppModuleDALFactory baseModuleDAL) {
 		LOG                = log;
 		BASE_MODULE_DAL = baseModuleDAL;
-		log.reportDebug(SMSProcessor.class.getName() + ": new configuration loaded.");
+		log.reportDebug(SMSProcessor.class.getCanonicalName() + ": new configuration loaded.");
 		
 		// este classe deve ser tratada como uma instancia. Não há motivo para os 10 workers terem 10 copias de nenhum dado contido aqui.
 	}

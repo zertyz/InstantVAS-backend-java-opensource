@@ -1,0 +1,19 @@
+InstantVASDALTester
+===================
+
+This module, along with the Data Model for Instant VAS SMS Platforms documentation,
+was designed to be given to customers to conduct their own tests.
+
+This is in opposition with the 'InstantVASTester' project, which can never be delivered,
+since it will contain code for all the tests, which should never be allowed.
+
+In order to prevent "more than the essential" test code to be delivered, the ProGuard
+tool must be executed before deploying this project's jar.
+
+Running ProGuard:
+
+1) Export as a runnable jar
+2) rm /mnt/xfer/tmp/InstantVASDALTester.proguarded.jar
+3) /home/luiz/Downloads/proguard5.2.1/bin/proguard.sh @proguard.config
+4) java -Xms1408M -Xmx1408M -Xmn50M -Xss228k -XX:ReservedCodeCacheSize=12M -XX:+AlwaysPreTouch -XX:MaxMetaspaceSize=32M -Xbatch -Xcomp -XX:+AggressiveOpts -Xshare:auto -Xverify:none -XX:-UseHugeTLBFS -XX:+RelaxAccessControlCheck -XX:+UseAES -XX:+UseAESIntrinsics -XX:+UseCondCardMark -XX:-UseRTMLocking -XX:OnError='echo REPLACE WITH A COMMAND' -XX:OnOutOfMemoryError='echo REPLACE WITH A COMMAND' -XX:+CMSParallelRemarkEnabled -XX:+UseCMSInitiatingOccupancyOnly -XX:CMSInitiatingOccupancyFraction=95 -XX:+ScavengeBeforeFullGC -XX:+CMSScavengeBeforeRemark -XX:+UseNUMA -XX:+UseSerialGC -XX:-UseSHM -XX:+UseStringDeduplication -jar /mnt/xfer/tmp/InstantVASDALTester.proguarded.jar venus 5432 hangmantest hangman hangman 8 POSTGRESQL 42 true false
+5) scp -P 993 -pr /raid0/nfs/xfer/tmp/InstantVASDALTester.proguarded.jar root@localhost:/16gpen/xfer/tmp/; scp -P 993 -pr /raid0/nfs/xfer/tmp/InstantVASDALTester.proguarded.jar root@interserver:/tmp

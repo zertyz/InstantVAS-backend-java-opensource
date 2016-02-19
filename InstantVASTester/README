@@ -1,0 +1,21 @@
+InstantVASTester
+================
+
+This module serves the purpose of concentrating, in a single project, all the unit
+tests available for the InstantVAS.com service, and should be run from time to time
+while developing and before applying for the production tests.
+
+Another important aspect of this project is to allow the same tests to be run before and
+after the ProGuard obfuscation, thus validating it.
+
+This project do it's best to attempt to run all test classes, discovering them via reflection.
+Even so, manual inspection of the tests run should be done and the necessary additions of packages
+are necessary over time.
+
+Running ProGuard:
+
+1) Export as a runnable jar
+2) #rm /mnt/xfer/tmp/InstantVASDALTester.proguarded.jar
+3) #/home/luiz/Downloads/proguard5.2.1/bin/proguard.sh @proguard.config
+4) #java -Xms1408M -Xmx1408M -Xmn50M -Xss228k -XX:ReservedCodeCacheSize=12M -XX:+AlwaysPreTouch -XX:MaxMetaspaceSize=32M -Xbatch -Xcomp -XX:+AggressiveOpts -Xshare:auto -Xverify:none -XX:-UseHugeTLBFS -XX:+RelaxAccessControlCheck -XX:+UseAES -XX:+UseAESIntrinsics -XX:+UseCondCardMark -XX:-UseRTMLocking -XX:OnError='echo REPLACE WITH A COMMAND' -XX:OnOutOfMemoryError='echo REPLACE WITH A COMMAND' -XX:+CMSParallelRemarkEnabled -XX:+UseCMSInitiatingOccupancyOnly -XX:CMSInitiatingOccupancyFraction=95 -XX:+ScavengeBeforeFullGC -XX:+CMSScavengeBeforeRemark -XX:+UseNUMA -XX:+UseSerialGC -XX:-UseSHM -XX:+UseStringDeduplication -jar /mnt/xfer/tmp/InstantVASDALTester.proguarded.jar venus 5432 hangmantest hangman hangman 8 POSTGRESQL 42 true false
+5) #scp -P 993 -pr /raid0/nfs/xfer/tmp/InstantVASDALTester.proguarded.jar root@localhost:/16gpen/xfer/tmp/; scp -P 993 -pr /raid0/nfs/xfer/tmp/InstantVASDALTester.proguarded.jar root@interserver:/tmp

@@ -39,7 +39,7 @@ public class SMSAppModuleConfigurationHelp {
 		SMSAppModuleCommandsHelp         commands         = new SMSAppModuleCommandsHelp(phrasings);
 		SMSAppModuleNavigationStatesHelp navigationStates = new SMSAppModuleNavigationStatesHelp(commands);
 		
-		System.err.println(SMSAppModuleConfigurationHelp.class.getName() + ": test configuration loaded.");
+		System.err.println(SMSAppModuleConfigurationHelp.class.getCanonicalName() + ": test configuration loaded.");
 		
 		return new Object[] {navigationStates, commands, phrasings};
 	}
@@ -68,7 +68,7 @@ public class SMSAppModuleConfigurationHelp {
 		SMSAppModuleCommandsHelp         commands         = new SMSAppModuleCommandsHelp(phrasings);
 		SMSAppModuleNavigationStatesHelp navigationStates = new SMSAppModuleNavigationStatesHelp(commands, nstPresentingCompositeHelpCommandTriggers);
 		
-		log.reportDebug(SMSAppModuleConfigurationHelp.class.getName() + ": new configuration loaded.");
+		log.reportDebug(SMSAppModuleConfigurationHelp.class.getCanonicalName() + ": new configuration loaded.");
 		
 		return new Object[] {navigationStates, commands, phrasings};
 	}

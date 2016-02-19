@@ -48,7 +48,7 @@ public class InstantVASSMSAppModuleConfiguration {
 		
 		SMSAppModuleNavigationStates navigationStates = new SMSAppModuleNavigationStates(availableCommands, nstNewUserTriggers, nstExistingUserTriggers);
 		
-		log.reportDebug(InstantVASSMSAppModuleConfiguration.class.getName() + ": new configuration loaded.");
+		log.reportDebug(InstantVASSMSAppModuleConfiguration.class.getCanonicalName() + ": new configuration loaded.");
 		
 		return new Object[] {navigationStates, null, null};
 	}

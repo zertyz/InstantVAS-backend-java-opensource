@@ -28,8 +28,8 @@ import instantvas.tests.InstantVASSMSAppModuleSubscriptionTestsConfiguration;
 import instantvas.tests.InstantVASSMSAppModuleTestsConfiguration;
 
 /** <pre>
- * PostgreSQLTests.java
- * ====================
+ * InstantVASDALTester.java
+ * ========================
  * (created by luiz, Jul 28, 2015)
  *
  * Runs JUnit test cases
@@ -39,29 +39,29 @@ import instantvas.tests.InstantVASSMSAppModuleTestsConfiguration;
  * @author luiz
  */
 
-public class PostgreSQLTests {
+public class InstantVASDALTester {
 
 	public static void main(String[] args) throws SQLException, IndirectMethodNotFoundException, InterruptedException {
 
-		System.out.println("PostgreSQLTests.jar: tests the PostgreSQL version features needed by version 2.0 of the HangmanSMS game.");
-		System.out.println("                     Use this tool to validate any changes on the standard Hangman stored procedures as well");
-		System.out.println("                     as changes to the model, indexes, etc -- the algorithm complexities should, at least, be");
-		System.out.println("                     the same as stated on the 'Hangman 2.0 Data Model' documentation.");
-		System.out.println("                     For a correct algorithm analysis, run these tests on a idle system, with an empty database.");
+		System.out.println("InstantVASDALTester.jar: tests the DAL implementations needed by version 2.0 of the HangmanSMS game.");
+		System.out.println("                         Use this tool to validate any changes on the standard Hangman stored procedures as well");
+		System.out.println("                         as changes to the model, indexes, etc -- the algorithm complexities should, at least, be");
+		System.out.println("                         the same as stated on the 'Hangman 2.0 Data Model' documentation.");
+		System.out.println("                         For a correct algorithm analysis, run these tests on a idle system, with an empty database.");
 		if ((args.length < 5) || (args.length > 10)) {
 			System.out.println("Usage: sudo bash -c 'echo 0 >/proc/sys/vm/swappiness'");
-			System.out.println("       java -Xms1280M -Xmx1280M -Xmn50M -Xss228k -XX:ReservedCodeCacheSize=6M -XX:+AlwaysPreTouch -XX:MaxMetaspaceSize=6M");
+			System.out.println("       java -Xms1408M -Xmx1408M -Xmn50M -Xss228k -XX:ReservedCodeCacheSize=12M -XX:+AlwaysPreTouch -XX:MaxMetaspaceSize=32M");
 			System.out.println("            -Xbatch -Xcomp -XX:+AggressiveOpts -Xshare:auto -Xverify:none -XX:-UseHugeTLBFS -XX:+RelaxAccessControlCheck");
 			System.out.println("            -XX:+UseAES -XX:+UseAESIntrinsics -XX:+UseCondCardMark -XX:-UseRTMLocking -XX:OnError='echo REPLACE WITH A COMMAND'");
 			System.out.println("            -XX:OnOutOfMemoryError='echo REPLACE WITH A COMMAND' -XX:+CMSParallelRemarkEnabled -XX:+UseCMSInitiatingOccupancyOnly");
 			System.out.println("            -XX:CMSInitiatingOccupancyFraction=95 -XX:+ScavengeBeforeFullGC -XX:+CMSScavengeBeforeRemark -XX:+UseNUMA");
 			System.out.println("            -XX:+UseSerialGC -XX:-UseSHM -XX:+UseStringDeduplication -jar");
-			System.out.println("            PostgreSQLTests.jar <postgresql host/ip> <port> <database name> <user> <password>");
-			System.out.println("                                [number of concurrent database connections]");
-			System.out.println("                                [data access layer -- one of RAM, POSTGRESQL, EMBEDDED_DERBY]");
-			System.out.println("                                [performance tests load factor -- increase '-Xmx' accordingly]");
-			System.out.println("                                ['true' or 'false' for creating the database model, if necessary (caution!)]");
-			System.out.println("                                ['true' or 'false' for logging queries]");
+			System.out.println("            InstantVASDALTester.jar <postgresql host/ip> <port> <database name> <user> <password>");
+			System.out.println("                                    [number of concurrent database connections]");
+			System.out.println("                                    [data access layer -- one of RAM, POSTGRESQL, MYSQL, EMBEDDED_DERBY]");
+			System.out.println("                                    [performance tests load factor -- increase '-Xmx' accordingly]");
+			System.out.println("                                    ['true' or 'false' for creating the database model, if necessary (caution!)]");
+			System.out.println("                                    ['true' or 'false' for logging queries]");
 			return;
 		}
 		
@@ -112,7 +112,7 @@ public class PostgreSQLTests {
 		}
 		
 		System.out.println("\n### Starting. Please copy & paste it to luiz@InstantVAS.com:");
-		Instrumentation<DefaultInstrumentationProperties, String> log = new Instrumentation<DefaultInstrumentationProperties, String>(PostgreSQLTests.class.getCanonicalName(), DefaultInstrumentationProperties.DIP_MSG, EInstrumentationDataPours.CONSOLE, null);
+		Instrumentation<DefaultInstrumentationProperties, String> log = new Instrumentation<DefaultInstrumentationProperties, String>(InstantVASDALTester.class.getCanonicalName(), DefaultInstrumentationProperties.DIP_MSG, EInstrumentationDataPours.CONSOLE, null);
 				
 		System.out.println("\n### Applying configuration:");
 		InstantVASSMSAppModuleTestsConfiguration            .configureDefaultValuesForNewInstances(log, loadFactor, baseModuleDAL,    connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);

@@ -6,7 +6,6 @@ import java.util.HashMap;
 import mutua.smsappmodule.dto.SessionDto;
 import mutua.smsappmodule.dto.UserDto;
 import mutua.smsappmodule.smslogic.navigationstates.INavigationState;
-import mutua.smsappmodule.smslogic.navigationstates.NavigationStateCommons;
 import mutua.smsin.dto.IncomingSMSDto;
 
 /** <pre>
@@ -45,9 +44,9 @@ public abstract class SessionModel {
 	/** Creates a session for 'user' where 'storedProperties' := {{(ISessionProperty)prop, propVal}, ...} */
 	public SessionModel(SessionDto sessionDto, IncomingSMSDto MO) {
 		String[][] sessionDtoStoredProperties = sessionDto.getStoredProperties();
-		this.user              = sessionDto.getUser();
-		this.MO                = MO;
-		this.storedProperties  = new HashMap<String, String>(sessionDtoStoredProperties.length+1, 1);
+		this.user                             = sessionDto.getUser();
+		this.MO                               = MO;
+		this.storedProperties                 = new HashMap<String, String>(sessionDtoStoredProperties.length+1, 1);
 		for (String[] propertyData : sessionDtoStoredProperties) {
 			String propertyName  = propertyData[0];
 			String propertyValue = propertyData[1];
