@@ -8,7 +8,7 @@ import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates
  * (created by luiz, Aug 3, 2015)
  *
  * Declares the session properties needed by the "Profile" SMS Application Module command processors,
- * implementing the Mutua SMSApp Session Properties design pattern, as described in {@link ISessionProperty}
+ * implementing the "Instant VAS SMSApp Session Properties design pattern", as described in {@link ISessionProperty}
  *
  * @see ISessionProperty
  * @version $Id$

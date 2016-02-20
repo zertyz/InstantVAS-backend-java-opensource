@@ -27,7 +27,7 @@ public class SMSAppModulePostgreSQLAdapterChat extends PostgreSQLAdapter {
 
 	
 	// the version information for database tables present on this class, to be stored on the 'Meta' table. Useful for future data conversions.
-	private static String modelVersionForMetaTable = "2015.09.10";
+	private static final String modelVersionForMetaTable = "2015.09.10";
 	
 	// Mutua Configurable Class pattern
 	///////////////////////////////////

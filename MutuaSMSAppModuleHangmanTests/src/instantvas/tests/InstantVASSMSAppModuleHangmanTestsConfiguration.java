@@ -1,33 +1,31 @@
 package instantvas.tests;
 
+import java.sql.SQLException;
+
+import adapters.PostgreSQLAdapter;
 import mutua.icc.instrumentation.DefaultInstrumentationProperties;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
 import mutua.smsappmodule.config.InstantVASSMSAppModuleConfiguration;
-import mutua.smsappmodule.config.SMSAppModuleConfigurationProfile;
+import mutua.smsappmodule.config.SMSAppModuleConfigurationHangman;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
+import mutua.smsappmodule.dal.SMSAppModuleDALFactoryHangman;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactoryProfile;
 import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapter;
+import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterHangman;
 import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterProfile;
-import mutua.smsappmodule.i18n.SMSAppModulePhrasingsProfile;
-import mutua.smsappmodule.smslogic.SMSAppModuleCommandsProfile;
+import mutua.smsappmodule.i18n.SMSAppModulePhrasingsHangman;
+import mutua.smsappmodule.smslogic.SMSAppModuleCommandsHangman;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates;
-import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesProfile;
+import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesHangman;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsProfile.CommandNamesProfile.*;
-import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsProfile.CommandTriggersProfile.*;
-
-import java.sql.SQLException;
-
-import adapters.PostgreSQLAdapter;
-
 /** <pre>
- * SMSAppModuleConfigurationProfileTests.java
- * ==========================================
- * (created by luiz, Aug 3, 2015)
+ * InstantVASSMSAppModuleHangmanTestsConfiguration.java
+ * ====================================================
+ * (created by luiz, Aug 13, 2015)
  *
- * Configure the classes' default values for new instances of the "Profile" SMS Module test application.
+ * Configure the classes' default values for new instances of the "Hangman" SMS Module test application.
  *
  * Typically, the configure* methods on this class must be invoked prior to its usage. 
  * 
@@ -37,22 +35,23 @@ import adapters.PostgreSQLAdapter;
  * @author luiz
  */
 
-public class InstantVASSMSAppModuleProfileTestsConfiguration {
+public class InstantVASSMSAppModuleHangmanTestsConfiguration {
 
 	public  static final String shortCode = "975";
-	private static final String appName   = "ProfileTestApp";
+	private static final String appName   = "HangmanTestApp";
 	
-	private static InstantVASSMSAppModuleProfileTestsConfiguration instance = null;
+	private static InstantVASSMSAppModuleHangmanTestsConfiguration instance = null;
 
 	public static Instrumentation<DefaultInstrumentationProperties, String> LOG;
 	public static SMSAppModuleDALFactory                                    BASE_MODULE_DAL;
 	public static SMSAppModuleDALFactoryProfile                             PROFILE_MODULE_DAL;
+	public static SMSAppModuleDALFactoryHangman                             HANGMAN_MODULE_DAL;
 	public static int                                                       PERFORMANCE_TESTS_LOAD_FACTOR;
 	
 	public SMSAppModuleNavigationStates        baseModuleNavigationStates;
-	public SMSAppModulePhrasingsProfile        profileModulePhrasings;
-	public SMSAppModuleCommandsProfile         profileModuleCommands;
-	public SMSAppModuleNavigationStatesProfile profileModuleNavigationStates;
+	public SMSAppModulePhrasingsHangman        hangmanModulePhrasings;
+	public SMSAppModuleCommandsHangman         hangmanModuleCommands;
+	public SMSAppModuleNavigationStatesHangman hangmanModuleNavigationStates;
 	
 	/**************************
 	** CONFIGURATION METHODS **
@@ -60,7 +59,7 @@ public class InstantVASSMSAppModuleProfileTestsConfiguration {
 	
 	/** method to be called to configure all the modules needed to get instances of the test classes */
 	public static void configureDefaultValuesForNewInstances(Instrumentation<DefaultInstrumentationProperties, String> log, 
-		int performanceTestsLoadFactor, SMSAppModuleDALFactoryProfile profileModuleDAL,
+		int performanceTestsLoadFactor, SMSAppModuleDALFactoryHangman hangmanModuleDAL,
 		String postgreSQLconnectionProperties, int postgreSQLConnectionPoolSize,
 		boolean postgreSQLAllowDataStructuresAssertion, boolean postgreSQLShouldDebugQueries,
 		String postgreSQLHostname, int postgreSQLPort, String postgreSQLDatabase, String postgreSQLUser, String postgreSQLPassword) throws SQLException {
@@ -68,40 +67,43 @@ public class InstantVASSMSAppModuleProfileTestsConfiguration {
 		instance = null;
 		
 		LOG                           = log;
-		PROFILE_MODULE_DAL            = profileModuleDAL;
+		HANGMAN_MODULE_DAL            = hangmanModuleDAL;
 		PERFORMANCE_TESTS_LOAD_FACTOR = performanceTestsLoadFactor;
 		
 		// database configuration
-		switch (profileModuleDAL) {
+		switch (hangmanModuleDAL) {
 			case POSTGRESQL:
 				PostgreSQLAdapter.configureDefaultValuesForNewInstances(postgreSQLconnectionProperties, postgreSQLConnectionPoolSize);
 				SMSAppModulePostgreSQLAdapter.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
 					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
 				SMSAppModulePostgreSQLAdapterProfile.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
 					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
+				SMSAppModulePostgreSQLAdapterHangman.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
+					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
 				// other databases
-				BASE_MODULE_DAL = SMSAppModuleDALFactory.POSTGRESQL;
+				BASE_MODULE_DAL    = SMSAppModuleDALFactory       .POSTGRESQL;
+				PROFILE_MODULE_DAL = SMSAppModuleDALFactoryProfile.POSTGRESQL;
 				break;
 			case RAM:
 				// other databases
-				BASE_MODULE_DAL = SMSAppModuleDALFactory.RAM;
+				BASE_MODULE_DAL    = SMSAppModuleDALFactory       .RAM;
+				PROFILE_MODULE_DAL = SMSAppModuleDALFactoryProfile.RAM;
 				break;
 			default:
 				throw new NotImplementedException();
 		}
 		
-		System.err.println(InstantVASSMSAppModuleProfileTestsConfiguration.class.getCanonicalName() + ": test configuration loaded.");
+		System.err.println(InstantVASSMSAppModuleHangmanTestsConfiguration.class.getCanonicalName() + ": test configuration loaded.");
 	}
 	
-	public static InstantVASSMSAppModuleProfileTestsConfiguration getInstance() {
+	public static InstantVASSMSAppModuleHangmanTestsConfiguration getInstance() {
 		if (instance == null) try {
-			instance = new InstantVASSMSAppModuleProfileTestsConfiguration();
+			instance = new InstantVASSMSAppModuleHangmanTestsConfiguration();
 		} catch (Throwable t) {
 			throw new RuntimeException(t);
 		}
 		return instance;
 	}
-
 	static {
 		// configure with the default values
 		try {
@@ -110,7 +112,7 @@ public class InstantVASSMSAppModuleProfileTestsConfiguration {
 				new Instrumentation<DefaultInstrumentationProperties, String>(
 					appName, DefaultInstrumentationProperties.DIP_MSG, EInstrumentationDataPours.CONSOLE, null),
 				// module DAL
-				1, SMSAppModuleDALFactoryProfile.POSTGRESQL,
+				1, SMSAppModuleDALFactoryHangman.POSTGRESQL,
 				// PostgreSQL properties
 				null,	// connection properties
 				-1,		// connection pool size
@@ -126,25 +128,25 @@ public class InstantVASSMSAppModuleProfileTestsConfiguration {
 	** CONSTRUCTORS **
 	*****************/
 	
-	private InstantVASSMSAppModuleProfileTestsConfiguration() throws SQLException {
+	private InstantVASSMSAppModuleHangmanTestsConfiguration() throws SQLException {
 		
-		Object[] profileModule = SMSAppModuleConfigurationProfile.getProfileModuleInstances(shortCode, appName, PROFILE_MODULE_DAL);
+		Object[] hangmanModule = SMSAppModuleConfigurationHangman.getHangmanModuleInstances(shortCode, appName, BASE_MODULE_DAL, PROFILE_MODULE_DAL, HANGMAN_MODULE_DAL, "Guest");
 		
-		profileModuleNavigationStates = (SMSAppModuleNavigationStatesProfile) profileModule[0];
-		profileModuleCommands         = (SMSAppModuleCommandsProfile)         profileModule[1];
-		profileModulePhrasings        = (SMSAppModulePhrasingsProfile)        profileModule[2];
+		hangmanModuleNavigationStates = (SMSAppModuleNavigationStatesHangman) hangmanModule[0];
+		hangmanModuleCommands         = (SMSAppModuleCommandsHangman)         hangmanModule[1];
+		hangmanModulePhrasings        = (SMSAppModulePhrasingsHangman)        hangmanModule[2];
 		
 		// base module -- configured to interact with the Profile Module commands 
-		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(LOG, BASE_MODULE_DAL, profileModuleCommands.values,
+		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(LOG, BASE_MODULE_DAL, hangmanModuleCommands.values,
 			/*nstNewUserTriggers*/
 			new Object[][] {
-				{cmdStartAskForNicknameDialog, trgGlobalStartAskForNicknameDialog},
+//				{cmdStartAskForNicknameDialog, trgGlobalStartAskForNicknameDialog},
 			},
 			/*nstExistingUserTriggers*/
 			new Object[][] {
-				{cmdRegisterNickname,                trgGlobalRegisterNickname},
-				{cmdStartAskForNicknameDialog,       trgGlobalStartAskForNicknameDialog},
-				{cmdShowUserProfile,                 trgGlobalShowUserProfile},
+//				{cmdRegisterNickname,                trgGlobalRegisterNickname},
+//				{cmdStartAskForNicknameDialog,       trgGlobalStartAskForNicknameDialog},
+//				{cmdShowUserProfile,                 trgGlobalShowUserProfile},
 			});
 		baseModuleNavigationStates = (SMSAppModuleNavigationStates)baseModule[0];
 	}

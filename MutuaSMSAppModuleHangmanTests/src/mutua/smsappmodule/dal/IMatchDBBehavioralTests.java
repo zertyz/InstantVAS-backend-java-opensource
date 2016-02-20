@@ -1,19 +1,19 @@
 package mutua.smsappmodule.dal;
 
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationHangmanTests.DEFAULT_HANGMAN_DAL;
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationHangmanTests.DEFAULT_MODULE_DAL;
+import static instantvas.tests.InstantVASSMSAppModuleHangmanTestsConfiguration.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import java.sql.SQLException;
 
-import mutua.smsappmodule.SMSAppModuleTestCommons;
-import mutua.smsappmodule.dto.MatchDto;
-import mutua.smsappmodule.dto.UserDto;
-import mutua.smsappmodule.dto.MatchDto.EMatchStatus;
-
 import org.junit.Before;
 import org.junit.Test;
+
+import instantvas.tests.InstantVASSMSAppModuleHangmanTestsConfiguration;
+import mutua.smsappmodule.SMSAppModuleTestCommons;
+import mutua.smsappmodule.dto.MatchDto;
+import mutua.smsappmodule.dto.MatchDto.EMatchStatus;
+import mutua.smsappmodule.dto.UserDto;
 
 /** <pre>
  * IProfileDBBehavioralTests.java
@@ -29,8 +29,11 @@ import org.junit.Test;
 
 public class IMatchDBBehavioralTests {
 	
-	private IUserDB  userDB    = DEFAULT_MODULE_DAL.getUserDB();
-	private IMatchDB matchDB   = DEFAULT_HANGMAN_DAL.getMatchDB();
+	// configuration
+	InstantVASSMSAppModuleHangmanTestsConfiguration config = InstantVASSMSAppModuleHangmanTestsConfiguration.getInstance();
+	
+	private IUserDB  userDB    = BASE_MODULE_DAL.getUserDB();
+	private IMatchDB matchDB   = HANGMAN_MODULE_DAL.getMatchDB();
 	
 
 	/*******************
@@ -40,7 +43,7 @@ public class IMatchDBBehavioralTests {
 	@Before
 	public void resetTables() throws SQLException {
 		matchDB.reset();
-		SMSAppModuleTestCommons.resetTables();
+		SMSAppModuleTestCommons.resetBaseTables(BASE_MODULE_DAL);
 	}
 	
 

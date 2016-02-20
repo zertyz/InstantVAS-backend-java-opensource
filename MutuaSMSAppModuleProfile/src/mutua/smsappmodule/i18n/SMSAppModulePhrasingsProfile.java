@@ -83,7 +83,7 @@ public class SMSAppModulePhrasingsProfile {
 	
 	/** Phrase sent when the system wants the user to change his/her nickname (for the case when he/she already has a valid nickname). Variables: {{shortCode}}, {{appName}}, {{currentNickname}} */
 	public String getAskForNewNickname(String currentNickname) {
-		// TODO fazer um teste no qual revela-se este erro (não usar phrAskForNewNickname)
+		// TODO fazer um teste no qual revela-se este erro (o de não usar phrAskForNewNickname)
 		return phrAskForNicknameCancelation.getPhrase("currentNickname", currentNickname);
 	}
 

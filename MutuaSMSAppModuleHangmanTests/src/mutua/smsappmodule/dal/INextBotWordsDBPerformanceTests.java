@@ -1,20 +1,16 @@
 package mutua.smsappmodule.dal;
 
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationHangmanTests.DEFAULT_HANGMAN_DAL;
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationHangmanTests.DEFAULT_MODULE_DAL;
+import static instantvas.tests.InstantVASSMSAppModuleHangmanTestsConfiguration.*;
 
 import java.sql.SQLException;
 
 import mutua.smsappmodule.DatabaseAlgorithmAnalysis;
 import mutua.smsappmodule.SMSAppModuleTestCommons;
-import mutua.smsappmodule.config.SMSAppModuleConfigurationTests;
-import mutua.smsappmodule.dto.MatchDto;
 import mutua.smsappmodule.dto.UserDto;
-import mutua.smsappmodule.dto.MatchDto.EMatchStatus;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
+
+import instantvas.tests.InstantVASSMSAppModuleHangmanTestsConfiguration;
 
 /** <pre>
  * IMatchDBPerformanceTests.java
@@ -31,38 +27,36 @@ import org.junit.Test;
 
 public class INextBotWordsDBPerformanceTests {
 
-	private IUserDB         userDB         = DEFAULT_MODULE_DAL.getUserDB();
-	private INextBotWordsDB nextBotWordsDB = DEFAULT_HANGMAN_DAL.getNextBotWordsDB();
+	// configuration
+	InstantVASSMSAppModuleHangmanTestsConfiguration config = InstantVASSMSAppModuleHangmanTestsConfiguration.getInstance();
+
+	private IUserDB         userDB         = BASE_MODULE_DAL.getUserDB();
+	private INextBotWordsDB nextBotWordsDB = HANGMAN_MODULE_DAL.getNextBotWordsDB();
 	
 	// algorithm settings
-	private static int numberOfThreads = 4;
+	private int numberOfThreads = 4;
 
 	// users table pre-fill
-	private static int       totalNumberOfUsers = SMSAppModuleConfigurationTests.PERFORMANCE_TESTS_LOAD_FACTOR * ((DEFAULT_HANGMAN_DAL == SMSAppModuleDALFactoryHangman.RAM) ? 1000000 : 40000);	// please, be sure the division between this and 'numberOfThreads' is round
-	private static long      phoneStart         = 991230000;
-	private static UserDto[] users              = new UserDto[totalNumberOfUsers];
+	private int       totalNumberOfUsers = PERFORMANCE_TESTS_LOAD_FACTOR * ((HANGMAN_MODULE_DAL == SMSAppModuleDALFactoryHangman.RAM) ? 1000000 : 40000);	// please, be sure the division between this and 'numberOfThreads' is round
+	private long      phoneStart         = 991230000;
+	private UserDto[] users              = new UserDto[totalNumberOfUsers];
 
 
 	/*******************
 	** COMMON METHODS **
 	*******************/
 	
-	@BeforeClass
-	public static void fulfillUsersTable() {
+	//@BeforeClass, fulfillUsersTable
+	public INextBotWordsDBPerformanceTests() {
 		try {
-			SMSAppModuleTestCommons.resetTables();
-			SMSAppModuleTestCommons.insertUsers(phoneStart, users, numberOfThreads);
+			SMSAppModuleTestCommons.resetBaseTables(BASE_MODULE_DAL);
+			SMSAppModuleTestCommons.insertUsers(userDB, phoneStart, users, numberOfThreads);
 		} catch (Throwable t) {
 			t.printStackTrace();
 			throw new RuntimeException("Could not fulfill users table", t);
 		}
 	}
 	
-	@AfterClass
-	public static void clearRAM() {
-		users = null;
-	}
-
 	
 	/**********
 	** TESTS **

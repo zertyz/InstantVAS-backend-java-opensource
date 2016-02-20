@@ -105,6 +105,7 @@ public class InstantVASTester {
 	
 	public static String[] searchJUnitTestClasses() throws ClassNotFoundException, IOException, URISyntaxException {
 		String[] packages = {
+			// please check with "unzip -l <fat.jar>" if this covers all test classes
 			"mutua.events",
 			"mutua.imi",
 			"mutua.serialization",

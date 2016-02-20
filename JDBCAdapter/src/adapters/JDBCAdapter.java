@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
 
 import mutua.events.annotations.EventListener;
@@ -226,7 +227,7 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 	/** check database and tables presence... create if needed.
 	/* assure it will be done only once during the life of the virtual machine */
 	protected void assureDataStructures() {
-		String key = hostname + "_" + port + "_" + database + "_" + getClass().getCanonicalName();
+		String key = hostname + "_" + port + "_" + database + "_" + getClass().getCanonicalName() + "_" + Arrays.deepToString(getTableDefinitions());
 		if (!assuredDatabases.containsKey(key)) try {
 			assureDatabaseIsOk();
 			assureTablesAreOk();

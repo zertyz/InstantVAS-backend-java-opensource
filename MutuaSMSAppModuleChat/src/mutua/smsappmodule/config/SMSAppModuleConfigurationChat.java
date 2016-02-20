@@ -39,7 +39,7 @@ public class SMSAppModuleConfigurationChat {
 		SMSAppModuleCommandsChat         commands         = new SMSAppModuleCommandsChat(profilePhrasings, chatPhrasings, profileModuleDAL, chatModuleDAL);
 		SMSAppModuleNavigationStatesChat navigationStates = new SMSAppModuleNavigationStatesChat(commands);
 		
-		System.err.println(SMSAppModuleConfigurationChat.class.getName() + ": test configuration loaded.");
+		System.err.println(SMSAppModuleConfigurationChat.class.getCanonicalName() + ": test configuration loaded.");
 		
 		return new Object[] {navigationStates, commands, chatPhrasings, profilePhrasings};
 	}

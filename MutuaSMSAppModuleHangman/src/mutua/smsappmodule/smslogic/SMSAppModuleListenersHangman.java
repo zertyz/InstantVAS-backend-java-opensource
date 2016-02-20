@@ -24,24 +24,33 @@ import mutua.smsappmodule.smslogic.SMSAppModuleEventsSubscription.ESMSAppModuleE
 
 public class SMSAppModuleListenersHangman {
 	
+	private final SMSAppModuleCommandsHangman hangmanCommands;
+	
+	private SMSAppModuleListenersHangman(SMSAppModuleCommandsHangman hangmanCommands) {
+		this.hangmanCommands = hangmanCommands;
+	}
+	
 	
 	/*******************************
 	** SUBSCRIPTION MODULE EVENTS **
 	*******************************/
 	
-	private static EventClient<ESMSAppModuleEventsSubscription> subscriptionEventListener = new EventClient<ESMSAppModuleEventsSubscription>() {
+	/** This event listener is the responsible for making all users have a default nickname */
+	private EventClient<ESMSAppModuleEventsSubscription> subscriptionEventListener = new EventClient<ESMSAppModuleEventsSubscription>() {
 		
 		@EventListener("USER_JUST_SUBSCRIBED_NOTIFICATION")
-		/** This event listener is the responsible for making all users have a default nickname */
 		public void onSubscription(SubscriptionDto subscriptionRecord) throws SQLException {
-			SMSAppModuleCommandsHangman.assureUserHasANickname(subscriptionRecord.getUser());
+			hangmanCommands.assureUserHasANickname(subscriptionRecord.getUser());
 		}
 		
 	};
 	
+	// TODO pros eventos voltarem a funcionar, o hangman commands deve receber a instancia do subscription commands e o subscription commands tem que declarar uma instancia do SMSAppModuleEventsSubscription e, lógico, todos os métodos estáticos desta última classe têm de ser removidos
 
-	public static void registerEventListeners() throws IndirectMethodNotFoundException {
-		SMSAppModuleEventsSubscription.addListener(subscriptionEventListener);
+	public static SMSAppModuleListenersHangman instantiateAndRegisterEventListeners(SMSAppModuleCommandsHangman hangmanCommands) throws IndirectMethodNotFoundException {
+		SMSAppModuleListenersHangman instance = new SMSAppModuleListenersHangman(hangmanCommands);
+		SMSAppModuleEventsSubscription.addListener(instance.subscriptionEventListener);
+		return instance;
 	}
 
 }

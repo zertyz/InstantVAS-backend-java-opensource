@@ -1,13 +1,13 @@
 package mutua.smsappmodule.dal;
 
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationHangmanTests.*;
+import static instantvas.tests.InstantVASSMSAppModuleHangmanTestsConfiguration.*;
 import static org.junit.Assert.*;
+
+import instantvas.tests.InstantVASSMSAppModuleHangmanTestsConfiguration;
 
 import java.sql.SQLException;
 
 import mutua.smsappmodule.SMSAppModuleTestCommons;
-import mutua.smsappmodule.dto.MatchDto;
-import mutua.smsappmodule.dto.MatchDto.EMatchStatus;
 import mutua.smsappmodule.dto.UserDto;
 
 import org.junit.Before;
@@ -27,8 +27,11 @@ import org.junit.Test;
 
 public class INextBotWordsDBBehavioralTests {
 	
-	private IUserDB         userDB         = DEFAULT_MODULE_DAL.getUserDB();
-	private INextBotWordsDB nextBotWordsDB = DEFAULT_HANGMAN_DAL.getNextBotWordsDB();
+	// configuration
+	InstantVASSMSAppModuleHangmanTestsConfiguration config = InstantVASSMSAppModuleHangmanTestsConfiguration.getInstance();
+
+	private IUserDB         userDB         = BASE_MODULE_DAL.getUserDB();
+	private INextBotWordsDB nextBotWordsDB = HANGMAN_MODULE_DAL.getNextBotWordsDB();
 	
 
 	/*******************
@@ -38,7 +41,7 @@ public class INextBotWordsDBBehavioralTests {
 	@Before
 	public void resetTables() throws SQLException {
 		nextBotWordsDB.reset();
-		SMSAppModuleTestCommons.resetTables();
+		SMSAppModuleTestCommons.resetBaseTables(BASE_MODULE_DAL);
 	}
 	
 

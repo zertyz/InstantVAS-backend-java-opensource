@@ -1,10 +1,5 @@
 package mutua.smsappmodule;
 
-import mutua.smsappmodule.smslogic.commands.CommandTriggersDto;
-import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
-import mutua.smsappmodule.smslogic.navigationstates.INavigationState;
-import mutua.smsappmodule.smslogic.navigationstates.NavigationStateCommons;
-
 /** <pre>
  * HangmanModuleTestCommons.java
  * =============================

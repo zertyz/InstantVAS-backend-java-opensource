@@ -25,16 +25,16 @@ public class SMSAppModuleConfigurationProfile {
 
 	/** Constructs the simple version of this SMS Module, with default values, for testing purposes.
 	 *  @param shortCode         &
-	 *  @param appName           see {@link SMSAppModulePhrasingsChat#SMSAppModulePhrasingsChat(String, String, String, String, String)}
-	 *  @param profileModuleDAL  see {@link SMSAppModuleCommandsChat#SMSAppModuleCommandsChat}
+	 *  @param appName           see {@link SMSAppModulePhrasingsProfile#SMSAppModulePhrasingsProfile(String, String, String, String, String, String, String, String)}
+	 *  @param profileModuleDAL  see {@link SMSAppModuleCommandsProfile#SMSAppModuleCommandsProfile}
 	 *  @returns {(SMSAppModuleNavigationStatesProfile)navigationStates, (SMSAppModuleCommandsProfile)commands, (SMSAppModulePhrasingsProfile)phrasings} */
-	public static Object[] getChatModuleInstances(String shortCode, String appName,
-	                                              SMSAppModuleDALFactoryProfile profileModuleDAL) {
+	public static Object[] getProfileModuleInstances(String shortCode, String appName,
+	                                                 SMSAppModuleDALFactoryProfile profileModuleDAL) {
 		SMSAppModulePhrasingsProfile        phrasings        = new SMSAppModulePhrasingsProfile(shortCode, appName);
 		SMSAppModuleCommandsProfile         commands         = new SMSAppModuleCommandsProfile(phrasings, profileModuleDAL);
 		SMSAppModuleNavigationStatesProfile navigationStates = new SMSAppModuleNavigationStatesProfile(commands);
 		
-		System.err.println(SMSAppModuleConfigurationProfile.class.getName() + ": test configuration loaded.");
+		System.err.println(SMSAppModuleConfigurationProfile.class.getCanonicalName() + ": test configuration loaded.");
 		
 		return new Object[] {navigationStates, commands, phrasings};
 	}

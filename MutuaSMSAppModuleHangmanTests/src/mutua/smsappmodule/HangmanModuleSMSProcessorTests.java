@@ -1,8 +1,8 @@
 package mutua.smsappmodule;
 
-import java.sql.SQLException;
+import static instantvas.tests.InstantVASSMSAppModuleHangmanTestsConfiguration.*;
 
-import static mutua.smsappmodule.config.SMSAppModuleConfigurationHangmanTests.*;
+import java.sql.SQLException;
 
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates;
 

@@ -78,7 +78,7 @@ public class SMSAppModuleCommandsProfile {
 	private final IProfileDB profileDB;
 
 
-	/** Constructs an instance of this module's command processors.
+	/** Constructs an instance of this module's command processors.<pre>
 	 *  @param profilePhrases   an instance of the phrasings to be used
 	 *  @param profileModuleDAL one of the members of {@link SMSAppModuleDALFactoryProfile}, from which the {@link SMSAppModuleDALFactory} user data will also be taken */
 	public SMSAppModuleCommandsProfile(SMSAppModulePhrasingsProfile  profilePhrases,

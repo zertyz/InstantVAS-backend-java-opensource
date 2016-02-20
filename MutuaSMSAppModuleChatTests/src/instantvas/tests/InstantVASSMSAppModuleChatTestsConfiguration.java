@@ -76,15 +76,14 @@ public class InstantVASSMSAppModuleChatTestsConfiguration {
 		int performanceTestsLoadFactor, SMSAppModuleDALFactoryChat chatModuleDAL,
 		String postgreSQLconnectionProperties, int postgreSQLConnectionPoolSize,
 		boolean postgreSQLAllowDataStructuresAssertion, boolean postgreSQLShouldDebugQueries,
-		String postgreSQLHostname, int postgreSQLPort, String postgreSQLDatabase, String postgreSQLUser, String postgreSQLPassword,
-		String moTableName, String moIdFieldName, String moTextFieldName) throws SQLException {
+		String postgreSQLHostname, int postgreSQLPort, String postgreSQLDatabase, String postgreSQLUser, String postgreSQLPassword) throws SQLException {
 		
 		instance = null;
 		
 		LOG                           = log;
 		PERFORMANCE_TESTS_LOAD_FACTOR = performanceTestsLoadFactor;
 		CHAT_MODULE_DAL               = chatModuleDAL;
-		MO_TABLE_NAME                 = moTableName;
+		MO_TABLE_NAME                 = "ChatTestMOQueue";
 		
 		// database configuration
 		switch (chatModuleDAL) {
@@ -100,7 +99,7 @@ public class InstantVASSMSAppModuleChatTestsConfiguration {
 				// chat db
 				SMSAppModulePostgreSQLAdapterChat.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
 					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword,
-					moTableName, moIdFieldName, moTextFieldName);
+					MO_TABLE_NAME, "eventId", "text");
 				// other databases
 				BASE_MODULE_DAL    = SMSAppModuleDALFactory       .POSTGRESQL;
 				PROFILE_MODULE_DAL = SMSAppModuleDALFactoryProfile.POSTGRESQL;
@@ -114,7 +113,7 @@ public class InstantVASSMSAppModuleChatTestsConfiguration {
 				throw new NotImplementedException();
 		}
 
-		System.err.println(InstantVASSMSAppModuleChatTestsConfiguration.class.getName() + ": test configuration loaded.");
+		System.err.println(InstantVASSMSAppModuleChatTestsConfiguration.class.getCanonicalName() + ": test configuration loaded.");
 	}
 	
 	public static InstantVASSMSAppModuleChatTestsConfiguration getInstance() {
@@ -140,9 +139,7 @@ public class InstantVASSMSAppModuleChatTestsConfiguration {
 				-1,		// connection pool size
 				true,	// assert structures
 				false,	// debug queries
-				"venus", 5432, "hangman", "hangman", "hangman",
-				// Chat DAL properties
-				"ChatTestMOQueue", "eventId", "text");
+				"venus", 5432, "hangman", "hangman", "hangman");
 		} catch (SQLException e) {
 			throw new ExceptionInInitializerError(e);
 		}

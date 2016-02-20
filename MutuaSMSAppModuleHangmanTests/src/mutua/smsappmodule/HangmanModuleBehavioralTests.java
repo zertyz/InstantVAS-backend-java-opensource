@@ -2,8 +2,6 @@ package mutua.smsappmodule;
 
 import static org.junit.Assert.*;
 
-import org.junit.Test;
-
 /** <pre>
  * HangmanModuleBehavioralTests.java
  * =================================
