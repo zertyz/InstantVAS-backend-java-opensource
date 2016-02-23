@@ -54,8 +54,9 @@ public class ChatDB extends IChatDB {
 
 	
 	/** special method used to keep track of MOs for the RAM version -- DB versions should use the Queue tables */
+	private int lastMOId = 1;
 	public synchronized int addMO(String moText) throws SQLException {
-		int moId = moTexts.size();
+		int moId = lastMOId++;
 		moTexts.put(moId, moText);
 		return moId;
 	}

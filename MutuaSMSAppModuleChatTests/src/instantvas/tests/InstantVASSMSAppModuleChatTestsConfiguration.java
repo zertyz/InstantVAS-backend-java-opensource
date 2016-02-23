@@ -7,8 +7,8 @@ import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsChat.CommandTrigge
 
 import mutua.events.PostgreSQLQueueEventLink;
 import mutua.events.SpecializedMOQueueDataBureau;
-import mutua.events.TestEventServer;
-import mutua.events.TestEventServer.ETestEventServices;
+import mutua.events.TestAdditionalEventServer;
+import mutua.events.TestAdditionalEventServer.ETestEventServices;
 import mutua.events.postgresql.QueuesPostgreSQLAdapter;
 import mutua.icc.instrumentation.DefaultInstrumentationProperties;
 import mutua.icc.instrumentation.Instrumentation;
@@ -60,7 +60,7 @@ public class InstantVASSMSAppModuleChatTestsConfiguration {
 	public static String                                                    MO_TABLE_NAME;
 	
 	public PostgreSQLQueueEventLink<ETestEventServices>  MO_QUEUE_LINK;
-	public TestEventServer                               MO_QUEUE_PRODUCER;
+	public TestAdditionalEventServer                               MO_QUEUE_PRODUCER;
 	public SMSAppModuleNavigationStates                  baseModuleNavigationStates;
 	public SMSAppModulePhrasingsProfile                  profileModulePhrasings;
 	public SMSAppModulePhrasingsChat                     chatModulePhrasings;
@@ -155,7 +155,7 @@ public class InstantVASSMSAppModuleChatTestsConfiguration {
 		switch (CHAT_MODULE_DAL) {
 			case POSTGRESQL:
 				MO_QUEUE_LINK     = new PostgreSQLQueueEventLink<ETestEventServices>(ETestEventServices.class, MO_TABLE_NAME, new SpecializedMOQueueDataBureau());
-				MO_QUEUE_PRODUCER = new TestEventServer(MO_QUEUE_LINK);
+				MO_QUEUE_PRODUCER = new TestAdditionalEventServer(MO_QUEUE_LINK);
 				break;
 			case RAM:
 				MO_QUEUE_LINK     = null;
