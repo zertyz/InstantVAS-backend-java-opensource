@@ -4,11 +4,10 @@ import static instantvas.tests.InstantVASSMSAppModuleTestsConfiguration.BASE_MOD
 
 import java.sql.SQLException;
 
-import mutua.smsappmodule.DatabaseAlgorithmAnalysis;
-
 import org.junit.Test;
 
 import instantvas.tests.InstantVASSMSAppModuleTestsConfiguration;
+import mutua.tests.DatabaseAlgorithmAnalysis;
 
 /** <pre>
  * IUserDBPerformanceTests.java

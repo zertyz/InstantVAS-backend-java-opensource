@@ -52,8 +52,8 @@ public class NativeHTTPServerBehavioralTests {
 	@Test
 	public void testTheirsAndMine() throws IOException, InterruptedException {
 		NativeHTTPServer.startServer(8080, 9999, NativeHTTPServer.InstantVASSMSWebHandlers.values(), TestHandlers.values());
-		System.out.println("The server was started on 8080. Please, use it within 10 minutes.");
-		Thread.sleep(600*1000);
+		System.out.println("The server was started on 8080. Please, use it within 1 minute.");
+		Thread.sleep(60*1000);
 	}
 	
 	public enum TestHandlers implements INativeHTTPServerHandler {

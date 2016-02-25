@@ -17,11 +17,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 
-import mutua.events.annotations.EventListener;
 import mutua.icc.instrumentation.DefaultInstrumentationEvents;
 import mutua.icc.instrumentation.InstrumentableEvent;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.icc.instrumentation.Instrumentation.EInstrumentationPropagableEvents;
+import mutua.icc.instrumentation.Instrumentation.InstrumentationPropagableEvent;
 import mutua.icc.instrumentation.JDBCAdapterInstrumentationEvents;
 import mutua.icc.instrumentation.dto.InstrumentationEventDto;
 import mutua.icc.instrumentation.eventclients.InstrumentationPropagableEventsClient;
@@ -318,7 +318,8 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 	private final static InstrumentableEvent REPORTED_THROWABLE          = DefaultInstrumentationEvents.DIE_REPORTED_THROWABLE.getInstrumentableEvent();
 	private final static InstrumentableEvent REPORTED_UNCOUGHT_EXCEPTION = DefaultInstrumentationEvents.DIE_UNCOUGHT_EXCEPTION.getInstrumentableEvent();
 	private final static InstrumentableEvent REPORTED_ERROR              = DefaultInstrumentationEvents.DIE_ERROR.getInstrumentableEvent();
-	@EventListener({"INTERNAL_FRAMEWORK_INSTRUMENTATION_EVENT"})
+	
+	@InstrumentationPropagableEvent(EInstrumentationPropagableEvents.INTERNAL_FRAMEWORK_INSTRUMENTATION_EVENT)
 	public void handleInstrumentationNotifications(InstrumentationEventDto applicationEvent) {
 		InstrumentableEvent instrumentableEvent = applicationEvent.getEvent();
 		if ((instrumentableEvent == REPORTED_THROWABLE) || (instrumentableEvent == REPORTED_UNCOUGHT_EXCEPTION) ||
@@ -327,7 +328,7 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 			try {
 				checkAndPopulatePoolOfConnections();
 			} catch (SQLException e) {
-				log.reportThrowable(e, "Exception while validating the pool of connections");
+				log.reportThrowable(e, "Exception while validating the pool of connections. Please consider checking the database and/or rebooting the server & restarting the application");
 			}
 		}
 	}

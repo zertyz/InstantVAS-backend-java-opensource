@@ -4,7 +4,7 @@ import adapters.dto.PreparedProcedureInvocationDto;
 import adapters.exceptions.PreparedProcedureException;
 import mutua.events.IDatabaseQueueDataBureau;
 import mutua.imi.IndirectMethodInvocationInfo;
-import mutua.smsappmodule.config.SMSAppModuleConfiguration;
+import mutua.smsappmodule.config.InstantVASSMSAppModuleConfiguration;
 import mutua.smsappmodule.hangmangame.HangmanGame.EHangmanGameStates;
 import mutua.smsin.dto.IncomingSMSDto;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
@@ -44,7 +44,7 @@ public class MTSMSesQueueDataBureau extends IDatabaseQueueDataBureau<EHangmanGam
 	}
 	
 	@Override
-	public String getValuesExpressionForInsertNewQueueElementQuery() {
+	public String getParametersListForInsertNewQueueElementQuery() {
 		return "${MO_ID}, ${PHONE}, ${TEXT}";
 	}
 	

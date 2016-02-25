@@ -77,13 +77,15 @@ public class SMSAppModuleCommandsSubscription {
 	//////////////////
 
 	private final SMSAppModulePhrasingsSubscription subscriptionPhrases;
-	private final IUserDB            userDB;
-	private final ISessionDB         sessionDB;
-	private final ISubscriptionDB    subscriptionDB;
+	private final IUserDB                        userDB;
+	private final ISessionDB                     sessionDB;
+	private final ISubscriptionDB                subscriptionDB;
 	/** The integration module with the service responsible for managing the subscription lifecycle of each user */
-	private final SubscriptionEngine subscriptionEngine;
+	private final SubscriptionEngine             subscriptionEngine;
 	/** The identifier of the billing entity to which the subscribers of this service must be assigned to */
-	private final String             subscriptionToken;
+	private final String                         subscriptionToken;
+	/** The events manager for this module */
+	private final SMSAppModuleEventsSubscription events;
 
 	
 	/** Constructs an instance of this module's command processors.
@@ -103,6 +105,7 @@ public class SMSAppModuleCommandsSubscription {
 		this.subscriptionDB      = subscriptionDAL.getSubscriptionDB();
 		this.subscriptionEngine  = subscriptionEngine;
 		this.subscriptionToken   = subscriptionToken;
+		this.events              = new SMSAppModuleEventsSubscription();
 	}
 
 	// Command Definitions
@@ -128,7 +131,7 @@ public class SMSAppModuleCommandsSubscription {
 			    (subscriptionStatus == ESubscriptionOperationStatus.ALREADY_SUBSCRIBED)) {
 				SubscriptionDto subscriptionRecord = new SubscriptionDto(user, ESubscriptionChannel.SMS);
 				subscriptionDB.setSubscriptionRecord(subscriptionRecord);
-				SMSAppModuleEventsSubscription.dispatchSubscriptionNotification(subscriptionRecord);
+				events.dispatchSubscriptionNotification(subscriptionRecord);
 				return getNewStateReplyCommandAnswer(session, nstExistingUser, subscriptionPhrases.getSuccessfullySubscribed());
 			} else {
 				return getSameStateReplyCommandAnswer(subscriptionPhrases.getCouldNotSubscribe());
@@ -147,7 +150,7 @@ public class SMSAppModuleCommandsSubscription {
 			    (unsubscriptionStatus == EUnsubscriptionOperationStatus.NOT_SUBSCRIBED)) {
 				SubscriptionDto unsubscriptionRecord = new SubscriptionDto(user, EUnsubscriptionChannel.SMS);
 				subscriptionDB.setSubscriptionRecord(unsubscriptionRecord);
-				SMSAppModuleEventsSubscription.dispatchUnsubscriptionNotification(unsubscriptionRecord);
+				events.dispatchUnsubscriptionNotification(unsubscriptionRecord);
 				return getNewStateReplyCommandAnswer(session, nstNewUser, subscriptionPhrases.getUserRequestedUnsubscriptionNotification());
 			} else {
 				throw new RuntimeException("For some reason, the user could not be unsubscribed");
@@ -176,7 +179,7 @@ public class SMSAppModuleCommandsSubscription {
 		    (unsubscriptionStatus == EUnsubscriptionOperationStatus.NOT_SUBSCRIBED)) {
 			SubscriptionDto unsubscriptionRecord = new SubscriptionDto(user, EUnsubscriptionChannel.API);
 			subscriptionDB.setSubscriptionRecord(unsubscriptionRecord);
-			SMSAppModuleEventsSubscription.dispatchUnsubscriptionNotification(unsubscriptionRecord);
+			events.dispatchUnsubscriptionNotification(unsubscriptionRecord);
 			// optimally set the navigation state for an unregistered user
 			sessionDB.assureProperty(user, SessionModel.NAVIGATION_STATE_PROPERTY.getPropertyName(), nstNewUser);
 			return true;
@@ -192,7 +195,7 @@ public class SMSAppModuleCommandsSubscription {
 		    (subscriptionStatus == ESubscriptionOperationStatus.ALREADY_SUBSCRIBED)) {
 			SubscriptionDto subscriptionRecord = new SubscriptionDto(user, ESubscriptionChannel.SMS);
 			subscriptionDB.setSubscriptionRecord(subscriptionRecord);
-			SMSAppModuleEventsSubscription.dispatchSubscriptionNotification(subscriptionRecord);
+			events.dispatchSubscriptionNotification(subscriptionRecord);
 			sessionDB.assureProperty(user, SessionModel.NAVIGATION_STATE_PROPERTY.getPropertyName(), nstExistingUser);
 			return true;
 		}

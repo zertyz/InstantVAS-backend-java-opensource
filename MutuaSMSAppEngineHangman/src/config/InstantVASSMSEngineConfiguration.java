@@ -20,7 +20,7 @@ import mutua.icc.instrumentation.Instrumentation;
 import mutua.icc.instrumentation.eventclients.InstrumentationProfilingEventsClient;
 import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
 import mutua.imi.IndirectMethodNotFoundException;
-import mutua.smsappmodule.config.SMSAppModuleConfiguration;
+import mutua.smsappmodule.config.InstantVASSMSAppModuleConfiguration;
 import mutua.smsappmodule.hangmangame.HangmanGame.EHangmanGameStates;
 import mutua.smsin.parsers.SMSInCelltick;
 import mutua.smsin.parsers.SMSInParser;
@@ -51,7 +51,7 @@ public class InstantVASSMSEngineConfiguration {
 	// MO
 	/////
 	
-	public static SMSInParser<Map<String, String>, byte[]>  smsParser = new SMSInCelltick(SMSAppModuleConfiguration.APPName);
+	public static SMSInParser<Map<String, String>, byte[]>  smsParser = new SMSInCelltick(InstantVASSMSAppModuleConfiguration.APPName);
 
 	
 	// MO QUEUE (but also SubscribeUser & UnsubscribeUser queues)
@@ -115,7 +115,7 @@ public class InstantVASSMSEngineConfiguration {
     	///////
     	
     	try {
-        	log = new Instrumentation<HangmanHTTPInstrumentationRequestProperty, String>(SMSAppModuleConfiguration.APPName + " WEB", new HangmanHTTPInstrumentationRequestProperty(),
+        	log = new Instrumentation<HangmanHTTPInstrumentationRequestProperty, String>(InstantVASSMSAppModuleConfiguration.APPName + " WEB", new HangmanHTTPInstrumentationRequestProperty(),
         			HangmanSMSModulesConfiguration.LOG_STRATEGY, HangmanSMSModulesConfiguration.LOG_WEBAPP_FILE_PATH, HangmanSMSGameServicesInstrumentationEvents.values());
         	InstrumentationProfilingEventsClient instrumentationProfilingEventsClient = new InstrumentationProfilingEventsClient(log,
         			HangmanSMSModulesConfiguration.LOG_STRATEGY, HangmanSMSModulesConfiguration.LOG_WEBAPP_FILE_PATH);
@@ -191,7 +191,7 @@ public class InstantVASSMSEngineConfiguration {
 		
 		PostgreSQLQueueEventLink.QUEUE_POOLING_TIME             = MO_POSTGRESQL_QUEUE_POOLING_TIME;
 		PostgreSQLQueueEventLink.QUEUE_NUMBER_OF_WORKER_THREADS = MO_QUEUE_NUMBER_OF_WORKER_THREADS;
-		QueuesPostgreSQLAdapter.configureQueuesDatabaseModule(log,
+		QueuesPostgreSQLAdapter.configureDefaultValuesForNewInstances(log,
 			HangmanSMSModulesConfiguration.POSTGRESQL_CONNECTION_HOSTNAME,
 			HangmanSMSModulesConfiguration.POSTGRESQL_CONNECTION_PORT,
 			HangmanSMSModulesConfiguration.POSTGRESQL_CONNECTION_DATABASE_NAME,
@@ -203,7 +203,7 @@ public class InstantVASSMSEngineConfiguration {
 	static {
 
 		// by this time, before reading the configuration, we can only log to console
-		configurationLog = new Instrumentation<DefaultInstrumentationProperties, String>(SMSAppModuleConfiguration.APPName+"Configuration", DefaultInstrumentationProperties.DIP_MSG, EInstrumentationDataPours.CONSOLE, null);
+		configurationLog = new Instrumentation<DefaultInstrumentationProperties, String>(InstantVASSMSAppModuleConfiguration.APPName+"Configuration", DefaultInstrumentationProperties.DIP_MSG, EInstrumentationDataPours.CONSOLE, null);
 		
 		loadConfiguration();
 	}

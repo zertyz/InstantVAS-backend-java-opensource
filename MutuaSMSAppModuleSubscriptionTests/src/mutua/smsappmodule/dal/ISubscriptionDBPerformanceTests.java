@@ -4,10 +4,10 @@ import static instantvas.tests.InstantVASSMSAppModuleSubscriptionTestsConfigurat
 
 import java.sql.SQLException;
 
-import mutua.smsappmodule.DatabaseAlgorithmAnalysis;
 import mutua.smsappmodule.SMSAppModuleTestCommons;
 import mutua.smsappmodule.dto.SubscriptionDto;
 import mutua.smsappmodule.dto.SubscriptionDto.EUnsubscriptionChannel;
+import mutua.tests.DatabaseAlgorithmAnalysis;
 import mutua.smsappmodule.dto.UserDto;
 import mutua.smsappmodule.dto.SubscriptionDto.ESubscriptionChannel;
 

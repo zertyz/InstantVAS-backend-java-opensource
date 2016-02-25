@@ -1,10 +1,13 @@
 package mutua.smsappmodule.smslogic;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 import mutua.events.DirectEventLink;
-import mutua.events.EventClient;
 import mutua.events.EventServer;
 import mutua.events.IEventLink;
-import mutua.imi.IndirectMethodNotFoundException;
 import mutua.smsappmodule.dto.SubscriptionDto;
 import mutua.smsappmodule.smslogic.SMSAppModuleEventsSubscription.ESMSAppModuleEventsSubscription;
 
@@ -29,6 +32,13 @@ import mutua.smsappmodule.smslogic.SMSAppModuleEventsSubscription.ESMSAppModuleE
 
 public class SMSAppModuleEventsSubscription extends EventServer<ESMSAppModuleEventsSubscription> {
 	
+	// implements the 'EventConsumer' & 'EventListener' Events Enumeration & Annotation pattern
+	
+	@Retention(RetentionPolicy.RUNTIME) @Target(ElementType.METHOD) public @interface SMSAppModuleEventSubscription {
+		ESMSAppModuleEventsSubscription[] value();
+	}
+
+	
 	/** naming convention: *_NOTIFICATION are listenable events */
 	public enum ESMSAppModuleEventsSubscription {
 		/** this event is fired upon a successful user subscription to the platform.
@@ -40,15 +50,8 @@ public class SMSAppModuleEventsSubscription extends EventServer<ESMSAppModuleEve
 	}
 
 	
-	/**************
-	** SINGLETON **
-	**************/
-	
-	private static IEventLink<ESMSAppModuleEventsSubscription> eventLink = new DirectEventLink<ESMSAppModuleEventsSubscription>(ESMSAppModuleEventsSubscription.class);
-	private static SMSAppModuleEventsSubscription singleton = new SMSAppModuleEventsSubscription(eventLink);
-	
-	protected SMSAppModuleEventsSubscription(IEventLink<ESMSAppModuleEventsSubscription> link) {
-		super(link);
+	protected SMSAppModuleEventsSubscription() {
+		super(new DirectEventLink<ESMSAppModuleEventsSubscription>(ESMSAppModuleEventsSubscription.class, new Class[] {SMSAppModuleEventSubscription.class}));
 	}
 
 	
@@ -56,20 +59,12 @@ public class SMSAppModuleEventsSubscription extends EventServer<ESMSAppModuleEve
 	** IMPLEMENTATION **
 	*******************/
 	
-	public static void addListener(EventClient<ESMSAppModuleEventsSubscription> eventClient) throws IndirectMethodNotFoundException {
-		eventLink.addClient(eventClient);
+	protected void dispatchSubscriptionNotification(SubscriptionDto subscriptionRecord) {
+		dispatchListenableEvent(ESMSAppModuleEventsSubscription.USER_JUST_SUBSCRIBED_NOTIFICATION, subscriptionRecord);
 	}
 	
-	public static void removeListener(EventClient<ESMSAppModuleEventsSubscription> eventClient) {
-		eventLink.deleteClient(eventClient);
-	}
-	
-	protected static void dispatchSubscriptionNotification(SubscriptionDto subscriptionRecord) {
-		singleton.dispatchListenableEvent(ESMSAppModuleEventsSubscription.USER_JUST_SUBSCRIBED_NOTIFICATION, subscriptionRecord);
-	}
-	
-	protected static void dispatchUnsubscriptionNotification(SubscriptionDto unsubscriptionRecord) {
-		singleton.dispatchListenableEvent(ESMSAppModuleEventsSubscription.USER_JUST_UNSUBSCRIBED_NOTIFICATION, unsubscriptionRecord);
+	protected void dispatchUnsubscriptionNotification(SubscriptionDto unsubscriptionRecord) {
+		dispatchListenableEvent(ESMSAppModuleEventsSubscription.USER_JUST_UNSUBSCRIBED_NOTIFICATION, unsubscriptionRecord);
 	}
 
 }

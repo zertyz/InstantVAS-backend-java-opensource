@@ -7,10 +7,10 @@ import java.sql.SQLException;
 import java.util.Hashtable;
 import java.util.Random;
 
-import mutua.smsappmodule.DatabaseAlgorithmAnalysis;
 import mutua.smsappmodule.SMSAppModuleTestCommons;
 import mutua.smsappmodule.dto.ProfileDto;
 import mutua.smsappmodule.dto.UserDto;
+import mutua.tests.DatabaseAlgorithmAnalysis;
 
 import org.junit.Test;
 

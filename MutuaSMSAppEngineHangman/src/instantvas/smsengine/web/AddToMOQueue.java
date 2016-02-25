@@ -99,7 +99,7 @@ class MTProducer extends EventServer<EHangmanGameStates> implements IResponseRec
 	protected MTProducer(IEventLink<EHangmanGameStates> link, EventClient<EHangmanGameStates> mtConsumer) {
 		super(link);
 		try {
-			addClient(mtConsumer);
+			addListener(mtConsumer);
 		} catch (IndirectMethodNotFoundException e) {
 			log.reportThrowable(e, "Error while adding mtConsumer");
 		}
@@ -136,7 +136,7 @@ class MOProducer extends EventServer<EHangmanGameStates> {
 	public MOProducer(IEventLink<EHangmanGameStates> link, EventClient<EHangmanGameStates> moConsumer) {
 		super(link);
 		try {
-			addClient(moConsumer);
+			addListener(moConsumer);
 		} catch (IndirectMethodNotFoundException e) {
 			log.reportThrowable(e, "Error while adding moConsumer");
 		}

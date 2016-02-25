@@ -34,9 +34,9 @@ public class InstantVASSMSAppModuleTestsConfiguration {
 	
 	private static InstantVASSMSAppModuleTestsConfiguration instance = null;
 
-	public static Instrumentation<?, ?>   LOG;
-	public static SMSAppModuleDALFactory  BASE_MODULE_DAL;
-	public static int                     PERFORMANCE_TESTS_LOAD_FACTOR;
+	private static Instrumentation<?, ?>   LOG;
+	public  static SMSAppModuleDALFactory  BASE_MODULE_DAL;
+	public  static int                     PERFORMANCE_TESTS_LOAD_FACTOR;
 
 	public SMSAppModuleNavigationStates baseModuleNavigationStates;
 		

@@ -4,11 +4,11 @@ import static instantvas.tests.InstantVASSMSAppModuleHangmanTestsConfiguration.*
 
 import java.sql.SQLException;
 
-import mutua.smsappmodule.DatabaseAlgorithmAnalysis;
 import mutua.smsappmodule.SMSAppModuleTestCommons;
 import mutua.smsappmodule.dto.MatchDto;
 import mutua.smsappmodule.dto.UserDto;
 import mutua.smsappmodule.dto.MatchDto.EMatchStatus;
+import mutua.tests.DatabaseAlgorithmAnalysis;
 
 import org.junit.Test;
 

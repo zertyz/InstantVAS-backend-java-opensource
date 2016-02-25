@@ -1,6 +1,6 @@
 package config;
 
-import static mutua.smsappmodule.config.SMSAppModuleConfiguration.*;
+import static mutua.smsappmodule.config.InstantVASSMSAppModuleConfiguration.*;
 import static mutua.smsappmodule.config.SMSAppModuleConfigurationHelp.*;
 import static mutua.smsappmodule.config.SMSAppModuleConfigurationSubscription.*;
 import static mutua.smsappmodule.config.SMSAppModuleConfigurationProfile.*;
@@ -23,7 +23,7 @@ import instantvas.smsengine.MOSMSesQueueDataBureau;
 import mutua.icc.configuration.annotations.ConfigurableElement;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
-import mutua.smsappmodule.config.SMSAppModuleConfiguration;
+import mutua.smsappmodule.config.InstantVASSMSAppModuleConfiguration;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationChat;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationHangman;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationHelp;
@@ -167,7 +167,7 @@ public class HangmanSMSModulesConfiguration {
 		APPShortCode = "9714";
 		
 		// SMSAppModuleConfiguration.log = null;  // to come from a parameter. BTW, where is the log for this module?
-		SMSAppModuleConfiguration.applyConfiguration();
+		InstantVASSMSAppModuleConfiguration.applyConfiguration();
 		
 		
 		// SMSAppModuleConfigurationHelp

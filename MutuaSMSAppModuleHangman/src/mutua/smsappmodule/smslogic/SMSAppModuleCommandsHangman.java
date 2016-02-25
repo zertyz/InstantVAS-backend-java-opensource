@@ -7,6 +7,7 @@ import static mutua.smsappmodule.smslogic.sessions.SMSAppModuleSessionsHangman.*
 
 import java.sql.SQLException;
 
+import mutua.smsappmodule.config.SMSAppModuleConfigurationSubscription;
 import mutua.smsappmodule.dal.IMatchDB;
 import mutua.smsappmodule.dal.INextBotWordsDB;
 import mutua.smsappmodule.dal.IProfileDB;
@@ -115,15 +116,17 @@ public class SMSAppModuleCommandsHangman {
 	
 	
 	/** Constructs an instance of this module's command processors.<pre>
-	 *  @param hangmanPhrases        an instance of the phrasings to be used
-	 *  @param baseModuleDAL         one of the members of {@link SMSAppModuleDALFactory}
-	 *  @param profileModuleDAL      equivalent as the above
-	 *  @param hangmanModuleDAL      equivalent as the above
-	 *  @param defaultNicknamePrefix @see {@link #defaultNicknamePrefix}*/
-	public SMSAppModuleCommandsHangman(SMSAppModulePhrasingsHangman  hangmanPhrases,
-	                                   SMSAppModuleDALFactory        baseModuleDAL,
-	                                   SMSAppModuleDALFactoryProfile profileModuleDAL,
-	                                   SMSAppModuleDALFactoryHangman hangmanModuleDAL,
+	 *  @param hangmanPhrases           an instance of the phrasings to be used
+	 *  @param subscriptionEventsServer one of the values returned by {@link SMSAppModuleConfigurationSubscription#getSubscriptionModuleInstances}
+	 *  @param baseModuleDAL            one of the members of {@link SMSAppModuleDALFactory}
+	 *  @param profileModuleDAL         equivalent as the above
+	 *  @param hangmanModuleDAL         equivalent as the above
+	 *  @param defaultNicknamePrefix    @see {@link #defaultNicknamePrefix}*/
+	public SMSAppModuleCommandsHangman(SMSAppModulePhrasingsHangman   hangmanPhrases,
+	                                   SMSAppModuleEventsSubscription subscriptionEventsServer,
+	                                   SMSAppModuleDALFactory         baseModuleDAL,
+	                                   SMSAppModuleDALFactoryProfile  profileModuleDAL,
+	                                   SMSAppModuleDALFactoryHangman  hangmanModuleDAL,
 	                                   String defaultNicknamePrefix) {
 		this.hangmanPhrases        = hangmanPhrases;
 		this.userDB                = baseModuleDAL.getUserDB();
@@ -134,10 +137,12 @@ public class SMSAppModuleCommandsHangman {
 		this.defaultNicknamePrefix = defaultNicknamePrefix;
 
 		// register event listeners
-		try {
-			eventListeners = SMSAppModuleListenersHangman.instantiateAndRegisterEventListeners(this);
+		if (subscriptionEventsServer != null) try {
+			eventListeners = new SMSAppModuleListenersHangman(this, subscriptionEventsServer);
 		} catch (Throwable t) {
 			throw new RuntimeException("Unable to register Hangman event listeners", t);
+		} else {
+			eventListeners = null;
 		}
 	}
 

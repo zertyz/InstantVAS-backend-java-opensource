@@ -6,10 +6,9 @@ import java.util.Arrays;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import mutua.smsappmodule.SplitRun;
-
 import org.junit.Test;
 
+import mutua.tests.SplitRun;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /** <pre>

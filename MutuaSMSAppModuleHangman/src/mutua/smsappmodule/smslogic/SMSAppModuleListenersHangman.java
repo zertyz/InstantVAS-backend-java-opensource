@@ -3,10 +3,10 @@ package mutua.smsappmodule.smslogic;
 import java.sql.SQLException;
 
 import mutua.events.EventClient;
-import mutua.events.annotations.EventListener;
 import mutua.imi.IndirectMethodNotFoundException;
 import mutua.smsappmodule.dto.SubscriptionDto;
 import mutua.smsappmodule.smslogic.SMSAppModuleEventsSubscription.ESMSAppModuleEventsSubscription;
+import mutua.smsappmodule.smslogic.SMSAppModuleEventsSubscription.SMSAppModuleEventSubscription;
 
 /** <pre>
  * SMSAppModuleListenersHangman.java
@@ -26,8 +26,9 @@ public class SMSAppModuleListenersHangman {
 	
 	private final SMSAppModuleCommandsHangman hangmanCommands;
 	
-	private SMSAppModuleListenersHangman(SMSAppModuleCommandsHangman hangmanCommands) {
+	protected SMSAppModuleListenersHangman(SMSAppModuleCommandsHangman hangmanCommands, SMSAppModuleEventsSubscription subscriptionEventsServer) throws IndirectMethodNotFoundException {
 		this.hangmanCommands = hangmanCommands;
+		subscriptionEventsServer.addListener(subscriptionEventListener);
 	}
 	
 	
@@ -38,19 +39,11 @@ public class SMSAppModuleListenersHangman {
 	/** This event listener is the responsible for making all users have a default nickname */
 	private EventClient<ESMSAppModuleEventsSubscription> subscriptionEventListener = new EventClient<ESMSAppModuleEventsSubscription>() {
 		
-		@EventListener("USER_JUST_SUBSCRIBED_NOTIFICATION")
+		@SMSAppModuleEventSubscription(ESMSAppModuleEventsSubscription.USER_JUST_SUBSCRIBED_NOTIFICATION)
 		public void onSubscription(SubscriptionDto subscriptionRecord) throws SQLException {
 			hangmanCommands.assureUserHasANickname(subscriptionRecord.getUser());
 		}
 		
 	};
 	
-	// TODO pros eventos voltarem a funcionar, o hangman commands deve receber a instancia do subscription commands e o subscription commands tem que declarar uma instancia do SMSAppModuleEventsSubscription e, lógico, todos os métodos estáticos desta última classe têm de ser removidos
-
-	public static SMSAppModuleListenersHangman instantiateAndRegisterEventListeners(SMSAppModuleCommandsHangman hangmanCommands) throws IndirectMethodNotFoundException {
-		SMSAppModuleListenersHangman instance = new SMSAppModuleListenersHangman(hangmanCommands);
-		SMSAppModuleEventsSubscription.addListener(instance.subscriptionEventListener);
-		return instance;
-	}
-
 }

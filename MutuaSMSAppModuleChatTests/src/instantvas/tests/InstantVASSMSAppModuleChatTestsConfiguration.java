@@ -95,7 +95,7 @@ public class InstantVASSMSAppModuleChatTestsConfiguration {
 					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
 				// MO simulation
 				QueuesPostgreSQLAdapter.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries, postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
-				PostgreSQLQueueEventLink.configureDefaultValuesForNewInstances(log, -1, -1);
+				PostgreSQLQueueEventLink.configureDefaultValuesForNewInstances(log, new Class[] {}, -1, -1);
 				// chat db
 				SMSAppModulePostgreSQLAdapterChat.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
 					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword,

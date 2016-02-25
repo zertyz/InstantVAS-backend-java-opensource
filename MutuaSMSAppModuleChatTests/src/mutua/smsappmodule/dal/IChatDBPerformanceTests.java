@@ -8,11 +8,11 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 import mutua.smsappmodule.SMSAppModuleChatTestCommons;
-import mutua.smsappmodule.DatabaseAlgorithmAnalysis;
 import mutua.smsappmodule.SMSAppModuleTestCommons;
-import mutua.smsappmodule.SplitRun;
 import mutua.smsappmodule.dto.PrivateMessageDto;
 import mutua.smsappmodule.dto.UserDto;
+import mutua.tests.DatabaseAlgorithmAnalysis;
+import mutua.tests.SplitRun;
 
 import org.junit.Test;
 

@@ -20,6 +20,7 @@ import mutua.smsappmodule.smslogic.sessions.SessionModel;
 import mutua.smsin.dto.IncomingSMSDto;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 import mutua.smsout.dto.OutgoingSMSDto;
+import mutua.tests.SplitRun;
 
 /** <pre>
  * SMSAppModuleTestCommons.java

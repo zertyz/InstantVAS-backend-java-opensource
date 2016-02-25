@@ -2,7 +2,7 @@ package instantvas.smsengine;
 
 import mutua.events.IDatabaseQueueDataBureau;
 import mutua.imi.IndirectMethodInvocationInfo;
-import mutua.smsappmodule.config.SMSAppModuleConfiguration;
+import mutua.smsappmodule.config.InstantVASSMSAppModuleConfiguration;
 import mutua.smsappmodule.hangmangame.HangmanGame.EHangmanGameStates;
 import mutua.smsin.dto.IncomingSMSDto;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
@@ -38,13 +38,13 @@ public class MOSMSesQueueDataBureau extends IDatabaseQueueDataBureau<EHangmanGam
 	public IndirectMethodInvocationInfo<EHangmanGameStates> deserializeQueueEntry(int eventId, Object[] databaseRow) {
 		String phone   = (String)databaseRow[0];
 		String text    = (String)databaseRow[1];
-		IncomingSMSDto mo = new IncomingSMSDto(eventId, phone, text, ESMSInParserCarrier.CLARO, SMSAppModuleConfiguration.APPShortCode);
+		IncomingSMSDto mo = new IncomingSMSDto(eventId, phone, text, ESMSInParserCarrier.CLARO, InstantVASSMSAppModuleConfiguration.APPShortCode);
 		IndirectMethodInvocationInfo<EHangmanGameStates> entry = new IndirectMethodInvocationInfo<EHangmanGameStates>(EHangmanGameStates.WON, mo);
 		return entry;
 	}
 	
 	@Override
-	public String getValuesExpressionForInsertNewQueueElementQuery() {
+	public String getParametersListForInsertNewQueueElementQuery() {
 		return "${PHONE}, ${TEXT}";
 	}
 	

@@ -1,20 +1,21 @@
 package main;
 
-import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
+import java.sql.SQLException;
 
 import adapters.PostgreSQLAdapter;
+import instantvas.tests.InstantVASSMSAppModuleChatTestsConfiguration;
+import instantvas.tests.InstantVASSMSAppModuleHangmanTestsConfiguration;
+import instantvas.tests.InstantVASSMSAppModuleProfileTestsConfiguration;
+import instantvas.tests.InstantVASSMSAppModuleSubscriptionTestsConfiguration;
+import instantvas.tests.InstantVASSMSAppModuleTestsConfiguration;
+import mutua.icc.instrumentation.DefaultInstrumentationProperties;
+import mutua.icc.instrumentation.Instrumentation;
+import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactoryChat;
+import mutua.smsappmodule.dal.SMSAppModuleDALFactoryHangman;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactoryProfile;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactorySubscription;
 
@@ -31,115 +32,7 @@ import mutua.smsappmodule.dal.SMSAppModuleDALFactorySubscription;
 
 public class InstantVASTester {
 	
-	// works with classpaths and jars as well
-	// before populating with the default class (""), populate with a class name for the jar version to work around
-	private static URL lastPackageURL = null;
-	public static void populateClassNamesFromPackage(ArrayList<String> names, String packageName) throws IOException, URISyntaxException{
-	    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-
-	    packageName = packageName.replace(".", "/");
-	    
-	    Enumeration<URL> packageURLs = classLoader.getResources(packageName);
-	    while (packageURLs.hasMoreElements()) {
-	    	URL packageURL = packageURLs.nextElement();
-	    
-		    // workarround for default packages on jars
-		    if (packageName.equals("")) {
-		    	if (lastPackageURL == null) {
-		    		throw new RuntimeException("in order to access the default package, you must first access a non-default package, since doing this "+
-		    		                           "within .jars needs this workarround to work");
-		    	} else if (lastPackageURL.getProtocol().equals("jar")){
-		    		packageURL = lastPackageURL;
-		    	}
-		    }
-		    lastPackageURL = packageURL;
-		    
-		    if(packageURL.getProtocol().equals("jar")){
-		        String jarFileName;
-		        JarFile jf ;
-		        Enumeration<JarEntry> jarEntries;
-		        String entryName;
-	
-		        // build jar file name, then loop through zipped entries
-		        jarFileName = URLDecoder.decode(packageURL.getFile(), "UTF-8");
-		        jarFileName = jarFileName.substring(5,jarFileName.indexOf("!"));
-		        //System.out.println(">"+jarFileName);
-		        jf = new JarFile(jarFileName);
-		        jarEntries = jf.entries();
-		        while(jarEntries.hasMoreElements()){
-		            entryName = jarEntries.nextElement().getName();
-		            if(entryName.startsWith(packageName) && entryName.endsWith(".class") && (entryName.replaceAll("^"+packageName+"/(.*)\\.class", "$1").indexOf('/') == -1)){
-		            	entryName = entryName.replaceAll("\\.class$", "");
-		                names.add(entryName.replaceAll("/", "."));
-		            }
-		        }
-	
-		    // loop through files in classpath
-		    }else{
-		    URI uri = new URI(packageURL.toString());
-		    File folder = new File(uri.getPath());
-		        // won't work with path which contains blank (%20)
-		        // File folder = new File(packageURL.getFile()); 
-		        File[] contenuti = folder.listFiles();
-		        String entryName;
-		        for(File actual: contenuti){
-		            entryName = actual.getName();
-		            if (entryName.endsWith(".class")) {
-		            	entryName = entryName.replaceAll("\\.class$", "");
-	            		names.add(packageName.replaceAll("/", ".")+(packageName.length() > 0 ? "." : "")+entryName);
-	            	}
-		        }
-		    }
-	    }
-	}
-	
-	public static boolean doesClassForNameHasAnAnnotatedMethod(String className, Class annotation) throws ClassNotFoundException {
-		Class clazz = Class.forName(className);
-		for (Method method : clazz.getMethods()) {
-		    if (method.isAnnotationPresent(annotation)) {
-		    	return true;
-		    }
-		}
-		return false;
-	}
-	
-	public static String[] searchJUnitTestClasses() throws ClassNotFoundException, IOException, URISyntaxException {
-		String[] packages = {
-			// please check with "unzip -l <fat.jar>" if this covers all test classes
-			"mutua.events",
-			"mutua.imi",
-			"mutua.serialization",
-			"mutua.icc.configuration",
-			"mutua.icc.instrumentation",
-			"mutua.smsappmodule.smslogic.sessions",
-			"mutua.smsappmodule",
-			"mutua.smsappengine.logic",
-			"instantvas.nativewebserver",
-			"mutua.schedule",
-			"mutua.smsappmodule.dal",
-			""	
-		};
-		
-	    // populate classes
-	    ArrayList<String> classNames = new ArrayList<String>();
-	    for (String packageName : packages) {
-	    	populateClassNamesFromPackage(classNames, packageName);
-	    }
-
-	    // filter
-	    ArrayList<String> testClasses = new ArrayList<String>();
-		for (String className : classNames) {
-			if (doesClassForNameHasAnAnnotatedMethod(className, org.junit.Test.class)) {
-				testClasses.add(className);
-				System.out.println("testClass: " + className);
-			}
-		}
-		
-		return testClasses.toArray(new String[0]);
-	}
-
-
-	public static void main(String[] args) throws ClassNotFoundException, IOException, URISyntaxException {
+	public static void main(String[] args) throws ClassNotFoundException, IOException, URISyntaxException, SQLException {
 		System.out.println("InstantVASTester.jar: Runs all known JUnit tests available for modules used by the InstantVAS.com service.");
 		System.out.println("                      Use this tool regularly to validate refactorings, performance enhancements and the");
 		System.out.println("                      ProGuard obfuscation parameters.");
@@ -160,11 +53,12 @@ public class InstantVASTester {
 			System.out.println("                                 ['true' or 'false' for logging queries]");
 
 			System.out.println();
-			System.out.println("Searching JUnit test classes:");
-			searchJUnitTestClasses();
-
-			return;
+			
+			System.exit(1);
 		}
+		
+		// from InstantVASDALTester:
+		////////////////////////////
 		
 		String  hostname                     = args[0];
 		int     port                         = Integer.parseInt(args[1]);
@@ -196,23 +90,95 @@ public class InstantVASTester {
 		SMSAppModuleDALFactorySubscription subscriptionDAL;
 		SMSAppModuleDALFactoryProfile      profileModuleDAL;
 		SMSAppModuleDALFactoryChat         chatModuleDAL;
+		SMSAppModuleDALFactoryHangman      hangmanModuleDAL;
 		
 		if ("POSTGRESQL".equals(dal)) {
 			baseModuleDAL    = SMSAppModuleDALFactory            .POSTGRESQL;
 			subscriptionDAL  = SMSAppModuleDALFactorySubscription.POSTGRESQL;
 			profileModuleDAL = SMSAppModuleDALFactoryProfile     .POSTGRESQL;
 			chatModuleDAL    = SMSAppModuleDALFactoryChat        .POSTGRESQL;
+			hangmanModuleDAL = SMSAppModuleDALFactoryHangman     .POSTGRESQL;
 		} else if ("RAM".equals(dal)) {
 			baseModuleDAL    = SMSAppModuleDALFactory            .RAM;
 			subscriptionDAL  = SMSAppModuleDALFactorySubscription.RAM;
 			profileModuleDAL = SMSAppModuleDALFactoryProfile     .RAM;
 			chatModuleDAL    = SMSAppModuleDALFactoryChat        .RAM;
+			hangmanModuleDAL = SMSAppModuleDALFactoryHangman     .RAM;
 		} else {
 			System.out.println("Incorrect 'dal' provided. Please, consult usage.");
 			return;
 		}
 		
 		System.out.println("\n### Starting. Please copy & paste it to luiz@InstantVAS.com:");
-	}
+		Instrumentation<DefaultInstrumentationProperties, String> log = new Instrumentation<DefaultInstrumentationProperties, String>(InstantVASTester.class.getCanonicalName(), DefaultInstrumentationProperties.DIP_MSG, EInstrumentationDataPours.CONSOLE, null);
+				
+		System.out.println("\n### Applying configuration:");
+		InstantVASSMSAppModuleTestsConfiguration            .configureDefaultValuesForNewInstances(log, loadFactor, baseModuleDAL,    connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
+		InstantVASSMSAppModuleSubscriptionTestsConfiguration.configureDefaultValuesForNewInstances(log, loadFactor, subscriptionDAL,  connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
+		InstantVASSMSAppModuleProfileTestsConfiguration     .configureDefaultValuesForNewInstances(log, loadFactor, profileModuleDAL, connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
+		InstantVASSMSAppModuleChatTestsConfiguration        .configureDefaultValuesForNewInstances(log, loadFactor, chatModuleDAL,    connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
+		InstantVASSMSAppModuleHangmanTestsConfiguration     .configureDefaultValuesForNewInstances(log, loadFactor, hangmanModuleDAL, connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
+		
+		System.out.println("\n### Instantiating database engines:");
+		InstantVASSMSAppModuleTestsConfiguration            .getInstance();
+		InstantVASSMSAppModuleSubscriptionTestsConfiguration.getInstance();
+		InstantVASSMSAppModuleProfileTestsConfiguration     .getInstance();
+		InstantVASSMSAppModuleChatTestsConfiguration        .getInstance();
+		InstantVASSMSAppModuleHangmanTestsConfiguration     .getInstance();
+		
+		// please, periodically update the classes listed here with the following command, keeping the order implied by the comments:
+		// w=~/workspace/celltick/SMSGames/; find "$w" -name "*.java" -exec grep -l 'org.junit.Test' "{}" \; | sed "s|$w[^/]*/src/||" | grep -v main/InstantVASTester.java | sed 's|.java$|.class.getName(),|' | sed 's|/|.|g'
+		String[] jUnitTestClasses = new String[] {
+			// Mutua libs tests
+			adapters.HTTPClientAdapterTest.class.getName(),
+			mutua.serialization.SerializationTests.class.getName(),
+			mutua.imi.IndirectMethodInvocationTests.class.getName(),
+			mutua.events.TestEvents.class.getName(),
+			mutua.events.QueueEventLinkTests.class.getName(),
+			mutua.events.DirectEventTests.class.getName(),
+			mutua.icc.instrumentation.InstrumentationTests.class.getName(),
+			// these seems, currently, not to make sense while obfuscated. Please, verify
+/*			mutua.p2pcommunications.P2PServicesManagerTest.class.getName(),
+			mutua.icc.configuration.ConfigurationManagerTests.class.getName(),
+			mutua.icc.configuration.ConfigurationParserTests.class.getName(),*/
+			// Instant VAS application tests
+			instantvas.nativewebserver.NativeHTTPServerBehavioralTests.class.getName(),
+			mutua.schedule.ScheduleControlBehavioralTests.class.getName(),
+//			mutua.smsappengine.logic.HangmanAppEngineBehavioralTests.class.getName(),
+			// SMS Module tests
+			mutua.smsappmodule.smslogic.navigationstates.NavigationStateCommonsTests.class.getName(),
+			mutua.smsappmodule.smslogic.sessions.SessionModelTests.class.getName(),
+			mutua.smsappmodule.HelpModuleBehavioralTests.class.getName(),
+			mutua.smsappmodule.HelpModuleSMSProcessorTests.class.getName(),
+			mutua.smsappmodule.SubscriptionModuleSMSProcessorTests.class.getName(),
+			mutua.smsappmodule.SubscriptionModuleBehavioralTests.class.getName(),
+			mutua.smsappmodule.dal.ISubscriptionDBBehavioralTests.class.getName(),
+			mutua.smsappmodule.ChatModuleBehavioralTests.class.getName(),
+			//mutua.smsappmodule.ChatModuleSMSProcessorTests.class.getName(),
+			mutua.smsappmodule.dal.IChatDBBehavioralTests.class.getName(),
+			mutua.smsappmodule.dal.ISessionDBBehavioralTests.class.getName(),
+			mutua.smsappmodule.dal.IUserDBBehavioralTests.class.getName(),
+			mutua.smsappmodule.hangmangame.HangmanGameTests.class.getName(),
+			//mutua.smsappmodule.HangmanModuleSMSProcessorTests.class.getName(),
+			mutua.smsappmodule.dal.INextBotWordsDBBehavioralTests.class.getName(),
+			mutua.smsappmodule.dal.IMatchDBBehavioralTests.class.getName(),
+			mutua.smsappmodule.ProfileModuleBehavioralTests.class.getName(),
+			mutua.smsappmodule.ProfileModuleSMSProcessorTests.class.getName(),
+			mutua.smsappmodule.dal.IProfileDBBehavioralTests.class.getName(),
+			// SMS Modules DAL performance tests
+			mutua.events.PostgreSQLQueueEventLinkTests.class.getName(),
+			mutua.events.PostgreSQLQueueEventLinkPerformanceTests.class.getName(),
+			// Additional Events DAL performance tests
+			mutua.smsappmodule.dal.IUserDBPerformanceTests.class.getName(),
+			mutua.smsappmodule.dal.ISessionDBPerformanceTests.class.getName(),
+			mutua.smsappmodule.dal.ISubscriptionDBPerformanceTests.class.getName(),
+			mutua.smsappmodule.dal.IProfileDBPerformanceTests.class.getName(),
+			mutua.smsappmodule.dal.IChatDBPerformanceTests.class.getName(),
+			mutua.smsappmodule.dal.IMatchDBPerformanceTests.class.getName(),
+			mutua.smsappmodule.dal.INextBotWordsDBPerformanceTests.class.getName(),
+		};
 
+		System.out.println("Running the tests with their default configurations:");
+		org.junit.runner.JUnitCore.main(jUnitTestClasses);
+	}
 }
