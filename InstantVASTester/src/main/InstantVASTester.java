@@ -18,6 +18,7 @@ import mutua.smsappmodule.dal.SMSAppModuleDALFactoryChat;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactoryHangman;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactoryProfile;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactorySubscription;
+import mutua.tests.MutuaEventsAdditionalEventLinksTestsConfiguration;
 
 /** <pre>
  * InstantVASTester.java
@@ -113,6 +114,7 @@ public class InstantVASTester {
 		Instrumentation<DefaultInstrumentationProperties, String> log = new Instrumentation<DefaultInstrumentationProperties, String>(InstantVASTester.class.getCanonicalName(), DefaultInstrumentationProperties.DIP_MSG, EInstrumentationDataPours.CONSOLE, null);
 				
 		System.out.println("\n### Applying configuration:");
+		MutuaEventsAdditionalEventLinksTestsConfiguration   .configureDefaultValuesForNewInstances(log, loadFactor, -1, -1,           connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
 		InstantVASSMSAppModuleTestsConfiguration            .configureDefaultValuesForNewInstances(log, loadFactor, baseModuleDAL,    connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
 		InstantVASSMSAppModuleSubscriptionTestsConfiguration.configureDefaultValuesForNewInstances(log, loadFactor, subscriptionDAL,  connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
 		InstantVASSMSAppModuleProfileTestsConfiguration     .configureDefaultValuesForNewInstances(log, loadFactor, profileModuleDAL, connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
@@ -120,6 +122,7 @@ public class InstantVASTester {
 		InstantVASSMSAppModuleHangmanTestsConfiguration     .configureDefaultValuesForNewInstances(log, loadFactor, hangmanModuleDAL, connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
 		
 		System.out.println("\n### Instantiating database engines:");
+		// MutuaEventsAdditionalEventLinksTestsConfiguration does not have instances
 		InstantVASSMSAppModuleTestsConfiguration            .getInstance();
 		InstantVASSMSAppModuleSubscriptionTestsConfiguration.getInstance();
 		InstantVASSMSAppModuleProfileTestsConfiguration     .getInstance();
@@ -130,55 +133,55 @@ public class InstantVASTester {
 		// w=~/workspace/celltick/SMSGames/; find "$w" -name "*.java" -exec grep -l 'org.junit.Test' "{}" \; | sed "s|$w[^/]*/src/||" | grep -v main/InstantVASTester.java | sed 's|.java$|.class.getName(),|' | sed 's|/|.|g'
 		String[] jUnitTestClasses = new String[] {
 			// Mutua libs tests
-			adapters.HTTPClientAdapterTest.class.getName(),
-			mutua.serialization.SerializationTests.class.getName(),
-			mutua.imi.IndirectMethodInvocationTests.class.getName(),
-			mutua.events.TestEvents.class.getName(),
-			mutua.events.QueueEventLinkTests.class.getName(),
-			mutua.events.DirectEventTests.class.getName(),
-			mutua.icc.instrumentation.InstrumentationTests.class.getName(),
-			// these seems, currently, not to make sense while obfuscated. Please, verify
-/*			mutua.p2pcommunications.P2PServicesManagerTest.class.getName(),
-			mutua.icc.configuration.ConfigurationManagerTests.class.getName(),
-			mutua.icc.configuration.ConfigurationParserTests.class.getName(),*/
-			// Instant VAS application tests
-			instantvas.nativewebserver.NativeHTTPServerBehavioralTests.class.getName(),
-			mutua.schedule.ScheduleControlBehavioralTests.class.getName(),
-//			mutua.smsappengine.logic.HangmanAppEngineBehavioralTests.class.getName(),
-			// SMS Module tests
-			mutua.smsappmodule.smslogic.navigationstates.NavigationStateCommonsTests.class.getName(),
-			mutua.smsappmodule.smslogic.sessions.SessionModelTests.class.getName(),
-			mutua.smsappmodule.HelpModuleBehavioralTests.class.getName(),
-			mutua.smsappmodule.HelpModuleSMSProcessorTests.class.getName(),
-			mutua.smsappmodule.SubscriptionModuleSMSProcessorTests.class.getName(),
-			mutua.smsappmodule.SubscriptionModuleBehavioralTests.class.getName(),
-			mutua.smsappmodule.dal.ISubscriptionDBBehavioralTests.class.getName(),
-			mutua.smsappmodule.ChatModuleBehavioralTests.class.getName(),
-			//mutua.smsappmodule.ChatModuleSMSProcessorTests.class.getName(),
-			mutua.smsappmodule.dal.IChatDBBehavioralTests.class.getName(),
-			mutua.smsappmodule.dal.ISessionDBBehavioralTests.class.getName(),
-			mutua.smsappmodule.dal.IUserDBBehavioralTests.class.getName(),
-			mutua.smsappmodule.hangmangame.HangmanGameTests.class.getName(),
-			//mutua.smsappmodule.HangmanModuleSMSProcessorTests.class.getName(),
-			mutua.smsappmodule.dal.INextBotWordsDBBehavioralTests.class.getName(),
-			mutua.smsappmodule.dal.IMatchDBBehavioralTests.class.getName(),
-			mutua.smsappmodule.ProfileModuleBehavioralTests.class.getName(),
-			mutua.smsappmodule.ProfileModuleSMSProcessorTests.class.getName(),
-			mutua.smsappmodule.dal.IProfileDBBehavioralTests.class.getName(),
-			// SMS Modules DAL performance tests
+//			adapters.HTTPClientAdapterTest.class.getName(),
+//			mutua.serialization.SerializationTests.class.getName(),
+//			mutua.imi.IndirectMethodInvocationTests.class.getName(),
+//			mutua.events.TestEvents.class.getName(),
+//			mutua.events.QueueEventLinkTests.class.getName(),
+//			mutua.events.DirectEventTests.class.getName(),
+//			mutua.icc.instrumentation.InstrumentationTests.class.getName(),
+//			// these seems, currently, not to make sense while obfuscated. Please, verify
+///*			mutua.p2pcommunications.P2PServicesManagerTest.class.getName(),
+//			mutua.icc.configuration.ConfigurationManagerTests.class.getName(),
+//			mutua.icc.configuration.ConfigurationParserTests.class.getName(),*/
+//			// Instant VAS application tests
+//			instantvas.nativewebserver.NativeHTTPServerBehavioralTests.class.getName(),
+//			mutua.schedule.ScheduleControlBehavioralTests.class.getName(),
+////			mutua.smsappengine.logic.HangmanAppEngineBehavioralTests.class.getName(),
+//			// SMS Module tests
+//			mutua.smsappmodule.smslogic.navigationstates.NavigationStateCommonsTests.class.getName(),
+//			mutua.smsappmodule.smslogic.sessions.SessionModelTests.class.getName(),
+//			mutua.smsappmodule.HelpModuleBehavioralTests.class.getName(),
+//			mutua.smsappmodule.HelpModuleSMSProcessorTests.class.getName(),
+//			mutua.smsappmodule.SubscriptionModuleSMSProcessorTests.class.getName(),
+//			mutua.smsappmodule.SubscriptionModuleBehavioralTests.class.getName(),
+//			mutua.smsappmodule.dal.ISubscriptionDBBehavioralTests.class.getName(),
+//			mutua.smsappmodule.ChatModuleBehavioralTests.class.getName(),
+//			//mutua.smsappmodule.ChatModuleSMSProcessorTests.class.getName(),
+//			mutua.smsappmodule.dal.IChatDBBehavioralTests.class.getName(),
+//			mutua.smsappmodule.dal.ISessionDBBehavioralTests.class.getName(),
+//			mutua.smsappmodule.dal.IUserDBBehavioralTests.class.getName(),
+//			mutua.smsappmodule.hangmangame.HangmanGameTests.class.getName(),
+//			//mutua.smsappmodule.HangmanModuleSMSProcessorTests.class.getName(),
+//			mutua.smsappmodule.dal.INextBotWordsDBBehavioralTests.class.getName(),
+//			mutua.smsappmodule.dal.IMatchDBBehavioralTests.class.getName(),
+//			mutua.smsappmodule.ProfileModuleBehavioralTests.class.getName(),
+//			mutua.smsappmodule.ProfileModuleSMSProcessorTests.class.getName(),
+//			mutua.smsappmodule.dal.IProfileDBBehavioralTests.class.getName(),
+//			// SMS Modules DAL performance tests
 			mutua.events.PostgreSQLQueueEventLinkTests.class.getName(),
 			mutua.events.PostgreSQLQueueEventLinkPerformanceTests.class.getName(),
-			// Additional Events DAL performance tests
-			mutua.smsappmodule.dal.IUserDBPerformanceTests.class.getName(),
-			mutua.smsappmodule.dal.ISessionDBPerformanceTests.class.getName(),
-			mutua.smsappmodule.dal.ISubscriptionDBPerformanceTests.class.getName(),
-			mutua.smsappmodule.dal.IProfileDBPerformanceTests.class.getName(),
-			mutua.smsappmodule.dal.IChatDBPerformanceTests.class.getName(),
-			mutua.smsappmodule.dal.IMatchDBPerformanceTests.class.getName(),
-			mutua.smsappmodule.dal.INextBotWordsDBPerformanceTests.class.getName(),
+//			// Additional Events DAL performance tests
+//			mutua.smsappmodule.dal.IUserDBPerformanceTests.class.getName(),
+//			mutua.smsappmodule.dal.ISessionDBPerformanceTests.class.getName(),
+//			mutua.smsappmodule.dal.ISubscriptionDBPerformanceTests.class.getName(),
+//			mutua.smsappmodule.dal.IProfileDBPerformanceTests.class.getName(),
+//			mutua.smsappmodule.dal.IChatDBPerformanceTests.class.getName(),
+//			mutua.smsappmodule.dal.IMatchDBPerformanceTests.class.getName(),
+//			mutua.smsappmodule.dal.INextBotWordsDBPerformanceTests.class.getName(),
 		};
 
-		System.out.println("Running the tests with their default configurations:");
+		System.out.println("Running the tests:");
 		org.junit.runner.JUnitCore.main(jUnitTestClasses);
 	}
 }

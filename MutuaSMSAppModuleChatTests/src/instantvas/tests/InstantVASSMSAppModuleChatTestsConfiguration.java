@@ -8,7 +8,7 @@ import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsChat.CommandTrigge
 import mutua.events.PostgreSQLQueueEventLink;
 import mutua.events.SpecializedMOQueueDataBureau;
 import mutua.events.TestAdditionalEventServer;
-import mutua.events.TestAdditionalEventServer.ETestEventServices;
+import mutua.events.TestAdditionalEventServer.ETestAdditionalEventServices;
 import mutua.events.postgresql.QueuesPostgreSQLAdapter;
 import mutua.icc.instrumentation.DefaultInstrumentationProperties;
 import mutua.icc.instrumentation.Instrumentation;
@@ -59,8 +59,8 @@ public class InstantVASSMSAppModuleChatTestsConfiguration {
 	public static int                                                       PERFORMANCE_TESTS_LOAD_FACTOR;
 	public static String                                                    MO_TABLE_NAME;
 	
-	public PostgreSQLQueueEventLink<ETestEventServices>  MO_QUEUE_LINK;
-	public TestAdditionalEventServer                               MO_QUEUE_PRODUCER;
+	public PostgreSQLQueueEventLink<ETestAdditionalEventServices>  MO_QUEUE_LINK;
+	public TestAdditionalEventServer                     MO_QUEUE_PRODUCER;
 	public SMSAppModuleNavigationStates                  baseModuleNavigationStates;
 	public SMSAppModulePhrasingsProfile                  profileModulePhrasings;
 	public SMSAppModulePhrasingsChat                     chatModulePhrasings;
@@ -95,7 +95,7 @@ public class InstantVASSMSAppModuleChatTestsConfiguration {
 					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
 				// MO simulation
 				QueuesPostgreSQLAdapter.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries, postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
-				PostgreSQLQueueEventLink.configureDefaultValuesForNewInstances(log, new Class[] {}, -1, -1);
+				PostgreSQLQueueEventLink.configureDefaultValuesForNewInstances(log, -1, -1);
 				// chat db
 				SMSAppModulePostgreSQLAdapterChat.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
 					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword,
@@ -154,7 +154,7 @@ public class InstantVASSMSAppModuleChatTestsConfiguration {
 		// mo simulation queue configuration
 		switch (CHAT_MODULE_DAL) {
 			case POSTGRESQL:
-				MO_QUEUE_LINK     = new PostgreSQLQueueEventLink<ETestEventServices>(ETestEventServices.class, MO_TABLE_NAME, new SpecializedMOQueueDataBureau());
+				MO_QUEUE_LINK     = new PostgreSQLQueueEventLink<ETestAdditionalEventServices>(ETestAdditionalEventServices.class, null, MO_TABLE_NAME, new SpecializedMOQueueDataBureau());
 				MO_QUEUE_PRODUCER = new TestAdditionalEventServer(MO_QUEUE_LINK);
 				break;
 			case RAM:
