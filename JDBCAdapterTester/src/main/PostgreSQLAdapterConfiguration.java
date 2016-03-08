@@ -90,22 +90,22 @@ public class PostgreSQLAdapterConfiguration extends PostgreSQLAdapter {
 	
 	public static final class PostgreSQLStatements {
 		/** Inserts an 'ID' and 'PHONE' into the 'InsertSimpleRecord' */
-		public static final AbstractPreparedProcedure InsertSimpleRecord = new AbstractPreparedProcedure(
+		public static final AbstractPreparedProcedure InsertSimpleRecord = new AbstractPreparedProcedure(connectionPool,
 			"INSERT INTO SimpleTable VALUES (",PostgreSQLParameters.ID,", ",PostgreSQLParameters.PHONE,")");
 		/** Returns the 'PHONE' associated with 'ID' */
-		public static final AbstractPreparedProcedure GetSimpleIdFromPhone = new AbstractPreparedProcedure(
+		public static final AbstractPreparedProcedure GetSimpleIdFromPhone = new AbstractPreparedProcedure(connectionPool,
 			"SELECT phone FROM SimpleTable WHERE id=",PostgreSQLParameters.ID);
 		/** removes the record denoted by 'ID' */
-		public static final AbstractPreparedProcedure DeleteSimpleRecord = new AbstractPreparedProcedure(
+		public static final AbstractPreparedProcedure DeleteSimpleRecord = new AbstractPreparedProcedure(connectionPool,
 			"DELETE FROM SimpleTable WHERE id=",PostgreSQLParameters.ID);
 		/** Inserts a 'PHONE' into the 'InsertNotSoSimpleRecord' */
-		public static final AbstractPreparedProcedure InsertNotSoSimpleRecord = new AbstractPreparedProcedure(
+		public static final AbstractPreparedProcedure InsertNotSoSimpleRecord = new AbstractPreparedProcedure(connectionPool,
 			"INSERT INTO NotSoSimple(phone) VALUES (",PostgreSQLParameters.PHONE,")");
 		/** Calls a stored procedure without parameters */
-		public static final AbstractPreparedProcedure NoParamStoredProcedure = new AbstractPreparedProcedure(
+		public static final AbstractPreparedProcedure NoParamStoredProcedure = new AbstractPreparedProcedure(connectionPool,
 			"SELECT * FROM somefunc()");
 		/** Calls a stored procedure with parameters */
-		public static final AbstractPreparedProcedure ParamStoredProcedure = new AbstractPreparedProcedure(
+		public static final AbstractPreparedProcedure ParamStoredProcedure = new AbstractPreparedProcedure(connectionPool,
 			"SELECT * FROM UpdateOrInsertNotSoSimple(",PostgreSQLParameters.PHONE,", ",PostgreSQLParameters.ID,")");
 	}
 

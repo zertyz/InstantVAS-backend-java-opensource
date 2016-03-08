@@ -172,31 +172,31 @@ public class SMSAppModulePostgreSQLAdapter extends PostgreSQLAdapter {
 
 	public static final class UsersDBStatements {
 		/** Zero the table contents -- for testing purposes only */
-		public final static AbstractPreparedProcedure ResetTable = new AbstractPreparedProcedure(
+		public final static AbstractPreparedProcedure ResetTable = new AbstractPreparedProcedure(connectionPool,
 			"TRUNCATE Users CASCADE");
 		/** Executes the 'AssertUserIsRegistered' stored procedure, which returns an 'USER_ID' for the given 'PHONE', registering it as a new user as needed */
-		public final static AbstractPreparedProcedure AssertUserIsRegistered = new AbstractPreparedProcedure(
+		public final static AbstractPreparedProcedure AssertUserIsRegistered = new AbstractPreparedProcedure(connectionPool,
 			"SELECT * FROM AssertUserIsRegistered(",Parameters.PHONE,")");
 	}
 	
 	public static final class SessionsDBStatements {
 		/** Zero the table contents -- for testing purposes only */
-		public final static AbstractPreparedProcedure ResetTable = new AbstractPreparedProcedure(
+		public final static AbstractPreparedProcedure ResetTable = new AbstractPreparedProcedure(connectionPool,
 			"TRUNCATE Sessions CASCADE");
 		/** Remove the property 'PROPERTY_NAME' from the given 'USER_ID' */
-		public final static AbstractPreparedProcedure DeleteProperty = new AbstractPreparedProcedure(
+		public final static AbstractPreparedProcedure DeleteProperty = new AbstractPreparedProcedure(connectionPool,
 			"DELETE FROM Sessions WHERE userId=",Parameters.USER_ID," AND propertyName=",Parameters.PROPERTY_NAME);
 		/** Retrieve all pairs {propertyName, propertyValue} from 'USER_ID' */
-		public final static AbstractPreparedProcedure FetchProperties = new AbstractPreparedProcedure(
+		public final static AbstractPreparedProcedure FetchProperties = new AbstractPreparedProcedure(connectionPool,
 			"SELECT propertyName, propertyValue FROM Sessions WHERE userId=",Parameters.USER_ID);
 		/** Assign a non existing 'PROPERTY_NAME' with the given 'PROPERTY_VALUE' to 'USER_ID' */
-		public final static AbstractPreparedProcedure InsertProperty = new AbstractPreparedProcedure(
+		public final static AbstractPreparedProcedure InsertProperty = new AbstractPreparedProcedure(connectionPool,
 			"INSERT INTO Sessions(userId, propertyName, propertyValue) VALUES (",Parameters.USER_ID,", ",Parameters.PROPERTY_NAME,", ",Parameters.PROPERTY_VALUE,")");
 		/** Update the 'USER_ID' existing 'PROPERTY_NAME' to the desired 'PROPERTY_VALUE' */
-		public final static AbstractPreparedProcedure UpdateProperty = new AbstractPreparedProcedure(
+		public final static AbstractPreparedProcedure UpdateProperty = new AbstractPreparedProcedure(connectionPool,
 			"UPDATE Sessions SET propertyValue=",Parameters.PROPERTY_VALUE," WHERE userId=",Parameters.USER_ID," AND propertyName=",Parameters.PROPERTY_NAME);
 		/** Updates or inserts 'PROPERTY_NAME' with the given 'PROPERTY_VALUE' and associate them with 'USER_ID' */
-		public final static AbstractPreparedProcedure AssureProperty = new AbstractPreparedProcedure(
+		public final static AbstractPreparedProcedure AssureProperty = new AbstractPreparedProcedure(connectionPool,
 			"WITH upsert AS (",
 			                 "UPDATE Sessions SET propertyValue=",Parameters.PROPERTY_VALUE," WHERE userId=",Parameters.USER_ID,
 			                 " AND propertyName=",Parameters.PROPERTY_NAME," RETURNING *) ",

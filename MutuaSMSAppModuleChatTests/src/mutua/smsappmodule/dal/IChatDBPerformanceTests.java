@@ -37,7 +37,7 @@ public class IChatDBPerformanceTests {
 	InstantVASSMSAppModuleChatTestsConfiguration config = InstantVASSMSAppModuleChatTestsConfiguration.getInstance();
 	
 	// algorithm settings
-	private int numberOfThreads = 4;
+	private int numberOfThreads = 8;
 	
 	/**************
 	** DATABASES ** 

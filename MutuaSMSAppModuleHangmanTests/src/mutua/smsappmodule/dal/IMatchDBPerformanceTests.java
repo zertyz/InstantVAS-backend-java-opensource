@@ -31,7 +31,7 @@ public class IMatchDBPerformanceTests {
 	private IMatchDB matchDB = HANGMAN_MODULE_DAL.getMatchDB();
 	
 	// algorithm settings
-	private int numberOfThreads = 4;
+	private int numberOfThreads = 8;
 
 	// users table pre-fill
 	private int       totalNumberOfUsers = PERFORMANCE_TESTS_LOAD_FACTOR * ((HANGMAN_MODULE_DAL == SMSAppModuleDALFactoryHangman.RAM) ? 1000000 : 40000);	// please, be sure the division between this and 'numberOfThreads' is round

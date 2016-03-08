@@ -17,15 +17,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 
-import mutua.icc.instrumentation.DefaultInstrumentationEvents;
-import mutua.icc.instrumentation.InstrumentableEvent;
 import mutua.icc.instrumentation.Instrumentation;
-import mutua.icc.instrumentation.Instrumentation.EInstrumentationPropagableEvents;
-import mutua.icc.instrumentation.Instrumentation.InstrumentationPropagableEvent;
 import mutua.icc.instrumentation.JDBCAdapterInstrumentationEvents;
-import mutua.icc.instrumentation.dto.InstrumentationEventDto;
-import mutua.icc.instrumentation.eventclients.InstrumentationPropagableEventsClient;
-import mutua.imi.IndirectMethodNotFoundException;
 import adapters.exceptions.JDBCAdapterError;
 
 /** <pre>
@@ -42,12 +35,12 @@ import adapters.exceptions.JDBCAdapterError;
  * on which scenario, the connections are rechecked.
  */
 
-public abstract class JDBCAdapter implements InstrumentationPropagableEventsClient<EInstrumentationPropagableEvents> {
+public abstract class JDBCAdapter {
 	
 	
 	// instance variables
 	protected Instrumentation<?, ?> log;
-	/**  Indicates whether or not to perform any needed administrative tasks, such as database creation */
+	/** Indicates whether or not to perform any needed administrative tasks, such as database creation */
 	protected boolean allowDataStructuresAssertion;
 	/** Set to true to have all database queries logged */
 	protected boolean shouldDebugQueries;
@@ -168,10 +161,12 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 	/** creates a connection able to manipulate the database structure and contents */
 	protected abstract Connection createDatabaseConnection() throws SQLException;
 	
-	private int poolIndex = 0;
-	/** returns a connection from the pool */
-	private Connection getConnection() throws SQLException {
-		return pool[(poolIndex++)%pool.length];
+	private int connectionPoolCounter = 0;
+	/** returns a connection reference, from the pool */
+	private int getNextConnectionPoolIndex() {
+		synchronized (pool) {
+			return (connectionPoolCounter++)%pool.length;
+		}
 	}
 	
 	/** returns the number of columns in this 'ResultSet' assuming it is already initialized
@@ -286,13 +281,6 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 			log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "WARNING: '"+this.getClass().getName()+"' instance initiated without data structures verification");
 		}
 		checkAndPopulatePoolOfConnections();
-		
-		// detect exceptions to repopulate the pool of connections
-		try {
-			log.addInstrumentationPropagableEventsClient(this);
-		} catch (IndirectMethodNotFoundException e) {
-			log.reportThrowable(e, "Could not register 'JDBCAdapter' as a listener to log events -- connection pool validation won't work");
-		}
 	}
 	
 	private void checkAndPopulatePoolOfConnections() throws SQLException {
@@ -315,48 +303,54 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 	** EXCEPTION NOTIFICATION **
 	***************************/
 	
-	private final static InstrumentableEvent REPORTED_THROWABLE          = DefaultInstrumentationEvents.DIE_REPORTED_THROWABLE.getInstrumentableEvent();
-	private final static InstrumentableEvent REPORTED_UNCOUGHT_EXCEPTION = DefaultInstrumentationEvents.DIE_UNCOUGHT_EXCEPTION.getInstrumentableEvent();
-	private final static InstrumentableEvent REPORTED_ERROR              = DefaultInstrumentationEvents.DIE_ERROR.getInstrumentableEvent();
-	
-	@InstrumentationPropagableEvent(EInstrumentationPropagableEvents.INTERNAL_FRAMEWORK_INSTRUMENTATION_EVENT)
-	public void handleInstrumentationNotifications(InstrumentationEventDto applicationEvent) {
-		InstrumentableEvent instrumentableEvent = applicationEvent.getEvent();
-		if ((instrumentableEvent == REPORTED_THROWABLE) || (instrumentableEvent == REPORTED_UNCOUGHT_EXCEPTION) ||
-		    (instrumentableEvent == REPORTED_ERROR)) {
-			log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "WARNING: Exception or Error detected. Rechecking connections...");
-			try {
-				checkAndPopulatePoolOfConnections();
-			} catch (SQLException e) {
-				log.reportThrowable(e, "Exception while validating the pool of connections. Please consider checking the database and/or rebooting the server & restarting the application");
-			}
+	/** reports that an exception has happened and checks the environment to attempt to prevent further errors */
+	private void handleException(SQLException e, AbstractPreparedProcedure abstractPreparedProcedure) {
+		log.reportThrowable(e, "Exception while executing query '"+abstractPreparedProcedure.getPreparedProcedureSQL()+"'. Recheking connections & prepared statements...");
+		try {
+			checkAndPopulatePoolOfConnections();
+			abstractPreparedProcedure.checkPreparedStatements();
+		} catch (Throwable t) {
+			log.reportThrowable(t, "Exception while validating the pool of connections & prepared statements. Please consider checking the database and/or rebooting the server & restarting the application");
 		}
 	}
+
+
 	
 
 	/**************************
 	** PUBLIC ACCESS METHODS **
 	**************************/
 	
+	// TODO 04/03/16
+	// 1) Comando listar se dá através do módulo profile, porém usa o campo ATS (access time), que é o renomeio do campo UTS que já tem lá. Criar índice.
+	// 2) Continuar pensando em criar um event link para executar itens de um schedule, em ram ou db, com tolerância para execução mesmo se tiver passado x tempo e com fallback para "not executed" pela razão x.
+	// 3) Continuar, também, a pensar em criar filas em arquivo. Deve ser muuuito mais rápido lá no Interserver...
+	// 3) Remover deste arquivo o mecanismo de detecção de erros baseado na instrumentação. cada função tem sua checagem -- em caso de exception antes de ps.execute..., a retantativa é transparente e obriga a rever o pool de conexões e prepared statements. fazer testes.
+	// 4) deixar rolando minha rola lá no interserver...
+	
+	private int rawInvokeUpdateProcedure(AbstractPreparedProcedure abstractPreparedProcedure, Object... parametersAndValuesPairs) throws SQLException {
+		int connIndex = getNextConnectionPoolIndex();
+		PreparedStatement ps = abstractPreparedProcedure.getPreparedStatement(connIndex, parametersAndValuesPairs);
+		int result = ps.executeUpdate();
+		abstractPreparedProcedure.returnToThePool(connIndex, ps);
+		return result;
+	}
 	/** executes an INSERT, UPDATE, DELETE, and possibly other commands */
 	public int invokeUpdateProcedure(AbstractPreparedProcedure abstractPreparedProcedure, Object... parametersAndValuesPairs) throws SQLException {
 		if (shouldDebugQueries) {
 			log.reportEvent(IE_DATABASE_QUERY, IP_PREPARED_SQL, abstractPreparedProcedure.getPreparedProcedureSQL(), IP_SQL_TEMPLATE_PARAMETERS, parametersAndValuesPairs);
 		}
-		Connection conn = getConnection();
-		PreparedStatement ps = abstractPreparedProcedure.getPreparedStatement(conn, parametersAndValuesPairs);
-		int result = ps.executeUpdate();
-		ps.close();
-		return result;
+		try {
+			return rawInvokeUpdateProcedure(abstractPreparedProcedure, parametersAndValuesPairs);
+		} catch (SQLException e) {
+			handleException(e, abstractPreparedProcedure);
+			return rawInvokeUpdateProcedure(abstractPreparedProcedure, parametersAndValuesPairs);
+		}
 	}
 	
-	/** executes SELECT statements that return a single value */
-	public Object invokeScalarProcedure(AbstractPreparedProcedure abstractPreparedProcedure, Object... parametersAndValuesPairs) throws SQLException {
-		if (shouldDebugQueries) {
-			log.reportEvent(IE_DATABASE_QUERY, IP_PREPARED_SQL, abstractPreparedProcedure.getPreparedProcedureSQL(), IP_SQL_TEMPLATE_PARAMETERS, parametersAndValuesPairs);
-		}
-		Connection conn = getConnection();
-		PreparedStatement ps = abstractPreparedProcedure.getPreparedStatement(conn, parametersAndValuesPairs);
+	private Object rawInvokeScalarProcedure(AbstractPreparedProcedure abstractPreparedProcedure, Object... parametersAndValuesPairs) throws SQLException {
+		int connIndex = getNextConnectionPoolIndex();
+		PreparedStatement ps = abstractPreparedProcedure.getPreparedStatement(connIndex, parametersAndValuesPairs);
 		ResultSet resultSet = ps.executeQuery();
 		try {
 			if (resultSet.next()) {
@@ -378,51 +372,87 @@ public abstract class JDBCAdapter implements InstrumentationPropagableEventsClie
 			}
 		} finally {
 			resultSet.close();
-			ps.close();
+			abstractPreparedProcedure.returnToThePool(connIndex, ps);
 		}
 	}
-	
-	/** executes a query (typically via SELECT statement) that will return a single row, with some number of fields
-	 *  in it, which the order is known -- possibly via SELECT a, b, c... clause */
-	public Object[] invokeRowProcedure(AbstractPreparedProcedure abstractPreparedProcedure, Object... parametersAndValuesPairs) throws SQLException {
+	/** executes SELECT statements that return a single value */
+	public Object invokeScalarProcedure(AbstractPreparedProcedure abstractPreparedProcedure, Object... parametersAndValuesPairs) throws SQLException {
 		if (shouldDebugQueries) {
 			log.reportEvent(IE_DATABASE_QUERY, IP_PREPARED_SQL, abstractPreparedProcedure.getPreparedProcedureSQL(), IP_SQL_TEMPLATE_PARAMETERS, parametersAndValuesPairs);
 		}
-		Connection conn = getConnection();
-		PreparedStatement ps = abstractPreparedProcedure.getPreparedStatement(conn, parametersAndValuesPairs);
+		try {
+			return rawInvokeScalarProcedure(abstractPreparedProcedure, parametersAndValuesPairs);
+		} catch (SQLException e) {
+			handleException(e, abstractPreparedProcedure);
+			return rawInvokeScalarProcedure(abstractPreparedProcedure, parametersAndValuesPairs);
+		}
+	}
+	
+	private Object[] rawInvokeRowProcedure(AbstractPreparedProcedure abstractPreparedProcedure, Object... parametersAndValuesPairs) throws SQLException {
+		int connIndex = getNextConnectionPoolIndex();
+		PreparedStatement ps = abstractPreparedProcedure.getPreparedStatement(connIndex, parametersAndValuesPairs);
 		Object[][] result = getArrayFromQueryExecution(ps);
-		ps.close();
+		abstractPreparedProcedure.returnToThePool(connIndex, ps);
 		if ((result == null) || (result.length == 0)) {
 			return null;
 		} else {
 			return result[0];
 		}
 	}
+	/** executes a query (typically via SELECT statement) that will return a single row, with some number of fields
+	 *  in it, which the order is known -- possibly via SELECT a, b, c... clause */
+	public Object[] invokeRowProcedure(AbstractPreparedProcedure abstractPreparedProcedure, Object... parametersAndValuesPairs) throws SQLException {
+		if (shouldDebugQueries) {
+			log.reportEvent(IE_DATABASE_QUERY, IP_PREPARED_SQL, abstractPreparedProcedure.getPreparedProcedureSQL(), IP_SQL_TEMPLATE_PARAMETERS, parametersAndValuesPairs);
+		}
+		try {
+			return rawInvokeRowProcedure(abstractPreparedProcedure, parametersAndValuesPairs);
+		} catch (SQLException e) {
+			handleException(e, abstractPreparedProcedure);
+			return rawInvokeRowProcedure(abstractPreparedProcedure, parametersAndValuesPairs);
+		}
+	}
 	
+	private Object[][] rawInvokeArrayProcedure(AbstractPreparedProcedure abstractPreparedProcedure, Object... parametersAndValuesPairs) throws SQLException {
+		int connIndex = getNextConnectionPoolIndex();
+		PreparedStatement ps = abstractPreparedProcedure.getPreparedStatement(connIndex, parametersAndValuesPairs);
+		Object[][] result = getArrayFromQueryExecution(ps);
+		abstractPreparedProcedure.returnToThePool(connIndex, ps);
+		return result;
+	}
 	/** executes a query (typically via SELECT statement) that will return a virtual table that can be contained into RAM -- that is, has a
 	 *  few and foreseeable amount of elements -- possibly using the LIMIT clause */
 	public Object[][] invokeArrayProcedure(AbstractPreparedProcedure abstractPreparedProcedure, Object... parametersAndValuesPairs) throws SQLException {
 		if (shouldDebugQueries) {
 			log.reportEvent(IE_DATABASE_QUERY, IP_PREPARED_SQL, abstractPreparedProcedure.getPreparedProcedureSQL(), IP_SQL_TEMPLATE_PARAMETERS, parametersAndValuesPairs);
 		}
-		Connection conn = getConnection();
-		PreparedStatement ps = abstractPreparedProcedure.getPreparedStatement(conn, parametersAndValuesPairs);
-		Object[][] result = getArrayFromQueryExecution(ps);
-		ps.close();
-		return result;
+		try {
+			return rawInvokeArrayProcedure(abstractPreparedProcedure, parametersAndValuesPairs);
+		} catch (SQLException e) {
+			handleException(e, abstractPreparedProcedure);
+			return rawInvokeArrayProcedure(abstractPreparedProcedure, parametersAndValuesPairs);
+		}
 	}
-	
+
+	private ResultSet rawInvokeVirtualTableProcedure(AbstractPreparedProcedure abstractPreparedProcedure, Object... parametersAndValuesPairs) throws SQLException {
+		int connIndex = getNextConnectionPoolIndex();
+		PreparedStatement ps = abstractPreparedProcedure.getPreparedStatement(connIndex, parametersAndValuesPairs);
+		return ps.executeQuery();
+	}
 	/** executes a query (typically via SELECT statement) that will produce huge quantities of results and, thus, won't fit into RAM
-	 *  the returned 'ResultSet' needs to be closed after use */
+	 *  the returned 'ResultSet' needs to be closed after use and the associated 'PreparedStatement', returned to the AbstractPreparedProcedure pool */
 	public ResultSet invokeVirtualTableProcedure(AbstractPreparedProcedure abstractPreparedProcedure, Object... parametersAndValuesPairs) throws SQLException {
 		if (shouldDebugQueries) {
 			log.reportEvent(IE_DATABASE_QUERY, IP_PREPARED_SQL, abstractPreparedProcedure.getPreparedProcedureSQL(), IP_SQL_TEMPLATE_PARAMETERS, parametersAndValuesPairs);
 		}
-		Connection conn = getConnection();
-		PreparedStatement ps = abstractPreparedProcedure.getPreparedStatement(conn, parametersAndValuesPairs);
-		return ps.executeQuery();
+		try {
+			return rawInvokeVirtualTableProcedure(abstractPreparedProcedure, parametersAndValuesPairs);
+		} catch (SQLException e) {
+			handleException(e, abstractPreparedProcedure);
+			return rawInvokeVirtualTableProcedure(abstractPreparedProcedure, parametersAndValuesPairs);
+		}
 	}
-
+	
 	/** erases all database contents -- solo for testing purposes */
 	public void resetDatabase() {
 		try {

@@ -166,16 +166,16 @@ public class SMSAppModulePostgreSQLAdapterProfile extends PostgreSQLAdapter {
 
 	public static final class ProfileDBStatements {
 		/** Zero the table contents -- for testing purposes only */
-		public final static AbstractPreparedProcedure ResetTable = new AbstractPreparedProcedure(
+		public final static AbstractPreparedProcedure ResetTable = new AbstractPreparedProcedure(connectionPool,
 			"TRUNCATE Profiles CASCADE");
 		/** Returns the nickname associated with 'USER_ID' */
-		public final static AbstractPreparedProcedure SelectProfileByUser = new AbstractPreparedProcedure(
+		public final static AbstractPreparedProcedure SelectProfileByUser = new AbstractPreparedProcedure(connectionPool,
 			"SELECT userId, nickname FROM Profiles WHERE userId=",Parameters.USER_ID);
 		/** Assures 'USER_ID' has the 'NICKNAME' or a derivative of it, in case it is already taken by another user. The attributed nickname is returned. */
-		public final static AbstractPreparedProcedure AssertProfile = new AbstractPreparedProcedure(
+		public final static AbstractPreparedProcedure AssertProfile = new AbstractPreparedProcedure(connectionPool,
 			"SELECT userId, nickname FROM AssertProfile(",Parameters.USER_ID,", ",Parameters.NICKNAME,")");
 		/** Returns the full user information (id, phone, correctly cased nickname) associated with the given case insensitive 'NICKNAME' */
-		public final static AbstractPreparedProcedure SelectProfileByNickname = new AbstractPreparedProcedure(
+		public final static AbstractPreparedProcedure SelectProfileByNickname = new AbstractPreparedProcedure(connectionPool,
 			"SELECT Users.userId, Users.phoneNumber, Profiles.nickname FROM Users, Profiles WHERE lower(nickname)=lower(",Parameters.NICKNAME,") AND Users.userId = Profiles.userId");
 	}
 	

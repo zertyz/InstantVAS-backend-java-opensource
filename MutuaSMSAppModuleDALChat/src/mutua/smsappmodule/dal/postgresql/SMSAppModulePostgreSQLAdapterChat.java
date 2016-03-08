@@ -157,19 +157,23 @@ public class SMSAppModulePostgreSQLAdapterChat extends PostgreSQLAdapter {
 			assureDataStructures();
 		}
 		
-		ResetTables           = new AbstractPreparedProcedure("TRUNCATE PrivateMessages CASCADE");
-		InsertPrivateMessage  = new AbstractPreparedProcedure("INSERT INTO PrivateMessages(moId, senderUserId, recipientUserId, moTextStartIndex) ",
+		ResetTables           = new AbstractPreparedProcedure(connectionPool,
+			"TRUNCATE PrivateMessages CASCADE");
+		InsertPrivateMessage  = new AbstractPreparedProcedure(connectionPool,
+			"INSERT INTO PrivateMessages(moId, senderUserId, recipientUserId, moTextStartIndex) ",
 		                                                      "VALUES(",Parameters.MO_ID,", ",Parameters.SENDER_USER_ID,", ",Parameters.RECIPIENT_USER_ID,", ",Parameters.MO_TEXT_START_INDEX,")");
-		SelectPeers           = new AbstractPreparedProcedure("SELECT DISTINCT userId, phoneNumber FROM ",
-		                                                      "(SELECT senderUserId    AS userId, phoneNumber, moId FROM PrivateMessages, Users WHERE PrivateMessages.recipientUserId=",
-		                                                      Parameters.USER_ID," AND Users.userId=",Parameters.USER_ID," UNION ",
-		                                                      " SELECT recipientUserId AS userId, phoneNumber, moId FROM PrivateMessages, Users WHERE PrivateMessages.senderUserId=",Parameters.USER_ID,
-		                                                      " AND Users.userId=",Parameters.USER_ID," ORDER BY moId ASC) uq");
-		SelectPrivateMessages = new AbstractPreparedProcedure("SELECT pm.moId, pm.senderUserID, su.phoneNumber AS senderPhoneNumber, pm.recipientUserID, ru.phoneNumber AS recipientPhoneNumber, SUBSTRING(",
-		                                                      moTableName,".",moTextFieldName," FROM pm.moTextStartIndex+1) AS message FROM PrivateMessages pm, Users su, Users ru, ",moTableName," WHERE ",
-		                                                      "((pm.senderUserId=",Parameters.USER1_ID," AND pm.recipientUserId=",Parameters.USER2_ID,") OR ",
-		                                                      " (pm.senderUserId=",Parameters.USER2_ID," AND pm.recipientUserId=",Parameters.USER1_ID,")) AND ",
-		                                                      "su.userId=pm.senderUserId AND ru.userId=pm.recipientUserId AND pm.moId = ",moTableName,".",moIdFieldName," ORDER BY pm.moId ASC");
+		SelectPeers           = new AbstractPreparedProcedure(connectionPool,
+			"SELECT DISTINCT userId, phoneNumber FROM ",
+		    "(SELECT senderUserId    AS userId, phoneNumber, moId FROM PrivateMessages, Users WHERE PrivateMessages.recipientUserId=",
+		    Parameters.USER_ID," AND Users.userId=",Parameters.USER_ID," UNION ",
+		    " SELECT recipientUserId AS userId, phoneNumber, moId FROM PrivateMessages, Users WHERE PrivateMessages.senderUserId=",Parameters.USER_ID,
+		    " AND Users.userId=",Parameters.USER_ID," ORDER BY moId ASC) uq");
+		SelectPrivateMessages = new AbstractPreparedProcedure(connectionPool,
+			"SELECT pm.moId, pm.senderUserID, su.phoneNumber AS senderPhoneNumber, pm.recipientUserID, ru.phoneNumber AS recipientPhoneNumber, SUBSTRING(",
+		    moTableName,".",moTextFieldName," FROM pm.moTextStartIndex+1) AS message FROM PrivateMessages pm, Users su, Users ru, ",moTableName," WHERE ",
+		    "((pm.senderUserId=",Parameters.USER1_ID," AND pm.recipientUserId=",Parameters.USER2_ID,") OR ",
+		    " (pm.senderUserId=",Parameters.USER2_ID," AND pm.recipientUserId=",Parameters.USER1_ID,")) AND ",
+		    "su.userId=pm.senderUserId AND ru.userId=pm.recipientUserId AND pm.moId = ",moTableName,".",moIdFieldName," ORDER BY pm.moId ASC");
 	}
 
 	

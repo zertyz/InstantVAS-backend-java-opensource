@@ -33,7 +33,7 @@ public abstract class DerbyEmbeddedAdapter extends JDBCAdapter {
 	@ConfigurableElement("The total number of concurrent connections allowed to embedded Derby on this VM. Suggestion: fine tune to get the optimum number for this particular app/database. As an initial value, set this to half the number of all consumer threads")
 	public static int CONNECTION_POOL_SIZE = 4;
 	
-	private static Connection[] connectionPool = null;
+	protected static Connection[] connectionPool = null;
 	
 	/** method to be called when attempting to configure the default behavior for new instances of 'DerbyEmbeddedAdapter'.
 	 *  @param connectionProperties if null, the default value won't be touched

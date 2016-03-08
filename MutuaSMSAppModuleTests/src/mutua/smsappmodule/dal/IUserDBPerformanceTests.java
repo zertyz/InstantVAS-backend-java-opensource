@@ -30,7 +30,7 @@ public class IUserDBPerformanceTests {
 	@Test
 	public void testAlgorithmAnalysis() throws Throwable {
 		
-		int numberOfThreads = 4;
+		int numberOfThreads = 8;
 		int inserts = 15000 * InstantVASSMSAppModuleTestsConfiguration.PERFORMANCE_TESTS_LOAD_FACTOR;
 		int selects = inserts;
 		final long phoneStart = 991230000;

@@ -11,7 +11,6 @@ import mutua.events.EventClient;
 import mutua.events.EventServer;
 import mutua.events.IEventLink;
 import mutua.events.QueueEventLink;
-import mutua.events.annotations.EventConsumer;
 import mutua.hangmansmsgame.dispatcher.IResponseReceiver;
 import mutua.hangmansmsgame.smslogic.SMSProcessor;
 import mutua.hangmansmsgame.smslogic.SMSProcessorException;

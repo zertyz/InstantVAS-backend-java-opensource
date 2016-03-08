@@ -56,16 +56,16 @@ public class MySQLAdapterConfiguration extends MySQLAdapter {
 	
 	public static final class MySQLStatements {
 		/** Inserts an 'ID' and 'PHONE' into the 'InsertSimpleRecord' */
-		public final static AbstractPreparedProcedure InsertSimpleRecord = new AbstractPreparedProcedure(
+		public final static AbstractPreparedProcedure InsertSimpleRecord = new AbstractPreparedProcedure(connectionPool,
 			"INSERT INTO SimpleTable VALUES (${ID}, ${PHONE})");
 		/** Returns the 'PHONE' associated with 'ID' */
-		public final static AbstractPreparedProcedure GetSimpleIdFromPhone = new AbstractPreparedProcedure(
+		public final static AbstractPreparedProcedure GetSimpleIdFromPhone = new AbstractPreparedProcedure(connectionPool,
 			"SELECT phone FROM SimpleTable WHERE id=${ID}");
 		/** removes the record denoted by 'ID' */
-		public final static AbstractPreparedProcedure DeleteSimpleRecord = new AbstractPreparedProcedure(
+		public final static AbstractPreparedProcedure DeleteSimpleRecord = new AbstractPreparedProcedure(connectionPool,
 			"DELETE FROM SimpleTable WHERE id=${ID}");
 		/** Inserts a 'PHONE' into the 'InsertNotSoSimpleRecord' */
-		public final static AbstractPreparedProcedure InsertNotSoSimpleRecord = new AbstractPreparedProcedure(
+		public final static AbstractPreparedProcedure InsertNotSoSimpleRecord = new AbstractPreparedProcedure(connectionPool,
 			"INSERT INTO NotSoSimple VALUES (${PHONE})");
 	}
 	

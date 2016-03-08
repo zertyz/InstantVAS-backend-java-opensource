@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import adapters.exceptions.PreparedProcedureException;
@@ -23,12 +24,16 @@ public class AbstractPreparedProcedure {
 	
 	private String preparedProcedureSQL;
 	private IJDBCAdapterParameterDefinition[] params;
+	private Connection[]        connectionPool;
+	private PreparedStatement[][] preparedStatementsList;
 
 	/** Keep the structures needed to transform 'sqlStatementBits' into a 'PreparedProcedure',
 	 *  according to the "JDBC Adapter Configuration" pattern. */
-	public AbstractPreparedProcedure(Object... sqlStatementBits) {
-		preparedProcedureSQL = calculatePreparedProcedureSQL(sqlStatementBits);
-		params               = calculateParameters(sqlStatementBits);			
+	public AbstractPreparedProcedure(Connection[] connectionPool, Object... sqlStatementBits) {
+		preparedProcedureSQL     = calculatePreparedProcedureSQL(sqlStatementBits);
+		params                   = calculateParameters(sqlStatementBits);
+		this.connectionPool      = connectionPool;
+		preparedStatementsList   = new PreparedStatement[connectionPool.length][1];
 	}
 
 	/** returns the 'sqlStatement' to be used to construct 'PreparedProcedures' associated with this instance */
@@ -37,12 +42,81 @@ public class AbstractPreparedProcedure {
 	}
 	
 	/** Uses the internal cache mechanism to efficiently retrieve a ready to use 'PreparedStatement' */
-	public PreparedStatement getPreparedStatement(Connection conn, Object... parametersAndValuesPairs) throws SQLException {
-		return buildPreparedStatement(conn, parametersAndValuesPairs);
+	public PreparedStatement getPreparedStatement(int connIndex, Object... parametersAndValuesPairs) throws SQLException {
+		Connection conn = connectionPool[connIndex];
+		// search for an available prepared statement on the list and return it
+		synchronized (preparedStatementsList) {
+			PreparedStatement[] preparedStatements = preparedStatementsList[connIndex];
+			PreparedStatement psCandidate;
+			for (int psIndex=0; psIndex<preparedStatements.length; psIndex++) {
+				psCandidate = preparedStatements[psIndex];
+				if (psCandidate != null) {
+					// take from the pool and give it to the caller, if it is valid
+					preparedStatements[psIndex] = null;
+					return buildPreparedStatement(psCandidate, parametersAndValuesPairs);
+				}
+			}
+		}
+		// no prepared procedure available. create a brand new one
+		PreparedStatement ps = conn.prepareStatement(preparedProcedureSQL);
+		ps.setPoolable(true);
+		return buildPreparedStatement(ps, parametersAndValuesPairs);
+	}
+	
+	/** return a known connection prepared statement to the pool -- faster */
+	public void returnToThePool(int connIndex, PreparedStatement ps) {
+		// search for a null position on the list to insert the prepared statement into
+		synchronized (preparedStatementsList) {
+			PreparedStatement[] preparedStatements = preparedStatementsList[connIndex];
+			int psIndex;
+			for (psIndex=0; psIndex<preparedStatements.length; psIndex++) {
+				if (preparedStatements[psIndex] == null) {
+					break;
+				}
+			}
+			// expand the array, if necessary
+			if (psIndex == preparedStatements.length) {
+				preparedStatements = Arrays.copyOf(preparedStatements, preparedStatements.length+1);
+				preparedStatementsList[connIndex] = preparedStatements;
+System.err.println("PreparedStatementList '"+preparedProcedureSQL+"'["+connIndex+"] just grew to "+preparedStatements.length+" elements!");
+			}
+			// return to the pool
+			preparedStatements[psIndex] = ps;
+		}
+	}
+	
+	/** return an unknown connection prepared statement to the pool -- slower */
+	public void returnToThePool(PreparedStatement ps) throws SQLException {
+		Connection conn = ps.getConnection();
+		// find the prepared statement list which 'ps' belongs to
+		int connIndex;
+		for (connIndex=0; connIndex<connectionPool.length; connIndex++) {
+			if (conn == connectionPool[connIndex]) {
+				break;
+			}
+		}
+		returnToThePool(connIndex, ps);
+	}
+	
+	/** walks through all prepared statements, cleaning the ones that are no longer usable.
+	 *  This method was designed to be called after a cleaning on the connection pool has been made */
+	public void checkPreparedStatements() throws SQLException {
+		int connIndex;
+		for (connIndex=0; connIndex<connectionPool.length; connIndex++) {
+			Connection conn = connectionPool[connIndex];
+			PreparedStatement[] preparedStatements = preparedStatementsList[connIndex];
+			for (int psIndex=0; psIndex<preparedStatements.length; psIndex++) {
+				PreparedStatement ps = preparedStatements[psIndex];
+				// remove prepared procedures that are no longer valid or that belongs to a connection that is no longer used
+				if ((ps != null) && ((ps.isClosed()) || (ps.getConnection() != conn)) ) {
+System.err.println("AbstractPreparedProcedure '"+preparedProcedureSQL+"': Connection #"+connIndex+", PreparedStatement #"+psIndex+" is invalid. Removing...");
+					preparedStatements[psIndex] = null;
+				}
+			}
+		}
 	}
 
-	private PreparedStatement buildPreparedStatement(Connection conn, Object... parametersAndValuesPairs) throws SQLException {
-		PreparedStatement ps = conn.prepareStatement(preparedProcedureSQL);
+	private PreparedStatement buildPreparedStatement(PreparedStatement ps, Object... parametersAndValuesPairs) throws SQLException {
 		int pairsLength = parametersAndValuesPairs.length/2;
 		for (int paramsIndex=0; paramsIndex<params.length; paramsIndex++) {
 			IJDBCAdapterParameterDefinition parameterFromConstructor = params[paramsIndex];
@@ -62,12 +136,12 @@ public class AbstractPreparedProcedure {
 						int[] intArray = (int[])value;
 						Object[] genericArray = new Object[intArray.length];
 						System.arraycopy(intArray, 0, genericArray, 0, intArray.length);
-						ps.setArray(paramsIndex, conn.createArrayOf("int", genericArray));
+						ps.setArray(paramsIndex, ps.getConnection().createArrayOf("int", genericArray));
 					} else if (value instanceof String[]) {
 						String[] stringArray = (String[])value;
 						Object[] genericArray = new Object[stringArray.length];
 						System.arraycopy(stringArray, 0, genericArray, 0, stringArray.length);
-						ps.setArray(paramsIndex, conn.createArrayOf("text", genericArray));
+						ps.setArray(paramsIndex, ps.getConnection().createArrayOf("text", genericArray));
 					} else if (value instanceof Serializable) {
 						ps.setObject(paramsIndex, value);
 					} else {

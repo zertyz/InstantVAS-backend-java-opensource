@@ -143,16 +143,16 @@ public class SMSAppModulePostgreSQLAdapterSubscription extends PostgreSQLAdapter
 
 	public static final class SubscriptionDBStatements {
 		/** Zero the table contents -- for testing purposes only */
-		public final static AbstractPreparedProcedure ResetTable = new AbstractPreparedProcedure(
+		public final static AbstractPreparedProcedure ResetTable = new AbstractPreparedProcedure(connectionPool,
 			"TRUNCATE Subscriptions CASCADE");
 		/** Returns if the 'USER_ID' is or isn't subscribed -- and all channels, billings & etc available */
-		public final static AbstractPreparedProcedure SelectSubscriptionByUser = new AbstractPreparedProcedure(
+		public final static AbstractPreparedProcedure SelectSubscriptionByUser = new AbstractPreparedProcedure(connectionPool,
 			"SELECT userId, isSubscribed, lastBilling, subscriptionChannel, unsubscriptionChannel FROM Subscriptions WHERE userId=",Parameters.USER_ID);
 		/** Executes the 'AssertSubscribed' stored procedure, which assures 'USER_ID' is marked as subscribed via 'CHANNEL' */
-		public final static AbstractPreparedProcedure AssertSubscribed = new AbstractPreparedProcedure(
+		public final static AbstractPreparedProcedure AssertSubscribed = new AbstractPreparedProcedure(connectionPool,
 			"SELECT * FROM AssertSubscribed(",Parameters.USER_ID,", ",Parameters.CHANNEL,")");
 		/** Executes the 'AssertUnsubscribed' stored procedure, which assures 'USER_ID's subscription has been cancelled via 'CHANNEL' */
-		public final static AbstractPreparedProcedure AssertUnsubscribed = new AbstractPreparedProcedure(
+		public final static AbstractPreparedProcedure AssertUnsubscribed = new AbstractPreparedProcedure(connectionPool,
 			"SELECT * FROM AssertUnsubscribed(",Parameters.USER_ID,", ",Parameters.CHANNEL,")");
 	}
 	

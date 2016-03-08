@@ -32,7 +32,7 @@ public class ISubscriptionDBPerformanceTests {
 	private ISubscriptionDB subscriptionDB = SUBSCRIPTION_DAL.getSubscriptionDB();
 
 	// algorithm settings
-	private int numberOfThreads = 4;
+	private int numberOfThreads = 8;
 
 	// users table pre-fill
 	private int       totalNumberOfUsers = PERFORMANCE_TESTS_LOAD_FACTOR * ((SUBSCRIPTION_DAL == SMSAppModuleDALFactorySubscription.RAM) ? 1000000 : 40000);	// please, be sure the division between this and 'numberOfThreads' is round

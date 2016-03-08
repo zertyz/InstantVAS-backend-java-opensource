@@ -32,7 +32,7 @@ public class ISessionDBPerformanceTests {
 	private ISessionDB sessionDB = BASE_MODULE_DAL.getSessionDB();
 
 	// algorithm settings
-	private static int numberOfThreads = 4;
+	private static int numberOfThreads = 8;
 
 	// users table pre-fill
 	private int       totalNumberOfUsers = InstantVASSMSAppModuleTestsConfiguration.PERFORMANCE_TESTS_LOAD_FACTOR * ((BASE_MODULE_DAL == SMSAppModuleDALFactory.RAM) ? 600000 : 30000);	// please, be sure the division between this and 'numberOfThreads' is round

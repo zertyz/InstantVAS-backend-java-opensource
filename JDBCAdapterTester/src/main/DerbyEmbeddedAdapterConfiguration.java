@@ -64,16 +64,16 @@ public class DerbyEmbeddedAdapterConfiguration extends DerbyEmbeddedAdapter {
 	
 	public static final class DerbyStatements {
 		/** Inserts an 'ID' and 'PHONE' into the 'DerbyTestTable' */
-		public static final AbstractPreparedProcedure InsertTestRecord = new AbstractPreparedProcedure(
+		public static final AbstractPreparedProcedure InsertTestRecord = new AbstractPreparedProcedure(connectionPool,
 			"INSERT INTO DerbyTestTable VALUES (",DerbyParameters.ID,", ",DerbyParameters.PHONE,")");
 		/** Returns the 'PHONE' associated with 'ID' */
-		public static final AbstractPreparedProcedure GetPhoneFromId = new AbstractPreparedProcedure(
+		public static final AbstractPreparedProcedure GetPhoneFromId = new AbstractPreparedProcedure(connectionPool,
 			"SELECT phone FROM DerbyTestTable WHERE id=",DerbyParameters.ID);
 		/** Updates the 'PHONE' on the record associated with 'ID' */
-		public static final AbstractPreparedProcedure UpdateTestRecord = new AbstractPreparedProcedure(
+		public static final AbstractPreparedProcedure UpdateTestRecord = new AbstractPreparedProcedure(connectionPool,
 			"UPDATE DerbyTestTable SET phone=",DerbyParameters.PHONE," WHERE id=",DerbyParameters.ID);
 		/** removes the record denoted by 'ID' */
-		public static final AbstractPreparedProcedure DeleteTestRecord = new AbstractPreparedProcedure(
+		public static final AbstractPreparedProcedure DeleteTestRecord = new AbstractPreparedProcedure(connectionPool,
 			"DELETE FROM DerbyTestTable WHERE id=",DerbyParameters.ID);
 	}
 	

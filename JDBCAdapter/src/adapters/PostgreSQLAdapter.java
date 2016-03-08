@@ -24,11 +24,11 @@ public abstract class PostgreSQLAdapter extends JDBCAdapter {
 	///////////////////////////////////
 	
 	/** Additional URL parameters for PostgreSQL JDBC driver connection properties */
-	public static String  CONNECTION_PROPERTIES = "charSet=UTF8&tcpKeepAlive=true&connectTimeout=30&loginTimeout=30&socketTimeout=300";
+	public static String  CONNECTION_PROPERTIES = "prepareThreshold=1&charSet=UTF8&tcpKeepAlive=true&connectTimeout=30&loginTimeout=30&socketTimeout=300";
 	/** The number of concurrent connections allowed to each PostgreSQL server. Suggestion: fine tune to get the optimum number for this particular app/database, paying attention to the fact that a pool smaller than the sum of all consumer threads may be suboptimal, and that a greater than it can be a waste. As an initial value, set this to nDbCPUs * nDbHDs and adjust the consumer threads accordingly */
 	public static int CONNECTION_POOL_SIZE = 8;
 	
-	private static Connection[] connectionPool = null;
+	protected static Connection[] connectionPool = null;
 	
 	/** method to be called when attempting to configure the default behavior for new instances of 'PostgreSQLAdapter'.
 	 *  @param connectionProperties if null, the default value won't be touched. See {@link #CONNECTION_PROPERTIES}

@@ -160,31 +160,31 @@ public class SMSAppModulePostgreSQLAdapterHangman extends PostgreSQLAdapter {
 
 	public static final class MatchesDBStatements {
 		/** Zero the table contents -- for testing purposes only */
-		public final static AbstractPreparedProcedure ResetTable = new AbstractPreparedProcedure(
+		public final static AbstractPreparedProcedure ResetTable = new AbstractPreparedProcedure(connectionPool,
 			"TRUNCATE Matches CASCADE");
 		/**  */
-		public final static AbstractPreparedProcedure InsertMatch = new AbstractPreparedProcedure(
+		public final static AbstractPreparedProcedure InsertMatch = new AbstractPreparedProcedure(connectionPool,
 			"INSERT INTO Matches(wordProvidingPlayerUserId, wordGuessingPlayerUserId, serializedGame, matchStartMillis, status) ",
 			"VALUES(",Parameters.WORD_PROVIDING_PLAYER_USER_ID,", ",Parameters.WORD_GUESSING_PLAYER_USER_ID,", ",Parameters.SERIALIZED_GAME,", ",
 			Parameters.MATCH_START_MILLIS,", ",Parameters.STATUS,"::MatchStatuses) RETURNING matchId");
 		/**  */
-		public final static AbstractPreparedProcedure SelectMatchById = new AbstractPreparedProcedure(
+		public final static AbstractPreparedProcedure SelectMatchById = new AbstractPreparedProcedure(connectionPool,
 			"SELECT m.wordProvidingPlayerUserId AS wordProvidingPlayerUserId, wp.phoneNumber AS wordProvidingPlayerPhone,",
 			       "m.wordGuessingPlayerUserId AS wordGuessingPlayerUserId,   wg.phoneNumber AS wordGuessingPlayerPhone,",
 			       "m.serializedGame AS serializedGame, m.matchStartMillis AS matchStartMillis, ",
 			       "m.status AS status FROM Matches m, Users wp, Users wg ",
 			"WHERE m.matchId=",Parameters.MATCH_ID," AND m.wordProvidingPlayerUserId=wp.userId AND m.wordGuessingPlayerUserId=wg.userId");
 		/**  */
-		public final static AbstractPreparedProcedure UpdateMatchStatusById = new AbstractPreparedProcedure(
+		public final static AbstractPreparedProcedure UpdateMatchStatusById = new AbstractPreparedProcedure(connectionPool,
 			"UPDATE Matches SET (status, serializedGame) = (",Parameters.STATUS,"::MatchStatuses, ",Parameters.SERIALIZED_GAME,") WHERE matchId=",Parameters.MATCH_ID);
 	}
 
 	public static final class NextBotWordsDBStatements {
 		/** Zero the table contents -- for testing purposes only */
-		public final static AbstractPreparedProcedure ResetTable = new AbstractPreparedProcedure(
+		public final static AbstractPreparedProcedure ResetTable = new AbstractPreparedProcedure(connectionPool,
 			"TRUNCATE NextBotWords CASCADE");
 		/**  */
-		public final static AbstractPreparedProcedure SelectAndIncrementNextBotWord = new AbstractPreparedProcedure(
+		public final static AbstractPreparedProcedure SelectAndIncrementNextBotWord = new AbstractPreparedProcedure(connectionPool,
 			"SELECT * FROM SelectAndIncrementNextBotWord(",Parameters.USER_ID,")");
 	}
 	

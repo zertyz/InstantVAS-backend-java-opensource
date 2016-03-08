@@ -26,7 +26,7 @@ public abstract class MySQLAdapter extends JDBCAdapter {
 	@ConfigurableElement("The number of concurrent connections allowed to each MySQL server. Suggestion: fine tune to get the optimum number for this particular app/database, paying attention to the fact that a pool smaller than the sum of all consumer threads may be suboptimal, and that a greater than it can be a waste. As an initial value, set this to nDbCPUs * nDbHDs and adjust the consumer threads accordingly")
 	public static int CONNECTION_POOL_SIZE = 8;
 	
-	private static Connection[] connectionPool = null;
+	protected static Connection[] connectionPool = null;
 	
 	/** method to be called when attempting to configure the default behavior for new instances of 'MySQLAdapter'.
 	 *  @param connectionProperties if null, the default value won't be touched

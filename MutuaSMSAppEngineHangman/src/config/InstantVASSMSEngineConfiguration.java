@@ -4,10 +4,20 @@ import instantvas.smsengine.HangmanHTTPInstrumentationRequestProperty;
 import instantvas.smsengine.HangmanSMSGameServicesInstrumentationEvents;
 import instantvas.smsengine.MOSMSesQueueDataBureau;
 import instantvas.smsengine.MTSMSesQueueDataBureau;
+import instantvas.tests.InstantVASSMSAppModuleChatTestsConfiguration;
+import instantvas.tests.InstantVASSMSAppModuleHangmanTestsConfiguration;
+import instantvas.tests.InstantVASSMSAppModuleProfileTestsConfiguration;
+import instantvas.tests.InstantVASSMSAppModuleSubscriptionTestsConfiguration;
+import instantvas.tests.InstantVASSMSAppModuleTestsConfiguration;
+import main.InstantVASTester;
 
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
+import adapters.PostgreSQLAdapter;
+import config.InstantVASSMSEngineConfiguration.EInstantVASModules;
 import mutua.events.DirectEventLink;
 import mutua.events.IEventLink;
 import mutua.events.PostgreSQLQueueEventLink;
@@ -21,10 +31,21 @@ import mutua.icc.instrumentation.eventclients.InstrumentationProfilingEventsClie
 import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
 import mutua.imi.IndirectMethodNotFoundException;
 import mutua.smsappmodule.config.InstantVASSMSAppModuleConfiguration;
+import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
+import mutua.smsappmodule.dal.SMSAppModuleDALFactoryChat;
+import mutua.smsappmodule.dal.SMSAppModuleDALFactoryHangman;
+import mutua.smsappmodule.dal.SMSAppModuleDALFactoryProfile;
+import mutua.smsappmodule.dal.SMSAppModuleDALFactorySubscription;
+import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapter;
+import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterChat;
+import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterHangman;
+import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterProfile;
+import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterSubscription;
 import mutua.smsappmodule.hangmangame.HangmanGame.EHangmanGameStates;
 import mutua.smsin.parsers.SMSInCelltick;
 import mutua.smsin.parsers.SMSInParser;
 import mutua.subscriptionengine.CelltickLiveScreenSubscriptionAPI;
+import mutua.tests.MutuaEventsAdditionalEventLinksTestsConfiguration;
 
 /** <pre>
  * WebAppConfiguration.java
@@ -61,7 +82,7 @@ public class InstantVASSMSEngineConfiguration {
 	
 	public static IEventLink<EHangmanGameStates>  gameMOProducerAndConsumerLink;
 		
-	@ConfigurableElement("Specifies what queue driver should be used to buffer incoming SMS (MOs) -- DIRECT means the messages will be processed directly, on the same request thread and without any buffer; RAM means the producers and consumers must be running on the same machine and on the same process")
+	@ConfigurableElement("Specifies what queue driver should be used to buffer incoming SMSes (MOs) -- DIRECT means the messages will be processed directly, on the same request thread and without any buffer; RAM means the producers and consumers must be running on the same machine and on the same process; POSTGRESQL means a table will be used to keep those messages and serve as the queue at the same time")
 	public static EQueueStrategy MO_QUEUE_STRATEGY = EQueueStrategy.POSTGRESQL;
 	@ConfigurableElement("The maximum number of entries when using 'RAM' for 'MO_QUEUE_STRATEGY'")
 	public static int    MO_RAM_QUEUE_CAPACITY             = 1000;
@@ -89,6 +110,136 @@ public class InstantVASSMSEngineConfiguration {
 	public static long   MT_POSTGRESQL_QUEUE_POOLING_TIME  = 0;
 	@ConfigurableElement(sameAs="mutua.events.PostgreSQLQueueEventLink.QUEUE_NUMBER_OF_WORKER_THREADS")
 	public static int    MT_QUEUE_NUMBER_OF_WORKER_THREADS = 10;
+	
+	public enum EInstantVASModules {
+		BASE,
+		SUBSCRIPTION,
+		SUBSCRIPTION_LIFECYCLE,
+		DRAW,
+		PROFILE,
+		QUIZ,
+		ALERTS,
+		NOTIFICATIONS,
+		DECISION_TREE,
+		CELEBRITY_AI,
+		REVERSE_AUCTION,
+		SWEEPSTAKE,
+		OFFER_VS_DEMAND,
+		PROXIMITY_SEARCH,
+		HANGMAN,
+		TIC_TAC_TOE,
+		XAVECO,
+		TEXT4INFO,
+		MASS_TEXT_MESSAGING,
+		CHAT,
+		DATING,
+		MATCH_MAKING,
+		SMS_TWITTER,
+		SMS_QUORA,
+		MPAYMENT,
+		PIN_CODE,
+		ZETA,
+		SMS_ROUTER,
+		
+	};
+	public enum EInstantVASDALs {
+		RAM,
+		POSTGRESQL,
+	}
+	
+	private static void configureInstantVASModules(
+		EInstantVASDALs      queuesDAL,
+		EInstantVASDALs      modulesDAL,
+		String               hostname,
+		int                  port,
+		String               database,
+		String               user,
+		String               password,
+		boolean              allowDataStructuresAssertion,
+		boolean              shouldDebugQueries,
+		String               connectionProperties,
+		int                  concurrentConnectionsNumber,
+		int                  queuePoolingTime,
+		int                  queueNumberOfWorkerThreads,
+		String               moTableName, String moIdFieldName, String moTextFieldName,
+		EInstantVASModules[] enabledModules) {
+		
+		List<EInstantVASModules> enabledModulesList = Arrays.asList(enabledModules);
+		
+		// DALs
+		SMSAppModuleDALFactory             baseModuleDAL;
+		SMSAppModuleDALFactorySubscription subscriptionDAL;
+		SMSAppModuleDALFactoryProfile      profileModuleDAL;
+		SMSAppModuleDALFactoryChat         chatModuleDAL;
+		SMSAppModuleDALFactoryHangman      hangmanModuleDAL;
+		
+		// configure modules dal
+		switch (modulesDAL) {
+		case POSTGRESQL:
+			System.out.println("\n### Configuring PostgreSQLAdapter...");
+			PostgreSQLAdapter.configureDefaultValuesForNewInstances(connectionProperties, concurrentConnectionsNumber);
+			boolean first = true;
+			for (EInstantVASModules module : EInstantVASModules.values()) {
+				if (!enabledModulesList.contains(module)) {
+					continue;
+				}
+				if (!first) {
+					System.out.print(", ");
+				} else {
+					first = false;
+				}
+				System.out.print(module.name().toLowerCase());
+				switch (module) {
+					case BASE:
+						baseModuleDAL                            = SMSAppModuleDALFactory            .POSTGRESQL;
+						SMSAppModulePostgreSQLAdapter            .configureDefaultValuesForNewInstances(log, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
+						break;
+					case SUBSCRIPTION:
+						subscriptionDAL                          = SMSAppModuleDALFactorySubscription.POSTGRESQL;
+						SMSAppModulePostgreSQLAdapterSubscription.configureDefaultValuesForNewInstances(log, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
+						break;
+					case PROFILE:
+						profileModuleDAL                         = SMSAppModuleDALFactoryProfile     .POSTGRESQL;
+						SMSAppModulePostgreSQLAdapterProfile     .configureDefaultValuesForNewInstances(log, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
+						break;
+					case CHAT:
+						chatModuleDAL                            = SMSAppModuleDALFactoryChat        .POSTGRESQL;
+						SMSAppModulePostgreSQLAdapterChat        .configureDefaultValuesForNewInstances(log, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password, moTableName, moIdFieldName, moTextFieldName);
+						break;
+					case HANGMAN:
+						hangmanModuleDAL                         = SMSAppModuleDALFactoryHangman     .POSTGRESQL;
+						SMSAppModulePostgreSQLAdapterHangman     .configureDefaultValuesForNewInstances(log, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
+						break;
+					default:
+						throw new RuntimeException("InstantVAS Module '"+module+"' isn't present");
+				}
+			}
+			System.out.println(".");
+			break;
+		case RAM:
+			baseModuleDAL    = SMSAppModuleDALFactory            .RAM;
+			subscriptionDAL  = SMSAppModuleDALFactorySubscription.RAM;
+			profileModuleDAL = SMSAppModuleDALFactoryProfile     .RAM;
+			chatModuleDAL    = SMSAppModuleDALFactoryChat        .RAM;
+			hangmanModuleDAL = SMSAppModuleDALFactoryHangman     .RAM;
+			break;
+		default:
+			throw new RuntimeException("InstantVAS Modules DAL '"+modulesDAL+"' is not implemented");
+		}
+		
+		// configure queues dal
+		switch (queuesDAL) {
+			case POSTGRESQL:
+				System.out.println("\n### Configuring PostgreSQLQueues...");
+				QueuesPostgreSQLAdapter.configureDefaultValuesForNewInstances(log, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
+				PostgreSQLQueueEventLink.configureDefaultValuesForNewInstances(log, queuePoolingTime, queueNumberOfWorkerThreads);
+				break;
+			case RAM:
+				break;
+			default:
+				throw new RuntimeException("InstantVAS Queue DAL '"+queuesDAL+"' is not implemented");
+		}
+	}
 
 
 	public static void loadConfiguration() {
@@ -147,7 +298,7 @@ public class InstantVASSMSEngineConfiguration {
     		case POSTGRESQL:
 				try {
 					log.reportDebug("Creating a 'PostgreSQLQueueEventLink' MO event handling mechanism");
-					gameMOProducerAndConsumerLink = new PostgreSQLQueueEventLink<EHangmanGameStates>(EHangmanGameStates.class, MOSMSesQueueDataBureau.MO_TABLE_NAME, new MOSMSesQueueDataBureau());
+					gameMOProducerAndConsumerLink = new PostgreSQLQueueEventLink<EHangmanGameStates>(EHangmanGameStates.class, annotationClasses, MOSMSesQueueDataBureau.MO_TABLE_NAME, new MOSMSesQueueDataBureau());
 	    			break;
 				} catch (SQLException e) {
 					log.reportThrowable(e, "Error creating the 'PostgreSQLQueueEventLink' MO queue. Falling back to 'RAM' queue strategy");
@@ -169,7 +320,7 @@ public class InstantVASSMSEngineConfiguration {
     		case POSTGRESQL:
 				try {
 					log.reportDebug("Creating a 'PostgreSQLQueueEventLink' MT event handling mechanism");
-					gameMTProducerAndConsumerLink = new PostgreSQLQueueEventLink<EHangmanGameStates>(EHangmanGameStates.class, "MTSMSes", new MTSMSesQueueDataBureau());
+					gameMTProducerAndConsumerLink = new PostgreSQLQueueEventLink<EHangmanGameStates>(EHangmanGameStates.class, annotationClasses, "MTSMSes", new MTSMSesQueueDataBureau());
 	    			break;
 				} catch (SQLException e) {
 					log.reportThrowable(e, "Error creating the 'PostgreSQLQueueEventLink' MT queue. Falling back to 'RAM' queue strategy");
