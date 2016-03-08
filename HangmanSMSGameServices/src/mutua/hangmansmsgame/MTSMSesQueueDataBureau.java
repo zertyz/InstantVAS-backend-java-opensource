@@ -45,7 +45,7 @@ public class MTSMSesQueueDataBureau extends	IDatabaseQueueDataBureau<EHangmanSMS
 	}
 
 	@Override
-	public String getValuesExpressionForInsertNewQueueElementQuery() {
+	public String getParametersListForInsertNewQueueElementQuery() {
 		return "${METHOD_ID}, ${MO_ID}, ${PHONE}, ${TEXT}";
 	}
 

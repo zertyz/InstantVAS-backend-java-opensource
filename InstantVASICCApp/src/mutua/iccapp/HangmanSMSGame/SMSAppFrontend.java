@@ -60,7 +60,7 @@ public class SMSAppFrontend {
     	try {
     		// TODO fix this hard coded info
     		// MutuaEventsAdditionalEventLinks configuration
-    		QueuesPostgreSQLAdapter.configureQueuesDatabaseModule(log, "venus", 5432, "hangman", "hangman", "hangman");
+    		QueuesPostgreSQLAdapter.configureDefaultValuesForNewInstances(log, "venus", 5432, "hangman", "hangman", "hangman");
     		moDB = QueuesPostgreSQLAdapter.getQueuesDBAdapter(null, "MOQueue",
 			                                                  "phone  TEXT NOT NULL, text   TEXT NOT NULL, ",
 			                                                  "phone, text",

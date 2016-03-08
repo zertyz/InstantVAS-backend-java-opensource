@@ -67,7 +67,7 @@ public class IUserDBTests {
 		userDB.reset();
 		
 		int attempts = 1000;
-		int numberOfThreads = 10;
+		int numberOfThreads = 8;
 		final int _perThreadAttempts = attempts / numberOfThreads;
 
 		// adding nicks

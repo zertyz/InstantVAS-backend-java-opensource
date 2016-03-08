@@ -146,7 +146,7 @@ public class WebAppConfiguration {
     		case POSTGRESQL:
 				try {
 					log.reportDebug("Creating a 'PostgreSQLQueueEventLink' MO event handling mechanism");
-					gameMOProducerAndConsumerLink = new PostgreSQLQueueEventLink<EHangmanSMSGameEvents>(EHangmanSMSGameEvents.class, "MOSMSes", new MOSMSesQueueDataBureau());
+					gameMOProducerAndConsumerLink = new PostgreSQLQueueEventLink<EHangmanSMSGameEvents>(EHangmanSMSGameEvents.class, annotationClasses, "MOSMSes", new MOSMSesQueueDataBureau());
 	    			break;
 				} catch (SQLException e) {
 					log.reportThrowable(e, "Error creating the 'PostgreSQLQueueEventLink' MO queue. Falling back to 'RAM' queue strategy");
@@ -168,7 +168,7 @@ public class WebAppConfiguration {
     		case POSTGRESQL:
 				try {
 					log.reportDebug("Creating a 'PostgreSQLQueueEventLink' MT event handling mechanism");
-					gameMTProducerAndConsumerLink = new PostgreSQLQueueEventLink<EHangmanSMSGameEvents>(EHangmanSMSGameEvents.class, "MTSMSes", new MTSMSesQueueDataBureau());
+					gameMTProducerAndConsumerLink = new PostgreSQLQueueEventLink<EHangmanSMSGameEvents>(EHangmanSMSGameEvents.class, annotationClasses, "MTSMSes", new MTSMSesQueueDataBureau());
 	    			break;
 				} catch (SQLException e) {
 					log.reportThrowable(e, "Error creating the 'PostgreSQLQueueEventLink' MT queue. Falling back to 'RAM' queue strategy");
@@ -190,7 +190,7 @@ public class WebAppConfiguration {
 		
 		PostgreSQLQueueEventLink.QUEUE_POOLING_TIME             = MO_POSTGRESQL_QUEUE_POOLING_TIME;
 		PostgreSQLQueueEventLink.QUEUE_NUMBER_OF_WORKER_THREADS = MO_QUEUE_NUMBER_OF_WORKER_THREADS;
-		QueuesPostgreSQLAdapter.configureQueuesDatabaseModule(log,
+		QueuesPostgreSQLAdapter.configureDefaultValuesForNewInstances(log,
 			Configuration.POSTGRESQL_CONNECTION_HOSTNAME,
 			Configuration.POSTGRESQL_CONNECTION_PORT,
 			Configuration.POSTGRESQL_CONNECTION_DATABASE_NAME,

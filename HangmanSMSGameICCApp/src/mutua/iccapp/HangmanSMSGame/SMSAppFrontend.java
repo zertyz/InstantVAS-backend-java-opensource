@@ -60,7 +60,7 @@ public class SMSAppFrontend extends EventServer<EHangmanSMSGameEvents>{
     public SMSAppFrontend() {
     	super(link);
     	try {
-			addClient(processor);
+			addListener(processor);
 		} catch (IndirectMethodNotFoundException e) {
 			log.reportThrowable(e, "Error while adding EventClient to process SMSes");
 		}
