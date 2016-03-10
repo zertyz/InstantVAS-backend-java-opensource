@@ -81,13 +81,13 @@ public class SMSAppModulePhrasingsProfile {
 		return phrAskForFirstNickname.getPhrase();
 	}
 	
-	/** Phrase sent when the system wants the user to change his/her nickname (for the case when he/she already has a valid nickname). Variables: {{shortCode}}, {{appName}}, {{currentNickname}} */
+	/** Phrase sent when the system asks the user to change his/her nickname (for the case when he/she already has a valid nickname). Variables: {{shortCode}}, {{appName}}, {{currentNickname}} */
 	public String getAskForNewNickname(String currentNickname) {
 		// TODO fazer um teste no qual revela-se este erro (o de não usar phrAskForNewNickname)
 		return phrAskForNicknameCancelation.getPhrase("currentNickname", currentNickname);
 	}
 
-	/** Phrase sent when the change nickname dialog has been deliberately cancelled by the user. Consider the opportunity to present some possible next commands. Variables: {{shortCode}}, {{appName}}, {{currentNickname}} */
+	/** Phrase sent when the 'change nickname dialog' has been deliberately cancelled by the user. Consider the opportunity to present some possible next commands. Variables: {{shortCode}}, {{appName}}, {{currentNickname}} */
 	public String getAskForNicknameCancelation(String currentNickname) {
 		return phrAskForNicknameCancelation.getPhrase("currentNickname", currentNickname);
 	}

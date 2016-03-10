@@ -6,7 +6,6 @@ import mutua.smsappmodule.config.InstantVASSMSAppModuleConfiguration;
 import mutua.smsappmodule.hangmangame.HangmanGame.EHangmanGameStates;
 import mutua.smsin.dto.IncomingSMSDto;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
-import adapters.dto.PreparedProcedureInvocationDto;
 import adapters.exceptions.PreparedProcedureException;
 
 /** <pre>

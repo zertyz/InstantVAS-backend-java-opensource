@@ -70,7 +70,7 @@ public class SMSAppModulePhrasingsChat {
 		return phrPrivateMessageDeliveryNotification.getPhrase("targetNickname", targetNickname);
 	}
 
-	/** Phrase used to inform the sender that the statefull private conversation can no longer be conducted (because we
+	/** Phrase used to inform the sender that the stateful private conversation can no longer be conducted (because we
 	 *  don't know who is the target user), therefore, he/she must try the stateles command. Variables: {{shortCode}}, {{appName}} */
 	public String getDoNotKnowWhoYouAreChattingTo() {
 		return phrDoNotKnowWhoYouAreChattingTo.getPhrase();

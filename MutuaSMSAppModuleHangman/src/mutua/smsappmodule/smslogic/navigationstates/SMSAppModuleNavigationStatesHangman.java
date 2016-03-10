@@ -51,10 +51,10 @@ public class SMSAppModuleNavigationStatesHangman {
 	 *  The invited user answer will, then, be processed by {@link SMSAppModuleCommandsHangman#cmdAnswerToInvitation} */
 	public final NavigationStateCommons nstAnsweringToHangmanMatchInvitation;
 	
-	/** Navigation state that indicates the user is playing a hangman match with a human (as the invited opponent), which hole is to guess the word */
+	/** Navigation state that indicates the user is playing a hangman match with a human (as the invited opponent), and his/her role is to guess the word */
 	public final NavigationStateCommons nstGuessingWordFromHangmanHumanOpponent;
 	
-	/** Navigation state that indicates the user is playing a hangman match with the robot, which hole is to guess the word */
+	/** Navigation state that indicates the user is playing a hangman match with the robot, and his/her hole is to guess the word */
 	public final NavigationStateCommons nstGuessingWordFromHangmanBotOpponent;
 
 

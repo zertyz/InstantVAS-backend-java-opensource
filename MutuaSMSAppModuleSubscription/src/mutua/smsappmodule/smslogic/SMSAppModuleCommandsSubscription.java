@@ -59,15 +59,15 @@ public class SMSAppModuleCommandsSubscription {
 	
 	/** Class to be used as a reference when customizing the MO commands for this module */
 	public static class CommandTriggersSubscription {
-		/** Local triggers (available only to 'new users' and 'unsubscribed users') to execute the 'start double opt-in' process -- 
+		/** Local triggers (available only to {@link SMSAppModuleNavigationStates#nstNewUser} and 'unsubscribed users') to execute the 'start double opt-in' process -- 
 		 *  {@link SMSAppModuleNavigationStates#nstNewUser} triggers that activates {@link SMSAppModuleCommandsSubscription#cmdStartDoubleOptinProcess} */
 		public final static String[] trgLocalStartDoubleOptin  = {"MyApp"};
-		/** Local triggers (available only to the 'answering double opt-in' navigation state) to execute the 'subscribe' process --
+		/** Local triggers (available only to the {@link SMSAppModuleNavigationStatesSubscription#nstAnsweringDoubleOptin} navigation state) to execute the 'subscribe' process --
 		 *  {@link SMSAppModuleNavigationStatesSubscription#nstAnsweringDoubleOptin} triggers that activates {@link SMSAppModuleCommandsSubscription#cmdSubscribe} */
 		public final static String[] trgLocalAcceptDoubleOptin = {"YES"};
 		/** Local triggers (available only to the 'answering double opt-in' navigation state) to quit the 'subscription' process --
 		 *  {@link SMSAppModuleNavigationStatesSubscription#nstAnsweringDoubleOptin} triggers that activates {@link SMSAppModuleCommandsSubscription#cmdDoNotAgreeToSubscribe} */
-		public final static String[] trgLocalRefuseDoubleOptin = {"NO"};
+		public final static String[] trgLocalRefuseDoubleOptin = {".*"};
 		/** Global triggers (to be used on several navigation states) to execute the 'unsubscribe' command -- 
 		 *  {@link SMSAppModuleCommandsSubscription#cmdUnsubscribe} */
 		public final static String[] trgGlobalUnsubscribe      = {"UNSUBSCRIBE", "QUIT", "EXIT"};

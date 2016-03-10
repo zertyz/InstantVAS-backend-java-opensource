@@ -1,6 +1,5 @@
 package instantvas.smsengine;
 
-import adapters.dto.PreparedProcedureInvocationDto;
 import adapters.exceptions.PreparedProcedureException;
 import mutua.events.IDatabaseQueueDataBureau;
 import mutua.imi.IndirectMethodInvocationInfo;

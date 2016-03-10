@@ -22,7 +22,6 @@ public class SMSAppModuleNavigationStates {
 	
 	/** Class to be statically imported by the Commands Implementation to represent the navigation states */
 	public static class NavigationStatesNames {
-		/** Navigation state used to show the composite help messages. */
 		public final static String nstNewUser      = "NewUser";
 		public final static String nstExistingUser = "ExistingUser";
 	}
@@ -34,13 +33,11 @@ public class SMSAppModuleNavigationStates {
 	public final NavigationStateCommons[] values;
 	
 	
-	/** Navigation state used to initiate the first interaction with the application.
-	 * SMS Applications must extend it adding their own commands & triggers. */
+	/** Navigation state used to initiate the first interaction with the application and, also, the state after users subscriptions cancellation*/
 	public final NavigationStateCommons nstNewUser;
 	
-	/** Navigation state used by registered users.
-	 * SMS Applications must extend it adding their own commands & triggers, keeping in mind that
-	 * the usage of the application happens from this state on. */
+	/** Navigation state used by registered users. Also the 'main loop' navigation state, to which all other states revert to when they finish
+	 *  their businesses */
 	public final NavigationStateCommons nstExistingUser;
 	
 	

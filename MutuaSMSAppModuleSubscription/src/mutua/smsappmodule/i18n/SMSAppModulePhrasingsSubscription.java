@@ -1,5 +1,7 @@
 package mutua.smsappmodule.i18n;
 
+import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesSubscription;
+
 /** <pre>
  * SMSAppModulePhrasingsSubscription.java
  * ======================================
@@ -77,14 +79,15 @@ public class SMSAppModulePhrasingsSubscription {
 	** PHRASING METHODS **
 	*********************/
 	
-	/** Phrase sent to inform the user he/she is about to subscribe -- the navigation will go to 'answering double opt-in',
+	/** Phrase sent to inform the user he/she is about to subscribe -- the navigation will go to
+	 *  {@link SMSAppModuleNavigationStatesSubscription#nstAnsweringDoubleOptin},
 	 *  where the user must answer with YES to continue. Variables: {{shortCode}}, {{appName}}, {{priceTag}} */
 	public String getDoubleOptinStart() {
 		return phrDoubleOptinStart.getPhrase();
 	}
 	
 	/** Phrase sent when the user answers NO (or doesn't answer YES) to the double opt-in
-	 *  process -- informs he/she has to agree to use the system. Variables: {{shortCode}}, {{appName}}, {{priceTag}} */
+	 *  process -- informs he/she has to agree to use the service. Variables: {{shortCode}}, {{appName}}, {{priceTag}} */
 	public String getDisagreeToSubscribe() {
 		return phrDisagreeToSubscribe.getPhrase();
 	}
@@ -95,7 +98,7 @@ public class SMSAppModulePhrasingsSubscription {
 		return phrSuccessfullySubscribed.getPhrase();
 	}
 	
-	/** Phrase sent in response to a unsuccessful user subscription attempt -- 'you cannot use it yet'.
+	/** Phrase sent in response to a unsuccessful user subscription attempt -- something like 'you cannot use it yet' or 'we couldn't bill you'.
 	 *  Variables: {{shortCode}}, {{appName}}, {{priceTag}} */
 	public String getCouldNotSubscribe() {
 		return phrCouldNotSubscribe.getPhrase();
@@ -106,7 +109,7 @@ public class SMSAppModulePhrasingsSubscription {
 		return phrUserRequestedUnsubscription.getPhrase();
 	}
 
-	/** Sent to inform the subscription was canceled on the platform due to lifecycle rules. Variables: {{shortCode}}, {{appName}}, {{priceTag}} */
+	/** Sent to inform the subscription was canceled on the platform due to carrier's lifecycle rules. Variables: {{shortCode}}, {{appName}}, {{priceTag}} */
 	public String getLifecycleUnsubscriptionNotification() {
 		return phrLifecycleUnsubscription.getPhrase();
 	}

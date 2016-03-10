@@ -344,10 +344,10 @@ public class InstantVASSMSEngineConfiguration {
 		PostgreSQLQueueEventLink.QUEUE_NUMBER_OF_WORKER_THREADS = MO_QUEUE_NUMBER_OF_WORKER_THREADS;
 		QueuesPostgreSQLAdapter.configureDefaultValuesForNewInstances(log,
 			HangmanSMSModulesConfiguration.POSTGRESQL_CONNECTION_HOSTNAME,
-			HangmanSMSModulesConfiguration.POSTGRESQL_CONNECTION_PORT,
-			HangmanSMSModulesConfiguration.POSTGRESQL_CONNECTION_DATABASE_NAME,
-			HangmanSMSModulesConfiguration.POSTGRESQL_CONNECTION_USER,
-			HangmanSMSModulesConfiguration.POSTGRESQL_CONNECTION_PASSWORD);
+			HangmanSMSModulesConfiguration.POSTGRESQL_PORT,
+			HangmanSMSModulesConfiguration.POSTGRESQL_DATABASE,
+			HangmanSMSModulesConfiguration.POSTGRESQL_USER,
+			HangmanSMSModulesConfiguration.POSTGRESQL_PASSWORD);
 	}
 
 

@@ -55,7 +55,7 @@ public class SMSAppModuleConfigurationHelp {
 	 *  @param phrStatelessHelp                          see {@link SMSAppModulePhrasingsHelp#getStatelessHelpMessage()}
 	 *  @param phrStatefulHelpMessages                   see {@link SMSAppModulePhrasingsHelp#getStatefulHelpMessage(INavigationState)}
 	 *  @param phrCompositeHelps                         see {@link SMSAppModulePhrasingsHelp#getCompositeHelpMessage(int)}
-	 *  @param nstPresentingCompositeHelpCommandTriggers see {@link NavigationStateCommons#setCommandTriggers(Object[][], ICommandProcessor[])}
+	 *  @param nstPresentingCompositeHelpCommandTriggers see {@link SMSAppModuleNavigationStatesHelp#SMSAppModuleNavigationStatesHelp(SMSAppModuleCommandsHelp, Object[][])}
 	 *  @returns {(SMSAppModuleNavigationStatesHelp)navigationStates, (SMSAppModuleCommandsHelp)commands, (SMSAppModulePhrasingsHelp)phrasings} */
 	public static Object[] getHelpModuleInstances(Instrumentation<?, ?> log, String shortCode, String appName,
 		                                          String phrNewUsersFallbackHelp,

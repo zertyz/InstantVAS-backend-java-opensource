@@ -37,8 +37,7 @@ public class SMSAppModuleNavigationStatesSubscription {
 	/** The list of all navigation states -- for 'SMSProcessor' to be able to deserialize state names */
 	public final NavigationStateCommons[] values;
 	
-	/** Navigation state used to implement the double opt-in process.
-	 * SMS Applications may extend it adding other commands. */
+	/** Navigation state used to implement the double opt-in process */
 	public final NavigationStateCommons nstAnsweringDoubleOptin;
 	
 	/** Provides the navigation states instance with the default test values.
@@ -46,7 +45,7 @@ public class SMSAppModuleNavigationStatesSubscription {
 	public SMSAppModuleNavigationStatesSubscription(final SMSAppModuleCommandsSubscription subscriptionCommands) { 
 		this(subscriptionCommands, new Object[][] {
 			{cmdSubscribe,             trgLocalAcceptDoubleOptin},
-			{cmdDoNotAgreeToSubscribe, ".*"}});
+			{cmdDoNotAgreeToSubscribe, trgLocalRefuseDoubleOptin}});
 	}
 
 	/** Provides the navigation states instance with custom triggers.
