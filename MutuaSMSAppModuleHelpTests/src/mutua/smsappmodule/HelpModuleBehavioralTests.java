@@ -9,7 +9,7 @@ import static org.junit.Assert.assertNull;
 import java.sql.SQLException;
 
 import mutua.smsappmodule.dto.UserDto;
-import mutua.smsappmodule.smslogic.navigationstates.INavigationState;
+import mutua.smsappmodule.smslogic.navigationstates.NavigationState;
 import mutua.smsappmodule.smslogic.sessions.SessionModel;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -42,7 +42,7 @@ public class HelpModuleBehavioralTests {
 		String observedHelpMessage;
 
 		SessionModel session = new SessionModel((UserDto)null, null, null) {
-			public INavigationState getNavigationStateFromStateName(String navigationStateName) {
+			public NavigationState getNavigationStateFromStateName(String navigationStateName) {
 				if (navigationStateName.equals(nstNewUser)) {
 					return baseModuleNavigationStates.nstNewUser;
 				} else if (navigationStateName.equals(nstExistingUser)) {
@@ -76,7 +76,7 @@ public class HelpModuleBehavioralTests {
 		String observedCompositeHelpMessage;
 		
 		SessionModel session = new SessionModel((UserDto)null, null, null) {
-			public INavigationState getNavigationStateFromStateName(String navigationStateName) {
+			public NavigationState getNavigationStateFromStateName(String navigationStateName) {
 				if (nstPresentingCompositeHelp.equals(navigationStateName)) {
 					return helpModuleNavigationStates.nstPresentingCompositeHelp;
 				}

@@ -83,7 +83,7 @@ public class InstantVASSMSAppModuleHelpTestsConfiguration {
 		helpModulePhrasings        = (SMSAppModulePhrasingsHelp)        helpModule[2];
 		
 		// base module -- configured to interact with the Help Module commands
-		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(log, baseModuleDAL, helpModuleCommands.values,
+		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(log, baseModuleDAL,
 			/*nstNewUserTriggers*/
 			new Object[0][],	// zeroed since we are not testing the help modules through the command processor
 			/*nstExistingUserTriggers*/

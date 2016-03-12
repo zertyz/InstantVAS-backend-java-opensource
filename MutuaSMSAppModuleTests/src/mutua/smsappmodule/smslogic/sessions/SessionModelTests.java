@@ -4,7 +4,7 @@ import static org.junit.Assert.*;
 
 import mutua.smsappmodule.dto.SessionDto;
 import mutua.smsappmodule.dto.UserDto;
-import mutua.smsappmodule.smslogic.navigationstates.INavigationState;
+import mutua.smsappmodule.smslogic.navigationstates.NavigationState;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import org.junit.Test;
@@ -37,7 +37,7 @@ public class SessionModelTests {
 			{prop1.getPropertyName(), "value1"},
 			{prop3.getPropertyName(), "value3"},
 		}), null) {
-			public INavigationState getNavigationStateFromStateName(String navigationStateName) {
+			public NavigationState getNavigationStateFromStateName(String navigationStateName) {
 				throw new NotImplementedException();
 			}
 		};
@@ -79,7 +79,7 @@ public class SessionModelTests {
 			{prop2.getPropertyName(), expectedProp2Value},
 			{prop3.getPropertyName(), expectedProp3Value},
 		}), null) {
-			public INavigationState getNavigationStateFromStateName(String navigationStateName) {
+			public NavigationState getNavigationStateFromStateName(String navigationStateName) {
 				throw new NotImplementedException();
 			}
 		};
@@ -105,7 +105,7 @@ public class SessionModelTests {
 	@Test
 	public void testEmptySessionProperties() {
 		SessionModel session = new SessionModel((UserDto)null, null) {
-			public INavigationState getNavigationStateFromStateName(String navigationStateName) {
+			public NavigationState getNavigationStateFromStateName(String navigationStateName) {
 				throw new NotImplementedException();
 			}
 		};
@@ -128,7 +128,7 @@ public class SessionModelTests {
 		SessionModel session = new SessionModel(new SessionDto(null, new String[][] {
 			{prop1.getPropertyName(), "thisisnotanint"},	
 		}), null) {
-			public INavigationState getNavigationStateFromStateName(String navigationStateName) {
+			public NavigationState getNavigationStateFromStateName(String navigationStateName) {
 				throw new NotImplementedException();
 			}
 		};

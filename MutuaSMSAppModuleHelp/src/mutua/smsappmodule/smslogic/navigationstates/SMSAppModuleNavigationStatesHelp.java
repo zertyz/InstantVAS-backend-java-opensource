@@ -1,6 +1,5 @@
 package mutua.smsappmodule.smslogic.navigationstates;
 
-import mutua.smsappmodule.smslogic.SMSAppModuleCommandsHelp;
 import mutua.smsappmodule.smslogic.commands.CommandTriggersDto;
 
 import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHelp.CommandTriggersHelp.*;
@@ -15,9 +14,9 @@ import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHelp.CommandNamesH
  * the "Help" SMSApp Module.
  * 
  * Implements the "Instant VAS SMSApp Navigation States" design pattern, as described by
- * {@link NavigationStateCommons}.
+ * {@link NavigationState}.
  *
- * @see NavigationStateCommons
+ * @see NavigationState
  * @see CommandTriggersDto
  * @version $Id$
  * @author luiz
@@ -36,30 +35,27 @@ public class SMSAppModuleNavigationStatesHelp {
 	////////////////////////////////
 	
 	/** The list of all navigation states -- for 'SMSProcessor' to be able to deserialize state names */
-	public final NavigationStateCommons[] values;
+	public final NavigationState[] values;
 	
 	/** Navigation state used to show the composite help messages,
 	 *  containing command triggers to navigate from here on. */
-	public final NavigationStateCommons nstPresentingCompositeHelp;
+	public final NavigationState nstPresentingCompositeHelp;
 	
 	/** Provides the navigation states instance with the default test values */
-	public SMSAppModuleNavigationStatesHelp(final SMSAppModuleCommandsHelp helpCommands) { 
-		this(helpCommands, new Object[][] {
+	public SMSAppModuleNavigationStatesHelp() { 
+		this(new Object[][] {
 			{cmdStartCompositeHelpDialog,      trgGlobalStartCompositeHelpDialog},
 			{cmdShowNextCompositeHelpMessage,  trgLocalShowNextCompositeHelpMessage},
 			{cmdShowExistingUsersFallbackHelp, trgGlobalShowExistingUsersFallbackHelp}});
 	}
 
 	/** Provides the navigation states instance with custom triggers.
-	 *  @param helpCommands                       The instance of commands for this module
-	 *  @param nstPresentingCompositeHelpTriggers The list of regular expression triggers and commands to execute when the user is on the {@link #nstPresentingCompositeHelp} navigation state. See {@link NavigationStateCommons#setCommandTriggers(Object[][], mutua.smsappmodule.smslogic.commands.ICommandProcessor[])}*/
-	public SMSAppModuleNavigationStatesHelp(final SMSAppModuleCommandsHelp helpCommands, final Object[][] nstPresentingCompositeHelpTriggers) {		
-		nstPresentingCompositeHelp = new NavigationStateCommons(NavigationStatesNamesHelp.nstPresentingCompositeHelp) {{
-			setCommandTriggers(nstPresentingCompositeHelpTriggers, helpCommands.values);
-		}};
+	 *  @param nstPresentingCompositeHelpTriggers The list of regular expression triggers and commands to execute when the user is on the {@link #nstPresentingCompositeHelp} navigation state. See {@link NavigationState#applyCommandTriggersData(Object[][], mutua.smsappmodule.smslogic.commands.ICommandProcessor[])}*/
+	public SMSAppModuleNavigationStatesHelp(Object[][] nstPresentingCompositeHelpTriggers) {		
+		nstPresentingCompositeHelp = new NavigationState(NavigationStatesNamesHelp.nstPresentingCompositeHelp, nstPresentingCompositeHelpTriggers);
 		
 		// the list of values
-		values = new NavigationStateCommons[] {
+		values = new NavigationState[] {
 			nstPresentingCompositeHelp,	
 		};
 	}

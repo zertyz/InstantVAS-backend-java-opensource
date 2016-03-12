@@ -1,16 +1,23 @@
 package instantvas.smsengine.web;
 
-import instantvas.smsengine.HangmanHTTPInstrumentationRequestProperty;
+import instantvas.smsengine.InstantVASHTTPInstrumentationRequestProperty;
+import instantvas.smsengine.web.MOProducer.EInstantVASMOEvents;
+import instantvas.smsengine.web.MOProducer.InstantVASMOEvent;
 
 import java.io.IOException;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.HashMap;
 
-import config.HangmanSMSModulesConfiguration;
-import config.InstantVASSMSEngineConfiguration;
+import config.InstantVASApplication;
+import config.InstantVASApplicationConfiguration;
 import mutua.events.EventClient;
 import mutua.events.EventServer;
 import mutua.events.IEventLink;
 import mutua.events.QueueEventLink;
+import mutua.events.TestAdditionalEventServer.ETestAdditionalEventServices;
 import mutua.hangmansmsgame.dispatcher.IResponseReceiver;
 import mutua.hangmansmsgame.smslogic.SMSProcessor;
 import mutua.hangmansmsgame.smslogic.SMSProcessorException;
@@ -29,7 +36,6 @@ import mutua.smsout.senders.SMSOutCelltick;
 import mutua.smsout.senders.SMSOutSender;
 import mutua.subscriptionengine.CelltickLiveScreenSubscriptionAPI;
 import mutua.subscriptionengine.TestableSubscriptionAPI;
-import static config.InstantVASSMSEngineConfiguration.*;
 import static instantvas.smsengine.HangmanSMSGameServicesInstrumentationEvents.*;
 import static instantvas.smsengine.HangmanSMSGameServicesInstrumentationProperties.*;
 import static mutua.icc.instrumentation.DefaultInstrumentationEvents.*;
@@ -37,6 +43,19 @@ import static mutua.icc.instrumentation.DefaultInstrumentationProperties.*;
 
 
 public class AddToMOQueue {
+	
+	private final Instrumentation<InstantVASHTTPInstrumentationRequestProperty, String> log;
+	private final InstantVASApplicationConfiguration ivac;
+	
+	// event consumers/producers
+	private final MTProducer                      gameMTProducer;
+	private final EventClient<EHangmanGameStates> gameMOConsumer;
+	private final MOProducer                      gameMOProducer;
+	
+	// integration
+	private final SMSInParser<Map, byte[]>  MOParser;
+	private final SMSOutSender                  MTSender;
+	
 		
 	/*******************************************************************************************************************************************
 
@@ -49,34 +68,31 @@ public class AddToMOQueue {
 
 	*******************************************************************************************************************************************/
 	
-	static {
-		new InstantVASSMSEngineConfiguration();
+	public AddToMOQueue(Instrumentation<InstantVASHTTPInstrumentationRequestProperty, String> log,
+	                    InstantVASApplicationConfiguration ivac) {
+		this.log  = log;
+		this.ivac = ivac;
+		gameMTProducer    = new MTProducer(ivac.MTpcLink, new MTConsumer());
+		gameMOConsumer    = new MOConsumer(log,           gameMTProducer);
+		gameMOProducer    = new MOProducer(ivac.MOpcLink, gameMOConsumer);
+		MOParser = ivac.MOParser;
+		MTSender = ivac.MTSender;
 	}
 
-	// SMS APP
-	//////////
-	
-	private static EventClient<EHangmanGameStates> gameMTConsumer    = new MTConsumer();
-	private static MTProducer                      gameMTProducer    = new MTProducer(gameMTProducerAndConsumerLink, gameMTConsumer);
-
-	protected static EventClient<EHangmanGameStates> gameMOConsumer    = new MOConsumer(HangmanSMSModulesConfiguration.log, gameMTProducer);
-	protected static MOProducer                      gameMOProducer    = new MOProducer(gameMOProducerAndConsumerLink, gameMOConsumer);
-	
-
-	public static byte[] process(HashMap<String, String> parameters, String queryString) {
+	public byte[] process(HashMap<String, String> parameters, String queryString) {
 		log.reportRequestStart(queryString);
 		byte[] response;
-		IncomingSMSDto mo = smsParser.parseIncomingSMS(parameters);
+		IncomingSMSDto mo = MOParser.parseIncomingSMS(parameters);
 		if (mo == null) {
-			response = smsParser.getReply(ESMSInParserSMSAcceptionStatus.REJECTED);
+			response = MOParser.getReply(ESMSInParserSMSAcceptionStatus.REJECTED);
 			log.reportEvent(IE_MESSAGE_REJECTED);
 		} else {
 			try {
-				gameMOProducer.addToMOQueue(mo);
+				gameMOProducer.dispatchMOForProcessing(mo);
 				log.reportEvent(IE_MESSAGE_ACCEPTED, IP_MO_MESSAGE, mo);
-				response = smsParser.getReply(ESMSInParserSMSAcceptionStatus.ACCEPTED);
+				response = MOParser.getReply(ESMSInParserSMSAcceptionStatus.ACCEPTED);
 			} catch (Throwable t) {
-				response = smsParser.getReply(ESMSInParserSMSAcceptionStatus.POSTPONED);
+				response = MOParser.getReply(ESMSInParserSMSAcceptionStatus.POSTPONED);
 				log.reportThrowable(t, "Error detected while attempting to add an MO to the queue");
 			}
 				
@@ -114,8 +130,8 @@ class MTProducer extends EventServer<EHangmanGameStates> implements IResponseRec
 class MTConsumer implements EventClient<EHangmanGameStates> {
 	
 	private static SMSOutSender smsSender = new SMSOutCelltick(
-			HangmanSMSModulesConfiguration.log, HangmanSMSModulesConfiguration.APPID + " interaction", HangmanSMSModulesConfiguration.SHORT_CODE, HangmanSMSModulesConfiguration.MT_SERVICE_URL,
-			HangmanSMSModulesConfiguration.MT_SERVICE_NUMBER_OF_RETRY_ATTEMPTS, HangmanSMSModulesConfiguration.MT_SERVICE_DELAY_BETWEEN_ATTEMPTS);
+			InstantVASApplication.log, InstantVASApplication.APPID + " interaction", InstantVASApplication.SHORT_CODE, InstantVASApplication.MT_SERVICE_URL,
+			InstantVASApplication.MT_SERVICE_NUMBER_OF_RETRY_ATTEMPTS, InstantVASApplication.MT_SERVICE_DELAY_BETWEEN_ATTEMPTS);
 	
 	@EventConsumer("INTERACTIVE_REQUEST")
 	public void sendMT(OutgoingSMSDto mt) {
@@ -130,35 +146,45 @@ class MTConsumer implements EventClient<EHangmanGameStates> {
 }
 
 
-class MOProducer extends EventServer<EHangmanGameStates> {
+class MOProducer extends EventServer<EInstantVASMOEvents> {
 
-	public MOProducer(IEventLink<EHangmanGameStates> link, EventClient<EHangmanGameStates> moConsumer) {
+	@Retention(RetentionPolicy.RUNTIME) @Target(ElementType.METHOD) public @interface InstantVASMOEvent {
+		EInstantVASMOEvents[] value();
+	}
+	
+	public enum EInstantVASMOEvents {
+		MO_ARRIVED,
+	}
+	
+	public MOProducer(Instrumentation<InstantVASHTTPInstrumentationRequestProperty, String> log,
+	                  IEventLink<EInstantVASMOEvents> link,
+	                  EventClient<EInstantVASMOEvents> moConsumer) {
 		super(link);
 		try {
-			addListener(moConsumer);
+			setConsumer(moConsumer);
 		} catch (IndirectMethodNotFoundException e) {
-			log.reportThrowable(e, "Error while adding moConsumer");
+			log.reportThrowable(e, "Error while setting moConsumer");
 		}
 	}
 	
-	public boolean addToMOQueue(IncomingSMSDto mo) {
-		return dispatchNeedToBeConsumedEvent(EHangmanGameStates.WON, mo);
+	public int dispatchMOForProcessing(IncomingSMSDto mo) {
+		return dispatchConsumableEvent(EInstantVASMOEvents.MO_ARRIVED, mo);
 	}
 	
-	public boolean addToSubscribeUserQueue(String phone) {
-		return dispatchNeedToBeConsumedEvent(EHangmanGameStates.WON, phone);
-	}
+//	public boolean addToSubscribeUserQueue(String phone) {
+//		return dispatchNeedToBeConsumedEvent(EHangmanGameStates.WON, phone);
+//	}
 }
 
-class MOConsumer implements EventClient<EHangmanGameStates> {
+class MOConsumer implements EventClient<EInstantVASMOEvents> {
 	
 	private SMSProcessor smsP;
 	
-	public MOConsumer(Instrumentation<HangmanHTTPInstrumentationRequestProperty, String> log, MTProducer gameMTProducer) {
+	public MOConsumer(Instrumentation<InstantVASHTTPInstrumentationRequestProperty, String> log, MTProducer gameMTProducer) {
 		smsP = new SMSProcessor(log, gameMTProducer);
 	}
 	
-	@EventConsumer("WON")
+	@InstantVASMOEvent(EInstantVASMOEvents.MO_ARRIVED)
 	public void processMO(IncomingSMSDto MO) {
 		try {
 			smsP.process(MO);

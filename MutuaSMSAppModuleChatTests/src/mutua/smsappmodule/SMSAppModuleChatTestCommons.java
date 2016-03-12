@@ -13,7 +13,7 @@ import mutua.smsappmodule.dal.IUserDB;
 import mutua.smsappmodule.dto.ProfileDto;
 import mutua.smsappmodule.dto.UserDto;
 import mutua.smsappmodule.smslogic.commands.CommandMessageDto;
-import mutua.smsappmodule.smslogic.navigationstates.INavigationState;
+import mutua.smsappmodule.smslogic.navigationstates.NavigationState;
 import mutua.smsappmodule.smslogic.sessions.SessionModel;
 import mutua.smsin.dto.IncomingSMSDto;
 
@@ -83,7 +83,7 @@ public class SMSAppModuleChatTestCommons {
 		String moText = "P " + targetNickname + " " + message;
 		int moId = addMO(sender, moText);
 		SessionModel session = new SessionModel(sender, new IncomingSMSDto(moId, sender.getPhoneNumber(), moText, null, shortCode), null) {
-			public INavigationState getNavigationStateFromStateName(String navigationStateName) {return null;}
+			public NavigationState getNavigationStateFromStateName(String navigationStateName) {return null;}
 		};
 		return config.chatModuleCommands.cmdSendPrivateMessage.processCommand(session, null, new String[] {targetNickname, message}).getResponseMessages();
 	}

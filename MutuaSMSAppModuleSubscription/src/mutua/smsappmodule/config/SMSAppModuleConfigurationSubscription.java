@@ -45,7 +45,7 @@ public class SMSAppModuleConfigurationSubscription {
 		SMSAppModulePhrasingsSubscription        phrasings        = new SMSAppModulePhrasingsSubscription(shortCode, appName, priceTag);
 		SMSAppModuleCommandsSubscription         commands         = new SMSAppModuleCommandsSubscription(phrasings, baseModuleDAL, subscriptionDAL,
 		                                                                                                 subscriptionEngine, subscriptionToken);
-		SMSAppModuleNavigationStatesSubscription navigationStates = new SMSAppModuleNavigationStatesSubscription(commands);
+		SMSAppModuleNavigationStatesSubscription navigationStates = new SMSAppModuleNavigationStatesSubscription();
 		
 		System.err.println(SMSAppModuleConfigurationSubscription.class.getCanonicalName() + ": test configuration loaded.");
 		
@@ -86,7 +86,7 @@ public class SMSAppModuleConfigurationSubscription {
 			phrDoubleOptinStart, phrDisagreeToSubscribe, phrSuccessfullySubscribed, phrCouldNotSubscribe, phrUserRequestedUnsubscription, phrLifecycleUnsubscription);
 		SMSAppModuleCommandsSubscription         commands         = new SMSAppModuleCommandsSubscription(phrasings, baseModuleDAL, subscriptionDAL,
 			subscriptionEngine, subscriptionToken);
-		SMSAppModuleNavigationStatesSubscription navigationStates = new SMSAppModuleNavigationStatesSubscription(commands, nstAnsweringDoubleOptinTriggers);
+		SMSAppModuleNavigationStatesSubscription navigationStates = new SMSAppModuleNavigationStatesSubscription(nstAnsweringDoubleOptinTriggers);
 		
 		// log
 		String logPrefix = "Subscription Module";

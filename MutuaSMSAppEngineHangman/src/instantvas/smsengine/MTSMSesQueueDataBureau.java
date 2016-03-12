@@ -1,12 +1,10 @@
 package instantvas.smsengine;
 
+import adapters.IJDBCAdapterParameterDefinition;
 import adapters.exceptions.PreparedProcedureException;
 import mutua.events.IDatabaseQueueDataBureau;
 import mutua.imi.IndirectMethodInvocationInfo;
-import mutua.smsappmodule.config.InstantVASSMSAppModuleConfiguration;
 import mutua.smsappmodule.hangmangame.HangmanGame.EHangmanGameStates;
-import mutua.smsin.dto.IncomingSMSDto;
-import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 import mutua.smsout.dto.OutgoingSMSDto;
 import mutua.smsout.dto.OutgoingSMSDto.EBillingType;
 
@@ -24,12 +22,24 @@ import mutua.smsout.dto.OutgoingSMSDto.EBillingType;
 
 public class MTSMSesQueueDataBureau extends IDatabaseQueueDataBureau<EHangmanGameStates> {
 	
+	enum EMTQueueQueryParameters implements IJDBCAdapterParameterDefinition {
+		MO_ID,
+		PHONE,
+		TEXT;
+		
+		@Override
+		public String getParameterName() {
+			return name();
+		}
+	}
+	
 	@Override
-	public void serializeQueueEntry(IndirectMethodInvocationInfo<EHangmanGameStates> entry, PreparedProcedureInvocationDto preparedProcedure) throws PreparedProcedureException {
+	public Object[] serializeQueueEntry(IndirectMethodInvocationInfo<EHangmanGameStates> entry) throws PreparedProcedureException {
 		OutgoingSMSDto mt = (OutgoingSMSDto)entry.getParameters()[0];
-		preparedProcedure.addParameter("MO_ID", mt.getMoId());
-		preparedProcedure.addParameter("PHONE", mt.getPhone());
-		preparedProcedure.addParameter("TEXT",  mt.getText());
+		return new Object[] {
+			EMTQueueQueryParameters.MO_ID, mt.getMoId(),
+			EMTQueueQueryParameters.PHONE, mt.getPhone(),
+			EMTQueueQueryParameters.TEXT,  mt.getText()};
 	}
 	
 	@Override
@@ -43,8 +53,8 @@ public class MTSMSesQueueDataBureau extends IDatabaseQueueDataBureau<EHangmanGam
 	}
 	
 	@Override
-	public String getParametersListForInsertNewQueueElementQuery() {
-		return "${MO_ID}, ${PHONE}, ${TEXT}";
+	public IJDBCAdapterParameterDefinition[] getParametersListForInsertNewQueueElementQuery() {
+		return EMTQueueQueryParameters.values();
 	}
 	
 	@Override

@@ -9,7 +9,6 @@ import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
 import mutua.smsappmodule.config.InstantVASSMSAppModuleConfiguration;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
 import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapter;
-import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -102,7 +101,7 @@ public class InstantVASSMSAppModuleTestsConfiguration {
 	*****************/
 	
 	private InstantVASSMSAppModuleTestsConfiguration() throws SQLException {
-		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(LOG, BASE_MODULE_DAL, new ICommandProcessor[0],
+		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(LOG, BASE_MODULE_DAL,
 			new Object[0][], new Object[0][]);
 		baseModuleNavigationStates = (SMSAppModuleNavigationStates) baseModule[0];
 

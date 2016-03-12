@@ -8,6 +8,9 @@ import java.sql.SQLException;
 
 import org.junit.Test;
 
+import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
+import mutua.smsappmodule.smslogic.navigationstates.NavigationState;
+
 /** <pre>
  * HelpModuleSMSProcessorTests.java
  * ================================
@@ -28,7 +31,8 @@ public class HelpModuleSMSProcessorTests {
 	
 	private SMSAppModuleTestCommons tc = new SMSAppModuleTestCommons(LOG,
 		BASE_MODULE_DAL,
-		baseModuleNavigationStates.values, helpModuleNavigationStates.values);
+		new NavigationState[][] {baseModuleNavigationStates.values, helpModuleNavigationStates.values},
+		new ICommandProcessor[][] {helpModuleCommands.values});
 
 	
 	// tests

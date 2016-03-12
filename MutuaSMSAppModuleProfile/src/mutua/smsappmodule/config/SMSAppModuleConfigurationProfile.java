@@ -35,7 +35,7 @@ public class SMSAppModuleConfigurationProfile {
 	                                                 SMSAppModuleDALFactoryProfile profileModuleDAL) {
 		SMSAppModulePhrasingsProfile        phrasings        = new SMSAppModulePhrasingsProfile(shortCode, appName);
 		SMSAppModuleCommandsProfile         commands         = new SMSAppModuleCommandsProfile(phrasings, profileModuleDAL);
-		SMSAppModuleNavigationStatesProfile navigationStates = new SMSAppModuleNavigationStatesProfile(commands);
+		SMSAppModuleNavigationStatesProfile navigationStates = new SMSAppModuleNavigationStatesProfile();
 		
 		System.err.println(SMSAppModuleConfigurationProfile.class.getCanonicalName() + ": test configuration loaded.");
 		
@@ -69,7 +69,7 @@ public class SMSAppModuleConfigurationProfile {
 			phrAskForFirstNickname, phrAskForNewNickname, phrAskForNicknameCancelation, phrNicknameRegistrationNotification,
 			phrUserProfilePresentation, phrNicknameNotFound);
 		SMSAppModuleCommandsProfile         commands         = new SMSAppModuleCommandsProfile(phrasings, profileModuleDAL);
-		SMSAppModuleNavigationStatesProfile navigationStates = new SMSAppModuleNavigationStatesProfile(commands, nstRegisteringNicknameTriggers);
+		SMSAppModuleNavigationStatesProfile navigationStates = new SMSAppModuleNavigationStatesProfile(nstRegisteringNicknameTriggers);
 		
 		// log
 		String logPrefix = "Profile Module";

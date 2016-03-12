@@ -5,7 +5,7 @@ import java.util.HashMap;
 
 import mutua.smsappmodule.dto.SessionDto;
 import mutua.smsappmodule.dto.UserDto;
-import mutua.smsappmodule.smslogic.navigationstates.INavigationState;
+import mutua.smsappmodule.smslogic.navigationstates.NavigationState;
 import mutua.smsin.dto.IncomingSMSDto;
 
 /** <pre>
@@ -39,7 +39,7 @@ public abstract class SessionModel {
 	};
 
 	/** Should return the {@link INavigationState} associated with the provided 'navigationStateName' */
-	public abstract INavigationState getNavigationStateFromStateName(String navigationStateName);
+	public abstract NavigationState getNavigationStateFromStateName(String navigationStateName);
 
 	/** Creates a session for 'user' where 'storedProperties' := {{(ISessionProperty)prop, propVal}, ...} */
 	public SessionModel(SessionDto sessionDto, IncomingSMSDto MO) {
@@ -89,7 +89,7 @@ public abstract class SessionModel {
 		return getStringProperty(NAVIGATION_STATE_PROPERTY);
 	}
 	
-	public INavigationState getNavigationState() {
+	public NavigationState getNavigationState() {
 		String navigationStateName = getStringProperty(NAVIGATION_STATE_PROPERTY);
 		if (navigationStateName == null) {
 			return null;

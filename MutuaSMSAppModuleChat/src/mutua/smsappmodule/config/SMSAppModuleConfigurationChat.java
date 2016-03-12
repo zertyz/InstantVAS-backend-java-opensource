@@ -41,7 +41,7 @@ public class SMSAppModuleConfigurationChat {
 		SMSAppModulePhrasingsProfile     profilePhrasings = new SMSAppModulePhrasingsProfile(shortCode, appName);
 		SMSAppModulePhrasingsChat        chatPhrasings    = new SMSAppModulePhrasingsChat(shortCode, appName);
 		SMSAppModuleCommandsChat         commands         = new SMSAppModuleCommandsChat(profilePhrasings, chatPhrasings, profileModuleDAL, chatModuleDAL);
-		SMSAppModuleNavigationStatesChat navigationStates = new SMSAppModuleNavigationStatesChat(commands);
+		SMSAppModuleNavigationStatesChat navigationStates = new SMSAppModuleNavigationStatesChat();
 		
 		System.err.println(SMSAppModuleConfigurationChat.class.getCanonicalName() + ": test configuration loaded.");
 		
@@ -70,7 +70,7 @@ public class SMSAppModuleConfigurationChat {
 
 		SMSAppModulePhrasingsChat        chatPhrasings    = new SMSAppModulePhrasingsChat(shortCode, appName, phrPrivateMessage, phrPrivateMessageDeliveryNotification, phrDoNotKnowWhoYouAreChattingTo);
 		SMSAppModuleCommandsChat         commands         = new SMSAppModuleCommandsChat(profilePhrasings, chatPhrasings, profileModuleDAL, chatModuleDAL);
-		SMSAppModuleNavigationStatesChat navigationStates = new SMSAppModuleNavigationStatesChat(commands, nstChattingWithSomeoneTriggers);
+		SMSAppModuleNavigationStatesChat navigationStates = new SMSAppModuleNavigationStatesChat(nstChattingWithSomeoneTriggers);
 		
 		// log
 		String logPrefix = "Chat Module";

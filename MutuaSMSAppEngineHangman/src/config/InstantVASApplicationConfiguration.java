@@ -13,16 +13,21 @@ import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHangman.CommandTri
 
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import instantvas.smsengine.HangmanHTTPInstrumentationRequestProperty;
+import instantvas.smsengine.InstantVASHTTPInstrumentationRequestProperty;
 import instantvas.smsengine.MOSMSesQueueDataBureau;
+import mutua.events.DirectEventLink;
 import mutua.events.IEventLink;
 import mutua.events.PostgreSQLQueueEventLink;
+import mutua.events.QueueEventLink;
 import mutua.events.postgresql.QueuesPostgreSQLAdapter;
 import mutua.icc.configuration.annotations.ConfigurableElement;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
+import mutua.smsappmodule.config.InstantVASSMSAppModuleConfiguration;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationChat;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationHangman;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationHelp;
@@ -50,12 +55,21 @@ import mutua.smsappmodule.smslogic.SMSAppModuleCommandsHelp;
 import mutua.smsappmodule.smslogic.SMSAppModuleCommandsProfile;
 import mutua.smsappmodule.smslogic.SMSAppModuleCommandsSubscription;
 import mutua.smsappmodule.smslogic.SMSAppModuleEventsSubscription;
+import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
+import mutua.smsappmodule.smslogic.navigationstates.NavigationState;
+import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesChat;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesHangman;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesHelp;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesProfile;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesSubscription;
+import mutua.smsin.parsers.SMSInCelltick;
+import mutua.smsin.parsers.SMSInParser;
+import mutua.smsout.senders.SMSOutCelltick;
+import mutua.smsout.senders.SMSOutSender;
+import mutua.subscriptionengine.CelltickLiveScreenSubscriptionAPI;
 import mutua.subscriptionengine.SubscriptionEngine;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import adapters.PostgreSQLAdapter;
 
 /** <pre>
@@ -70,12 +84,10 @@ import adapters.PostgreSQLAdapter;
  * @author luiz
  */
 
-public class HangmanSMSModulesConfiguration {
+public class InstantVASApplicationConfiguration {
 
-	// non configurable constants
-	public static Instrumentation<HangmanHTTPInstrumentationRequestProperty, String> log;
-	public static SubscriptionEngine subscriptionEngine;
-	public static IEventLink<EHangmanGameStates>  gameMOProducerAndConsumerEventLink;
+	// MUTUA ICC CONFIGURABLE CONSTANTS
+	///////////////////////////////////
 
 	@ConfigurableElement("Where to store report data")
 	public static EInstrumentationDataPours REPORT_DATA_COLLECTOR_STRATEGY;
@@ -438,7 +450,16 @@ public class HangmanSMSModulesConfiguration {
 		HANGMANtrgLocalNewLetterOrWordSuggestionForBot;
 		
 		public String[] getCommandTriggerPatterns() throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
-			return (String[])HangmanSMSModulesConfiguration.class.getField(name()).get(null);
+			return (String[])InstantVASApplicationConfiguration.class.getField(name()).get(null);
+		}
+		
+		/** Converts a navigation state's command & triggers set based on an 'EInstantVASCommandTriggers' array to a string based representation */
+		public static String[][] get2DStringArrayFromEInstantVASCommandTriggersArray(EInstantVASCommandTriggers[] navigationStateCommandTriggers) throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
+			String[][] stringArrayNavigationStateTriggers = new String[navigationStateCommandTriggers.length][];
+			for (int i=0; i<stringArrayNavigationStateTriggers.length; i++) {
+				stringArrayNavigationStateTriggers[i] = navigationStateCommandTriggers[i].getCommandTriggerPatterns();
+			}
+			return stringArrayNavigationStateTriggers;
 		}
 	};
 	
@@ -464,64 +485,70 @@ public class HangmanSMSModulesConfiguration {
 		
 	};
 	
-	public static void setDefaults() {
-		
-	}
+	// INSTANCE VARIABLES
+	/////////////////////
+	
+	// generic
+	public final Instrumentation<InstantVASHTTPInstrumentationRequestProperty, String> log;
 
-	private static void configureInstantVASModules(
-		// queues
-		EInstantVASDALs      queuesDAL,
-		int                  queuePoolingTime,
-		int                  queueNumberOfWorkerThreads,
-		// help module
-		Object[][] nstPresentingCompositeHelpCommandTriggers,
-		// subscription module
-		SubscriptionEngine subscriptionEngine, String subscriptionToken,
-        Object[][] nstAnsweringDoubleOptinTriggers,
-        // profile module
-        Object[][] nstRegisteringNicknameTriggers,
-		// chat module DAL
-        String phrPrivateMessage, String phrPrivateMessageDeliveryNotification, String phrDoNotKnowWhoYouAreChattingTo,
-        Object[][] nstChattingWithSomeoneTriggers,
-		// hangman module DAL
-        String defaultNicknamePrefix,
-        Object[][] nstEnteringMatchWordTriggers, Object[][] nstAnsweringToHangmanMatchInvitationTriggers,
-        Object[][] nstGuessingWordFromHangmanHumanOpponentTriggers, Object[][] nstGuessingWordFromHangmanBotOpponentTriggers) throws SQLException {
+	// integration
+	public SubscriptionEngine subscriptionEngine;
+	public String subscriptionToken;
+	public SMSInParser<Map<String, String>, byte[]>  MOParser;
+	public SMSOutSender                  MTSender;
+	
+	// event links
+	public IEventLink<EInstantVASMOEvents>  MOpcLink;	// "MO received" producer/consumer event link
+	public IEventLink<EInstantVASMTEvents>  MTpcLink;	// "MT received" ...
+	public IEventLink<EInstantVASSREvents>  SRpcLink;	// "Subscription Renewal" producer/consumer event link 
+	public IEventLink<EInstantVASSCEvents>  SCpcLink;	// "Subscription Cancellation" producer/consumer event link 
+	
+	// DALs
+	public SMSAppModuleDALFactory             baseModuleDAL    = null;
+	public SMSAppModuleDALFactorySubscription subscriptionDAL  = null;
+	public SMSAppModuleDALFactoryProfile      profileModuleDAL = null;
+	public SMSAppModuleDALFactoryChat         chatModuleDAL    = null;
+	public SMSAppModuleDALFactoryHangman      hangmanModuleDAL = null;
+	
+	// module instances
+	public SMSAppModuleNavigationStates             baseStates               = null;
+	public SMSAppModuleNavigationStatesHelp         helpStates               = null;
+	public SMSAppModuleCommandsHelp                 helpCommands             = null;
+	public SMSAppModulePhrasingsHelp                helpPhrasings            = null;
+	public SMSAppModuleNavigationStatesSubscription subscriptionStates       = null;
+	public SMSAppModuleCommandsSubscription         subscriptionCommands     = null;
+	public SMSAppModulePhrasingsSubscription        subscriptionPhrasings    = null;
+	public SMSAppModuleEventsSubscription           subscriptionEventsServer = null;
+	public SMSAppModuleNavigationStatesProfile      profileStates            = null; 
+	public SMSAppModuleCommandsProfile              profilecommands          = null;
+	public SMSAppModulePhrasingsProfile             profilePhrasings         = null;
+	public SMSAppModuleNavigationStatesChat         chatStates               = null;
+	public SMSAppModuleCommandsChat                 chatCommands             = null;
+	public SMSAppModulePhrasingsChat                chatPhrasings            = null;
+	public SMSAppModuleNavigationStatesHangman      hangmanStates            = null;
+	public SMSAppModuleCommandsHangman              hangmanCommands          = null;
+	public SMSAppModulePhrasingsHangman             hangmanPhrasings         = null;
+	
+	public final NavigationState[][]    modulesNavigationStates;
+	public final ICommandProcessor[][]  modulesCommandProcessors;
+
+	
+	public InstantVASApplicationConfiguration(Instrumentation<InstantVASHTTPInstrumentationRequestProperty, String> log,
+	                             SubscriptionEngine subscriptionEngine,
+	                             String subscriptionToken) throws SQLException {
+		
+		this.log                = log;
+		this.subscriptionEngine = subscriptionEngine;
+		this.subscriptionToken  = subscriptionToken;
 		
 		List<EInstantVASModules> enabledModulesList = Arrays.asList(ENABLED_MODULES);
-		
-		// DALs
-		SMSAppModuleDALFactory             baseModuleDAL    = null;
-		SMSAppModuleDALFactorySubscription subscriptionDAL  = null;
-		SMSAppModuleDALFactoryProfile      profileModuleDAL = null;
-		SMSAppModuleDALFactoryChat         chatModuleDAL    = null;
-		SMSAppModuleDALFactoryHangman      hangmanModuleDAL = null;
-		
-		// module instances
-		SMSAppModuleNavigationStatesHelp         helpStates               = null;
-		SMSAppModuleCommandsHelp                 helpCommands             = null;
-		SMSAppModulePhrasingsHelp                helpPhrasings            = null;
-		SMSAppModuleNavigationStatesSubscription subscriptionStates       = null;
-		SMSAppModuleCommandsSubscription         subscriptionCommands     = null;
-		SMSAppModulePhrasingsSubscription        subscriptionPhrasings    = null;
-		SMSAppModuleEventsSubscription           subscriptionEventsServer = null;
-		SMSAppModuleNavigationStatesProfile      profileStates            = null; 
-		SMSAppModuleCommandsProfile              profilecommands          = null;
-		SMSAppModulePhrasingsProfile             profilePhrasings         = null;
-		SMSAppModuleNavigationStatesChat         chatStates               = null;
-		SMSAppModuleCommandsChat                 chatCommands             = null;
-		SMSAppModulePhrasingsChat                chatPhrasings            = null;
-		SMSAppModuleNavigationStatesHangman      hangmanStates            = null;
-		SMSAppModuleCommandsHangman              hangmanCommands          = null;
-		SMSAppModulePhrasingsHangman             hangmanPhrasings         = null;
-
 		
 		// configure modules dal
 		switch (DATA_ACCESS_LAYER) {
 		case POSTGRESQL:
 			System.out.println("\n### Configuring PostgreSQLAdapter...");
 			PostgreSQLAdapter.configureDefaultValuesForNewInstances(POSTGRESQL_CONNECTION_PROPERTIES, NUMBER_OF_CONCURRENT_CONNECTIONS);
-			System.out.print("\n### Configuring modules DALs: ");
+			System.out.print("### Configuring modules DALs: ");
 			boolean first = true;
 			for (EInstantVASModules module : EInstantVASModules.values()) {
 				if (!enabledModulesList.contains(module)) {
@@ -573,17 +600,25 @@ public class HangmanSMSModulesConfiguration {
 			throw new RuntimeException("InstantVAS Modules DAL '"+DATA_ACCESS_LAYER+"' is not implemented");
 		}
 		
-		// configure queues dal
-		switch (queuesDAL) {
+		// configure queues
+		System.out.print("\n### Configuring MO processing strategy: ");
+		switch (MO_PROCESSING_STRATEGY) {
 		case POSTGRESQL:
-			System.out.println("\n### Configuring PostgreSQLQueues...");
+			System.out.println("PostgreSQL Queue...");
 			QueuesPostgreSQLAdapter.configureDefaultValuesForNewInstances(log, POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD);
-			PostgreSQLQueueEventLink.configureDefaultValuesForNewInstances(log, queuePoolingTime, queueNumberOfWorkerThreads);
+			PostgreSQLQueueEventLink.configureDefaultValuesForNewInstances(log, MO_POSTGRESQL_QUEUE_POOLING_TIME, MO_QUEUE_NUMBER_OF_WORKER_THREADS);
+			MOpcLink = new PostgreSQLQueueEventLink<EHangmanSMSGameEvents>(EHangmanGameStates.class, "MOSMSes", new MOSMSesQueueDataBureau());
 			break;
 		case RAM:
+			System.out.println("RAM Queue...");
+			MOpcLink = new QueueEventLink<EHangmanSMSGameEvents>(EHangmanGameStates.class, MO_RAM_QUEUE_CAPACITY, MO_QUEUE_NUMBER_OF_WORKER_THREADS);
+			break;
+		case DIRECT:
+			System.out.println("Direct...");
+			MOpcLink = new DirectEventLink<EHangmanGameStates>(EHangmanGameStates.class);
 			break;
 		default:
-			throw new RuntimeException("InstantVAS Queue DAL '"+queuesDAL+"' is not implemented");
+			throw new RuntimeException("InstantVAS Queue DAL '"+MO_PROCESSING_STRATEGY+"' is not implemented");
 		}
 		
 		System.out.print("\n### Instantiating modules: ");
@@ -600,12 +635,16 @@ public class HangmanSMSModulesConfiguration {
 			System.out.print(module.name().toLowerCase());
 			switch (module) {
 			case BASE:
+				Object[] baseModuleInstances = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(log, baseModuleDAL,
+					EInstantVASCommandTriggers.get2DStringArrayFromEInstantVASCommandTriggersArray(BASEnstNewUser),
+					EInstantVASCommandTriggers.get2DStringArrayFromEInstantVASCommandTriggersArray(BASEnstExistingUser));
+				baseStates = (SMSAppModuleNavigationStates) baseModuleInstances[0];
 				break;
 			case HELP:
 				Object[] helpModuleInstances = SMSAppModuleConfigurationHelp.getHelpModuleInstances(
 					log, SHORT_CODE, APP_NAME,
 					HELPphrNewUsersFallback, HELPphrExistingUsersFallback, HELPphrStateless, HELPphrStatefulHelpMessages, HELPphrComposite,
-					nstPresentingCompositeHelpCommandTriggers);
+					EInstantVASCommandTriggers.get2DStringArrayFromEInstantVASCommandTriggersArray(HELPnstPresentingCompositeHelp));
 				helpStates    = (SMSAppModuleNavigationStatesHelp) helpModuleInstances[0];
 				helpCommands  = (SMSAppModuleCommandsHelp)         helpModuleInstances[1];
 				helpPhrasings = (SMSAppModulePhrasingsHelp)        helpModuleInstances[2];
@@ -615,7 +654,7 @@ public class HangmanSMSModulesConfiguration {
 					SUBSCRIPTIONphrDoubleOptinStart, SUBSCRIPTIONphrDisagreeToSubscribe, SUBSCRIPTIONphrSuccessfullySubscribed, SUBSCRIPTIONphrCouldNotSubscribe,
 					SUBSCRIPTIONphrUserRequestedUnsubscription, SUBSCRIPTIONphrLifecycleUnsubscription,
 					baseModuleDAL, subscriptionDAL, subscriptionEngine, subscriptionToken,
-					nstAnsweringDoubleOptinTriggers);
+					EInstantVASCommandTriggers.get2DStringArrayFromEInstantVASCommandTriggersArray(SUBSCRIPTIONnstAnsweringDoubleOptin));
 				subscriptionStates       = (SMSAppModuleNavigationStatesSubscription) subscriptionModuleInstances[0];
 				subscriptionCommands     = (SMSAppModuleCommandsSubscription)         subscriptionModuleInstances[1];
 				subscriptionPhrasings    = (SMSAppModulePhrasingsSubscription)        subscriptionModuleInstances[2];
@@ -626,7 +665,7 @@ public class HangmanSMSModulesConfiguration {
 					PROFILEphrAskForFirstNickname, PROFILEphrAskForNewNickname, PROFILEphrAskForNicknameCancelation,
 					PROFILEphrNicknameRegistrationNotification, PROFILEphrUserProfilePresentation, PROFILEphrNicknameNotFound,
 					profileModuleDAL,
-					nstRegisteringNicknameTriggers);
+					EInstantVASCommandTriggers.get2DStringArrayFromEInstantVASCommandTriggersArray(PROFILEnstRegisteringNickname));
 				profileStates    = (SMSAppModuleNavigationStatesProfile) profileModuleInstances[0]; 
 				profilecommands  = (SMSAppModuleCommandsProfile)         profileModuleInstances[1];
 				profilePhrasings = (SMSAppModulePhrasingsProfile)        profileModuleInstances[2];
@@ -636,7 +675,7 @@ public class HangmanSMSModulesConfiguration {
 					profilePhrasings,
 					CHATphrPrivateMessage, CHATphrPrivateMessageDeliveryNotification, CHATphrDoNotKnowWhoYouAreChattingTo,
 					profileModuleDAL, chatModuleDAL,
-					nstChattingWithSomeoneTriggers);
+					EInstantVASCommandTriggers.get2DStringArrayFromEInstantVASCommandTriggersArray(CHATnstChattingWithSomeone));
 				chatStates    = (SMSAppModuleNavigationStatesChat) chatModuleInstances[0];
 				chatCommands  = (SMSAppModuleCommandsChat)         chatModuleInstances[1];
 				chatPhrasings = (SMSAppModulePhrasingsChat)        chatModuleInstances[2];
@@ -653,9 +692,11 @@ public class HangmanSMSModulesConfiguration {
 					HANGMANphrWordGuessingPlayerStatus, HANGMANphrWinningMessageForWordGuessingPlayer, HANGMANphrWinningMessageForWordProvidingPlayer,                     
 					HANGMANphrLosingMessageForWordGuessingPlayer, HANGMANphrLosingMessageForWordProvidingPlayer, HANGMANphrMatchGiveupNotificationForWordGuessingPlayer,             
 					HANGMANphrMatchGiveupNotificationForWordProvidingPlayer, HANGMANphrGuessingWordHelp,
-					subscriptionEventsServer, baseModuleDAL, profileModuleDAL, hangmanModuleDAL, defaultNicknamePrefix,
-					nstEnteringMatchWordTriggers,nstAnsweringToHangmanMatchInvitationTriggers,
-					nstGuessingWordFromHangmanHumanOpponentTriggers, nstGuessingWordFromHangmanBotOpponentTriggers);
+					subscriptionEventsServer, baseModuleDAL, profileModuleDAL, hangmanModuleDAL, DEFAULT_NICKNAME_PREFIX,
+					EInstantVASCommandTriggers.get2DStringArrayFromEInstantVASCommandTriggersArray(HANGMANnstEnteringMatchWord),
+					EInstantVASCommandTriggers.get2DStringArrayFromEInstantVASCommandTriggersArray(HANGMANnstAnsweringToHangmanMatchInvitation),
+					EInstantVASCommandTriggers.get2DStringArrayFromEInstantVASCommandTriggersArray(HANGMANnstGuessingWordFromHangmanHumanOpponent),
+					EInstantVASCommandTriggers.get2DStringArrayFromEInstantVASCommandTriggersArray(HANGMANnstGuessingWordFromHangmanBotOpponent));
 				hangmanStates    = (SMSAppModuleNavigationStatesHangman) hangmanModuleInstances[0];
 				hangmanCommands  = (SMSAppModuleCommandsHangman)         hangmanModuleInstances[1];
 				hangmanPhrasings = (SMSAppModulePhrasingsHangman)        hangmanModuleInstances[2];
@@ -665,6 +706,24 @@ public class HangmanSMSModulesConfiguration {
 			}
 		}
 		System.out.println(".");
+		
+		// keep track of the loaded module's navigation states...
+		modulesNavigationStates = new NavigationState[][] {
+			baseStates.values,
+			helpStates.values,
+			subscriptionStates.values,
+			profileStates.values,
+			chatStates.values,
+			hangmanStates.values,
+		};
+		// and commands
+		modulesCommandProcessors = new ICommandProcessor[][] {
+			helpCommands.values,
+			subscriptionCommands.values,
+			profilecommands.values,
+			chatCommands.values,
+			hangmanCommands.values,
+		};
 	}
 	
 	/** Gets an array containing the elements {a1, a2[0], ..., a2[n]} */
@@ -674,13 +733,20 @@ public class HangmanSMSModulesConfiguration {
 		System.arraycopy(a2, 0, combinedElements, 1, a2.length);
 		return combinedElements;
 	}
-
 	
-	public static void setDefaults(Instrumentation<?, ?> log, SubscriptionEngine subscriptionEngine, String subscriptionToken) {
+	/** This one might be used for piracy control if APP_NAME, SHORT_CODE, etc becomes hardcoded, read from an encypted file, read from InstantVAS.com or something like that */
+	public void configureCelltickBRIntegration() {
+		MOParser           = new SMSInCelltick(APP_NAME);
+		MTSender           = new SMSOutCelltick(log, APP_NAME, SHORT_CODE, CELLTICK_MT_SERVICE_URL, CELLTICK_MT_SERVICE_NUMBER_OF_RETRY_ATTEMPTS, CELLTICK_MT_SERVICE_DELAY_BETWEEN_ATTEMPTS);
+		subscriptionEngine = new CelltickLiveScreenSubscriptionAPI(log, CELLTICK_SUBSCRIBE_SERVICE_URL, CELLTICK_UNSUBSCRIBE_SERVICE_URL);
+		subscriptionToken  = CELLTICK_SUBSCRIPTION_CHANNEL_NAME;
+	}
 
-		// log = ...
-		// subscriptionEngine = ...
-		// gameMOProducerAndConsumerEventLink = ...
+	/** Set the default configuration for the Hangman SMS Application.
+	 *  This function might be used to control piracy if it receives a parameter like "client" or "environment" --
+	 *  which would fill in piracy protection variables for CELLTICK_BR or CELLTICK_TEST */
+	public static void setHangmanDefaults() {
+		
 		REPORT_DATA_COLLECTOR_STRATEGY = EInstrumentationDataPours.POSTGRESQL_DATABASE;
 		LOG_STRATEGY                   = EInstrumentationDataPours.CONSOLE;
 		LOG_HANGMAN_FILE_PATH          = "";
@@ -869,7 +935,7 @@ public class HangmanSMSModulesConfiguration {
 		 * situação na qual a regular expression deve ser trocada de algo como "M (%w+) (.*)" para "M (.*)" e a chamada do comando seria trocada de
 		 * cmdSendEmail("$1", "$2") para cmdSendEmail("luiz@InstantVAS.com", "$1") -- esta forma de chamar ainda tem que ser implementada, na verdade. */
 		
-		// TODO aqui é preciso ter um array compartilhado com todos os global triggers pra gente não ter que ficar repetindo em cada estado
+		// TODO aqui é preciso ter um array compartilhado com todos os global triggers pra gente não ter que ficar repetindo em cada estado -- pelo visto isso caducou...
 		
 		// base
 		BASEnstNewUser = new EInstantVASCommandTriggers[] {

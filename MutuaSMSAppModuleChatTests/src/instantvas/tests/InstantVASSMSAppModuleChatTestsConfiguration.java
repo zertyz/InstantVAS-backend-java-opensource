@@ -173,7 +173,7 @@ public class InstantVASSMSAppModuleChatTestsConfiguration {
 		profileModulePhrasings     = (SMSAppModulePhrasingsProfile)     chatModule[3];
 		
 		// base module -- configured to interact with the Chat Module commands 
-		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(LOG, BASE_MODULE_DAL, chatModuleCommands.values,
+		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(LOG, BASE_MODULE_DAL,
 			/*nstNewUserTriggers*/
 			new Object[][] {
 				{cmdSendPrivateMessage, trgGlobalSendPrivateMessage},

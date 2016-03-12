@@ -15,9 +15,9 @@ import mutua.smsappmodule.smslogic.commands.CommandTriggersDto;
  * the "Hangman" SMSApp Module
  * 
  * Implements the "Instant VAS SMSApp Navigation States" design pattern, as described by
- * {@link NavigationStateCommons}.
+ * {@link NavigationState}.
  *
- * @see NavigationStateCommons
+ * @see NavigationState
  * @see CommandTriggersDto
  * @version $Id$
  * @author luiz
@@ -41,27 +41,26 @@ public class SMSAppModuleNavigationStatesHangman {
 	////////////////////////////////
 	
 	/** The list of all navigation states -- for 'SMSProcessor' to be able to deserialize state names */
-	public final NavigationStateCommons[] values;
+	public final NavigationState[] values;
 	
 	/** Navigation state part of the invitation process of a human to play a hangman match -- on this state, the user must enter the desired word to be guessed,
 	 *  which will be processed by {@link SMSAppModuleCommandsHangman#cmdHoldMatchWord} */
-	public final NavigationStateCommons nstEnteringMatchWord;
+	public final NavigationState nstEnteringMatchWord;
 	
 	/** State an invited user gets into after he/she is invited for a match, which is set by {@link SMSAppModuleCommandsHangman#cmdHoldMatchWord}.
 	 *  The invited user answer will, then, be processed by {@link SMSAppModuleCommandsHangman#cmdAnswerToInvitation} */
-	public final NavigationStateCommons nstAnsweringToHangmanMatchInvitation;
+	public final NavigationState nstAnsweringToHangmanMatchInvitation;
 	
 	/** Navigation state that indicates the user is playing a hangman match with a human (as the invited opponent), and his/her role is to guess the word */
-	public final NavigationStateCommons nstGuessingWordFromHangmanHumanOpponent;
+	public final NavigationState nstGuessingWordFromHangmanHumanOpponent;
 	
 	/** Navigation state that indicates the user is playing a hangman match with the robot, and his/her hole is to guess the word */
-	public final NavigationStateCommons nstGuessingWordFromHangmanBotOpponent;
+	public final NavigationState nstGuessingWordFromHangmanBotOpponent;
 
 
 	/** Provides the navigation states instance with the default test values */
-	public SMSAppModuleNavigationStatesHangman(final SMSAppModuleCommandsHangman hangmanCommands) { 
-		this(hangmanCommands,
-		     // nstEnteringMatchWordTriggers
+	public SMSAppModuleNavigationStatesHangman() { 
+		this(// nstEnteringMatchWordTriggers
 		     new Object[][] {{cmdHoldMatchWord,               trgLocalHoldMatchWord}},
 		     // nstAnsweringToHangmanMatchInvitationTriggers
 		     new Object[][] {{cmdHoldMatchWord,               trgLocalHoldMatchWord}},
@@ -72,31 +71,21 @@ public class SMSAppModuleNavigationStatesHangman {
 	}
 
 	/** Provides the navigation states instance with custom triggers.
-	 *  @param hangmanCommands                                  The instance of commands for this module
-	 *  @param nstEnteringMatchWordTriggers                     The list of regular expression triggers and commands to execute when the user is on the {@link #nstEnteringMatchWord} navigation state. See {@link NavigationStateCommons#setCommandTriggers(Object[][], mutua.smsappmodule.smslogic.commands.ICommandProcessor[])}
+	 *  @param nstEnteringMatchWordTriggers                     The list of regular expression triggers and commands to execute when the user is on the {@link #nstEnteringMatchWord} navigation state. See {@link NavigationState#applyCommandTriggersData(Object[][], mutua.smsappmodule.smslogic.commands.ICommandProcessor[])}
 	 *  @param nstAnsweringToHangmanMatchInvitationTriggers     idem for {@link #nstAnsweringToHangmanMatchInvitation}
 	 *  @param nstGuessingWordFromHangmanHumanOpponentTriggers  idem for {@link #nstGuessingWordFromHangmanHumanOpponent}
 	 *  @param nstGuessingWordFromHangmanBotOpponentTriggers    idem for {@link #nstGuessingWordFromHangmanBotOpponent} */
-	public SMSAppModuleNavigationStatesHangman(final SMSAppModuleCommandsHangman hangmanCommands,
-	                                           final Object[][] nstEnteringMatchWordTriggers,
-	                                           final Object[][] nstAnsweringToHangmanMatchInvitationTriggers,
-	                                           final Object[][] nstGuessingWordFromHangmanHumanOpponentTriggers,
-	                                           final Object[][] nstGuessingWordFromHangmanBotOpponentTriggers) {		
-		nstEnteringMatchWord = new NavigationStateCommons(NavigationStatesNamesHangman.nstEnteringMatchWord) {{
-			setCommandTriggers(nstEnteringMatchWordTriggers, hangmanCommands.values);
-		}};
-		nstAnsweringToHangmanMatchInvitation = new NavigationStateCommons(NavigationStatesNamesHangman.nstAnsweringToHangmanMatchInvitation) {{
-			setCommandTriggers(nstAnsweringToHangmanMatchInvitationTriggers, hangmanCommands.values);
-		}};
-		nstGuessingWordFromHangmanHumanOpponent = new NavigationStateCommons(NavigationStatesNamesHangman.nstGuessingWordFromHangmanHumanOpponent) {{
-			setCommandTriggers(nstGuessingWordFromHangmanHumanOpponentTriggers, hangmanCommands.values);
-		}};
-		nstGuessingWordFromHangmanBotOpponent = new NavigationStateCommons(NavigationStatesNamesHangman.nstGuessingWordFromHangmanBotOpponent) {{
-			setCommandTriggers(nstGuessingWordFromHangmanBotOpponentTriggers, hangmanCommands.values);
-		}};
+	public SMSAppModuleNavigationStatesHangman(Object[][] nstEnteringMatchWordTriggers,
+	                                           Object[][] nstAnsweringToHangmanMatchInvitationTriggers,
+	                                           Object[][] nstGuessingWordFromHangmanHumanOpponentTriggers,
+	                                           Object[][] nstGuessingWordFromHangmanBotOpponentTriggers) {		
+		nstEnteringMatchWord = new NavigationState(NavigationStatesNamesHangman.nstEnteringMatchWord, nstEnteringMatchWordTriggers);
+		nstAnsweringToHangmanMatchInvitation = new NavigationState(NavigationStatesNamesHangman.nstAnsweringToHangmanMatchInvitation, nstAnsweringToHangmanMatchInvitationTriggers);
+		nstGuessingWordFromHangmanHumanOpponent = new NavigationState(NavigationStatesNamesHangman.nstGuessingWordFromHangmanHumanOpponent, nstGuessingWordFromHangmanHumanOpponentTriggers);
+		nstGuessingWordFromHangmanBotOpponent = new NavigationState(NavigationStatesNamesHangman.nstGuessingWordFromHangmanBotOpponent, nstGuessingWordFromHangmanBotOpponentTriggers);
 		
 		// the list of values
-		values = new NavigationStateCommons[] {
+		values = new NavigationState[] {
 			nstEnteringMatchWord,
 			nstAnsweringToHangmanMatchInvitation,
 			nstGuessingWordFromHangmanHumanOpponent,

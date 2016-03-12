@@ -15,7 +15,8 @@ import mutua.smsappmodule.dal.IUserDB;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
 import mutua.smsappmodule.dto.SessionDto;
 import mutua.smsappmodule.dto.UserDto;
-import mutua.smsappmodule.smslogic.navigationstates.INavigationState;
+import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
+import mutua.smsappmodule.smslogic.navigationstates.NavigationState;
 import mutua.smsappmodule.smslogic.sessions.SessionModel;
 import mutua.smsin.dto.IncomingSMSDto;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
@@ -44,12 +45,12 @@ public class SMSAppModuleTestCommons {
 	private final ISessionDB sessionDB;
 
 
-	public SMSAppModuleTestCommons(Instrumentation<?, ?> log, SMSAppModuleDALFactory baseModuleDAL, INavigationState[]... navigationStatesArrays) {
+	public SMSAppModuleTestCommons(Instrumentation<?, ?> log, SMSAppModuleDALFactory baseModuleDAL, NavigationState[][] navigationStatesArrays, ICommandProcessor[][] commandProcessorsArrays) {
 		userDB    = baseModuleDAL.getUserDB();
 		sessionDB = baseModuleDAL.getSessionDB();
 		responseReceiver = new TestResponseReceiver();
 		SMSProcessor.configureDefaultValuesForNewInstances(log, baseModuleDAL);
-		smsP = new SMSProcessor(responseReceiver, navigationStatesArrays);
+		smsP = new SMSProcessor(responseReceiver, navigationStatesArrays, commandProcessorsArrays);
 	}
 	
 	

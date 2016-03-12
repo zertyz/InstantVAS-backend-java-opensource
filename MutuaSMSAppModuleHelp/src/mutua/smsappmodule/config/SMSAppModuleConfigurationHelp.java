@@ -2,13 +2,9 @@ package mutua.smsappmodule.config;
 
 import java.util.Arrays;
 
-import mutua.icc.instrumentation.DefaultInstrumentationProperties;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.smsappmodule.i18n.SMSAppModulePhrasingsHelp;
 import mutua.smsappmodule.smslogic.SMSAppModuleCommandsHelp;
-import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
-import mutua.smsappmodule.smslogic.navigationstates.INavigationState;
-import mutua.smsappmodule.smslogic.navigationstates.NavigationStateCommons;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesHelp;
 
 /** <pre>
@@ -39,7 +35,7 @@ public class SMSAppModuleConfigurationHelp {
 
 		SMSAppModulePhrasingsHelp        phrasings        = new SMSAppModulePhrasingsHelp(shortCode, appName, phrStatefulHelpMessages);
 		SMSAppModuleCommandsHelp         commands         = new SMSAppModuleCommandsHelp(phrasings);
-		SMSAppModuleNavigationStatesHelp navigationStates = new SMSAppModuleNavigationStatesHelp(commands);
+		SMSAppModuleNavigationStatesHelp navigationStates = new SMSAppModuleNavigationStatesHelp();
 		
 		System.err.println(SMSAppModuleConfigurationHelp.class.getCanonicalName() + ": test configuration loaded.");
 		
@@ -68,7 +64,7 @@ public class SMSAppModuleConfigurationHelp {
 		SMSAppModulePhrasingsHelp        phrasings        = new SMSAppModulePhrasingsHelp(shortCode, appName, 
 			phrNewUsersFallbackHelp, phrExistingUsersFallbackHelp, phrStatelessHelp, phrStatefulHelpMessages, phrCompositeHelps);
 		SMSAppModuleCommandsHelp         commands         = new SMSAppModuleCommandsHelp(phrasings);
-		SMSAppModuleNavigationStatesHelp navigationStates = new SMSAppModuleNavigationStatesHelp(commands, nstPresentingCompositeHelpCommandTriggers);
+		SMSAppModuleNavigationStatesHelp navigationStates = new SMSAppModuleNavigationStatesHelp(nstPresentingCompositeHelpCommandTriggers);
 		
 		// log
 		String logPrefix = "Help Module";

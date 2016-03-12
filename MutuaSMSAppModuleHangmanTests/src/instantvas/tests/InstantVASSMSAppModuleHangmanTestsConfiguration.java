@@ -137,7 +137,7 @@ public class InstantVASSMSAppModuleHangmanTestsConfiguration {
 		hangmanModulePhrasings        = (SMSAppModulePhrasingsHangman)        hangmanModule[2];
 		
 		// base module -- configured to interact with the Profile Module commands 
-		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(LOG, BASE_MODULE_DAL, hangmanModuleCommands.values,
+		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(LOG, BASE_MODULE_DAL,
 			/*nstNewUserTriggers*/
 			new Object[][] {
 //				{cmdStartAskForNicknameDialog, trgGlobalStartAskForNicknameDialog},

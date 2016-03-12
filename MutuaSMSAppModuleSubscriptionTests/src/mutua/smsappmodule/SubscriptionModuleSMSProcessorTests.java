@@ -8,6 +8,8 @@ import java.sql.SQLException;
 import org.junit.Test;
 
 import instantvas.tests.InstantVASSMSAppModuleSubscriptionTestsConfiguration;
+import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
+import mutua.smsappmodule.smslogic.navigationstates.NavigationState;
 
 /** <pre>
  * SubscriptionModuleSMSProcessorTests.java
@@ -33,7 +35,8 @@ public class SubscriptionModuleSMSProcessorTests {
 	
 	private SMSAppModuleTestCommons tc = new SMSAppModuleTestCommons(LOG,
 		BASE_MODULE_DAL,
-		config.baseModuleNavigationStates.values, config.subscriptionModuleNavigationStates.values);
+		new NavigationState[][]   {config.baseModuleNavigationStates.values, config.subscriptionModuleNavigationStates.values},
+		new ICommandProcessor[][] {config.subscriptionModuleCommands.values});
 	
 	
 	// tests

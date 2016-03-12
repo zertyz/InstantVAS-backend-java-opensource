@@ -35,10 +35,9 @@ public class NavigationStateCommonsTests {
 
 	@Test
 	public void testSetCommandTriggers() {
-		NavigationStateCommons nsc = new NavigationStateCommons("my state");
-		nsc.setCommandTriggers(new Object[][] {
-			{availableCommandName, new String[] {"regex1", "regex2"}, 1001l}},
-			availableCommands);
+		NavigationState nsc = new NavigationState("my state", new Object[][] {
+			{availableCommandName, new String[] {"regex1", "regex2"}, 1001l}});
+		nsc.applyCommandTriggersData(availableCommands);
 		assertEquals("serialization didn't work",
 		             "command='TestCommandProcessor', patterns=[regex1, regex2], timeout=1001",
 		             nsc.serializeCommandTrigger(null)[0]);

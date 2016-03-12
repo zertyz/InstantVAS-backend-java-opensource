@@ -1,6 +1,6 @@
 package mutua.smsappengine.logic;
 
-import static config.HangmanSMSModulesConfiguration.*;
+import static config.InstantVASApplicationConfiguration.*;
 import static org.junit.Assert.*;
 
 import java.sql.SQLException;
@@ -32,7 +32,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import config.HangmanSMSModulesConfiguration;
+import config.InstantVASApplicationConfiguration;
 import instantvas.tests.InstantVASSMSAppModuleTestsConfiguration;
 import adapters.dto.PreparedProcedureInvocationDto;
 
@@ -82,8 +82,8 @@ public class HangmanAppEngineBehavioralTests {
 	public static void setDefaultHangmanConfigurationParameters() throws SQLException {
 		InstantVASSMSAppModuleTestsConfiguration.BASE_MODULE_DAL = SMSAppModuleDALFactory.POSTGRESQL;
 		InstantVASSMSAppModuleTestsConfiguration.applyConfiguration();
-		HangmanSMSModulesConfiguration.setDefaults(log, subscriptionEngine, subscriptionChannel);
-		tc = new SMSAppModuleTestCommons(log, BASE_MODULE_DAL, HangmanSMSModulesConfiguration.navigationStates);
+		InstantVASApplicationConfiguration.setDefaults(log, subscriptionEngine, subscriptionChannel);
+		tc = new SMSAppModuleTestCommons(log, BASE_MODULE_DAL, InstantVASApplicationConfiguration.navigationStates);
 		
 		// chat database configuration
 		//////////////////////////////

@@ -2,7 +2,7 @@ package mutua.smsappmodule.i18n;
 
 import java.util.HashMap;
 
-import mutua.smsappmodule.smslogic.navigationstates.INavigationState;
+import mutua.smsappmodule.smslogic.navigationstates.NavigationState;
 
 /** <pre>
  * SMSAppModulePhrasingsHelp.java
@@ -114,7 +114,7 @@ public class SMSAppModulePhrasingsHelp {
 	}
 
 	/** Retrieve the navigation state specific help messages set on the configuration class */
-	public String getStatefulHelpMessage(INavigationState navigationState) {
+	public String getStatefulHelpMessage(NavigationState navigationState) {
 		Phrase phrase = phrStatefulHelpMessagesMap.get(navigationState.getNavigationStateName());
 		return phrase != null ? phrase.getPhrase() : null;
 	}

@@ -46,7 +46,7 @@ public class SMSAppModuleConfigurationHangman {
 	        	                                     String defaultNicknamePrefix) {
 		SMSAppModulePhrasingsHangman        phrasings        = new SMSAppModulePhrasingsHangman(shortCode, appName);
 		SMSAppModuleCommandsHangman         commands         = new SMSAppModuleCommandsHangman(phrasings, subscriptionEventsServer, baseModuleDAL, profileModuleDAL, hangmanModuleDAL, defaultNicknamePrefix);
-		SMSAppModuleNavigationStatesHangman navigationStates = new SMSAppModuleNavigationStatesHangman(commands);
+		SMSAppModuleNavigationStatesHangman navigationStates = new SMSAppModuleNavigationStatesHangman();
 		
 		System.err.println(SMSAppModuleConfigurationHangman.class.getCanonicalName() + ": test configuration loaded.");
 		
@@ -145,7 +145,7 @@ public class SMSAppModuleConfigurationHangman {
 			phrLosingMessageForWordGuessingPlayer, phrLosingMessageForWordProvidingPlayer, phrMatchGiveupNotificationForWordGuessingPlayer,             
 			phrMatchGiveupNotificationForWordProvidingPlayer, phrGuessingWordHelp);
 		SMSAppModuleCommandsHangman         commands         = new SMSAppModuleCommandsHangman(phrasings, subscriptionEventsServer, baseModuleDAL, profileModuleDAL, hangmanModuleDAL, defaultNicknamePrefix);
-		SMSAppModuleNavigationStatesHangman navigationStates = new SMSAppModuleNavigationStatesHangman(commands,
+		SMSAppModuleNavigationStatesHangman navigationStates = new SMSAppModuleNavigationStatesHangman(
 			nstEnteringMatchWordTriggers,nstAnsweringToHangmanMatchInvitationTriggers,
 			nstGuessingWordFromHangmanHumanOpponentTriggers, nstGuessingWordFromHangmanBotOpponentTriggers);
 		

@@ -15,7 +15,7 @@ import mutua.icc.instrumentation.IInstrumentableProperty;
  * @author luiz
  */
 
-public class HangmanHTTPInstrumentationRequestProperty implements IInstrumentableProperty {
+public class InstantVASHTTPInstrumentationRequestProperty implements IInstrumentableProperty {
 
 	@Override
 	public String getInstrumentationPropertyName() {

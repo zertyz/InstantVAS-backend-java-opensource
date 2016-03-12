@@ -4,7 +4,7 @@ import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigatio
 import static org.junit.Assert.assertEquals;
 import java.sql.SQLException;
 import mutua.smsappmodule.dto.UserDto;
-import mutua.smsappmodule.smslogic.navigationstates.INavigationState;
+import mutua.smsappmodule.smslogic.navigationstates.NavigationState;
 import mutua.smsappmodule.smslogic.sessions.SessionModel;
 
 import org.junit.Test;
@@ -33,7 +33,7 @@ public class SubscriptionModuleBehavioralTests {
 		String expectedMessage = config.subscriptionModulePhrasings.getDoubleOptinStart();
 		SessionModel session = new SessionModel((UserDto)null, null, null) {
 			@Override
-			public INavigationState getNavigationStateFromStateName(String navigationStateName) {
+			public NavigationState getNavigationStateFromStateName(String navigationStateName) {
 				if (navigationStateName.equals(nstAnsweringDoubleOptin)) {
 					return config.subscriptionModuleNavigationStates.nstAnsweringDoubleOptin;
 				}

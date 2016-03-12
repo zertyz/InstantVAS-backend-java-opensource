@@ -26,7 +26,7 @@ import mutua.smsappmodule.i18n.SMSAppModulePhrasingsHangman;
 import mutua.smsappmodule.smslogic.commands.CommandAnswerDto;
 import mutua.smsappmodule.smslogic.commands.CommandTriggersDto;
 import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
-import mutua.smsappmodule.smslogic.navigationstates.INavigationState;
+import mutua.smsappmodule.smslogic.navigationstates.NavigationState;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesHangman;
 import mutua.smsappmodule.smslogic.sessions.SMSAppModuleSessionsHangman;
 import mutua.smsappmodule.smslogic.sessions.SessionModel;
@@ -233,7 +233,7 @@ public class SMSAppModuleCommandsHangman {
 			}
 			
 			// set inviting & invited player sessions
-			SessionModel opponentSession = new SessionModel(sessionDB.getSession(opponentProfile.getUser()), null) {@Override public INavigationState getNavigationStateFromStateName(String navigationStateName) {throw new RuntimeException("Innertype sessionModel should not have been asked to provide a navigationState");}};
+			SessionModel opponentSession = new SessionModel(sessionDB.getSession(opponentProfile.getUser()), null) {@Override public NavigationState getNavigationStateFromStateName(String navigationStateName) {throw new RuntimeException("Innertype sessionModel should not have been asked to provide a navigationState");}};
 			MatchDto match = new MatchDto(session.getUser(), opponentSession.getUser(), game.serializeGameState(), System.currentTimeMillis(), EMatchStatus.ACTIVE);
 			matchDB.storeNewMatch(match);
 			opponentSession.setNavigationState(nstAnsweringToHangmanMatchInvitation);

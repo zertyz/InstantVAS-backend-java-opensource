@@ -9,6 +9,8 @@ import java.sql.SQLException;
 import mutua.smsappmodule.dal.IProfileDB;
 import mutua.smsappmodule.dal.ISessionDB;
 import mutua.smsappmodule.dal.IUserDB;
+import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
+import mutua.smsappmodule.smslogic.navigationstates.NavigationState;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -39,7 +41,9 @@ public class ProfileModuleSMSProcessorTests {
 	private ISessionDB sessionDB = BASE_MODULE_DAL.getSessionDB();
 	private IProfileDB profileDB = PROFILE_MODULE_DAL.getProfileDB();
 	
-	private SMSAppModuleTestCommons tc = new SMSAppModuleTestCommons(LOG, BASE_MODULE_DAL, config.baseModuleNavigationStates.values, config.profileModuleNavigationStates.values);
+	private SMSAppModuleTestCommons tc = new SMSAppModuleTestCommons(LOG, BASE_MODULE_DAL,
+		new NavigationState[][]   {config.baseModuleNavigationStates.values, config.profileModuleNavigationStates.values},
+		new ICommandProcessor[][] {config.profileModuleCommands.values});
 
 	
 	@Before

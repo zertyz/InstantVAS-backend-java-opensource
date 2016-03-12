@@ -38,15 +38,14 @@ public class InstantVASSMSAppModuleConfiguration {
 	 *       CONNECTION_POOL_SIZE);</pre> 
 	 *  @param log
 	 * @param baseModuleDAL                          one of the members of {@link SMSAppModuleDALFactory}
-	 * @param availableCommands                      &
 	 * @param nstNewUserTriggers                     &
 	 * @param nstExistingUserTriggers                see {@link SMSAppModuleNavigationStates#SMSAppModuleNavigationStates(ICommandProcessor[], Object[][], Object[][])}
 	 *  @returns {(SMSAppModuleNavigationStates)navigationStates, (SMSAppModuleCommandsHelp)commands, (SMSAppModulePhrasingsHelp)phrasings} */
 	public static Object[] getBaseModuleInstances(Instrumentation<?, ?> log, SMSAppModuleDALFactory baseModuleDAL,
-		ICommandProcessor[] availableCommands, Object[][] nstNewUserTriggers,
+		Object[][] nstNewUserTriggers,
 		Object[][] nstExistingUserTriggers) throws SQLException {
 		
-		SMSAppModuleNavigationStates navigationStates = new SMSAppModuleNavigationStates(availableCommands, nstNewUserTriggers, nstExistingUserTriggers);
+		SMSAppModuleNavigationStates navigationStates = new SMSAppModuleNavigationStates(nstNewUserTriggers, nstExistingUserTriggers);
 		
 		log.reportDebug(InstantVASSMSAppModuleConfiguration.class.getCanonicalName() + ": new configuration loaded.");
 		

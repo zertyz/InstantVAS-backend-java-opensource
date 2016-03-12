@@ -11,7 +11,7 @@ import mutua.smsappmodule.dal.IProfileDB;
 import mutua.smsappmodule.dal.IUserDB;
 import mutua.smsappmodule.dto.ProfileDto;
 import mutua.smsappmodule.dto.UserDto;
-import mutua.smsappmodule.smslogic.navigationstates.INavigationState;
+import mutua.smsappmodule.smslogic.navigationstates.NavigationState;
 import mutua.smsappmodule.smslogic.sessions.SessionModel;
 
 import org.junit.Before;
@@ -55,13 +55,13 @@ public class ProfileModuleBehavioralTests {
 		String expectedMessageForNicknamedUser = config.profileModulePhrasings.getAskForNewNickname(nickname);
 		
 		// no nickname yet
-		SessionModel sessionForNotNicknamedUser   = new SessionModel(user, null, null) {public INavigationState getNavigationStateFromStateName(String navigationStateName) {return null;}};
+		SessionModel sessionForNotNicknamedUser   = new SessionModel(user, null, null) {public NavigationState getNavigationStateFromStateName(String navigationStateName) {return null;}};
 		String observedMessageForNotNicknamedUser = config.profileModuleCommands.cmdStartAskForNicknameDialog.processCommand(sessionForNotNicknamedUser, null, null).getResponseMessages()[0].getText();
 		assertEquals("Command didn't answer the correct message for starting the ask for the first nickname process", expectedMessageForNotNicknamedUser, observedMessageForNotNicknamedUser);
 		assertSame("Navigation State wasn't correctly set", nstRegisteringNickname, sessionForNotNicknamedUser.getNavigationStateName());
 
 		// attempting to change a nickname
-		SessionModel sessionForNicknamedUser   = new SessionModel(user, null, null) {public INavigationState getNavigationStateFromStateName(String navigationStateName) {return null;}};
+		SessionModel sessionForNicknamedUser   = new SessionModel(user, null, null) {public NavigationState getNavigationStateFromStateName(String navigationStateName) {return null;}};
 		profileDB.setProfileRecord(new ProfileDto(user, nickname));
 		String observedMessageForNicknamedUser = config.profileModuleCommands.cmdStartAskForNicknameDialog.processCommand(sessionForNicknamedUser, null, null).getResponseMessages()[0].getText();
 		assertEquals("Command didn't answer the correct message for starting the ask for a nickname change process", expectedMessageForNicknamedUser, observedMessageForNicknamedUser);
@@ -77,12 +77,12 @@ public class ProfileModuleBehavioralTests {
 		String secondExpectedMessage = config.profileModulePhrasings.getNicknameRegistrationNotification(secondExpectedNickname);
 		
 		// first nickname
-		SessionModel firstSession = new SessionModel(userDB.assureUserIsRegistered("21991234899"), null, null) {public INavigationState getNavigationStateFromStateName(String navigationStateName) {return null;}};
+		SessionModel firstSession = new SessionModel(userDB.assureUserIsRegistered("21991234899"), null, null) {public NavigationState getNavigationStateFromStateName(String navigationStateName) {return null;}};
 		String firstObservedMessage = config.profileModuleCommands.cmdRegisterNickname.processCommand(firstSession, null, new String[] {firstExpectedNickname}).getResponseMessages()[0].getText();
 		assertEquals("Command didn't answer the correct message for setting a nickname", firstExpectedMessage, firstObservedMessage);
 		
 		// second nickname
-		SessionModel secondSession = new SessionModel(userDB.assureUserIsRegistered("21998019167"), null, null) {public INavigationState getNavigationStateFromStateName(String navigationStateName) {return null;}};
+		SessionModel secondSession = new SessionModel(userDB.assureUserIsRegistered("21998019167"), null, null) {public NavigationState getNavigationStateFromStateName(String navigationStateName) {return null;}};
 		String secondObservedMessage = config.profileModuleCommands.cmdRegisterNickname.processCommand(secondSession, null, new String[] {firstExpectedNickname}).getResponseMessages()[0].getText();
 		assertEquals("Command didn't answer the correct message for setting a nickname", secondExpectedMessage, secondObservedMessage);
 		
@@ -91,7 +91,7 @@ public class ProfileModuleBehavioralTests {
 	@Test
 	public void testInquireUserProfile() throws SQLException {
 		UserDto      aUser           = userDB.assureUserIsRegistered("21991234899");
-		SessionModel aSession        = new SessionModel(aUser, null, null) {public INavigationState getNavigationStateFromStateName(String navigationStateName) {return null;}};
+		SessionModel aSession        = new SessionModel(aUser, null, null) {public NavigationState getNavigationStateFromStateName(String navigationStateName) {return null;}};
 		String       aUserNickname   = "aUser";
 		String       expectedMessage = config.profileModulePhrasings.getUserProfilePresentation(aUserNickname);
 		
@@ -107,7 +107,7 @@ public class ProfileModuleBehavioralTests {
 	@Test
 	public void testInquireInexistentProfile() throws SQLException {
 		UserDto aUser                = userDB.assureUserIsRegistered("21991234899");
-		SessionModel aSession        = new SessionModel(aUser, null, null) {public INavigationState getNavigationStateFromStateName(String navigationStateName) {return null;}};
+		SessionModel aSession        = new SessionModel(aUser, null, null) {public NavigationState getNavigationStateFromStateName(String navigationStateName) {return null;}};
 		String  aUserNickname        = "aUser";
 		String  expectedMessage      = config.profileModulePhrasings.getNicknameNotFound(aUserNickname);
 		

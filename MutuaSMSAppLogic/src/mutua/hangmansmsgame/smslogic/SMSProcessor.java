@@ -27,7 +27,7 @@ import mutua.smsappmodule.smslogic.commands.CommandMessageDto;
 import mutua.smsappmodule.smslogic.commands.CommandMessageDto.EResponseMessageType;
 import mutua.smsappmodule.smslogic.commands.CommandTriggersDto;
 import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
-import mutua.smsappmodule.smslogic.navigationstates.INavigationState;
+import mutua.smsappmodule.smslogic.navigationstates.NavigationState;
 import mutua.smsappmodule.smslogic.sessions.SessionModel;
 import mutua.smsin.dto.IncomingSMSDto;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
@@ -71,7 +71,8 @@ public class SMSProcessor {
 	//////////////////////
 	
 	private final MessageDispatcher  mtDispatcher;
-	private final INavigationState[] navigationStates;
+	private final NavigationState[]   navigationStates;
+	private final ICommandProcessor[] commandProcessors;
 		
 	
 	/***********************
@@ -80,27 +81,35 @@ public class SMSProcessor {
 	
 	/** Gets a processor instance which will deliver Output SMSes (MT's) to the 
 	 * provided 'interactionReceiver' MessageReceiver instance */
-	public SMSProcessor(IResponseReceiver defaultReceiver, INavigationState[]... navigationStatesArrays) {
+	public SMSProcessor(IResponseReceiver defaultReceiver, NavigationState[][] navigationStatesArrays, ICommandProcessor[][] commandProcessorsArrays) {
 		log.addInstrumentableEvents(SMSProcessorInstrumentationEvents.values());
 		mtDispatcher          = new MessageDispatcher(defaultReceiver);
-		// compute the length
-		int navigationStatesLength = 0;
-		for (INavigationState[] navigationStatesEntry : navigationStatesArrays) {
-			navigationStatesLength += navigationStatesEntry.length;
-		}
-		// build the 1d array
-		this.navigationStates = new INavigationState[navigationStatesLength];
-		int navigationStatesIndex = 0;
-		for (INavigationState[] navigationStatesEntry : navigationStatesArrays) {
-			for (INavigationState navigationState : navigationStatesEntry) {
-				this.navigationStates[navigationStatesIndex++] = navigationState;
+		log.reportDebug("SMSProcessor started with navigation states '"+Arrays.deepToString(navigationStatesArrays)+"' and commands '"+Arrays.deepToString(commandProcessorsArrays)+"'");
+				
+		// rearrange for 'commandProcessors'
+		ArrayList<ICommandProcessor> tempCmdProcessors = new ArrayList<ICommandProcessor>();
+		for (ICommandProcessor[] commandProcessorsEntry : commandProcessorsArrays) {
+			if (commandProcessorsEntry != null) {
+				tempCmdProcessors.addAll(Arrays.asList(commandProcessorsEntry));
 			}
 		}
+		this.commandProcessors = tempCmdProcessors.toArray(new ICommandProcessor[tempCmdProcessors.size()]);
+		
+		// rearrange for 'navigationStates', resolving the temporary Object[][] command triggers data
+		ArrayList<NavigationState> tempNavStates = new ArrayList<NavigationState>();
+		for (NavigationState[] navigationStatesEntry : navigationStatesArrays) {
+			if (navigationStatesEntry != null) {
+				navigationStatesEntry[0].applyCommandTriggersData(commandProcessors);
+				tempNavStates.addAll(Arrays.asList(navigationStatesEntry));
+			}
+		}
+		this.navigationStates = tempNavStates.toArray(new NavigationState[tempNavStates.size()]);
+		
 	}
 	
 	/** from the available options (i.e., the commands that belongs to the current 'userState') determine which one of them
 	 *  should process the 'incomingText' and build the object needed to issue the call */
-	protected CommandInvocationDto resolveInvocationHandler(INavigationState state, String incomingText) {
+	protected CommandInvocationDto resolveInvocationHandler(NavigationState state, String incomingText) {
 		CommandTriggersDto[] commandTriggers = state.getCommandTriggers();
 		if (commandTriggers == null) {
 			throw new RuntimeException("CommandTriggers for state '"+state.getNavigationStateName()+"' is null");
@@ -180,15 +189,15 @@ public class SMSProcessor {
 		}
 
 		@Override
-		public INavigationState getNavigationStateFromStateName(String navigationStateName) {
-			for (INavigationState navigationState : navigationStates) {
+		public NavigationState getNavigationStateFromStateName(String navigationStateName) {
+			for (NavigationState navigationState : navigationStates) {
 				if (navigationState.getNavigationStateName().equals(navigationStateName)) {
 					return navigationState;
 				}
 			}
 			throw new RuntimeException(
 				"NavigationState named '" + navigationStateName +
-				"' provided by the sessions table is not present on the instance known values '" +
+				"' (referenced in the 'Sessions' table) is not present on the provided navigation states list '" +
 				Arrays.toString(navigationStates) + "'");
 		}
 		

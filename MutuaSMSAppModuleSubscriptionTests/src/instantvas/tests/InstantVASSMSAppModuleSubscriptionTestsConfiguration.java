@@ -139,7 +139,7 @@ public class InstantVASSMSAppModuleSubscriptionTestsConfiguration {
 		subscriptionModulePhrasings        = (SMSAppModulePhrasingsSubscription)        subscriptionModule[2];
 		
 		// base module -- configured to interact with the Subscription Module commands 
-		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(LOG, BASE_MODULE_DAL, subscriptionModuleCommands.values,
+		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(LOG, BASE_MODULE_DAL,
 			/*nstNewUserTriggers*/
 			new Object[][] {
 				{cmdStartDoubleOptinProcess, trgLocalStartDoubleOptin},
