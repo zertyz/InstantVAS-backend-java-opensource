@@ -2,7 +2,7 @@ package mutua.iccapp.HangmanSMSGame;
 
 import java.sql.SQLException;
 
-import config.HangmanSMSModulesConfiguration;
+import config.InstantVASApplicationConfiguration;
 import adapters.dto.PreparedProcedureInvocationDto;
 import mutua.events.postgresql.QueuesPostgreSQLAdapter;
 import mutua.hangmansmsgame.smslogic.SMSProcessor;
@@ -75,9 +75,9 @@ public class SMSAppFrontend {
 			e.printStackTrace();
 		}
     	
-    	HangmanSMSModulesConfiguration.setDefaults(log, subscriptionEngine, subscriptionChannel);
+    	InstantVASApplicationConfiguration.setDefaults(log, subscriptionEngine, subscriptionChannel);
     	responseReceiver = new SimulationMessageReceiver();
-    	smsP = new SMSProcessor(log, responseReceiver, HangmanSMSModulesConfiguration.navigationStates);
+    	smsP = new SMSProcessor(log, responseReceiver, InstantVASApplicationConfiguration.navigationStates);
 	}
 
     private static int nextMOId = 1;

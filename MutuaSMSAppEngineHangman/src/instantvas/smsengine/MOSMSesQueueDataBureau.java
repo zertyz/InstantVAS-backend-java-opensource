@@ -2,11 +2,11 @@ package instantvas.smsengine;
 
 import mutua.events.IDatabaseQueueDataBureau;
 import mutua.imi.IndirectMethodInvocationInfo;
-import mutua.smsappmodule.hangmangame.HangmanGame.EHangmanGameStates;
 import mutua.smsin.dto.IncomingSMSDto;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 import adapters.IJDBCAdapterParameterDefinition;
 import adapters.exceptions.PreparedProcedureException;
+import instantvas.smsengine.producersandconsumers.EInstantVASMOEvents;
 
 /** <pre>
  * MOSMSesQueueDataBureau.java
@@ -20,7 +20,7 @@ import adapters.exceptions.PreparedProcedureException;
  * @author luiz
  */
 
-public class MOSMSesQueueDataBureau extends IDatabaseQueueDataBureau<EHangmanGameStates> {
+public class MOSMSesQueueDataBureau extends IDatabaseQueueDataBureau<EInstantVASMOEvents> {
 	
 	public static final String MO_TABLE_NAME      = "MOSMSes";
 	public static final String MO_ID_FIELD_NAME   = "eventId";
@@ -47,7 +47,7 @@ public class MOSMSesQueueDataBureau extends IDatabaseQueueDataBureau<EHangmanGam
 
 
 	@Override
-	public Object[] serializeQueueEntry(IndirectMethodInvocationInfo<EHangmanGameStates> entry) throws PreparedProcedureException {
+	public Object[] serializeQueueEntry(IndirectMethodInvocationInfo<EInstantVASMOEvents> entry) throws PreparedProcedureException {
 		IncomingSMSDto mo = (IncomingSMSDto)entry.getParameters()[0];
 		return new Object[] {
 			EMOQueueQueryParameters.PHONE, mo.getPhone(),
@@ -55,11 +55,11 @@ public class MOSMSesQueueDataBureau extends IDatabaseQueueDataBureau<EHangmanGam
 	}
 	
 	@Override
-	public IndirectMethodInvocationInfo<EHangmanGameStates> deserializeQueueEntry(int eventId, Object[] databaseRow) {
+	public IndirectMethodInvocationInfo<EInstantVASMOEvents> deserializeQueueEntry(int eventId, Object[] databaseRow) {
 		String phone   = (String)databaseRow[0];
 		String text    = (String)databaseRow[1];
 		IncomingSMSDto mo = new IncomingSMSDto(eventId, phone, text, defaultCarrier, shortCode);
-		IndirectMethodInvocationInfo<EHangmanGameStates> entry = new IndirectMethodInvocationInfo<EHangmanGameStates>(EHangmanGameStates.WON, mo);
+		IndirectMethodInvocationInfo<EInstantVASMOEvents> entry = new IndirectMethodInvocationInfo<EInstantVASMOEvents>(EInstantVASMOEvents.MO_ARRIVED, mo);
 		return entry;
 	}
 	

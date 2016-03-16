@@ -2,9 +2,9 @@ package instantvas.smsengine;
 
 import adapters.IJDBCAdapterParameterDefinition;
 import adapters.exceptions.PreparedProcedureException;
+import instantvas.smsengine.producersandconsumers.EInstantVASMTEvents;
 import mutua.events.IDatabaseQueueDataBureau;
 import mutua.imi.IndirectMethodInvocationInfo;
-import mutua.smsappmodule.hangmangame.HangmanGame.EHangmanGameStates;
 import mutua.smsout.dto.OutgoingSMSDto;
 import mutua.smsout.dto.OutgoingSMSDto.EBillingType;
 
@@ -20,7 +20,11 @@ import mutua.smsout.dto.OutgoingSMSDto.EBillingType;
  * @author luiz
  */
 
-public class MTSMSesQueueDataBureau extends IDatabaseQueueDataBureau<EHangmanGameStates> {
+public class MTSMSesQueueDataBureau extends IDatabaseQueueDataBureau<EInstantVASMTEvents> {
+	
+	public static final String MT_TABLE_NAME       = "MTSMSes";
+	public static final String MT_MO_ID_FIELD_NAME = "moId";
+	public static final String MT_TEXT_FIELD_NAME  = "text";
 	
 	enum EMTQueueQueryParameters implements IJDBCAdapterParameterDefinition {
 		MO_ID,
@@ -34,7 +38,7 @@ public class MTSMSesQueueDataBureau extends IDatabaseQueueDataBureau<EHangmanGam
 	}
 	
 	@Override
-	public Object[] serializeQueueEntry(IndirectMethodInvocationInfo<EHangmanGameStates> entry) throws PreparedProcedureException {
+	public Object[] serializeQueueEntry(IndirectMethodInvocationInfo<EInstantVASMTEvents> entry) throws PreparedProcedureException {
 		OutgoingSMSDto mt = (OutgoingSMSDto)entry.getParameters()[0];
 		return new Object[] {
 			EMTQueueQueryParameters.MO_ID, mt.getMoId(),
@@ -43,12 +47,12 @@ public class MTSMSesQueueDataBureau extends IDatabaseQueueDataBureau<EHangmanGam
 	}
 	
 	@Override
-	public IndirectMethodInvocationInfo<EHangmanGameStates> deserializeQueueEntry(int eventId, Object[] databaseRow) {
+	public IndirectMethodInvocationInfo<EInstantVASMTEvents> deserializeQueueEntry(int eventId, Object[] databaseRow) {
 		Integer moId   = (Integer)databaseRow[0];
 		String  phone  = (String)databaseRow[1];
 		String  text   = (String)databaseRow[2];
 		OutgoingSMSDto mt = new OutgoingSMSDto(moId, phone, text, EBillingType.FREE);
-		IndirectMethodInvocationInfo<EHangmanGameStates> entry = new IndirectMethodInvocationInfo<EHangmanGameStates>(EHangmanGameStates.WON, mt);
+		IndirectMethodInvocationInfo<EInstantVASMTEvents> entry = new IndirectMethodInvocationInfo<EInstantVASMTEvents>(EInstantVASMTEvents.INTERACTIVE_MT, mt);
 		return entry;
 	}
 	

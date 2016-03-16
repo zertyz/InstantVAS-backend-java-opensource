@@ -13,17 +13,22 @@ import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHangman.CommandTri
 
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import instantvas.smsengine.InstantVASHTTPInstrumentationRequestProperty;
 import instantvas.smsengine.MOSMSesQueueDataBureau;
+import instantvas.smsengine.MTSMSesQueueDataBureau;
+import instantvas.smsengine.producersandconsumers.EInstantVASMOEvents;
+import instantvas.smsengine.producersandconsumers.EInstantVASMTEvents;
+import instantvas.smsengine.producersandconsumers.MOProducer.InstantVASMOEvent;
+import instantvas.smsengine.producersandconsumers.MTProducer.InstantVASMTEvent;
 import mutua.events.DirectEventLink;
 import mutua.events.IEventLink;
 import mutua.events.PostgreSQLQueueEventLink;
 import mutua.events.QueueEventLink;
 import mutua.events.postgresql.QueuesPostgreSQLAdapter;
+import mutua.hangmansmsgame.smslogic.SMSProcessor;
 import mutua.icc.configuration.annotations.ConfigurableElement;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
@@ -43,7 +48,6 @@ import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterChat;
 import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterHangman;
 import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterProfile;
 import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterSubscription;
-import mutua.smsappmodule.hangmangame.HangmanGame.EHangmanGameStates;
 import mutua.smsappmodule.i18n.SMSAppModulePhrasingsChat;
 import mutua.smsappmodule.i18n.SMSAppModulePhrasingsHangman;
 import mutua.smsappmodule.i18n.SMSAppModulePhrasingsHelp;
@@ -69,7 +73,6 @@ import mutua.smsout.senders.SMSOutCelltick;
 import mutua.smsout.senders.SMSOutSender;
 import mutua.subscriptionengine.CelltickLiveScreenSubscriptionAPI;
 import mutua.subscriptionengine.SubscriptionEngine;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import adapters.PostgreSQLAdapter;
 
 /** <pre>
@@ -129,9 +132,9 @@ public class InstantVASApplicationConfiguration {
 	@ConfigurableElement("MT service URLs & data for Celltick's Kannel APIs")
 	public static String CELLTICK_MT_SERVICE_URL;
 	@ConfigurableElement("the number of times 'sendMessage' will attempt to send the message before reporting it as unsendable")
-	public static int    CELLTICK_MT_SERVICE_NUMBER_OF_RETRY_ATTEMPTS;
+	public static int    MT_SERVICE_NUMBER_OF_RETRY_ATTEMPTS;
 	@ConfigurableElement("the number of milliseconds 'sendMessage' will wait between retry attempts")
-	public static long   CELLTICK_MT_SERVICE_DELAY_BETWEEN_ATTEMPTS;
+	public static long   MT_SERVICE_DELAY_BETWEEN_ATTEMPTS;
 	
 	// JDBCAdapter
 	//////////////
@@ -463,9 +466,10 @@ public class InstantVASApplicationConfiguration {
 		}
 	};
 	
-	public enum EInstantVASModules {CELLTICK_MO_RECEPTION, CELLTICK_MT_DELIVERY, CELLTICK_SUBSCRIPTION_LIFECYCLE,	// integration modules
+	public enum EInstantVASModules {// integration modules
+	                                CELLTICK_BR_INTEGRATION,
 	                                // infrastructure modules
-	                                BASE, HELP, SUBSCRIPTION, SUBSCRIPTION_LIFECYCLE, DRAW, PROFILE, 
+	                                BASE, HELP, SUBSCRIPTION, SUBSCRIPTION_LIFECYCLE, DRAW, PROFILE,
 	                                // entretainment modules
 	                                QUIZ, CELEBRITY_AI, REVERSE_AUCTION,
 	                                // entretainment / mobile learning modules
@@ -494,14 +498,14 @@ public class InstantVASApplicationConfiguration {
 	// integration
 	public SubscriptionEngine subscriptionEngine;
 	public String subscriptionToken;
-	public SMSInParser<Map<String, String>, byte[]>  MOParser;
-	public SMSOutSender                  MTSender;
+	public SMSInParser<Map<String, String>, byte[]>  moParser;
+	public SMSOutSender                              mtSender;
 	
 	// event links
 	public IEventLink<EInstantVASMOEvents>  MOpcLink;	// "MO received" producer/consumer event link
 	public IEventLink<EInstantVASMTEvents>  MTpcLink;	// "MT received" ...
-	public IEventLink<EInstantVASSREvents>  SRpcLink;	// "Subscription Renewal" producer/consumer event link 
-	public IEventLink<EInstantVASSCEvents>  SCpcLink;	// "Subscription Cancellation" producer/consumer event link 
+//	public IEventLink<EInstantVASSREvents>  SRpcLink;	// "Subscription Renewal" producer/consumer event link 
+//	public IEventLink<EInstantVASSCEvents>  SCpcLink;	// "Subscription Cancellation" producer/consumer event link 
 	
 	// DALs
 	public SMSAppModuleDALFactory             baseModuleDAL    = null;
@@ -534,11 +538,9 @@ public class InstantVASApplicationConfiguration {
 
 	
 	public InstantVASApplicationConfiguration(Instrumentation<InstantVASHTTPInstrumentationRequestProperty, String> log,
-	                             SubscriptionEngine subscriptionEngine,
-	                             String subscriptionToken) throws SQLException {
+	                             String subscriptionToken) throws SQLException, IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
 		
 		this.log                = log;
-		this.subscriptionEngine = subscriptionEngine;
 		this.subscriptionToken  = subscriptionToken;
 		
 		List<EInstantVASModules> enabledModulesList = Arrays.asList(ENABLED_MODULES);
@@ -607,19 +609,49 @@ public class InstantVASApplicationConfiguration {
 			System.out.println("PostgreSQL Queue...");
 			QueuesPostgreSQLAdapter.configureDefaultValuesForNewInstances(log, POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD);
 			PostgreSQLQueueEventLink.configureDefaultValuesForNewInstances(log, MO_POSTGRESQL_QUEUE_POOLING_TIME, MO_QUEUE_NUMBER_OF_WORKER_THREADS);
-			MOpcLink = new PostgreSQLQueueEventLink<EHangmanSMSGameEvents>(EHangmanGameStates.class, "MOSMSes", new MOSMSesQueueDataBureau());
+			MOpcLink = new PostgreSQLQueueEventLink<EInstantVASMOEvents>(
+				EInstantVASMOEvents.class, new Class[] {InstantVASMOEvent.class}, MOSMSesQueueDataBureau.MO_TABLE_NAME, new MOSMSesQueueDataBureau(SHORT_CODE));
 			break;
 		case RAM:
 			System.out.println("RAM Queue...");
-			MOpcLink = new QueueEventLink<EHangmanSMSGameEvents>(EHangmanGameStates.class, MO_RAM_QUEUE_CAPACITY, MO_QUEUE_NUMBER_OF_WORKER_THREADS);
+			MOpcLink = new QueueEventLink<EInstantVASMOEvents>(
+				EInstantVASMOEvents.class, new Class[] {InstantVASMOEvent.class}, MO_RAM_QUEUE_CAPACITY, MO_QUEUE_NUMBER_OF_WORKER_THREADS);
 			break;
 		case DIRECT:
 			System.out.println("Direct...");
-			MOpcLink = new DirectEventLink<EHangmanGameStates>(EHangmanGameStates.class);
+			MOpcLink = new DirectEventLink<EInstantVASMOEvents>(
+				EInstantVASMOEvents.class, new Class[] {InstantVASMOEvent.class});
 			break;
 		default:
-			throw new RuntimeException("InstantVAS Queue DAL '"+MO_PROCESSING_STRATEGY+"' is not implemented");
+			throw new RuntimeException("InstantVAS MO Processing Strategy '"+MO_PROCESSING_STRATEGY+"' is not implemented");
 		}
+		System.out.print("\n### Configuring MT processing strategy: ");
+		switch (MO_PROCESSING_STRATEGY) {
+		case POSTGRESQL:
+			System.out.println("PostgreSQL Queue...");
+			QueuesPostgreSQLAdapter.configureDefaultValuesForNewInstances(log, POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD);
+			PostgreSQLQueueEventLink.configureDefaultValuesForNewInstances(log, MT_POSTGRESQL_QUEUE_POOLING_TIME, MT_QUEUE_NUMBER_OF_WORKER_THREADS);
+			MTpcLink = new PostgreSQLQueueEventLink<EInstantVASMTEvents>(
+				EInstantVASMTEvents.class, new Class[] {InstantVASMTEvent.class}, MTSMSesQueueDataBureau.MT_TABLE_NAME, new MTSMSesQueueDataBureau());
+			break;
+		case RAM:
+			System.out.println("RAM Queue...");
+			MTpcLink = new QueueEventLink<EInstantVASMTEvents>(
+				EInstantVASMTEvents.class, new Class[] {InstantVASMTEvent.class}, MT_RAM_QUEUE_CAPACITY, MT_QUEUE_NUMBER_OF_WORKER_THREADS);
+			break;
+		case DIRECT:
+			System.out.println("Direct...");
+			MTpcLink = new DirectEventLink<EInstantVASMTEvents>(
+				EInstantVASMTEvents.class, new Class[] {InstantVASMTEvent.class});
+			break;
+		default:
+			throw new RuntimeException("InstantVAS MT Processing Strategy '"+MT_PROCESSING_STRATEGY+"' is not implemented");
+		}
+		
+		// configure the SMSProcessor
+		System.out.print("\n### Configuring the SMS Processor...");
+		SMSProcessor.configureDefaultValuesForNewInstances(log, baseModuleDAL);
+		System.out.println(" OK");
 		
 		System.out.print("\n### Instantiating modules: ");
 		boolean first = true;
@@ -634,6 +666,9 @@ public class InstantVASApplicationConfiguration {
 			}
 			System.out.print(module.name().toLowerCase());
 			switch (module) {
+			case CELLTICK_BR_INTEGRATION:
+				configureCelltickBRIntegration();
+				break;
 			case BASE:
 				Object[] baseModuleInstances = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(log, baseModuleDAL,
 					EInstantVASCommandTriggers.get2DStringArrayFromEInstantVASCommandTriggersArray(BASEnstNewUser),
@@ -735,9 +770,9 @@ public class InstantVASApplicationConfiguration {
 	}
 	
 	/** This one might be used for piracy control if APP_NAME, SHORT_CODE, etc becomes hardcoded, read from an encypted file, read from InstantVAS.com or something like that */
-	public void configureCelltickBRIntegration() {
-		MOParser           = new SMSInCelltick(APP_NAME);
-		MTSender           = new SMSOutCelltick(log, APP_NAME, SHORT_CODE, CELLTICK_MT_SERVICE_URL, CELLTICK_MT_SERVICE_NUMBER_OF_RETRY_ATTEMPTS, CELLTICK_MT_SERVICE_DELAY_BETWEEN_ATTEMPTS);
+	private void configureCelltickBRIntegration() {
+		moParser           = new SMSInCelltick(APP_NAME);
+		mtSender           = new SMSOutCelltick(log, APP_NAME, SHORT_CODE, CELLTICK_MT_SERVICE_URL, MT_SERVICE_NUMBER_OF_RETRY_ATTEMPTS, MT_SERVICE_DELAY_BETWEEN_ATTEMPTS);
 		subscriptionEngine = new CelltickLiveScreenSubscriptionAPI(log, CELLTICK_SUBSCRIBE_SERVICE_URL, CELLTICK_UNSUBSCRIBE_SERVICE_URL);
 		subscriptionToken  = CELLTICK_SUBSCRIPTION_CHANNEL_NAME;
 	}
@@ -763,8 +798,8 @@ public class InstantVASApplicationConfiguration {
 		CELLTICK_UNSUBSCRIBE_SERVICE_URL             = "http://localhost:8082/celltick/wapAPI?action=unsubpkg&msisdn=%%MSISDN%%&pkgname=%%pkgname%%&charge=1";
 		CELLTICK_SUBSCRIPTION_CHANNEL_NAME           = "HangMan";
 		CELLTICK_MT_SERVICE_URL                      = "http://localhost:15001/cgi-bin/sendsms";
-		CELLTICK_MT_SERVICE_NUMBER_OF_RETRY_ATTEMPTS = 5;
-		CELLTICK_MT_SERVICE_DELAY_BETWEEN_ATTEMPTS   = 5000;
+		MT_SERVICE_NUMBER_OF_RETRY_ATTEMPTS = 5;
+		MT_SERVICE_DELAY_BETWEEN_ATTEMPTS   = 5000;
 
 		DATA_ACCESS_LAYER                           = EInstantVASDALs.POSTGRESQL;
 		POSTGRESQL_HOSTNAME                         = "venus";
@@ -796,9 +831,7 @@ public class InstantVASApplicationConfiguration {
 		MO_TEXT_FIELD_NAME = MOSMSesQueueDataBureau.MO_TEXT_FIELD_NAME;
 		
 		ENABLED_MODULES = new EInstantVASModules[] {
-			EInstantVASModules.CELLTICK_MO_RECEPTION,
-			EInstantVASModules.CELLTICK_MT_DELIVERY,
-			EInstantVASModules.CELLTICK_SUBSCRIPTION_LIFECYCLE,
+			EInstantVASModules.CELLTICK_BR_INTEGRATION,
 			EInstantVASModules.BASE,
 			EInstantVASModules.HELP,
 			EInstantVASModules.SUBSCRIPTION,
