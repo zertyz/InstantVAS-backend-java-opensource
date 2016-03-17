@@ -7,6 +7,7 @@ import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactorySubscription;
 import mutua.smsappmodule.i18n.SMSAppModulePhrasingsSubscription;
 import mutua.smsappmodule.smslogic.SMSAppModuleCommandsSubscription;
+import mutua.smsappmodule.smslogic.SMSAppModuleEventsSubscription;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesSubscription;
 import mutua.subscriptionengine.SubscriptionEngine;
 
@@ -36,20 +37,22 @@ public class SMSAppModuleConfigurationSubscription {
 	 *  @param subscriptionDAL    &
 	 *  @param subscriptionEngine & 
 	 *  @param subscriptionToken  see {@link SMSAppModuleCommandsSubscription#SMSAppModuleCommandsSubscription(SMSAppModulePhrasingsSubscription, SMSAppModuleDALFactory, SMSAppModuleDALFactorySubscription, SubscriptionEngine, String)}
-	 *  @returns {(SMSAppModuleNavigationStatesSubscription)navigationStates, (SMSAppModuleCommandsSubscription)commands, (SMSAppModulePhrasingsSubscription)phrasings} */
+	 *  @returns {(SMSAppModuleNavigationStatesSubscription)navigationStates, (SMSAppModuleCommandsSubscription)commands, (SMSAppModulePhrasingsSubscription)phrasings, (SMSAppModuleEventsSubscription)subscriptionEvents} */
 	public static Object[] getSubscriptionModuleInstances(String shortCode, String appName, String priceTag,
 	                                                      SMSAppModuleDALFactory             baseModuleDAL,
                                                           SMSAppModuleDALFactorySubscription subscriptionDAL,
                                                           SubscriptionEngine                 subscriptionEngine,
                                                           String                             subscriptionToken) {
-		SMSAppModulePhrasingsSubscription        phrasings        = new SMSAppModulePhrasingsSubscription(shortCode, appName, priceTag);
-		SMSAppModuleCommandsSubscription         commands         = new SMSAppModuleCommandsSubscription(phrasings, baseModuleDAL, subscriptionDAL,
-		                                                                                                 subscriptionEngine, subscriptionToken);
-		SMSAppModuleNavigationStatesSubscription navigationStates = new SMSAppModuleNavigationStatesSubscription();
+		SMSAppModuleEventsSubscription           subscriptionEvents = new SMSAppModuleEventsSubscription();
+		SMSAppModulePhrasingsSubscription        phrasings          = new SMSAppModulePhrasingsSubscription(shortCode, appName, priceTag);
+		SMSAppModuleCommandsSubscription         commands           = new SMSAppModuleCommandsSubscription(phrasings, baseModuleDAL, subscriptionDAL,
+		                                                                                                   subscriptionEngine, subscriptionToken,
+		                                                                                                   subscriptionEvents);
+		SMSAppModuleNavigationStatesSubscription navigationStates   = new SMSAppModuleNavigationStatesSubscription();
 		
 		System.err.println(SMSAppModuleConfigurationSubscription.class.getCanonicalName() + ": test configuration loaded.");
 		
-		return new Object[] {navigationStates, commands, phrasings};
+		return new Object[] {navigationStates, commands, phrasings, subscriptionEvents};
 	}
 	
 	/** Constructs the full version of this SMS Module, with all options set programmatically.<pre>
@@ -68,7 +71,7 @@ public class SMSAppModuleConfigurationSubscription {
 	 *  @param subscriptionEngine & 
 	 *  @param subscriptionToken  see {@link SMSAppModuleCommandsSubscription#SMSAppModuleCommandsSubscription(SMSAppModulePhrasingsSubscription, SMSAppModuleDALFactory, SMSAppModuleDALFactorySubscription, SubscriptionEngine, String)}
 	 *  @param nstAnsweringDoubleOptinTriggers see {@link SMSAppModuleNavigationStatesSubscription#SMSAppModuleNavigationStatesSubscription(SMSAppModuleCommandsSubscription, Object[][])}
-	 *  @returns {(SMSAppModuleNavigationStatesSubscription)navigationStates, (SMSAppModuleCommandsSubscription)commands, (SMSAppModulePhrasingsSubscription)phrasings} */
+	 *  @returns {(SMSAppModuleNavigationStatesSubscription)navigationStates, (SMSAppModuleCommandsSubscription)commands, (SMSAppModulePhrasingsSubscription)phrasings, (SMSAppModuleEventsSubscription)subscriptionEvents} */
 	public static Object[] getSubscriptionModuleInstances(Instrumentation<?, ?> log, String shortCode, String appName, String priceTag,
 		                                                  String phrDoubleOptinStart,
 		                                                  String phrDisagreeToSubscribe,
@@ -82,11 +85,12 @@ public class SMSAppModuleConfigurationSubscription {
                                                           String                             subscriptionToken,
                                                           Object[][] nstAnsweringDoubleOptinTriggers) {
 		
-		SMSAppModulePhrasingsSubscription        phrasings        = new SMSAppModulePhrasingsSubscription(shortCode, appName, priceTag,
+		SMSAppModuleEventsSubscription           subscriptionEvents = new SMSAppModuleEventsSubscription();
+		SMSAppModulePhrasingsSubscription        phrasings          = new SMSAppModulePhrasingsSubscription(shortCode, appName, priceTag,
 			phrDoubleOptinStart, phrDisagreeToSubscribe, phrSuccessfullySubscribed, phrCouldNotSubscribe, phrUserRequestedUnsubscription, phrLifecycleUnsubscription);
-		SMSAppModuleCommandsSubscription         commands         = new SMSAppModuleCommandsSubscription(phrasings, baseModuleDAL, subscriptionDAL,
-			subscriptionEngine, subscriptionToken);
-		SMSAppModuleNavigationStatesSubscription navigationStates = new SMSAppModuleNavigationStatesSubscription(nstAnsweringDoubleOptinTriggers);
+		SMSAppModuleCommandsSubscription         commands           = new SMSAppModuleCommandsSubscription(
+			phrasings, baseModuleDAL, subscriptionDAL, subscriptionEngine, subscriptionToken, subscriptionEvents);
+		SMSAppModuleNavigationStatesSubscription navigationStates   = new SMSAppModuleNavigationStatesSubscription(nstAnsweringDoubleOptinTriggers);
 		
 		// log
 		String logPrefix = "Subscription Module";
@@ -112,6 +116,6 @@ public class SMSAppModuleConfigurationSubscription {
 		};
 		log.reportDebug(logPrefix + ": Navigation States: " + Arrays.deepToString(logCommandTriggers));
 
-		return new Object[] {navigationStates, commands, phrasings};
+		return new Object[] {navigationStates, commands, phrasings, subscriptionEvents};
 	}
 }

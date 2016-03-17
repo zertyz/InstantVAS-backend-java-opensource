@@ -1,16 +1,21 @@
 package instantvas.nativewebserver;
 
+import instantvas.smsengine.InstantVASHTTPInstrumentationRequestProperty;
 import instantvas.smsengine.web.AddToMOQueue;
+import mutua.icc.instrumentation.Instrumentation;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.WeakHashMap;
 import java.util.concurrent.Executors;
 
 import com.sun.net.httpserver.*;
+
+import config.InstantVASApplicationConfiguration;
 
 /** <pre>
  * NativeHTTPServer.java
@@ -45,12 +50,24 @@ import com.sun.net.httpserver.*;
 
 public class NativeHTTPServer {
 	
+	public static Instrumentation<InstantVASHTTPInstrumentationRequestProperty, String> log;
+	public static InstantVASApplicationConfiguration ivac;
+	public static AddToMOQueue addToMOQueue;
+	
 	public static int NUMBER_OF_THREADS        = 20;
 	public static int PARAMETERS_HASH_CAPACITY = 20;	// should be > total number of unique parameter names among all handlers
 	public static int INPUT_BUFFER_SIZE   = 1024;
 	public static long READ_TIMEOUT       = 100;
 
-	public static void main(String[] args) throws IOException {
+	public static void instantiate() throws IllegalArgumentException, SecurityException, SQLException, IllegalAccessException, NoSuchFieldException {
+		InstantVASApplicationConfiguration ivac = new InstantVASApplicationConfiguration();
+		addToMOQueue = new AddToMOQueue(ivac);
+	}
+	
+	public static void main(String[] args) throws IOException, IllegalArgumentException, SecurityException, SQLException, IllegalAccessException, NoSuchFieldException {
+		InstantVASApplicationConfiguration.setHangmanDefaults();
+		instantiate();
+		ivac.log.reportDebug("InstantVAS Internal :80 server started. Requests may now commence.");
 		startServer(80, 9999, InstantVASSMSWebHandlers.values());
 		System.out.println("Started a :80 server. Please, request!");
 	}
@@ -117,11 +134,32 @@ public class NativeHTTPServer {
 	
 	public enum InstantVASSMSWebHandlers implements INativeHTTPServerHandler {
 				
-		addToMOQueue("/AddToMOQueue") {
+		ADD_TO_MO_QUEUE("/AddToMOQueue") {
+			
 			@Override
 			public void handle(HttpExchange he) throws IOException {
 				String queryString = he.getRequestURI().getRawQuery();
-				byte[] response = AddToMOQueue.process(retrieveGetParameters(queryString), queryString);
+				byte[] response = addToMOQueue.process(retrieveGetParameters(queryString), queryString);
+				he.sendResponseHeaders(200, response.length);
+				he.getResponseBody().write(response);
+		        he.close();
+			}
+		},
+		
+		RELOAD_CONFIGURATION("/ReloadConfiguration") {
+			
+			@Override
+			public void handle(HttpExchange he) throws IOException {
+				byte[] response;
+				try {
+					instantiate();
+					response = "RELOADED".intern().getBytes();
+				} catch (Throwable t) {
+					System.err.println("Error reloading configuration");
+					t.printStackTrace();
+					ivac.log.reportThrowable(t, "Error reloading configuration");
+					response = "FAILED".intern().getBytes();
+				}
 				he.sendResponseHeaders(200, response.length);
 				he.getResponseBody().write(response);
 		        he.close();

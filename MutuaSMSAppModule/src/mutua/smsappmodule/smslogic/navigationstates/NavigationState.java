@@ -67,23 +67,23 @@ public class NavigationState {
 	}
 	
 	/** @see #applyCommandTriggersData */
-	public void setCommandTriggers(Object[][] commandTriggersData, ICommandProcessor[] availableCommands) {
+	public void setCommandTriggers(Object[][] commandsAndTriggersData, ICommandProcessor[] availableCommands) {
 		int commandTriggersIndex = 0;
-		commandTriggers = new CommandTriggersDto[commandTriggersData.length];
-		for (Object[] commandTriggers : commandTriggersData) {
-			String commandName = (String)commandTriggers[0];
+		commandTriggers = new CommandTriggersDto[commandsAndTriggersData.length];
+		for (Object[] commandTriggersData : commandsAndTriggersData) {
+			String commandName = (String)commandTriggersData[0];
 			ICommandProcessor commandProcessor = getCommandProcessor(commandName, availableCommands);
 			ArrayList<String> regularExpressions = new ArrayList<String>();
 			long timeout = -1l;
 			for (int i=1; i<commandTriggersData.length; i++) {
-				if (commandTriggers[i] instanceof Long) {
-					timeout = (Long)commandTriggers[i];
-				} else if (commandTriggers[i] instanceof String[]) {
-					regularExpressions.addAll(Arrays.asList((String[])commandTriggersData[i]));
-				} else if (commandTriggers[i] instanceof String) {
-					regularExpressions.add((String)commandTriggers[i]);
+				if (commandTriggersData[i] instanceof Long) {
+					timeout = (Long)commandTriggersData[i];
+				} else if (commandTriggersData[i] instanceof String[]) {
+					regularExpressions.addAll(Arrays.asList((String[])commandsAndTriggersData[i]));
+				} else if (commandTriggersData[i] instanceof String) {
+					regularExpressions.add((String)commandTriggersData[i]);
 				} else {
-					throw new RuntimeException("Don't know how to create a command trigger from type '"+commandTriggersData[i].getClass().getName()+"'");
+					throw new RuntimeException("Don't know how to create a command trigger from type '"+commandsAndTriggersData[i].getClass().getName()+"'");
 				}
 			}
 			String[] regularExpressionsArray = regularExpressions.toArray(new String[regularExpressions.size()]);

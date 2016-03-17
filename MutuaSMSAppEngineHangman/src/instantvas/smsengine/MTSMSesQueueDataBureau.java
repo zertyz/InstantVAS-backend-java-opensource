@@ -2,7 +2,7 @@ package instantvas.smsengine;
 
 import adapters.IJDBCAdapterParameterDefinition;
 import adapters.exceptions.PreparedProcedureException;
-import instantvas.smsengine.producersandconsumers.EInstantVASMTEvents;
+import instantvas.smsengine.producersandconsumers.EInstantVASEvents;
 import mutua.events.IDatabaseQueueDataBureau;
 import mutua.imi.IndirectMethodInvocationInfo;
 import mutua.smsout.dto.OutgoingSMSDto;
@@ -20,7 +20,7 @@ import mutua.smsout.dto.OutgoingSMSDto.EBillingType;
  * @author luiz
  */
 
-public class MTSMSesQueueDataBureau extends IDatabaseQueueDataBureau<EInstantVASMTEvents> {
+public class MTSMSesQueueDataBureau extends IDatabaseQueueDataBureau<EInstantVASEvents> {
 	
 	public static final String MT_TABLE_NAME       = "MTSMSes";
 	public static final String MT_MO_ID_FIELD_NAME = "moId";
@@ -38,7 +38,7 @@ public class MTSMSesQueueDataBureau extends IDatabaseQueueDataBureau<EInstantVAS
 	}
 	
 	@Override
-	public Object[] serializeQueueEntry(IndirectMethodInvocationInfo<EInstantVASMTEvents> entry) throws PreparedProcedureException {
+	public Object[] serializeQueueEntry(IndirectMethodInvocationInfo<EInstantVASEvents> entry) throws PreparedProcedureException {
 		OutgoingSMSDto mt = (OutgoingSMSDto)entry.getParameters()[0];
 		return new Object[] {
 			EMTQueueQueryParameters.MO_ID, mt.getMoId(),
@@ -47,12 +47,12 @@ public class MTSMSesQueueDataBureau extends IDatabaseQueueDataBureau<EInstantVAS
 	}
 	
 	@Override
-	public IndirectMethodInvocationInfo<EInstantVASMTEvents> deserializeQueueEntry(int eventId, Object[] databaseRow) {
+	public IndirectMethodInvocationInfo<EInstantVASEvents> deserializeQueueEntry(int eventId, Object[] databaseRow) {
 		Integer moId   = (Integer)databaseRow[0];
 		String  phone  = (String)databaseRow[1];
 		String  text   = (String)databaseRow[2];
 		OutgoingSMSDto mt = new OutgoingSMSDto(moId, phone, text, EBillingType.FREE);
-		IndirectMethodInvocationInfo<EInstantVASMTEvents> entry = new IndirectMethodInvocationInfo<EInstantVASMTEvents>(EInstantVASMTEvents.INTERACTIVE_MT, mt);
+		IndirectMethodInvocationInfo<EInstantVASEvents> entry = new IndirectMethodInvocationInfo<EInstantVASEvents>(EInstantVASEvents.INTERACTIVE_MT, mt);
 		return entry;
 	}
 	

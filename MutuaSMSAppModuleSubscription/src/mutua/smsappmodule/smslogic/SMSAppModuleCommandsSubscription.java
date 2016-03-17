@@ -85,7 +85,7 @@ public class SMSAppModuleCommandsSubscription {
 	/** The identifier of the billing entity to which the subscribers of this service must be assigned to */
 	private final String                         subscriptionToken;
 	/** The events manager for this module */
-	private final SMSAppModuleEventsSubscription events;
+	private final SMSAppModuleEventsSubscription subscriptionEvents;
 
 	
 	/** Constructs an instance of this module's command processors.
@@ -98,14 +98,15 @@ public class SMSAppModuleCommandsSubscription {
 	                                        SMSAppModuleDALFactory             baseModulesDAL,
 	                                        SMSAppModuleDALFactorySubscription subscriptionDAL,
 	                                        SubscriptionEngine                 subscriptionEngine,
-	                                        String                             subscriptionToken) {
+	                                        String                             subscriptionToken,
+	                                        SMSAppModuleEventsSubscription     subscriptionEvents) {
 		this.subscriptionPhrases = subscriptionPhrases;
 		this.userDB              = baseModulesDAL.getUserDB();
 		this.sessionDB           = baseModulesDAL.getSessionDB();
 		this.subscriptionDB      = subscriptionDAL.getSubscriptionDB();
 		this.subscriptionEngine  = subscriptionEngine;
 		this.subscriptionToken   = subscriptionToken;
-		this.events              = new SMSAppModuleEventsSubscription();
+		this.subscriptionEvents  = subscriptionEvents;
 	}
 
 	// Command Definitions
@@ -131,7 +132,7 @@ public class SMSAppModuleCommandsSubscription {
 			    (subscriptionStatus == ESubscriptionOperationStatus.ALREADY_SUBSCRIBED)) {
 				SubscriptionDto subscriptionRecord = new SubscriptionDto(user, ESubscriptionChannel.SMS);
 				subscriptionDB.setSubscriptionRecord(subscriptionRecord);
-				events.dispatchSubscriptionNotification(subscriptionRecord);
+				subscriptionEvents.dispatchSubscriptionNotification(subscriptionRecord);
 				return getNewStateReplyCommandAnswer(session, nstExistingUser, subscriptionPhrases.getSuccessfullySubscribed());
 			} else {
 				return getSameStateReplyCommandAnswer(subscriptionPhrases.getCouldNotSubscribe());
@@ -150,7 +151,7 @@ public class SMSAppModuleCommandsSubscription {
 			    (unsubscriptionStatus == EUnsubscriptionOperationStatus.NOT_SUBSCRIBED)) {
 				SubscriptionDto unsubscriptionRecord = new SubscriptionDto(user, EUnsubscriptionChannel.SMS);
 				subscriptionDB.setSubscriptionRecord(unsubscriptionRecord);
-				events.dispatchUnsubscriptionNotification(unsubscriptionRecord);
+				subscriptionEvents.dispatchUnsubscriptionNotification(unsubscriptionRecord);
 				return getNewStateReplyCommandAnswer(session, nstNewUser, subscriptionPhrases.getUserRequestedUnsubscriptionNotification());
 			} else {
 				throw new RuntimeException("For some reason, the user could not be unsubscribed");
@@ -179,7 +180,7 @@ public class SMSAppModuleCommandsSubscription {
 		    (unsubscriptionStatus == EUnsubscriptionOperationStatus.NOT_SUBSCRIBED)) {
 			SubscriptionDto unsubscriptionRecord = new SubscriptionDto(user, EUnsubscriptionChannel.API);
 			subscriptionDB.setSubscriptionRecord(unsubscriptionRecord);
-			events.dispatchUnsubscriptionNotification(unsubscriptionRecord);
+			subscriptionEvents.dispatchUnsubscriptionNotification(unsubscriptionRecord);
 			// optimally set the navigation state for an unregistered user
 			sessionDB.assureProperty(user, SessionModel.NAVIGATION_STATE_PROPERTY.getPropertyName(), nstNewUser);
 			return true;
@@ -195,7 +196,7 @@ public class SMSAppModuleCommandsSubscription {
 		    (subscriptionStatus == ESubscriptionOperationStatus.ALREADY_SUBSCRIBED)) {
 			SubscriptionDto subscriptionRecord = new SubscriptionDto(user, ESubscriptionChannel.SMS);
 			subscriptionDB.setSubscriptionRecord(subscriptionRecord);
-			events.dispatchSubscriptionNotification(subscriptionRecord);
+			subscriptionEvents.dispatchSubscriptionNotification(subscriptionRecord);
 			sessionDB.assureProperty(user, SessionModel.NAVIGATION_STATE_PROPERTY.getPropertyName(), nstExistingUser);
 			return true;
 		}

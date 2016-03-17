@@ -11,6 +11,7 @@ import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsChat.CommandTrigge
 import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHangman.CommandNamesHangman.*;
 import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHangman.CommandTriggersHangman.*;
 
+import java.lang.annotation.Annotation;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
@@ -19,10 +20,8 @@ import java.util.Map;
 import instantvas.smsengine.InstantVASHTTPInstrumentationRequestProperty;
 import instantvas.smsengine.MOSMSesQueueDataBureau;
 import instantvas.smsengine.MTSMSesQueueDataBureau;
-import instantvas.smsengine.producersandconsumers.EInstantVASMOEvents;
-import instantvas.smsengine.producersandconsumers.EInstantVASMTEvents;
-import instantvas.smsengine.producersandconsumers.MOProducer.InstantVASMOEvent;
-import instantvas.smsengine.producersandconsumers.MTProducer.InstantVASMTEvent;
+import instantvas.smsengine.producersandconsumers.EInstantVASEvents;
+import instantvas.smsengine.producersandconsumers.InstantVASEvent;
 import mutua.events.DirectEventLink;
 import mutua.events.IEventLink;
 import mutua.events.PostgreSQLQueueEventLink;
@@ -112,7 +111,7 @@ public class InstantVASApplicationConfiguration {
 	// MO QUEUE (but also SubscribeUser & UnsubscribeUser queues)
 	/////////////////////////////////////////////////////////////
 	
-	public enum EProcessingStrategy {DIRECT, RAM, LOG_FILE, POSTGRESQL};
+	public enum EEventProcessingStrategy {DIRECT, RAM, LOG_FILE, POSTGRESQL};
 	public enum EInstantVASDALs     {RAM, POSTGRESQL}
 		
 	// HTTPClientAdapter
@@ -160,38 +159,59 @@ public class InstantVASApplicationConfiguration {
 	@ConfigurableElement("Set to true to have all database queries logged")
 	public static boolean POSTGRESQL_SHOULD_DEBUG_QUERIES;
 		
-	@ConfigurableElement("Specifies which queue driver should be used to buffer incoming SMSes (MOs) -- DIRECT means the messages will be processed directly, on the same request thread and without any buffer; RAM means the producers and consumers must be running on the same machine and on the same process; POSTGRESQL means a table will be used to keep those messages and serve as the queue at the same time")
-	public static EProcessingStrategy MO_PROCESSING_STRATEGY;
+	@ConfigurableElement("Specifies which event processing strategy should be used on incoming SMSes (MOs) -- DIRECT means the messages will be processed directly, on the same request thread and without any buffer; RAM means the producers and consumers must be running on the same machine and on the same process; POSTGRESQL means a table will be used to keep those messages and serve as the queue at the same time")
+	public static EEventProcessingStrategy MO_PROCESSING_STRATEGY;
 	@ConfigurableElement("The maximum number of entries when using 'RAM' for 'MO_PROCESSING_STRATEGY'")
 	public static int    MO_RAM_QUEUE_CAPACITY;
 	@ConfigurableElement("The directory were to store log files when using 'LOG_FILE' for 'MO_PROCESSING_STRATEGY'")
-	public static String MO_RAM_QUEUE_LOG_FILES_DIRECTORY;
+	public static String MO_FILE_QUEUE_LOG_DIRECTORY;
 	@ConfigurableElement("The maximum milliseconds the 'LOG_FILE' consumer manager should wait between queries for new queue entries to process. Set to 0 to rely on the internal notification mechanisms and only when queue producers and consumers are running on the same machine and on the same process.")
 	public static long   MO_FILE_QUEUE_POOLING_TIME;
 	@ConfigurableElement("Same as above, but applyed when using the 'POSTGRESQL' queue driver")
 	public static long   MO_POSTGRESQL_QUEUE_POOLING_TIME;
-	@ConfigurableElement("The number of consumer threads. Applyable to all queues (not applyable to the 'DIRECT' processing strategy). This number should not be greater than 'NUMBER_OF_CONCURRENT_CONNECTIONS'. The value here should be determined through experiments which aim to achieve the greater number of MOs processed per second")
+	@ConfigurableElement("The number of consumer threads. Applyable to all queues (not applyable to the 'DIRECT' event processing strategy). This number should not be greater than 'NUMBER_OF_CONCURRENT_CONNECTIONS'. The value here should be determined through experiments which aim to achieve the greater number of MOs processed per second")
 	public static int    MO_QUEUE_NUMBER_OF_WORKER_THREADS;
 
 	@ConfigurableElement("The same as described on 'MO_PROCESSING_STRATEGY', but for MTs (outgoing SMSes)")
-	public static EProcessingStrategy MT_PROCESSING_STRATEGY;
-	@ConfigurableElement("The maximum number pf entries when using 'RAM' for 'MT_PROCESSING_STRATEGY'")
+	public static EEventProcessingStrategy MT_PROCESSING_STRATEGY;
+	@ConfigurableElement("The maximum number of entries when using 'RAM' for 'MT_PROCESSING_STRATEGY'")
 	public static int    MT_RAM_QUEUE_CAPACITY;
 	@ConfigurableElement("The directory were to store log files when using 'LOG_FILE' for 'MT_PROCESSING_STRATEGY'")
-	public static String MT_RAM_QUEUE_LOG_FILES_DIRECTORY;
+	public static String MT_FILE_QUEUE_LOG_DIRECTORY;
 	@ConfigurableElement("The maximum milliseconds the 'LOG_FILE' consumer manager should wait between queries for new queue entries to process. Set to 0 to rely on the internal notification mechanisms and only when queue producers and consumers are running on the same machine and on the same process.")
 	public static long   MT_FILE_QUEUE_POOLING_TIME;
 	@ConfigurableElement("Same as above, but applyed when using the 'POSTGRESQL' queue driver")
 	public static long   MT_POSTGRESQL_QUEUE_POOLING_TIME;
-	@ConfigurableElement("The number of consumer threads. Applyable to all queues (not applyable to the 'DIRECT' processing strategy). This number may be greater than 'NUMBER_OF_CONCURRENT_CONNECTIONS' and should get bigger as the latency between the two involved servers increase, as the processing time on the MT server increase, as the number of MT retries increase and so on...")
+	@ConfigurableElement("The number of consumer threads. Applyable to all queues (not applyable to the 'DIRECT' event processing strategy). This number may be greater than 'NUMBER_OF_CONCURRENT_CONNECTIONS' and should get bigger as the latency between the two involved servers increase, as the processing time on the MT server increase, as the number of MT retries increase and so on...")
 	public static int    MT_QUEUE_NUMBER_OF_WORKER_THREADS;
 	
-	@ConfigurableElement("Never touch these values")
-	public static String MO_TABLE_NAME;
-	public static String MO_ID_FIELD_NAME;
-	public static String MO_TEXT_FIELD_NAME;
+	@ConfigurableElement("The same as described on 'MO_PROCESSING_STRATEGY', but for 'Subscription Renewal' events, generated by the subscription lifecycle engine")
+	public static EEventProcessingStrategy SUBSCRIPTION_RENEWAL_PROCESSING_STRATEGY;
+	@ConfigurableElement("The maximum number of entries when using 'RAM' for 'SUBSCRIPTION_RENEWAL_PROCESSING_STRATEGY'")
+	public static int    SR_RAM_QUEUE_CAPACITY;
+	@ConfigurableElement("The directory were to store log files when using 'LOG_FILE' for 'SUBSCRIPTION_RENEWAL_PROCESSING_STRATEGY'")
+	public static String SR_FILE_QUEUE_LOG_DIRECTORY;
+	@ConfigurableElement("The maximum milliseconds the 'LOG_FILE' consumer manager should wait between queries for new queue entries to process. Set to 0 to rely on the internal notification mechanisms and only when queue producers and consumers are running on the same machine and on the same process.")
+	public static long   SR_FILE_QUEUE_POOLING_TIME;
+	@ConfigurableElement("Same as above, but applyed when using the 'POSTGRESQL' queue driver")
+	public static long   SR_POSTGRESQL_QUEUE_POOLING_TIME;
+	@ConfigurableElement("The number of consumer threads. Applyable to all queues (not applyable to the 'DIRECT' event processing strategy). This number may be greater than 'NUMBER_OF_CONCURRENT_CONNECTIONS' and should get bigger as the latency between the two involved servers increase, as the processing time on the MT server increase, as the number of MT retries increase and so on...")
+	public static int    SR_QUEUE_NUMBER_OF_WORKER_THREADS;
+
+	@ConfigurableElement("The same as described on 'SUBSCRIPTION_RENEWAL_PROCESSING_STRATEGY', but for 'Subscription Cancellation' events")
+	public static EEventProcessingStrategy SUBSCRIPTION_CANCELLATION_PROCESSING_STRATEGY;
+	@ConfigurableElement("The maximum number of entries when using 'RAM' for 'SUBSCRIPTION_CANCELLATION_PROCESSING_STRATEGY'")
+	public static int    SC_RAM_QUEUE_CAPACITY;
+	@ConfigurableElement("The directory were to store log files when using 'LOG_FILE' for 'SUBSCRIPTION_CANCELLATION_PROCESSING_STRATEGY'")
+	public static String SC_FILE_QUEUE_LOG_DIRECTORY;
+	@ConfigurableElement("The maximum milliseconds the 'LOG_FILE' consumer manager should wait between queries for new queue entries to process. Set to 0 to rely on the internal notification mechanisms and only when queue producers and consumers are running on the same machine and on the same process.")
+	public static long   SC_FILE_QUEUE_POOLING_TIME;
+	@ConfigurableElement("Same as above, but applyed when using the 'POSTGRESQL' queue driver")
+	public static long   SC_POSTGRESQL_QUEUE_POOLING_TIME;
+	@ConfigurableElement("The number of consumer threads. Applyable to all queues (not applyable to the 'DIRECT' event processing strategy). This number may be greater than 'NUMBER_OF_CONCURRENT_CONNECTIONS' and should get bigger as the latency between the two involved servers increase, as the processing time on the MT server increase, as the number of MT retries increase and so on...")
+	public static int    SC_QUEUE_NUMBER_OF_WORKER_THREADS;
 	
-	@ConfigurableElement("Not a good idea to mess with these as well")
+	@ConfigurableElement("Not a good idea to mess with these values")
 	public static EInstantVASModules[] ENABLED_MODULES;
 
 	
@@ -502,10 +522,10 @@ public class InstantVASApplicationConfiguration {
 	public SMSOutSender                              mtSender;
 	
 	// event links
-	public IEventLink<EInstantVASMOEvents>  MOpcLink;	// "MO received" producer/consumer event link
-	public IEventLink<EInstantVASMTEvents>  MTpcLink;	// "MT received" ...
-//	public IEventLink<EInstantVASSREvents>  SRpcLink;	// "Subscription Renewal" producer/consumer event link 
-//	public IEventLink<EInstantVASSCEvents>  SCpcLink;	// "Subscription Cancellation" producer/consumer event link 
+	public IEventLink<EInstantVASEvents>  MOpcLink;	// "MO received"      producer/consumer event link
+	public IEventLink<EInstantVASEvents>  MTpcLink;	// "MT ready to send" ...
+	public IEventLink<EInstantVASEvents>  SRpcLink;	// "Subscription Renewal" producer/consumer event link 
+	public IEventLink<EInstantVASEvents>  SCpcLink;	// "Subscription Cancellation" producer/consumer event link 
 	
 	// DALs
 	public SMSAppModuleDALFactory             baseModuleDAL    = null;
@@ -537,11 +557,10 @@ public class InstantVASApplicationConfiguration {
 	public final ICommandProcessor[][]  modulesCommandProcessors;
 
 	
-	public InstantVASApplicationConfiguration(Instrumentation<InstantVASHTTPInstrumentationRequestProperty, String> log,
-	                             String subscriptionToken) throws SQLException, IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
+	public InstantVASApplicationConfiguration() throws SQLException, IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
 		
-		this.log                = log;
-		this.subscriptionToken  = subscriptionToken;
+		log = new Instrumentation<InstantVASHTTPInstrumentationRequestProperty, String>(
+			APP_NAME, new InstantVASHTTPInstrumentationRequestProperty(), LOG_STRATEGY, LOG_HANGMAN_FILE_PATH);
 		
 		List<EInstantVASModules> enabledModulesList = Arrays.asList(ENABLED_MODULES);
 		
@@ -563,6 +582,8 @@ public class InstantVASApplicationConfiguration {
 				}
 				System.out.print(module.name().toLowerCase());
 				switch (module) {
+				case CELLTICK_BR_INTEGRATION:
+					break;
 				case BASE:
 					baseModuleDAL = SMSAppModuleDALFactory.POSTGRESQL;
 					SMSAppModulePostgreSQLAdapter.configureDefaultValuesForNewInstances(log, POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD);
@@ -579,7 +600,7 @@ public class InstantVASApplicationConfiguration {
 					break;
 				case CHAT:
 					chatModuleDAL = SMSAppModuleDALFactoryChat.POSTGRESQL;
-					SMSAppModulePostgreSQLAdapterChat.configureDefaultValuesForNewInstances(log, POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD, MO_TABLE_NAME, MO_ID_FIELD_NAME, MO_TEXT_FIELD_NAME);
+					SMSAppModulePostgreSQLAdapterChat.configureDefaultValuesForNewInstances(log, POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD, MOSMSesQueueDataBureau.MO_TABLE_NAME, MOSMSesQueueDataBureau.MO_ID_FIELD_NAME, MOSMSesQueueDataBureau.MO_TEXT_FIELD_NAME);
 					break;
 				case HANGMAN:
 					hangmanModuleDAL = SMSAppModuleDALFactoryHangman.POSTGRESQL;
@@ -602,50 +623,95 @@ public class InstantVASApplicationConfiguration {
 			throw new RuntimeException("InstantVAS Modules DAL '"+DATA_ACCESS_LAYER+"' is not implemented");
 		}
 		
-		// configure queues
-		System.out.print("\n### Configuring MO processing strategy: ");
+		// configure event processing strategies
+		Class<? extends Annotation>[] eventProcessingAnnotationClasses = (Class<? extends Annotation>[]) new Class<?>[] {InstantVASEvent.class};
+		System.out.print("\n### Configuring 'MO arrived' event processing strategy: ");
 		switch (MO_PROCESSING_STRATEGY) {
 		case POSTGRESQL:
 			System.out.println("PostgreSQL Queue...");
 			QueuesPostgreSQLAdapter.configureDefaultValuesForNewInstances(log, POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD);
 			PostgreSQLQueueEventLink.configureDefaultValuesForNewInstances(log, MO_POSTGRESQL_QUEUE_POOLING_TIME, MO_QUEUE_NUMBER_OF_WORKER_THREADS);
-			MOpcLink = new PostgreSQLQueueEventLink<EInstantVASMOEvents>(
-				EInstantVASMOEvents.class, new Class[] {InstantVASMOEvent.class}, MOSMSesQueueDataBureau.MO_TABLE_NAME, new MOSMSesQueueDataBureau(SHORT_CODE));
+			MOpcLink = new PostgreSQLQueueEventLink<EInstantVASEvents>(
+				EInstantVASEvents.class, eventProcessingAnnotationClasses, MOSMSesQueueDataBureau.MO_TABLE_NAME, new MOSMSesQueueDataBureau(SHORT_CODE));
 			break;
 		case RAM:
 			System.out.println("RAM Queue...");
-			MOpcLink = new QueueEventLink<EInstantVASMOEvents>(
-				EInstantVASMOEvents.class, new Class[] {InstantVASMOEvent.class}, MO_RAM_QUEUE_CAPACITY, MO_QUEUE_NUMBER_OF_WORKER_THREADS);
+			MOpcLink = new QueueEventLink<EInstantVASEvents>(
+				EInstantVASEvents.class, eventProcessingAnnotationClasses, MO_RAM_QUEUE_CAPACITY, MO_QUEUE_NUMBER_OF_WORKER_THREADS);
 			break;
 		case DIRECT:
 			System.out.println("Direct...");
-			MOpcLink = new DirectEventLink<EInstantVASMOEvents>(
-				EInstantVASMOEvents.class, new Class[] {InstantVASMOEvent.class});
+			MOpcLink = new DirectEventLink<EInstantVASEvents>(
+				EInstantVASEvents.class, eventProcessingAnnotationClasses);
 			break;
 		default:
-			throw new RuntimeException("InstantVAS MO Processing Strategy '"+MO_PROCESSING_STRATEGY+"' is not implemented");
+			throw new RuntimeException("InstantVAS 'MO arrived' Event Processing Strategy '"+MO_PROCESSING_STRATEGY+"' is not implemented");
 		}
-		System.out.print("\n### Configuring MT processing strategy: ");
+		System.out.print("\n### Configuring 'MT ready for delivert' event processing strategy: ");
 		switch (MO_PROCESSING_STRATEGY) {
 		case POSTGRESQL:
 			System.out.println("PostgreSQL Queue...");
 			QueuesPostgreSQLAdapter.configureDefaultValuesForNewInstances(log, POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD);
 			PostgreSQLQueueEventLink.configureDefaultValuesForNewInstances(log, MT_POSTGRESQL_QUEUE_POOLING_TIME, MT_QUEUE_NUMBER_OF_WORKER_THREADS);
-			MTpcLink = new PostgreSQLQueueEventLink<EInstantVASMTEvents>(
-				EInstantVASMTEvents.class, new Class[] {InstantVASMTEvent.class}, MTSMSesQueueDataBureau.MT_TABLE_NAME, new MTSMSesQueueDataBureau());
+			MTpcLink = new PostgreSQLQueueEventLink<EInstantVASEvents>(
+				EInstantVASEvents.class, eventProcessingAnnotationClasses, MTSMSesQueueDataBureau.MT_TABLE_NAME, new MTSMSesQueueDataBureau());
 			break;
 		case RAM:
 			System.out.println("RAM Queue...");
-			MTpcLink = new QueueEventLink<EInstantVASMTEvents>(
-				EInstantVASMTEvents.class, new Class[] {InstantVASMTEvent.class}, MT_RAM_QUEUE_CAPACITY, MT_QUEUE_NUMBER_OF_WORKER_THREADS);
+			MTpcLink = new QueueEventLink<EInstantVASEvents>(
+				EInstantVASEvents.class, eventProcessingAnnotationClasses, MT_RAM_QUEUE_CAPACITY, MT_QUEUE_NUMBER_OF_WORKER_THREADS);
 			break;
 		case DIRECT:
 			System.out.println("Direct...");
-			MTpcLink = new DirectEventLink<EInstantVASMTEvents>(
-				EInstantVASMTEvents.class, new Class[] {InstantVASMTEvent.class});
+			MTpcLink = new DirectEventLink<EInstantVASEvents>(
+				EInstantVASEvents.class, eventProcessingAnnotationClasses);
 			break;
 		default:
-			throw new RuntimeException("InstantVAS MT Processing Strategy '"+MT_PROCESSING_STRATEGY+"' is not implemented");
+			throw new RuntimeException("InstantVAS 'MT ready for delivery' Event Processing Strategy '"+MT_PROCESSING_STRATEGY+"' is not implemented");
+		}
+		System.out.println("\n### Configuring 'Subscription Renewal' event processing strategy:");
+		switch (SUBSCRIPTION_RENEWAL_PROCESSING_STRATEGY) {
+		case POSTGRESQL:
+//			System.out.println("PostgreSQL Queue...");
+//			QueuesPostgreSQLAdapter.configureDefaultValuesForNewInstances(log, POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD);
+//			PostgreSQLQueueEventLink.configureDefaultValuesForNewInstances(log, MT_POSTGRESQL_QUEUE_POOLING_TIME, MT_QUEUE_NUMBER_OF_WORKER_THREADS);
+//			SRpcLink = new PostgreSQLQueueEventLink<EInstantVASEvents>(
+//				EInstantVASEvents.class, eventProcessingAnnotationClasses, MTSMSesQueueDataBureau.MT_TABLE_NAME, new MTSMSesQueueDataBureau());
+//			break;
+		default:
+			throw new RuntimeException("InstantVAS 'Subscription Renewal' Event Processing Strategy '"+SUBSCRIPTION_RENEWAL_PROCESSING_STRATEGY+"' is not implemented");
+		case RAM:
+			System.out.println("RAM Queue...");
+			SRpcLink = new QueueEventLink<EInstantVASEvents>(
+				EInstantVASEvents.class, eventProcessingAnnotationClasses, SR_RAM_QUEUE_CAPACITY, SR_QUEUE_NUMBER_OF_WORKER_THREADS);
+			break;
+		case DIRECT:
+			System.out.println("Direct...");
+			SRpcLink = new DirectEventLink<EInstantVASEvents>(
+				EInstantVASEvents.class, eventProcessingAnnotationClasses);
+			break;
+		}
+		System.out.println("\n### Configuring 'Subscription Cancellation' event processing strategy:");
+		switch (SUBSCRIPTION_CANCELLATION_PROCESSING_STRATEGY) {
+		case POSTGRESQL:
+//			System.out.println("PostgreSQL Queue...");
+//			QueuesPostgreSQLAdapter.configureDefaultValuesForNewInstances(log, POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD);
+//			PostgreSQLQueueEventLink.configureDefaultValuesForNewInstances(log, MT_POSTGRESQL_QUEUE_POOLING_TIME, MT_QUEUE_NUMBER_OF_WORKER_THREADS);
+//			MTpcLink = new PostgreSQLQueueEventLink<EInstantVASEvents>(
+//				EInstantVASEvents.class, eventProcessingAnnotationClasses, MTSMSesQueueDataBureau.MT_TABLE_NAME, new MTSMSesQueueDataBureau());
+//			break;
+		default:
+			throw new RuntimeException("InstantVAS 'Subscription Cancellation' Event Processing Strategy '"+SUBSCRIPTION_CANCELLATION_PROCESSING_STRATEGY+"' is not implemented");
+		case RAM:
+			System.out.println("RAM Queue...");
+			SCpcLink = new QueueEventLink<EInstantVASEvents>(
+				EInstantVASEvents.class, eventProcessingAnnotationClasses, SC_RAM_QUEUE_CAPACITY, SC_QUEUE_NUMBER_OF_WORKER_THREADS);
+			break;
+		case DIRECT:
+			System.out.println("Direct...");
+			SCpcLink = new DirectEventLink<EInstantVASEvents>(
+				EInstantVASEvents.class, eventProcessingAnnotationClasses);
+			break;
 		}
 		
 		// configure the SMSProcessor
@@ -812,23 +878,33 @@ public class InstantVASApplicationConfiguration {
 		POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS = true;
 		POSTGRESQL_SHOULD_DEBUG_QUERIES             = true;
 		
-		MO_PROCESSING_STRATEGY            = EProcessingStrategy.POSTGRESQL;
+		MO_PROCESSING_STRATEGY            = EEventProcessingStrategy.POSTGRESQL;
 		MO_RAM_QUEUE_CAPACITY             = 1000;
-		MO_RAM_QUEUE_LOG_FILES_DIRECTORY  = "";
+		MO_FILE_QUEUE_LOG_DIRECTORY       = "";
 		MO_FILE_QUEUE_POOLING_TIME        = 0;
 		MO_POSTGRESQL_QUEUE_POOLING_TIME  = 0;
 		MO_QUEUE_NUMBER_OF_WORKER_THREADS = 10;
 		
-		MT_PROCESSING_STRATEGY            = EProcessingStrategy.POSTGRESQL;
+		MT_PROCESSING_STRATEGY            = EEventProcessingStrategy.POSTGRESQL;
 		MT_RAM_QUEUE_CAPACITY             = 1000;
-		MT_RAM_QUEUE_LOG_FILES_DIRECTORY  = "";
+		MT_FILE_QUEUE_LOG_DIRECTORY       = "";
 		MT_FILE_QUEUE_POOLING_TIME        = 0;
 		MT_POSTGRESQL_QUEUE_POOLING_TIME  = 0;
-		MT_QUEUE_NUMBER_OF_WORKER_THREADS = 2;
+		MT_QUEUE_NUMBER_OF_WORKER_THREADS = 3;
 		
-		MO_TABLE_NAME      = MOSMSesQueueDataBureau.MO_TABLE_NAME;
-		MO_ID_FIELD_NAME   = MOSMSesQueueDataBureau.MO_ID_FIELD_NAME;
-		MO_TEXT_FIELD_NAME = MOSMSesQueueDataBureau.MO_TEXT_FIELD_NAME;
+		SUBSCRIPTION_RENEWAL_PROCESSING_STRATEGY = EEventProcessingStrategy.RAM;
+		SR_RAM_QUEUE_CAPACITY                    = 1000;
+		SR_FILE_QUEUE_LOG_DIRECTORY              = "";
+		SR_FILE_QUEUE_POOLING_TIME               = 0;
+		SR_POSTGRESQL_QUEUE_POOLING_TIME         = 0;
+		SR_QUEUE_NUMBER_OF_WORKER_THREADS        = 2;
+		
+		SUBSCRIPTION_CANCELLATION_PROCESSING_STRATEGY = EEventProcessingStrategy.RAM;
+		SC_RAM_QUEUE_CAPACITY                         = 1000;
+		SC_FILE_QUEUE_LOG_DIRECTORY                   = "";
+		SC_FILE_QUEUE_POOLING_TIME                    = 0;
+		SC_POSTGRESQL_QUEUE_POOLING_TIME              = 0;
+		SC_QUEUE_NUMBER_OF_WORKER_THREADS             = 2;
 		
 		ENABLED_MODULES = new EInstantVASModules[] {
 			EInstantVASModules.CELLTICK_BR_INTEGRATION,
@@ -851,7 +927,7 @@ public class InstantVASApplicationConfiguration {
 		                               "You'll get 1 lucky number each word you guess. Whenever you invite a friend or user to play, you win another lucky number " +
 		                               "Every week, 1 lucky number is selected to win the prize. Send an option to 9714: (J)Play online; (C)Invite a friend or user; (R)anking; (A)Help";
 		HELPphrComposite             = new String[] {""};
-		HELPphrStatefulHelpMessages  = null;
+		HELPphrStatefulHelpMessages  = new String[0][0];
 		
 		// command patterns
 		HELPtrgGlobalStartCompositeHelpDialog      = getConcatenationOf(cmdStartCompositeHelpDialog,      trgGlobalStartCompositeHelpDialog);

@@ -6,7 +6,7 @@ import mutua.events.EventClient;
 import mutua.imi.IndirectMethodNotFoundException;
 import mutua.smsappmodule.dto.SubscriptionDto;
 import mutua.smsappmodule.smslogic.SMSAppModuleEventsSubscription.ESMSAppModuleEventsSubscription;
-import mutua.smsappmodule.smslogic.SMSAppModuleEventsSubscription.SMSAppModuleEventSubscription;
+import mutua.smsappmodule.smslogic.SMSAppModuleEventsSubscription.SubscriptionEvent;
 
 /** <pre>
  * SMSAppModuleListenersHangman.java
@@ -39,7 +39,7 @@ public class SMSAppModuleListenersHangman {
 	/** This event listener is the responsible for making all users have a default nickname */
 	private EventClient<ESMSAppModuleEventsSubscription> subscriptionEventListener = new EventClient<ESMSAppModuleEventsSubscription>() {
 		
-		@SMSAppModuleEventSubscription(ESMSAppModuleEventsSubscription.USER_JUST_SUBSCRIBED_NOTIFICATION)
+		@SubscriptionEvent(ESMSAppModuleEventsSubscription.USER_JUST_SUBSCRIBED_NOTIFICATION)
 		public void onSubscription(SubscriptionDto subscriptionRecord) throws SQLException {
 			hangmanCommands.assureUserHasANickname(subscriptionRecord.getUser());
 		}

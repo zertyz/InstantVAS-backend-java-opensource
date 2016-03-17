@@ -6,7 +6,7 @@ import mutua.smsin.dto.IncomingSMSDto;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 import adapters.IJDBCAdapterParameterDefinition;
 import adapters.exceptions.PreparedProcedureException;
-import instantvas.smsengine.producersandconsumers.EInstantVASMOEvents;
+import instantvas.smsengine.producersandconsumers.EInstantVASEvents;
 
 /** <pre>
  * MOSMSesQueueDataBureau.java
@@ -20,7 +20,7 @@ import instantvas.smsengine.producersandconsumers.EInstantVASMOEvents;
  * @author luiz
  */
 
-public class MOSMSesQueueDataBureau extends IDatabaseQueueDataBureau<EInstantVASMOEvents> {
+public class MOSMSesQueueDataBureau extends IDatabaseQueueDataBureau<EInstantVASEvents> {
 	
 	public static final String MO_TABLE_NAME      = "MOSMSes";
 	public static final String MO_ID_FIELD_NAME   = "eventId";
@@ -47,7 +47,7 @@ public class MOSMSesQueueDataBureau extends IDatabaseQueueDataBureau<EInstantVAS
 
 
 	@Override
-	public Object[] serializeQueueEntry(IndirectMethodInvocationInfo<EInstantVASMOEvents> entry) throws PreparedProcedureException {
+	public Object[] serializeQueueEntry(IndirectMethodInvocationInfo<EInstantVASEvents> entry) throws PreparedProcedureException {
 		IncomingSMSDto mo = (IncomingSMSDto)entry.getParameters()[0];
 		return new Object[] {
 			EMOQueueQueryParameters.PHONE, mo.getPhone(),
@@ -55,11 +55,11 @@ public class MOSMSesQueueDataBureau extends IDatabaseQueueDataBureau<EInstantVAS
 	}
 	
 	@Override
-	public IndirectMethodInvocationInfo<EInstantVASMOEvents> deserializeQueueEntry(int eventId, Object[] databaseRow) {
+	public IndirectMethodInvocationInfo<EInstantVASEvents> deserializeQueueEntry(int eventId, Object[] databaseRow) {
 		String phone   = (String)databaseRow[0];
 		String text    = (String)databaseRow[1];
 		IncomingSMSDto mo = new IncomingSMSDto(eventId, phone, text, defaultCarrier, shortCode);
-		IndirectMethodInvocationInfo<EInstantVASMOEvents> entry = new IndirectMethodInvocationInfo<EInstantVASMOEvents>(EInstantVASMOEvents.MO_ARRIVED, mo);
+		IndirectMethodInvocationInfo<EInstantVASEvents> entry = new IndirectMethodInvocationInfo<EInstantVASEvents>(EInstantVASEvents.MO_ARRIVED, mo);
 		return entry;
 	}
 	

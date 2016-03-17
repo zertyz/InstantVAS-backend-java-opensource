@@ -1,7 +1,6 @@
 package instantvas.smsengine.producersandconsumers;
 
 import config.InstantVASApplicationConfiguration;
-import instantvas.smsengine.producersandconsumers.MTProducer.InstantVASMTEvent;
 import mutua.events.EventClient;
 import mutua.events.IEventLink;
 import mutua.icc.instrumentation.Instrumentation;
@@ -19,7 +18,7 @@ import mutua.smsout.senders.SMSOutSender;
  * @author luiz
 */
 
-public class MTConsumer implements EventClient<EInstantVASMTEvents> {
+public class MTConsumer implements EventClient<EInstantVASEvents> {
 	
 	private Instrumentation<?, ?> log;
 	private SMSOutSender mtSender;
@@ -29,7 +28,7 @@ public class MTConsumer implements EventClient<EInstantVASMTEvents> {
 		this.mtSender = ivac.mtSender;
 	}
 	
-	@InstantVASMTEvent(EInstantVASMTEvents.INTERACTIVE_MT)
+	@InstantVASEvent(EInstantVASEvents.INTERACTIVE_MT)
 	public void sendMT(OutgoingSMSDto mt) {
 		log.reportDebug("Sending Interactive MT -- " + mt.toString());
 		try {

@@ -1,6 +1,5 @@
 package mutua.smsappengine.logic;
 
-import static config.InstantVASApplicationConfiguration.*;
 import static org.junit.Assert.*;
 
 import java.sql.SQLException;
@@ -9,6 +8,7 @@ import mutua.events.postgresql.QueuesPostgreSQLAdapter;
 import mutua.icc.instrumentation.DefaultInstrumentationProperties;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
+import mutua.imi.IndirectMethodInvocationInfo;
 import mutua.smsappmodule.SMSAppModuleTestCommons;
 import mutua.smsappmodule.dal.IChatDB;
 import mutua.smsappmodule.dal.IMatchDB;
@@ -17,24 +17,16 @@ import mutua.smsappmodule.dal.IProfileDB;
 import mutua.smsappmodule.dal.ISessionDB;
 import mutua.smsappmodule.dal.ISubscriptionDB;
 import mutua.smsappmodule.dal.IUserDB;
-import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
-import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterChat;
 import mutua.smsappmodule.hangmangame.HangmanGame;
-import mutua.smsappmodule.i18n.SMSAppModulePhrasingsChat;
-import mutua.smsappmodule.i18n.SMSAppModulePhrasingsHangman;
-import mutua.smsappmodule.i18n.SMSAppModulePhrasingsHelp;
-import mutua.smsappmodule.i18n.SMSAppModulePhrasingsProfile;
-import mutua.smsappmodule.i18n.SMSAppModulePhrasingsSubscription;
-import mutua.smsappmodule.smslogic.SMSAppModuleCommandsSubscription;
+import mutua.smsin.dto.IncomingSMSDto;
+import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 import mutua.subscriptionengine.TestableSubscriptionAPI;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import config.InstantVASApplicationConfiguration;
-import instantvas.tests.InstantVASSMSAppModuleTestsConfiguration;
-import adapters.dto.PreparedProcedureInvocationDto;
+import instantvas.smsengine.producersandconsumers.EInstantVASEvents;
 
 /** <pre>
  * HangmanAppEngineBehavioralTests.java
@@ -58,56 +50,43 @@ public class HangmanAppEngineBehavioralTests {
 	private static QueuesPostgreSQLAdapter qdb;
 	private static SMSAppModuleTestCommons tc;
 	
-	private IUserDB         userDB         = DEFAULT_MODULE_DAL.getUserDB();
-	private ISessionDB      sessionDB      = DEFAULT_MODULE_DAL.getSessionDB();
-	private ISubscriptionDB subscriptionDB = SUBSCRIPTION_MODULE_DAL.getSubscriptionDB();
-	private IProfileDB      profileDB      = PROFILE_MODULE_DAL.getProfileDB();
-	private IChatDB         chatDB         = CHAT_MODULE_DAL.getChatDB();
-	private IMatchDB        matchDB        = HANGMAN_MODULE_DAL.getMatchDB();
-	private INextBotWordsDB nextBotWordsDB = HANGMAN_MODULE_DAL.getNextBotWordsDB();
+	private InstantVASApplicationConfiguration ivac;
+	
+	// db
+	private IUserDB         userDB;
+	private ISessionDB      sessionDB;
+	private ISubscriptionDB subscriptionDB;
+	private IProfileDB      profileDB;
+	private IChatDB         chatDB;
+	private IMatchDB        matchDB;
+	private INextBotWordsDB nextBotWordsDB;
 	
 	private static TestableSubscriptionAPI subscriptionEngine  = new TestableSubscriptionAPI(log);
 	private static String                  subscriptionChannel = "behavioralTests";
+	
+	
+	public HangmanAppEngineBehavioralTests() throws IllegalArgumentException, SecurityException, SQLException, IllegalAccessException, NoSuchFieldException {
+		
+		InstantVASApplicationConfiguration.setHangmanDefaults();
+		
+		ivac = new InstantVASApplicationConfiguration();
+		
+		userDB         = ivac.baseModuleDAL.getUserDB();
+		sessionDB      = ivac.baseModuleDAL.getSessionDB();
+		subscriptionDB = ivac.subscriptionDAL.getSubscriptionDB();
+		profileDB      = ivac.profileModuleDAL.getProfileDB();
+		chatDB         = ivac.chatModuleDAL.getChatDB();
+		matchDB        = ivac.hangmanModuleDAL.getMatchDB();
+		nextBotWordsDB = ivac.hangmanModuleDAL.getNextBotWordsDB();
+	}
 
 
-	private static void checkResponse(String phone, String inputText, String... expectedResponsesText) throws SQLException {
-		PreparedProcedureInvocationDto procedure = new PreparedProcedureInvocationDto("InsertNewQueueElement");
-		procedure.addParameter("PHONE", phone);
-		procedure.addParameter("TEXT",  inputText);
-		int moId = (Integer)qdb.invokeScalarProcedure(procedure);
+	private void checkResponse(String phone, String inputText, String... expectedResponsesText) throws SQLException {
+		IncomingSMSDto mo = new IncomingSMSDto(-1, phone, inputText, ESMSInParserCarrier.TEST_CARRIER, "1234");
+		int moId = ivac.MOpcLink.reportConsumableEvent(new IndirectMethodInvocationInfo<EInstantVASEvents>(EInstantVASEvents.MO_ARRIVED, mo));
 		tc.checkResponse(moId, phone, inputText, expectedResponsesText);
 	}
-	
-	@BeforeClass
-	public static void setDefaultHangmanConfigurationParameters() throws SQLException {
-		InstantVASSMSAppModuleTestsConfiguration.BASE_MODULE_DAL = SMSAppModuleDALFactory.POSTGRESQL;
-		InstantVASSMSAppModuleTestsConfiguration.applyConfiguration();
-		InstantVASApplicationConfiguration.setDefaults(log, subscriptionEngine, subscriptionChannel);
-		tc = new SMSAppModuleTestCommons(log, BASE_MODULE_DAL, InstantVASApplicationConfiguration.navigationStates);
 		
-		// chat database configuration
-		//////////////////////////////
-		SMSAppModulePostgreSQLAdapterChat.configureChatDatabaseModule(log,
-			InstantVASSMSAppModuleTestsConfiguration.POSTGRESQL_CONNECTION_HOSTNAME,
-			InstantVASSMSAppModuleTestsConfiguration.POSTGRESQL_CONNECTION_PORT,
-			InstantVASSMSAppModuleTestsConfiguration.POSTGRESQL_CONNECTION_DATABASE_NAME,
-			InstantVASSMSAppModuleTestsConfiguration.POSTGRESQL_CONNECTION_USER,
-			InstantVASSMSAppModuleTestsConfiguration.POSTGRESQL_CONNECTION_PASSWORD,	
-			"ChatTestMOQueue", "eventId", "text");
-		// MutuaEventsAdditionalEventLinks configuration
-		QueuesPostgreSQLAdapter.configureDefaultValuesForNewInstances(log,
-			InstantVASSMSAppModuleTestsConfiguration.POSTGRESQL_CONNECTION_HOSTNAME,
-			InstantVASSMSAppModuleTestsConfiguration.POSTGRESQL_CONNECTION_PORT,
-			InstantVASSMSAppModuleTestsConfiguration.POSTGRESQL_CONNECTION_DATABASE_NAME,
-			InstantVASSMSAppModuleTestsConfiguration.POSTGRESQL_CONNECTION_USER,
-			InstantVASSMSAppModuleTestsConfiguration.POSTGRESQL_CONNECTION_PASSWORD);
-		qdb = QueuesPostgreSQLAdapter.getQueuesDBAdapter(null, "ChatTestMOQueue",
-		                                                       "phone  TEXT NOT NULL, text   TEXT NOT NULL, ",
-		                                                       "phone, text",
-		                                                       "${PHONE}, ${TEXT}");
-
-	}
-	
 	@Before
 	public void resetStates() throws SQLException {
 		userDB.reset();
@@ -127,8 +106,8 @@ public class HangmanAppEngineBehavioralTests {
     
     /** for NEW_USERs, register a new player's 'phone' and give it the provided 'nickname' */
     public void registerUser(String phone, String nickname) throws SQLException {
-    	checkResponse(phone, "hangman",          SMSAppModulePhrasingsSubscription.getSuccessfullySubscribed());
-		checkResponse(phone, "nick " + nickname, SMSAppModulePhrasingsProfile.getNicknameRegistrationNotification(nickname));
+    	checkResponse(phone, "hangman",          ivac.subscriptionPhrasings.getSuccessfullySubscribed());
+		checkResponse(phone, "nick " + nickname, ivac.profilePhrasings.getNicknameRegistrationNotification(nickname));
     }
     
 //    /** for EXISTING_USERs, send 'play' to start playing with a bot */
@@ -139,7 +118,7 @@ public class HangmanAppEngineBehavioralTests {
     
     /** for EXISTING_USERs, send the 'invite' by nickname command from the word providing to the word guessing already registered players */
     public void invitePlayerByNick(String wordProvidingPlayerPhone, String wordGuessingPlayerNickname) throws SQLException {
-		checkResponse(wordProvidingPlayerPhone, "invite " + wordGuessingPlayerNickname, SMSAppModulePhrasingsHangman.getAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation(wordGuessingPlayerNickname));		
+		checkResponse(wordProvidingPlayerPhone, "invite " + wordGuessingPlayerNickname, ivac.hangmanPhrasings.getAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation(wordGuessingPlayerNickname));		
     }
     
 //    /** for EXISTING_USERs, send the 'invite' by phone command from the word providing to the word guessing already registered players */
@@ -152,8 +131,8 @@ public class HangmanAppEngineBehavioralTests {
                                     String word, String wordGuessingPlayerNickname) throws SQLException {
 		// provide the word
     	checkResponse(wordProvidingPlayerPhone, word,
-			SMSAppModulePhrasingsHangman.getInvitationResponseForInvitingPlayer(wordGuessingPlayerNickname),
-			SMSAppModulePhrasingsHangman.getInvitationNotificationForInvitedPlayer(wordProvidingPlayerNickname));
+			ivac.hangmanPhrasings.getInvitationResponseForInvitingPlayer(wordGuessingPlayerNickname),
+			ivac.hangmanPhrasings.getInvitationNotificationForInvitedPlayer(wordProvidingPlayerNickname));
     }
     
     /** for an ANSWERING_TO_INVITATION word guessing player, send YES to accept the match */
@@ -162,16 +141,16 @@ public class HangmanAppEngineBehavioralTests {
     	String guessedWordSoFar = game.getGuessedWordSoFar();
     	String usedLetters = game.getAttemptedLettersSoFar();
 		checkResponse(wordGuessingPlayerPhone, "yes",
-			SMSAppModulePhrasingsHangman.getWordGuessingPlayerMatchStart(guessedWordSoFar, usedLetters),
-			SMSAppModulePhrasingsHangman.getWordProvidingPlayerMatchStart(guessedWordSoFar, wordGuessingPlayerNick));
+			ivac.hangmanPhrasings.getWordGuessingPlayerMatchStart(guessedWordSoFar, usedLetters),
+			ivac.hangmanPhrasings.getWordProvidingPlayerMatchStart(guessedWordSoFar, wordGuessingPlayerNick));
     }
     
     /** for REGISTERED_USERs, send chat messages */
     public void sendPrivateMessage(String fromPhone, String toNickname, String message) throws SQLException {
     	String fromNickname = profileDB.getProfileRecord(userDB.assureUserIsRegistered(fromPhone)).getNickname();
 		checkResponse(fromPhone, "P " + toNickname + " " + message,
-			SMSAppModulePhrasingsChat.getPrivateMessageDeliveryNotification(toNickname),
-			SMSAppModulePhrasingsChat.getPrivateMessage(fromNickname, message));
+			ivac.chatPhrasings.getPrivateMessageDeliveryNotification(toNickname),
+			ivac.chatPhrasings.getPrivateMessage(fromNickname, message));
     }
     
     /** for NEW_USERS, register the two players and invite "word guessing player" to play with the provided 'word' */
@@ -313,14 +292,14 @@ public class HangmanAppEngineBehavioralTests {
 		
 		// continue playing, with eventually some wrong letters, until HardCodedNick wins
 		checkResponse("21991234899", "a",
-			SMSAppModulePhrasingsHangman.getWordGuessingPlayerStatus (true, false, false, false, false, false, "COCO---S", "ACOS"),
-			SMSAppModulePhrasingsHangman.getWordProvidingPlayerStatus(true, false, false, false, false, false, "COCO---S", "a", "ACOS", expectedNickname));
+			ivac.hangmanPhrasings.getWordGuessingPlayerStatus (true, false, false, false, false, false, "COCO---S", "ACOS"),
+			ivac.hangmanPhrasings.getWordProvidingPlayerStatus(true, false, false, false, false, false, "COCO---S", "a", "ACOS", expectedNickname));
 		checkResponse("21991234899", "nu",
-			SMSAppModulePhrasingsHangman.getWordGuessingPlayerStatus (true, false, false, false, false, false, "COCONU-S", "ACNOSU"),
-			SMSAppModulePhrasingsHangman.getWordProvidingPlayerStatus(true, false, false, false, false, false, "COCONU-S", "nu", "ACNOSU", expectedNickname));
+			ivac.hangmanPhrasings.getWordGuessingPlayerStatus (true, false, false, false, false, false, "COCONU-S", "ACNOSU"),
+			ivac.hangmanPhrasings.getWordProvidingPlayerStatus(true, false, false, false, false, false, "COCONU-S", "nu", "ACNOSU", expectedNickname));
 		checkResponse("21991234899", "xyz",
-			SMSAppModulePhrasingsHangman.getWordGuessingPlayerStatus (true, true, true, true, false, false, "COCONU-S", "ACNOSUXYZ"),
-			SMSAppModulePhrasingsHangman.getWordProvidingPlayerStatus(true, true, true, true, false, false, "COCONU-S", "xyz", "ACNOSUXYZ", expectedNickname));
+			ivac.hangmanPhrasings.getWordGuessingPlayerStatus (true, true, true, true, false, false, "COCONU-S", "ACNOSUXYZ"),
+			ivac.hangmanPhrasings.getWordProvidingPlayerStatus(true, true, true, true, false, false, "COCONU-S", "xyz", "ACNOSUXYZ", expectedNickname));
 		
 		// test the winning phrase
 		checkResponse("21991234899", "t", "\\0/\n" +
@@ -365,16 +344,16 @@ public class HangmanAppEngineBehavioralTests {
 		resetStates();
 		invitePlayerForAMatch(invitingPlayerPhone, invitingPlayerNickname, word, invitedPlayerPhone, invitedPlayerNickname);
 		checkResponse(invitedPlayerPhone, "yes",
-		              SMSAppModulePhrasingsHangman.getWordGuessingPlayerMatchStart(guessedWordSoFar, usedLetters),
-		              SMSAppModulePhrasingsHangman.getWordProvidingPlayerMatchStart(guessedWordSoFar, invitedPlayerNickname));
+		              ivac.hangmanPhrasings.getWordGuessingPlayerMatchStart(guessedWordSoFar, usedLetters),
+		              ivac.hangmanPhrasings.getWordProvidingPlayerMatchStart(guessedWordSoFar, invitedPlayerNickname));
 		
 		
 		// usual no
 		resetStates();
 		invitePlayerForAMatch(invitingPlayerPhone, invitingPlayerNickname, "cacatua", invitedPlayerPhone, invitedPlayerNickname);
 		checkResponse(invitedPlayerPhone, "no",
-		              SMSAppModulePhrasingsHangman.getInvitationRefusalResponseForInvitedPlayer(invitingPlayerNickname),
-		              SMSAppModulePhrasingsHangman.getInvitationRefusalNotificationForInvitingPlayer(invitedPlayerNickname));
+		              ivac.hangmanPhrasings.getInvitationRefusalResponseForInvitedPlayer(invitingPlayerNickname),
+		              ivac.hangmanPhrasings.getInvitationRefusalNotificationForInvitingPlayer(invitedPlayerNickname));
 		
 		// some other commands before the no
 		resetStates();
@@ -383,11 +362,11 @@ public class HangmanAppEngineBehavioralTests {
 		sendPrivateMessage(invitedPlayerPhone, invitingPlayerNickname, "Why do you want to play with me?");
 		sendPrivateMessage(invitingPlayerPhone, invitedPlayerNickname, "'Cause you're the only one on my test list 8-)");
 		// also, see the profile...
-		tc.checkResponse("21998019167", "profile DOM", SMSAppModulePhrasingsProfile.getUserProfilePresentation("Dom"));
+		tc.checkResponse("21998019167", "profile DOM", ivac.profilePhrasings.getUserProfilePresentation("Dom"));
 		// the no
 		checkResponse(invitedPlayerPhone, "no",
-		              SMSAppModulePhrasingsHangman.getInvitationRefusalResponseForInvitedPlayer(invitingPlayerNickname),
-		              SMSAppModulePhrasingsHangman.getInvitationRefusalNotificationForInvitingPlayer(invitedPlayerNickname));
+		              ivac.hangmanPhrasings.getInvitationRefusalResponseForInvitedPlayer(invitingPlayerNickname),
+		              ivac.hangmanPhrasings.getInvitationRefusalNotificationForInvitingPlayer(invitedPlayerNickname));
 
 	}
 	
@@ -415,34 +394,34 @@ public class HangmanAppEngineBehavioralTests {
 	public void testSubscriptionSubtleties() throws SQLException {
 
 		// unregistered users should not be able to run some commands...
-		checkResponse("21991234899", "nick Mario", SMSAppModulePhrasingsSubscription.getDoubleOptinStart());
+		checkResponse("21991234899", "nick Mario", ivac.subscriptionPhrasings.getDoubleOptinStart());
 		
 		// even new users should be able to unsubscribe
-		checkResponse("21998019167", "unsubscribe", SMSAppModulePhrasingsSubscription.getUserRequestedUnsubscriptionNotification());
+		checkResponse("21998019167", "unsubscribe", ivac.subscriptionPhrasings.getUserRequestedUnsubscriptionNotification());
 		
 		// struggle to subscribe
-		checkResponse("21991234899", "help",                 SMSAppModulePhrasingsSubscription.getDoubleOptinStart());
-		checkResponse("21991234899", "no",                   SMSAppModulePhrasingsSubscription.getDisagreeToSubscribe());
-		checkResponse("21991234899", "come again?",          SMSAppModulePhrasingsSubscription.getDoubleOptinStart());
-		checkResponse("21991234899", "well, not yet...",     SMSAppModulePhrasingsSubscription.getDoubleOptinStart());
-		checkResponse("21991234899", "what is this, again?", SMSAppModulePhrasingsSubscription.getDoubleOptinStart());
-		checkResponse("21991234899", "hangman",              SMSAppModulePhrasingsSubscription.getSuccessfullySubscribed());
+		checkResponse("21991234899", "help",                 ivac.subscriptionPhrasings.getDoubleOptinStart());
+		checkResponse("21991234899", "no",                   ivac.subscriptionPhrasings.getDisagreeToSubscribe());
+		checkResponse("21991234899", "come again?",          ivac.subscriptionPhrasings.getDoubleOptinStart());
+		checkResponse("21991234899", "well, not yet...",     ivac.subscriptionPhrasings.getDoubleOptinStart());
+		checkResponse("21991234899", "what is this, again?", ivac.subscriptionPhrasings.getDoubleOptinStart());
+		checkResponse("21991234899", "hangman",              ivac.subscriptionPhrasings.getSuccessfullySubscribed());
 		// struggle to find one's first steps after subscription
-		checkResponse("21991234899", "HJKS", SMSAppModulePhrasingsHelp.getExistingUsersFallbackHelp());
+		checkResponse("21991234899", "HJKS", ivac.helpPhrasings.getExistingUsersFallbackHelp());
 		
 		// now, when a user that was registered attempts to play (but he/she has been secretly unsubscribed due to life cycle rules), what happens?
 		// he/she must use the game as if their subscription was still valid...
 		subscriptionEngine.unsubscribeUser("21991234899", subscriptionChannel);
-		checkResponse("21991234899", "nick domJon", SMSAppModulePhrasingsProfile.getNicknameRegistrationNotification("domJon"));
+		checkResponse("21991234899", "nick domJon", ivac.profilePhrasings.getNicknameRegistrationNotification("domJon"));
 		sendPrivateMessage("21991234899", "domJon", "I believe I would receive this, but... should I?");
 		
 		// ... only when the unsubscription is formally reported, the game notes the change in the state
-		SMSAppModuleCommandsSubscription.unsubscribeUser("21991234899");
-		checkResponse("21991234899", "nick ItsMeMario", SMSAppModulePhrasingsSubscription.getDoubleOptinStart());
+		ivac.subscriptionCommands.unsubscribeUser("21991234899");
+		checkResponse("21991234899", "nick ItsMeMario", ivac.subscriptionPhrasings.getDoubleOptinStart());
 		
 		// test the default nick for newly registered users
-		checkResponse("21991234900", "hangman", SMSAppModulePhrasingsSubscription.getSuccessfullySubscribed());
-		checkResponse("21991234900", "profile", SMSAppModulePhrasingsProfile.getUserProfilePresentation("Guest4900"));
+		checkResponse("21991234900", "hangman", ivac.subscriptionPhrasings.getSuccessfullySubscribed());
+		checkResponse("21991234900", "profile", ivac.profilePhrasings.getUserProfilePresentation("Guest4900"));
 	}
 	
 	@Test
@@ -450,8 +429,8 @@ public class HangmanAppEngineBehavioralTests {
 		registerUser("21991234899", "dom");
 		registerUser("21998019167", "donna");
 		invitePlayerByNick("21991234899", "donna");
-		checkResponse("21991234899", "caca123", SMSAppModulePhrasingsHangman.getNotAGoodWord("CACA123"));	// non letter characters
-		checkResponse("21991234899", "coco", SMSAppModulePhrasingsHangman.getNotAGoodWord("COCO"));			// unplayable word
+		checkResponse("21991234899", "caca123", ivac.hangmanPhrasings.getNotAGoodWord("CACA123"));	// non letter characters
+		checkResponse("21991234899", "coco",    ivac.hangmanPhrasings.getNotAGoodWord("COCO"));		// unplayable word
 	}
 
 	@Test
@@ -468,7 +447,7 @@ public class HangmanAppEngineBehavioralTests {
 		startAPlayerMatch("21991234899", "dom", hardWord, "21998019167", "paty");
 		usedLetters = "AB";
 		// first, test sending an empty message
-		checkResponse("21998019167", "", SMSAppModulePhrasingsHangman.getGuessingWordHelp());
+		checkResponse("21998019167", "", ivac.hangmanPhrasings.getGuessingWordHelp());
 		// now loop through all messages
 		for (char letter : attemptedLetters) {
 			String sLetter = Character.toString(letter);
@@ -478,13 +457,13 @@ public class HangmanAppEngineBehavioralTests {
 			String hardWordSoFar = hardWord.replaceAll("[^"+usedLetters+"]", "-");
 			if (hardWordSoFar.equals(hardWord)) {
 				checkResponse("21998019167", sLetter,				                 
-		                      SMSAppModulePhrasingsHangman.getWinningMessageForWordGuessingPlayer (hardWord, "xx.xx.xx.xx"),
-		                      SMSAppModulePhrasingsHangman.getWinningMessageForWordProvidingPlayer("paty"));
+		                      ivac.hangmanPhrasings.getWinningMessageForWordGuessingPlayer (hardWord, "xx.xx.xx.xx"),
+		                      ivac.hangmanPhrasings.getWinningMessageForWordProvidingPlayer("paty"));
 				break;
 			} else {
 				checkResponse("21998019167", sLetter,
-				              SMSAppModulePhrasingsHangman.getWordGuessingPlayerStatus (false, false, false, false, false, false, hardWordSoFar, usedLetters),
-				              SMSAppModulePhrasingsHangman.getWordProvidingPlayerStatus(false, false, false, false, false, false, hardWordSoFar, sLetter, usedLetters, "paty"));
+				              ivac.hangmanPhrasings.getWordGuessingPlayerStatus (false, false, false, false, false, false, hardWordSoFar, usedLetters),
+				              ivac.hangmanPhrasings.getWordProvidingPlayerStatus(false, false, false, false, false, false, hardWordSoFar, sLetter, usedLetters, "paty"));
 			}
 		}
 		

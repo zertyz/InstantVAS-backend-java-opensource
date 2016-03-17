@@ -34,7 +34,7 @@ public class SMSAppModuleEventsSubscription extends EventServer<ESMSAppModuleEve
 	
 	// implements the 'EventConsumer' & 'EventListener' Events Enumeration & Annotation pattern
 	
-	@Retention(RetentionPolicy.RUNTIME) @Target(ElementType.METHOD) public @interface SMSAppModuleEventSubscription {
+	@Retention(RetentionPolicy.RUNTIME) @Target(ElementType.METHOD) public @interface SubscriptionEvent {
 		ESMSAppModuleEventsSubscription[] value();
 	}
 
@@ -50,8 +50,8 @@ public class SMSAppModuleEventsSubscription extends EventServer<ESMSAppModuleEve
 	}
 
 	
-	protected SMSAppModuleEventsSubscription() {
-		super(new DirectEventLink<ESMSAppModuleEventsSubscription>(ESMSAppModuleEventsSubscription.class, new Class[] {SMSAppModuleEventSubscription.class}));
+	public SMSAppModuleEventsSubscription() {
+		super(new DirectEventLink<ESMSAppModuleEventsSubscription>(ESMSAppModuleEventsSubscription.class, new Class[] {SubscriptionEvent.class}));
 	}
 
 	

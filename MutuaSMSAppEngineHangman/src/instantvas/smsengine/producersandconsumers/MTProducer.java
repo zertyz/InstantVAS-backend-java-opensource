@@ -1,10 +1,5 @@
 package instantvas.smsengine.producersandconsumers;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 import config.InstantVASApplicationConfiguration;
 import mutua.events.EventClient;
 import mutua.events.EventServer;
@@ -27,17 +22,13 @@ import mutua.smsout.dto.OutgoingSMSDto;
  * @author luiz
 */
 
-public class MTProducer extends EventServer<EInstantVASMTEvents> implements IResponseReceiver {
-	
-	@Retention(RetentionPolicy.RUNTIME) @Target(ElementType.METHOD) public @interface InstantVASMTEvent {
-		EInstantVASMTEvents[] value();
-	}
+public class MTProducer extends EventServer<EInstantVASEvents> implements IResponseReceiver {
 
 	public MTProducer(InstantVASApplicationConfiguration ivac,
-	                     EventClient<EInstantVASMTEvents> mtConsumer) {
+	                  EventClient<EInstantVASEvents> mtConsumer) {
 		super(ivac.MTpcLink);
 		try {
-			addListener(mtConsumer);
+			setConsumer(mtConsumer);
 		} catch (IndirectMethodNotFoundException e) {
 			ivac.log.reportThrowable(e, "Error while adding mtConsumer");
 		}
@@ -45,7 +36,7 @@ public class MTProducer extends EventServer<EInstantVASMTEvents> implements IRes
 
 	@Override
 	public void onMessage(OutgoingSMSDto outgoingMessage, IncomingSMSDto incomingMessage) {
-		dispatchConsumableEvent(EInstantVASMTEvents.INTERACTIVE_MT, outgoingMessage);
+		dispatchConsumableEvent(EInstantVASEvents.INTERACTIVE_MT, outgoingMessage);
 	}
 	
 }

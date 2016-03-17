@@ -1,7 +1,7 @@
 package instantvas.smsengine.web;
 
 import instantvas.smsengine.InstantVASHTTPInstrumentationRequestProperty;
-import instantvas.smsengine.producersandconsumers.EInstantVASMOEvents;
+import instantvas.smsengine.producersandconsumers.EInstantVASEvents;
 import instantvas.smsengine.producersandconsumers.MOConsumer;
 import instantvas.smsengine.producersandconsumers.MOProducer;
 import instantvas.smsengine.producersandconsumers.MTConsumer;
@@ -26,9 +26,9 @@ public class AddToMOQueue {
 	private final InstantVASApplicationConfiguration ivac;
 	
 	// event consumers/producers
-	private final MTProducer                       mtProducer;
-	private final EventClient<EInstantVASMOEvents> moConsumer;
-	private final MOProducer                       moProducer;
+	private final MTProducer                     mtProducer;
+	private final EventClient<EInstantVASEvents> moConsumer;
+	private final MOProducer                     moProducer;
 	
 	// SMS Integration
 	private final SMSInParser<Map<String, String>, byte[]>  moParser;		
@@ -54,7 +54,7 @@ public class AddToMOQueue {
 	}
 
 	public byte[] process(HashMap<String, String> parameters, String queryString) {
-		log.reportRequestStart(queryString);
+		log.reportRequestStart("AddToMOQueue " + queryString);
 		byte[] response;
 		IncomingSMSDto mo = moParser.parseIncomingSMS(parameters);
 		if (mo == null) {

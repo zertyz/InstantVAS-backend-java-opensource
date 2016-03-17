@@ -26,7 +26,7 @@ public class TestableSubscriptionAPI extends SubscriptionEngine {
 	private static Hashtable<String, String> registeredUsers = new Hashtable<String, String>();;
 	
 	
-	public static void reset() {
+	public void reset() {
 		registeredUsers.clear();
 	}
 	

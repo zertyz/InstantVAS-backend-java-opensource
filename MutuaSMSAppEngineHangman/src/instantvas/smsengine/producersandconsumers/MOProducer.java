@@ -1,10 +1,5 @@
 package instantvas.smsengine.producersandconsumers;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 import config.InstantVASApplicationConfiguration;
 import mutua.events.EventClient;
 import mutua.events.EventServer;
@@ -24,14 +19,10 @@ import mutua.smsin.dto.IncomingSMSDto;
  * @author luiz
 */
 
-public class MOProducer extends EventServer<EInstantVASMOEvents> {
-	
-	@Retention(RetentionPolicy.RUNTIME) @Target(ElementType.METHOD) public @interface InstantVASMOEvent {
-		EInstantVASMOEvents[] value();
-	}
+public class MOProducer extends EventServer<EInstantVASEvents> {
 	
 	public MOProducer(InstantVASApplicationConfiguration ivac,
-	                  EventClient<EInstantVASMOEvents> moConsumer) {
+	                  EventClient<EInstantVASEvents> moConsumer) {
 		super(ivac.MOpcLink);
 		try {
 			setConsumer(moConsumer);
@@ -41,11 +32,7 @@ public class MOProducer extends EventServer<EInstantVASMOEvents> {
 	}
 	
 	public int dispatchMOForProcessing(IncomingSMSDto mo) {
-		return dispatchConsumableEvent(EInstantVASMOEvents.MO_ARRIVED, mo);
+		return dispatchConsumableEvent(EInstantVASEvents.MO_ARRIVED, mo);
 	}
-	
-//	public boolean addToSubscribeUserQueue(String phone) {
-//		return dispatchNeedToBeConsumedEvent(EHangmanGameStates.WON, phone);
-//	}
 
 }

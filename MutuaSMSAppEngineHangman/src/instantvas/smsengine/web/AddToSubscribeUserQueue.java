@@ -1,34 +1,46 @@
 package instantvas.smsengine.web;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.sql.SQLException;
 import java.util.HashMap;
 
-import static config.InstantVASSMSEngineConfiguration.*;
-import static mutua.icc.instrumentation.DefaultInstrumentationEvents.*;
-import static mutua.icc.instrumentation.DefaultInstrumentationProperties.*;
+import config.InstantVASApplicationConfiguration;
+import instantvas.smsengine.InstantVASHTTPInstrumentationRequestProperty;
+import instantvas.smsengine.producersandconsumers.SRConsumer;
+import instantvas.smsengine.producersandconsumers.SRProducer;
+import mutua.icc.instrumentation.Instrumentation;
+
 /**
  * Servlet implementation class AddToSubscriberUserQueue
  */
 public class AddToSubscribeUserQueue {
 	
-	public static byte[] process(HashMap<String, String> parameters, String queryString) {
-		return null;
-//		log.reportRequestStart("AddToSubscribeUserQueue " + request.getQueryString());
-//		PrintWriter out = response.getWriter();
-//		try {
-//			String phone = request.getParameter("MSISDN");
-//			if (AddToMOQueue.gameMOProducer.addToSubscribeUserQueue(phone)) {
-//				out.print("ACCEPTED");
-//			} else {
-//				throw new RuntimeException("Adding entry to 'SubscribeUserQueue' was not possible");
-//			}
-//		} catch (Throwable t) {
-//			out.print("FAILED");
-//			log.reportThrowable(t, "Error while subscribing user from the web");
-//		}
-//		log.reportRequestFinish();
+	// responses
+	private static final byte[] ACCEPTED_ANSWER = "ACCEPTED".intern().getBytes();
+	private static final byte[] FAILED_ANSWER   = "FAILED"  .intern().getBytes();
+	
+	private final Instrumentation<InstantVASHTTPInstrumentationRequestProperty, String> log;
+	private final InstantVASApplicationConfiguration ivac;
+	
+	// event consumers/producers
+	private final SRProducer                     srProducer;
+
+	public AddToSubscribeUserQueue(InstantVASApplicationConfiguration ivac) {
+		this.ivac     = ivac;
+		log           = ivac.log;
+		srProducer    = new SRProducer(ivac, new SRConsumer(ivac));
+	}
+	
+	public byte[] process(HashMap<String, String> parameters, String queryString) {
+		log.reportRequestStart("AddToSubscribeUserQueue " + queryString);
+		try {
+			String msisdn = parameters.get("MSISDN");
+			srProducer.dispatchAssureUserIsSubscribedEvent(msisdn);
+			return ACCEPTED_ANSWER;
+		} catch (Throwable t) {
+			log.reportThrowable(t, "Error while subscribing user from the web");
+			return FAILED_ANSWER;
+		} finally {
+			log.reportRequestFinish();
+		}
 	}
 	
 }
