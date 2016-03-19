@@ -72,6 +72,7 @@ import mutua.smsout.senders.SMSOutCelltick;
 import mutua.smsout.senders.SMSOutSender;
 import mutua.subscriptionengine.CelltickLiveScreenSubscriptionAPI;
 import mutua.subscriptionengine.SubscriptionEngine;
+import mutua.subscriptionengine.TestableSubscriptionAPI;
 import adapters.PostgreSQLAdapter;
 
 /** <pre>
@@ -375,6 +376,8 @@ public class InstantVASApplicationConfiguration {
 	public static String[] HELPtrgGlobalShowExistingUsersFallbackHelp;
 	@ConfigurableElement("If matched, shows a single message help")
 	public static String[] HELPtrgGlobalShowStatelessHelpMessage;
+	@ConfigurableElement("Fallback pattern (should always be matched) to get a help when no other command was recognized")
+	public static String[] HELPtrgGlobalShowStatefulHelpMessage;
 	
 	// subscription
 	@ConfigurableElement("For users in 'nstNewUser' or 'nstUnsubscribedUser', if matched, starts the double opt-in process")
@@ -450,6 +453,7 @@ public class InstantVASApplicationConfiguration {
 		HELPtrgGlobalShowNewUsersFallbackHelp,
 		HELPtrgGlobalShowExistingUsersFallbackHelp,
 		HELPtrgGlobalShowStatelessHelpMessage,
+		HELPtrgGlobalShowStatefulHelpMessage,
 		// subscription
 		SUBSCRIPTIONtrgLocalStartDoubleOptin,
 		SUBSCRIPTIONtrgLocalAcceptDoubleOptin,
@@ -486,8 +490,10 @@ public class InstantVASApplicationConfiguration {
 		}
 	};
 	
-	public enum EInstantVASModules {// integration modules
+	public enum EInstantVASModules {// celltick integration modules, for production
 	                                CELLTICK_BR_INTEGRATION,
+	                                // celltick integration modules, for testing
+	                                CELLTICK_JUNIT_TESTS_INTEGRATION,
 	                                // infrastructure modules
 	                                BASE, HELP, SUBSCRIPTION, SUBSCRIPTION_LIFECYCLE, DRAW, PROFILE,
 	                                // entretainment modules
@@ -583,6 +589,7 @@ public class InstantVASApplicationConfiguration {
 				System.out.print(module.name().toLowerCase());
 				switch (module) {
 				case CELLTICK_BR_INTEGRATION:
+				case CELLTICK_JUNIT_TESTS_INTEGRATION:
 					break;
 				case BASE:
 					baseModuleDAL = SMSAppModuleDALFactory.POSTGRESQL;
@@ -735,6 +742,9 @@ public class InstantVASApplicationConfiguration {
 			case CELLTICK_BR_INTEGRATION:
 				configureCelltickBRIntegration();
 				break;
+			case CELLTICK_JUNIT_TESTS_INTEGRATION:
+				configureCelltickJUnitTestsIntegration();
+				break;
 			case BASE:
 				Object[] baseModuleInstances = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(log, baseModuleDAL,
 					EInstantVASCommandTriggers.get2DStringArrayFromEInstantVASCommandTriggersArray(BASEnstNewUser),
@@ -842,11 +852,24 @@ public class InstantVASApplicationConfiguration {
 		subscriptionEngine = new CelltickLiveScreenSubscriptionAPI(log, CELLTICK_SUBSCRIBE_SERVICE_URL, CELLTICK_UNSUBSCRIBE_SERVICE_URL);
 		subscriptionToken  = CELLTICK_SUBSCRIPTION_CHANNEL_NAME;
 	}
+	
+	private void configureCelltickJUnitTestsIntegration() {
+		moParser = null;
+		mtSender = null;
+		subscriptionEngine = new TestableSubscriptionAPI(log);
+		subscriptionToken  = "JUnit tests";
+	}
+	
+	public static void setHangmanTestDefaults() {
+		setHangmanProductionDefaults();
+		ENABLED_MODULES[0] = EInstantVASModules.CELLTICK_JUNIT_TESTS_INTEGRATION;
+		POSTGRESQL_SHOULD_DEBUG_QUERIES             = false;
+	}
 
 	/** Set the default configuration for the Hangman SMS Application.
 	 *  This function might be used to control piracy if it receives a parameter like "client" or "environment" --
 	 *  which would fill in piracy protection variables for CELLTICK_BR or CELLTICK_TEST */
-	public static void setHangmanDefaults() {
+	public static void setHangmanProductionDefaults() {
 		
 		REPORT_DATA_COLLECTOR_STRATEGY = EInstrumentationDataPours.POSTGRESQL_DATABASE;
 		LOG_STRATEGY                   = EInstrumentationDataPours.CONSOLE;
@@ -920,14 +943,15 @@ public class InstantVASApplicationConfiguration {
 		///////
 		
 		// phrasing
-		HELPphrNewUsersFallback      = "no shits currently here";
+		HELPphrNewUsersFallback      = "{{appName}}: unknown command. Please send HELP to see the full command set. Some examples: LIST to see online users; P [NICK] [MSG] to send a private message; " +
+                                       "INVITE [NICK] to invite a listed player; INVITE [PHONE] to invite a friend of yours; PLAY to play with a random user. Choose an option and send it to {{shortCode}}";
 		HELPphrExistingUsersFallback = "{{appName}}: unknown command. Please send HELP to see the full command set. Some examples: LIST to see online users; P [NICK] [MSG] to send a private message; " +
                                        "INVITE [NICK] to invite a listed player; INVITE [PHONE] to invite a friend of yours; PLAY to play with a random user. Choose an option and send it to {{shortCode}}";
 		HELPphrStateless             = "You can play the {{appName}} game in 2 ways: guessing someone's word or inviting someone to play with your word " +
 		                               "You'll get 1 lucky number each word you guess. Whenever you invite a friend or user to play, you win another lucky number " +
-		                               "Every week, 1 lucky number is selected to win the prize. Send an option to 9714: (J)Play online; (C)Invite a friend or user; (R)anking; (A)Help";
+		                               "Every week, 1 lucky number is selected to win the prize. Send an option to {{shortCode}}: (J)Play online; (C)Invite a friend or user; (R)anking; (A)Help";
 		HELPphrComposite             = new String[] {""};
-		HELPphrStatefulHelpMessages  = new String[0][0];
+		// HELPphrStatefulHelpMessages  is defined at the end of all phrases
 		
 		// command patterns
 		HELPtrgGlobalStartCompositeHelpDialog      = getConcatenationOf(cmdStartCompositeHelpDialog,      trgGlobalStartCompositeHelpDialog);
@@ -935,6 +959,7 @@ public class InstantVASApplicationConfiguration {
 		HELPtrgGlobalShowNewUsersFallbackHelp      = getConcatenationOf(cmdShowNewUsersFallbackHelp,      ".*");
 		HELPtrgGlobalShowExistingUsersFallbackHelp = getConcatenationOf(cmdShowExistingUsersFallbackHelp, trgGlobalShowExistingUsersFallbackHelp);
 		HELPtrgGlobalShowStatelessHelpMessage      = getConcatenationOf(cmdShowStatelessHelp,             trgGlobalShowStatelessHelpMessage);
+		HELPtrgGlobalShowStatefulHelpMessage       = getConcatenationOf(cmdShowStatefulHelp,              ".*");
 		
 //		// stateful help messages
 //		setStatefulHelpMessages(new Object[][] {
@@ -976,9 +1001,9 @@ public class InstantVASApplicationConfiguration {
 
 		
 		// command patterns
-		PROFILEtrgGlobalStartAskForNicknameDialog = new String[] {"---"};
-		PROFILEtrgLocalNicknameDialogCancelation  = new String[] {"---"};
-		PROFILEtrgLocalRegisterNickname           = new String[] {"---"};
+		PROFILEtrgGlobalStartAskForNicknameDialog = getConcatenationOf(cmdStartAskForNicknameDialog,       "---");
+		PROFILEtrgLocalNicknameDialogCancelation  = getConcatenationOf(cmdAskForNicknameDialogCancelation, "---");
+		PROFILEtrgLocalRegisterNickname           = getConcatenationOf(cmdRegisterNickname,                "---");
 		PROFILEtrgGlobalRegisterNickname          = getConcatenationOf(cmdRegisterNickname, trgGlobalRegisterNickname);
 		PROFILEtrgGlobalShowUserProfile           = getConcatenationOf(cmdShowUserProfile,  trgGlobalShowUserProfile);
 		
@@ -992,7 +1017,7 @@ public class InstantVASApplicationConfiguration {
 		
 		// command patterns
 		CHATtrgGlobalSendPrivateMessage = getConcatenationOf(cmdSendPrivateMessage, trgGlobalSendPrivateMessage);
-		CHATtrgLocalSendPrivateReply    = new String[] {"---"};
+		CHATtrgLocalSendPrivateReply    = getConcatenationOf(cmdSendPrivateReply, "---");
 
 		// Hangman
 		//////////
@@ -1014,7 +1039,7 @@ public class InstantVASApplicationConfiguration {
 		HANGMANphrInvitationNotificationForInvitedPlayer                    = "{{appName}}: {{invitingPlayerNickname}} is inviting you for a hangman match. Do you accept? Send YES or NO to {{shortCode}} or P {{invitingPlayerNickname}} [MSG] to send him/her a message";
 		HANGMANphrTimeoutNotificationForInvitingPlayer                      = "{{appName}}: {{invitedPlayerNickname}} is taking too long to answer. However, a new player, {{suggestedNewPlayersNickname}}, is available. Play with {{suggestedNewPlayersNickname}}? Send YES to {{shortCode}}";
 		HANGMANphrInvitationRefusalResponseForInvitedPlayer                 = "The invitation to play the Hangman Game made by {{invitingPlayerNickname}} was refused. Send LIST to {{shortCode}} to see online users";
-		HANGMANphrInvitationRefusalNotificationForInvitingPlayer            = "{{invitedPlayerNickname}} refused your invitation to play. Send LIST to 9714 and pick someone else";
+		HANGMANphrInvitationRefusalNotificationForInvitingPlayer            = "{{invitedPlayerNickname}} refused your invitation to play. Send LIST to {{shortCode}} and pick someone else";
 		HANGMANphrNotAGoodWord                                              = "You selected '{{word}}'. This is possily not a good word. Please think of one only with A-Z letters, without accents, digits, ponctuation or any other special characters and send it to {{shortCode}}";
 		HANGMANphrWordProvidingPlayerMatchStart                             = "Game started with {{wordGuessingPlayerNickname}}.\n{{gallowsArt}}Send P {{wordGuessingPlayerNickname}} [MSG] to give him/her clues";
 		HANGMANphrWordGuessingPlayerMatchStart                              = "{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nSend a letter, the complete word or END to cancel the game";
@@ -1036,6 +1061,14 @@ public class InstantVASApplicationConfiguration {
 		HANGMANtrgLocalNewLetterOrWordSuggestionForHuman = getConcatenationOf(cmdSuggestLetterOrWordForHuman, trgLocalNewLetterOrWordSuggestion);
 		HANGMANtrgLocalNewLetterOrWordSuggestionForBot   = getConcatenationOf(cmdSuggestLetterOrWordForBot,   trgLocalNewLetterOrWordSuggestion);
 		
+		// stateful help
+		////////////////
+		
+		HELPphrStatefulHelpMessages  = new String[][] {
+			{"GuessingWordFromHangmanHumanOpponent", HANGMANphrGuessingWordHelp},
+		};
+
+		
 		// navigation
 		/////////////
 		
@@ -1050,7 +1083,7 @@ public class InstantVASApplicationConfiguration {
 		BASEnstNewUser = new EInstantVASCommandTriggers[] {
 			EInstantVASCommandTriggers.SUBSCRIPTIONtrgLocalAcceptDoubleOptin,	// the double opt-in process starts with a broadcast message, outside the scope of this application
 			EInstantVASCommandTriggers.SUBSCRIPTIONtrgGlobalUnsubscribe,
-			EInstantVASCommandTriggers.SUBSCRIPTIONtrgLocalStartDoubleOptin,	// for some of known wrong commands, start the double opt-in process again
+			EInstantVASCommandTriggers.SUBSCRIPTIONtrgLocalStartDoubleOptin,
 			EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,			// let the user answer to chats
 			EInstantVASCommandTriggers.HELPtrgGlobalShowNewUsersFallbackHelp,	// fallback help
 		};
@@ -1076,7 +1109,7 @@ public class InstantVASApplicationConfiguration {
 			EInstantVASCommandTriggers.SUBSCRIPTIONtrgLocalAcceptDoubleOptin,
 			EInstantVASCommandTriggers.SUBSCRIPTIONtrgLocalRefuseDoubleOptin,
 			EInstantVASCommandTriggers.SUBSCRIPTIONtrgGlobalUnsubscribe,
-			EInstantVASCommandTriggers.SUBSCRIPTIONtrgLocalStartDoubleOptin,
+			EInstantVASCommandTriggers.SUBSCRIPTIONtrgLocalStartDoubleOptin,	// for some of known wrong commands, start the double opt-in process again
 		};
 		
 		// profile
@@ -1108,7 +1141,7 @@ public class InstantVASApplicationConfiguration {
 		HANGMANnstGuessingWordFromHangmanHumanOpponent = new EInstantVASCommandTriggers[] {
 			EInstantVASCommandTriggers.HANGMANtrgLocalNewLetterOrWordSuggestionForHuman,
 			EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
-			EInstantVASCommandTriggers.HELPtrgGlobalShowExistingUsersFallbackHelp,
+			EInstantVASCommandTriggers.HELPtrgGlobalShowStatefulHelpMessage,
 		};
 		HANGMANnstGuessingWordFromHangmanBotOpponent = new EInstantVASCommandTriggers[] {
 			EInstantVASCommandTriggers.HANGMANtrgLocalNewLetterOrWordSuggestionForBot,

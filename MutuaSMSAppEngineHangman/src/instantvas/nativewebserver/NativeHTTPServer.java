@@ -60,15 +60,15 @@ public class NativeHTTPServer {
 	public static long READ_TIMEOUT       = 100;
 
 	public static void instantiate() throws IllegalArgumentException, SecurityException, SQLException, IllegalAccessException, NoSuchFieldException {
-		InstantVASApplicationConfiguration ivac = new InstantVASApplicationConfiguration();
+		ivac = new InstantVASApplicationConfiguration();
 		addToMOQueue = new AddToMOQueue(ivac);
 	}
 	
 	public static void main(String[] args) throws IOException, IllegalArgumentException, SecurityException, SQLException, IllegalAccessException, NoSuchFieldException {
-		InstantVASApplicationConfiguration.setHangmanDefaults();
+		InstantVASApplicationConfiguration.setHangmanProductionDefaults();
 		instantiate();
 		ivac.log.reportDebug("InstantVAS Internal :80 server started. Requests may now commence.");
-		startServer(80, 9999, InstantVASSMSWebHandlers.values());
+		startServer(8080, 9999, InstantVASSMSWebHandlers.values());
 		System.out.println("Started a :80 server. Please, request!");
 	}
 	

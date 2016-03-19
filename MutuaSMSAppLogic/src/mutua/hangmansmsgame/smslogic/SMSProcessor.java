@@ -57,8 +57,6 @@ public class SMSProcessor {
 		LOG                = log;
 		BASE_MODULE_DAL = baseModuleDAL;
 		log.reportDebug(SMSProcessor.class.getCanonicalName() + ": new configuration loaded.");
-		
-		// este classe deve ser tratada como uma instancia. Não há motivo para os 10 workers terem 10 copias de nenhum dado contido aqui.
 	}
 	
 	
@@ -99,8 +97,10 @@ public class SMSProcessor {
 		ArrayList<NavigationState> tempNavStates = new ArrayList<NavigationState>();
 		for (NavigationState[] navigationStatesEntry : navigationStatesArrays) {
 			if (navigationStatesEntry != null) {
-				navigationStatesEntry[0].applyCommandTriggersData(commandProcessors);
-				tempNavStates.addAll(Arrays.asList(navigationStatesEntry));
+				for (NavigationState navigationState : navigationStatesEntry) {
+					navigationState.applyCommandTriggersData(commandProcessors);
+					tempNavStates.add(navigationState);
+				}
 			}
 		}
 		this.navigationStates = tempNavStates.toArray(new NavigationState[tempNavStates.size()]);

@@ -91,7 +91,7 @@ public class SMSAppModulePhrasingsHangman {
 			"{{appName}}: {{invitingPlayerNickname}} is inviting you for a hangman match. Do you accept? Send YES or NO to {{shortCode}} or P {{invitingPlayerNickname}} [MSG] to send him/her a message",
 			"{{appName}}: {{invitedPlayerNickname}} is taking too long to answer. However, a new player, {{suggestedNewPlayersNickname}}, is available. Play with {{suggestedNewPlayersNickname}}? Send YES to {{shortCode}}",
 			"The invitation to play the Hangman Game made by {{invitingPlayerNickname}} was refused. Send LIST to {{shortCode}} to see online users",
-			"{{invitedPlayerNickname}} refused your invitation to play. Send LIST to 9714 and pick someone else",
+			"{{invitedPlayerNickname}} refused your invitation to play. Send LIST to {{shortCode}} and pick someone else",
 			"You selected '{{word}}'. This is possily not a good word. Please think of one only with A-Z letters, without accents, digits, ponctuation or any other special characters and send it to {{shortCode}}",
 			"Game started with {{wordGuessingPlayerNickname}}.\n{{gallowsArt}}Send P {{wordGuessingPlayerNickname}} [MSG] to give him/her clues",
 			"{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nSend a letter, the complete word or END to cancel the game",

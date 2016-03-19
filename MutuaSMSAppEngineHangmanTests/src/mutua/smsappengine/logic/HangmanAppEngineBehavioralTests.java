@@ -4,10 +4,6 @@ import static org.junit.Assert.*;
 
 import java.sql.SQLException;
 
-import mutua.events.postgresql.QueuesPostgreSQLAdapter;
-import mutua.icc.instrumentation.DefaultInstrumentationProperties;
-import mutua.icc.instrumentation.Instrumentation;
-import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
 import mutua.imi.IndirectMethodInvocationInfo;
 import mutua.smsappmodule.SMSAppModuleTestCommons;
 import mutua.smsappmodule.dal.IChatDB;
@@ -36,40 +32,38 @@ import instantvas.smsengine.producersandconsumers.EInstantVASEvents;
  * Tests the integration of the "Hangman" SMS App Module (and the modules it depends on) with the SMS Processor logic,
  * to produce an unified and consistent SMS Application
  *
- * @see RelatedClass(es)
  * @version $Id$
  * @author luiz
  */
 
 public class HangmanAppEngineBehavioralTests {
 	
-	// log
-	private static Instrumentation<DefaultInstrumentationProperties, String> log = new Instrumentation<DefaultInstrumentationProperties, String>(
-		"HangmanAppEngineBehavioralTests", DefaultInstrumentationProperties.DIP_MSG, EInstrumentationDataPours.CONSOLE, null);
-	
-	private static QueuesPostgreSQLAdapter qdb;
 	private static SMSAppModuleTestCommons tc;
 	
-	private InstantVASApplicationConfiguration ivac;
+	private static InstantVASApplicationConfiguration ivac;
 	
 	// db
-	private IUserDB         userDB;
-	private ISessionDB      sessionDB;
-	private ISubscriptionDB subscriptionDB;
-	private IProfileDB      profileDB;
-	private IChatDB         chatDB;
-	private IMatchDB        matchDB;
-	private INextBotWordsDB nextBotWordsDB;
+	private static IUserDB         userDB;
+	private static ISessionDB      sessionDB;
+	private static ISubscriptionDB subscriptionDB;
+	private static IProfileDB      profileDB;
+	private static IChatDB         chatDB;
+	private static IMatchDB        matchDB;
+	private static INextBotWordsDB nextBotWordsDB;
 	
-	private static TestableSubscriptionAPI subscriptionEngine  = new TestableSubscriptionAPI(log);
-	private static String                  subscriptionChannel = "behavioralTests";
+	private static TestableSubscriptionAPI subscriptionEngine;
+	private static String                  subscriptionChannel;
 	
 	
-	public HangmanAppEngineBehavioralTests() throws IllegalArgumentException, SecurityException, SQLException, IllegalAccessException, NoSuchFieldException {
+	public static void _HangmanAppEngineBehavioralTests() throws IllegalArgumentException, SecurityException, SQLException, IllegalAccessException, NoSuchFieldException {
 		
-		InstantVASApplicationConfiguration.setHangmanDefaults();
-		
+		InstantVASApplicationConfiguration.setHangmanTestDefaults();
 		ivac = new InstantVASApplicationConfiguration();
+
+		ivac.subscriptionEngine = new TestableSubscriptionAPI(ivac.log);
+		
+		subscriptionEngine  = (TestableSubscriptionAPI)ivac.subscriptionEngine;
+		subscriptionChannel = ivac.subscriptionToken;
 		
 		userDB         = ivac.baseModuleDAL.getUserDB();
 		sessionDB      = ivac.baseModuleDAL.getSessionDB();
@@ -78,8 +72,17 @@ public class HangmanAppEngineBehavioralTests {
 		chatDB         = ivac.chatModuleDAL.getChatDB();
 		matchDB        = ivac.hangmanModuleDAL.getMatchDB();
 		nextBotWordsDB = ivac.hangmanModuleDAL.getNextBotWordsDB();
+		
+		tc = new SMSAppModuleTestCommons(ivac.log, ivac.baseModuleDAL, ivac.modulesNavigationStates, ivac.modulesCommandProcessors);
 	}
 
+	static {
+		try {
+			_HangmanAppEngineBehavioralTests();
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
+	}
 
 	private void checkResponse(String phone, String inputText, String... expectedResponsesText) throws SQLException {
 		IncomingSMSDto mo = new IncomingSMSDto(-1, phone, inputText, ESMSInParserCarrier.TEST_CARRIER, "1234");
@@ -196,60 +199,60 @@ public class HangmanAppEngineBehavioralTests {
 	public void testDefaultPhrasings() throws SQLException {
 
 		// user's first message is an invalid command -- restart the double opt-in from scratch
-		checkResponse("21998019167", "help", "You are at the HANGMAN game. To continue, you must subscribe. Send HANGMAN now to 9714 and compete for prizes. You will be charged at $ every week.");
+		checkResponse("21998019167", "help", "You are at the HANGMAN game. To continue, you must subscribe. Send HANGMAN now to 993 and compete for prizes. You will be charged at $0.99 every week.");
 		assertFalse("User should not have been subscribed on the backend", subscriptionEngine._isUserSubscribed("21998019167", subscriptionChannel));
 		
 		// user's first message is the double opt-in agreement: register him/her (it is assumed a broadcast message was sent instructing him/her what to reply to subscribe)
-		checkResponse("21991234899", "Hangman", "HANGMAN: Registration succeeded. Send HELP to 9714 to know the rules and how to play, or simply send PLAY to 9714");
+		checkResponse("21991234899", "Hangman", "HANGMAN: Registration succeeded. Send HELP to 993 to know the rules and how to play, or simply send PLAY to 993");
 		assertTrue("User was not subscribed on the backend", subscriptionEngine._isUserSubscribed("21991234899", subscriptionChannel));
 		
 		// user's first message is unsubscribe -- we must assure he/she is unsubscribed...
 		// ... for the user, for some reason, might be subscribed
 		subscriptionEngine.subscribeUser("21998019166", subscriptionChannel);
-		checkResponse("21998019166", "unsubscribe", "You are now unsubscribed from the HANGMAN GAME and will no longer receive invitations to play nor lucky numbers. To join again, send HANGMAN to 9714");
+		checkResponse("21998019166", "unsubscribe", "You are now unsubscribed from the HANGMAN GAME and will no longer receive invitations to play nor lucky numbers. To join again, send HANGMAN to 993");
 		assertFalse("User should not be still subscribed on the backend", subscriptionEngine._isUserSubscribed("21998019166", subscriptionChannel));
 
 		// desperate help
 		checkResponse("21991234899", "how can I use this stuff??",
-		                                "HANGMAN: unknown command. Please send HELP to see the full command set. Some examples: LIST to see online users; P [NICK] [MSG] to send a private message; " +
-                                        "INVITE [NICK] to invite a listed player; INVITE [PHONE] to invite a friend of yours; PLAY to play with a random user. Choose an option and send it to 9714");
+		                             "HANGMAN: unknown command. Please send HELP to see the full command set. Some examples: LIST to see online users; P [NICK] [MSG] to send a private message; " +
+                                     "INVITE [NICK] to invite a listed player; INVITE [PHONE] to invite a friend of yours; PLAY to play with a random user. Choose an option and send it to 993");
 
 		// desired help
 		checkResponse("21991234899", "help",
 			"You can play the HANGMAN game in 2 ways: guessing someone's word or inviting someone to play with your word " +
 			"You'll get 1 lucky number each word you guess. Whenever you invite a friend or user to play, you win another lucky number " +
-			"Every week, 1 lucky number is selected to win the prize. Send an option to 9714: (J)Play online; (C)Invite a friend or user; (R)anking; (A)Help");
+			"Every week, 1 lucky number is selected to win the prize. Send an option to 993: (J)Play online; (C)Invite a friend or user; (R)anking; (A)Help");
 
 		// nickname registration
 		String expectedNickname = "HardCodedNick";
-		checkResponse("21991234899", "nick " + expectedNickname, "HANGMAN: Name registered: " + expectedNickname + ". Send LIST to 9714 to see online players. NICK [NEW NICK] to change your name.");
+		checkResponse("21991234899", "nick " + expectedNickname, "HANGMAN: Name registered: " + expectedNickname + ". Send LIST to 993 to see online players. NICK [NEW NICK] to change your name.");
 		String observedNickname = profileDB.getProfileRecord(userDB.assureUserIsRegistered("21991234899")).getNickname();
 		assertEquals("Nickname registration failed", expectedNickname, observedNickname);
 		
 		// opponent registration
-		checkResponse("21998019167", "hangman", "HANGMAN: Registration succeeded. Send HELP to 9714 to know the rules and how to play, or simply send PLAY to 9714");
-		checkResponse("21998019167", "nick haole", "HANGMAN: Name registered: haole. Send LIST to 9714 to see online players. NICK [NEW NICK] to change your name.");
-		checkResponse("21998019167", "nick pAtRiCiA", "HANGMAN: Name registered: pAtRiCiA. Send LIST to 9714 to see online players. NICK [NEW NICK] to change your name.");
+		checkResponse("21998019167", "hangman", "HANGMAN: Registration succeeded. Send HELP to 993 to know the rules and how to play, or simply send PLAY to 993");
+		checkResponse("21998019167", "nick haole", "HANGMAN: Name registered: haole. Send LIST to 993 to see online players. NICK [NEW NICK] to change your name.");
+		checkResponse("21998019167", "nick pAtRiCiA", "HANGMAN: Name registered: pAtRiCiA. Send LIST to 993 to see online players. NICK [NEW NICK] to change your name.");
 		
 		// user listing
 //		tc.checkResponse("21998019167", "list", "i want to see the list of users i can play with...");
 		
 		// invitation
-		checkResponse("21998019167", "invite HardCodedNick", "HANGMAN: Inviting HardCodedNick. Think of a word without special digits and send it now to 9714. After the invitation, you'll get a lucky number");
+		checkResponse("21998019167", "invite HardCodedNick", "HANGMAN: Inviting HardCodedNick. Think of a word without special digits and send it now to 993. After the invitation, you'll get a lucky number");
 		checkResponse("21998019167", "coconuts",
-			"HardCodedNick was invited to play with you. while you wait, you can provoke HardCodedNick by sending a message to 9714 (0.31+tax) or send SIGNUP to provoke for free how many times you want",
-			"HANGMAN: pAtRiCiA is inviting you for a hangman match. Do you accept? Send YES or NO to 9714 or P pAtRiCiA [MSG] to send him/her a message");
+			"HardCodedNick was invited to play with you. while you wait, you can provoke HardCodedNick by sending a message to 993 (0.31+tax) or send SIGNUP to provoke for free how many times you want",
+			"HANGMAN: pAtRiCiA is inviting you for a hangman match. Do you accept? Send YES or NO to 993 or P pAtRiCiA [MSG] to send him/her a message");
 
 		// chat
 		String expectedChatMessage = "c'mon, man! Lets go for a match!!";
 		checkResponse("21998019167", "P HardCodedNick " + expectedChatMessage, 
 			"HANGMAN: your message has been delivered to HardCodedNick. What can be the command that I'll suggest now?",
-			"pAtRiCiA: " + expectedChatMessage + " - To answer, text P pAtRiCiA [MSG] to 9714"
+			"pAtRiCiA: " + expectedChatMessage + " - To answer, text P pAtRiCiA [MSG] to 993"
 		);
 		expectedChatMessage = "I don't know what is this yet. But, OK... lets try... For me it is easy because I'm already subscribed.";
 		checkResponse("21991234899", "P pAtRiCiA " + expectedChatMessage,
 			"HANGMAN: your message has been delivered to pAtRiCiA. What can be the command that I'll suggest now?",
-			"HardCodedNick: " + expectedChatMessage + " - To answer, text P HardCodedNick [MSG] to 9714"
+			"HardCodedNick: " + expectedChatMessage + " - To answer, text P HardCodedNick [MSG] to 993"
 		);
 		
 		// back to the invitation... lets play the match!
@@ -319,12 +322,12 @@ public class HangmanAppEngineBehavioralTests {
                                                              "|/|\\\n" +
                                                              "|/ \\\n" +
                                                              "====\n" +
-                                                             "The word was MUGGLES. Now challenge HardCodedNick: send INVITE HardCodedNick to 9714",
+                                                             "The word was MUGGLES. Now challenge HardCodedNick: send INVITE HardCodedNick to 993",
                                                              "Good one! pAtRiCiA wasn't able to guessed your word! P pAtRiCiA [MSG] to provoke him/her or INVITE pAtRiCiA for a new match");
 
 		// unsubscribe
-		checkResponse("21998019167", "unsubscribe", "You are now unsubscribed from the HANGMAN GAME and will no longer receive invitations to play nor lucky numbers. To join again, send HANGMAN to 9714");
-		checkResponse("21991234899", "unsubscribe", "You are now unsubscribed from the HANGMAN GAME and will no longer receive invitations to play nor lucky numbers. To join again, send HANGMAN to 9714");
+		checkResponse("21998019167", "unsubscribe", "You are now unsubscribed from the HANGMAN GAME and will no longer receive invitations to play nor lucky numbers. To join again, send HANGMAN to 993");
+		checkResponse("21991234899", "unsubscribe", "You are now unsubscribed from the HANGMAN GAME and will no longer receive invitations to play nor lucky numbers. To join again, send HANGMAN to 993");
 		assertFalse("User should not be still subscribed on the backend", subscriptionEngine._isUserSubscribed("21998019167", subscriptionChannel));
 		assertFalse("User should not be still subscribed on the backend", subscriptionEngine._isUserSubscribed("21991234899", subscriptionChannel));
 
@@ -378,8 +381,8 @@ public class HangmanAppEngineBehavioralTests {
 		checkResponse("21998019167", "profile DOM", "HANGMAN: Dom: Subscribed; Online; RJ. Text INVITE Dom to play a hangman match; P Dom [MSG] to chat; LIST to see online players; P to play with a random user.");
 		
 		checkResponse("21998019167", "no",
-			"The invitation to play the Hangman Game made by Dom was refused. Send LIST to 9714 to see online users",
-			"pAtY refused your invitation to play. Send LIST to 9714 and pick someone else");
+			"The invitation to play the Hangman Game made by Dom was refused. Send LIST to 993 to see online users",
+			"pAtY refused your invitation to play. Send LIST to 993 and pick someone else");
 		
 		// profile on the "existing player" state
 		// also, profile on the "new user" state? what other commands there?

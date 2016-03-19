@@ -1,5 +1,6 @@
 package instantvas.smsengine.web;
 
+import instantvas.smsengine.HangmanSMSGameServicesInstrumentationEvents;
 import instantvas.smsengine.InstantVASHTTPInstrumentationRequestProperty;
 import instantvas.smsengine.producersandconsumers.EInstantVASEvents;
 import instantvas.smsengine.producersandconsumers.MOConsumer;
@@ -47,6 +48,7 @@ public class AddToMOQueue {
 	public AddToMOQueue(InstantVASApplicationConfiguration ivac) {
 		this.ivac     = ivac;
 		log           = ivac.log;
+		log.addInstrumentableEvents(HangmanSMSGameServicesInstrumentationEvents.values());
 		mtProducer    = new MTProducer(ivac, new MTConsumer(ivac));
 		moConsumer    = new MOConsumer(ivac, mtProducer);
 		moProducer    = new MOProducer(ivac, moConsumer);
