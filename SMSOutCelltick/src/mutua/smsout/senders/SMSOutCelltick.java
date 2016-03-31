@@ -32,16 +32,15 @@ public class SMSOutCelltick extends SMSOutSender {
 	////////////////
 	
 	public static int    CELLTICK_MAX_MT_CHARS = 134;
-	public static String ACCOUNT;
-	public static String VALIDITY;
-	public static String SMSC;
 	
 	private final String mtServiceUrl /*= "http://localhost:15001/cgi-bin/sendsms"*/;
 	private final String shortCode;
+	private final String smsc;
 
-	public SMSOutCelltick(Instrumentation<?, ?> log, String smsAppId, String shortCode, String mtServiceUrl, int numberOfRetryAttempts, long delayBetweenAttempts) {
+	public SMSOutCelltick(Instrumentation<?, ?> log, String smsAppId, String shortCode, String smsc, String mtServiceUrl, int numberOfRetryAttempts, long delayBetweenAttempts) {
 		super(log, "SMSOutCelltick", smsAppId, numberOfRetryAttempts, delayBetweenAttempts);
-		this.shortCode = shortCode;
+		this.shortCode    = shortCode;
+		this.smsc         = smsc;
 		this.mtServiceUrl = mtServiceUrl;
 	}
 	
@@ -79,12 +78,10 @@ public class SMSOutCelltick extends SMSOutSender {
 			requestData.addParameter("text",      smsOut.getText());
 			requestData.addParameter("subAct",    "1");
 			requestData.addParameter("from",      shortCode);
-			requestData.addParameter("smsc",      SMSC);
+			requestData.addParameter("smsc",      smsc);
 			requestData.addParameter("password",  "celltick");
 			requestData.addParameter("username",  "celltick");
-			requestData.addParameter("validity",  VALIDITY);
 			requestData.addParameter("bundle",    "R1A");
-			requestData.addParameter("account",   ACCOUNT);
 			requestData.addParameter("dlrmask",   "2");
 			requestData.addParameter("reportDLR", "0");
 			String response = HTTPClientAdapter.requestGet(mtServiceUrl, requestData, "UTF-8");
@@ -112,12 +109,10 @@ public class SMSOutCelltick extends SMSOutSender {
 			requestData.addParameter("to",        smsOut.getPhone());
 			requestData.addParameter("text",      SMSes[i]);
 			requestData.addParameter("from",      shortCode);
-			requestData.addParameter("smsc",      SMSC);
+			requestData.addParameter("smsc",      smsc);
 			requestData.addParameter("password",  "celltick");
 			requestData.addParameter("username",  "celltick");
-			requestData.addParameter("validity",  VALIDITY);
 			requestData.addParameter("bundle",    "R1A");
-			requestData.addParameter("account",   ACCOUNT);
 			requestData.addParameter("dlrmask",   "2");
 			requestData.addParameter("reportDLR", "0");
 			String response = HTTPClientAdapter.requestGet(mtServiceUrl, requestData, "UTF-8");

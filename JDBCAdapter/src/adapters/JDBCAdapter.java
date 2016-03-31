@@ -306,11 +306,13 @@ public abstract class JDBCAdapter {
 	/** reports that an exception has happened and checks the environment to attempt to prevent further errors */
 	private void handleException(SQLException e, AbstractPreparedProcedure abstractPreparedProcedure) {
 		log.reportThrowable(e, "Exception while executing query '"+abstractPreparedProcedure.getPreparedProcedureSQL()+"'. Recheking connections & prepared statements...");
-		try {
-			checkAndPopulatePoolOfConnections();
-			abstractPreparedProcedure.checkPreparedStatements();
-		} catch (Throwable t) {
-			log.reportThrowable(t, "Exception while validating the pool of connections & prepared statements. Please consider checking the database and/or rebooting the server & restarting the application");
+		synchronized (pool) {
+			try {
+				checkAndPopulatePoolOfConnections();
+				abstractPreparedProcedure.checkPreparedStatements();
+			} catch (Throwable t) {
+				log.reportThrowable(t, "Exception while validating the pool of connections & prepared statements. Please consider checking the database and/or rebooting the server & restarting the application");
+			}
 		}
 	}
 

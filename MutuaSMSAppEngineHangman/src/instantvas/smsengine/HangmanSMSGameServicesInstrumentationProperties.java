@@ -28,6 +28,8 @@ public enum HangmanSMSGameServicesInstrumentationProperties implements IInstrume
 			buffer.append(mo.toString());
 		}
 	},
+	
+	IP_REQUEST_DATA("queryString", String.class),
 
 	
 	// errors

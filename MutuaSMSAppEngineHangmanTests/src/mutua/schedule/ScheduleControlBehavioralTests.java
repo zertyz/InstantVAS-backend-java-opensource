@@ -2,7 +2,6 @@ package mutua.schedule;
 
 import static org.junit.Assert.*;
 
-import java.util.Arrays;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -63,7 +62,7 @@ public class ScheduleControlBehavioralTests {
 	}
 	
 	@Test
-	public void testTimeout() throws EventAlreadyScheduledException, EventNotScheduledException, InterruptedException {
+	public void testTimeMeasurement() throws EventAlreadyScheduledException, EventNotScheduledException, InterruptedException {
 		ScheduleControl<String> schedule = new ScheduleControl<String>(new IScheduleIndexingFunction<String>() {
 			@Override
 			public String getKey(String event) {
@@ -88,6 +87,109 @@ public class ScheduleControlBehavioralTests {
 		assertTrue("Wrong first executed event elapsed time -- "+executedEvents[0].getElapsedMillis()+"ms", Math.abs(500-executedEvents[0].getElapsedMillis()) < 10);
 		assertEquals("Wrong first executed event",              "late b", executedEvents[1].getExecutedEvent());
 		assertTrue("Wrong first executed event elapsed time -- "+executedEvents[1].getElapsedMillis()+"ms", Math.abs(1500-executedEvents[1].getElapsedMillis()) < 10);
+	}
+	
+	@Test
+	public void testNeverNotifiedEvents() throws EventAlreadyScheduledException, InterruptedException {
+		ScheduleControl<String> schedule = new ScheduleControl<String>(new IScheduleIndexingFunction<String>() {
+			@Override
+			public String getKey(String event) {
+				return event;
+			}
+		});
+		
+		final int  eventsPerPass = 100000;
+		final long timeoutMillis = 1000;
+
+		// first pass
+		for (int i=0; i<eventsPerPass; i++) {
+			String event = "FirstPassEvent#" + Integer.toString(i);
+			schedule.registerEvent(event);
+		}
+		
+		assertEquals("An event was consumed", eventsPerPass, schedule.getUnnotifiedEventsCount());
+		Thread.sleep(timeoutMillis+1);
+
+		// second pass
+		for (int i=0; i<eventsPerPass; i++) {
+			String event = "SecondPassEvent#" + Integer.toString(i);
+			schedule.registerEvent(event);
+		}
+		
+		assertEquals("Wrong number of pending events", 2*eventsPerPass, schedule.getUnnotifiedEventsCount());
+
+		ScheduleEntryInfo<String>[] timedoutEvents = schedule.consumePendingOldEvents(timeoutMillis);
+		assertTrue("Not just the first pass, but also the second pass' events were conosumed", schedule.getUnnotifiedEventsCount() > 0);
+		assertEquals("First pass events didn't leave the pending list", eventsPerPass, schedule.getUnnotifiedEventsCount());
+		
+		// first pass check (events that just left the pending events list)
+		for (int i=0; i<eventsPerPass; i++) {
+			String expectedPrefix = "FirstPassEvent#"; // + Integer.toString(i); not used because order cannot be guaranteed
+			String observedEvent  = timedoutEvents[i].getScheduledEvent();
+			
+			assertTrue("Events do not match", observedEvent.startsWith(expectedPrefix));	// order cannot be guaranteed
+			assertNull("Events that timeout are events that were never notified as executed, so executedEvent must be null", timedoutEvents[i].getExecutedEvent());
+			assertTrue("Event if not executed, getElapsed must return a value -- in this case, the time elapsed before considering the event as having timed out", timedoutEvents[i].getElapsedMillis() > timeoutMillis);
+		}
+
+	}
+	
+	@Test
+	public void testMilestones() throws EventAlreadyScheduledException, InterruptedException, EventNotScheduledException {
+		ScheduleControl<String> schedule = new ScheduleControl<String>(new IScheduleIndexingFunction<String>() {
+			@Override
+			public String getKey(String event) {
+				return event;
+			}
+		});
+		
+		String eventId = "testEvent";
+		
+		// wait to start -- to improve sleep precision
+		long start = System.currentTimeMillis();
+		while (start == System.currentTimeMillis()) ;
+
+		// milestone 1 -- event start (mo added to the queue)
+		schedule.registerEvent(eventId);
+		ScheduleEntryInfo<String> scheduledEntry = schedule.getPendingEventScheduleInfo(eventId);
+		Thread.sleep(1);
+		
+		// milestone 2 -- mo consumption process started
+		scheduledEntry.setMilestone("mo consumed");
+		Thread.sleep(2);
+		
+		// milestone 3 -- mt added to the queue
+		scheduledEntry.setMilestone("mt produced");
+		Thread.sleep(3);
+		
+		// milestone 4 -- event concluded (mt sent)
+		schedule.notifyEvent(eventId);
+		
+		// check
+		ScheduleEntryInfo<String>[] executedScheduleEntries = schedule.consumeExecutedEvents();
+		for (ScheduleEntryInfo<String> executedScheduleEntry : executedScheduleEntries) {
+			String output = executedScheduleEntry.milestonesToString("mt consumed", "MT response time");
+			assertEquals(output, "testEvent: mo consumed (+1ms); mt produced (+2ms); mt consumed (+3ms); MT response time: 6ms");
+		}
+		
+		// again. Test error paths
+		schedule.registerEvent(eventId);
+		Thread.sleep(1);
+		scheduledEntry = schedule.getPendingEventScheduleInfo(eventId);
+		
+		// no milestones
+		String output = scheduledEntry.milestonesToString("mt consumed", "MT response time");
+		assertNull(output);
+		
+		// unfinished event
+		scheduledEntry.setMilestone("mo consumed");
+		output = scheduledEntry.milestonesToString("mt consumed", "MT response time");
+		assertEquals(output, "testEvent: mo consumed (+1ms); Event not yet completed.");
+		
+		// timed out event
+		scheduledEntry.setTimedOut();
+		output = scheduledEntry.milestonesToString("mt consumed", "MT response time");
+		assertEquals(output, "testEvent: mo consumed (+1ms); Event completion track lost -- timedout after 1ms");
 	}
 	
 	@Test

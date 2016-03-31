@@ -1,6 +1,6 @@
 package instantvas.smsengine.producersandconsumers;
 
-import config.InstantVASApplicationConfiguration;
+import config.InstantVASInstanceConfiguration;
 import mutua.events.EventClient;
 import mutua.events.EventServer;
 import mutua.events.IEventLink;
@@ -20,7 +20,7 @@ import mutua.imi.IndirectMethodNotFoundException;
 
 public class SCProducer extends EventServer<EInstantVASEvents> {
 
-	public SCProducer(InstantVASApplicationConfiguration ivac,
+	public SCProducer(InstantVASInstanceConfiguration ivac,
 	                  EventClient<EInstantVASEvents> scConsumer) {
 		super(ivac.SCpcLink);
 		try {

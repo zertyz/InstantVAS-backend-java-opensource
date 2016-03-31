@@ -54,21 +54,21 @@ public class SMSProcessor {
 	// na verdade, todos os valores do construtor podem vir pra cá. De outro modo, não fica complicado
 	// criar os workers? Os parâmetros terão que dar a volta ao mundo... não?
 	public static void configureDefaultValuesForNewInstances(Instrumentation<?, ?> log, SMSAppModuleDALFactory baseModuleDAL) {
-		LOG                = log;
+		LOG             = log;
 		BASE_MODULE_DAL = baseModuleDAL;
 		log.reportDebug(SMSProcessor.class.getCanonicalName() + ": new configuration loaded.");
 	}
 	
 	
 	private final Instrumentation<?, ?> log = LOG;
-	private final IUserDB    userDB    = BASE_MODULE_DAL.getUserDB();
-	private final ISessionDB sessionDB = BASE_MODULE_DAL.getSessionDB();
+	private final IUserDB    userDB         = BASE_MODULE_DAL.getUserDB();
+	private final ISessionDB sessionDB      = BASE_MODULE_DAL.getSessionDB();
 	
 	
 	// message dispatchers
 	//////////////////////
 	
-	private final MessageDispatcher  mtDispatcher;
+	private final MessageDispatcher   mtDispatcher;
 	private final NavigationState[]   navigationStates;
 	private final ICommandProcessor[] commandProcessors;
 		

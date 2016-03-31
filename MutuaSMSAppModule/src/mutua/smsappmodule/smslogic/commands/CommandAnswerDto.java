@@ -44,7 +44,7 @@ public class CommandAnswerDto {
 		String userSession = (sessionAfterCommandExecution != null) ? sessionAfterCommandExecution.toString():"null";
 		return new StringBuffer().
 			append("userSession={").append(userSession).append("}, ").
-		    append("responseMessages=").append(Arrays.toString(responseMessages)).toString();
+		    append("responseMessages=").append(Arrays.toString(responseMessages).replace("\n", "\\n")).toString();
 	}
 	
 	

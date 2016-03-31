@@ -2,7 +2,7 @@ package instantvas.smsengine.web;
 
 import java.util.HashMap;
 
-import config.InstantVASApplicationConfiguration;
+import config.InstantVASInstanceConfiguration;
 import instantvas.smsengine.InstantVASHTTPInstrumentationRequestProperty;
 import instantvas.smsengine.producersandconsumers.SRConsumer;
 import instantvas.smsengine.producersandconsumers.SRProducer;
@@ -18,12 +18,12 @@ public class AddToSubscribeUserQueue {
 	private static final byte[] FAILED_ANSWER   = "FAILED"  .intern().getBytes();
 	
 	private final Instrumentation<InstantVASHTTPInstrumentationRequestProperty, String> log;
-	private final InstantVASApplicationConfiguration ivac;
+	private final InstantVASInstanceConfiguration ivac;
 	
 	// event consumers/producers
 	private final SRProducer                     srProducer;
 
-	public AddToSubscribeUserQueue(InstantVASApplicationConfiguration ivac) {
+	public AddToSubscribeUserQueue(InstantVASInstanceConfiguration ivac) {
 		this.ivac     = ivac;
 		log           = ivac.log;
 		srProducer    = new SRProducer(ivac, new SRConsumer(ivac));

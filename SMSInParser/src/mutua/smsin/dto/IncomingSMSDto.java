@@ -124,7 +124,7 @@ public class IncomingSMSDto /*implements ILoggableRequest*/ {
     public String toString() {
         return new StringBuffer("phone='").
         	append(phone).append("', text='").append(text).append("', carrier=").
-        	append(carrier.name()).append(", largeAccount=").
+        	append(carrier != null ? carrier.name() : "NULL").append(", largeAccount=").
         	append(largeAccount).append(", messageId='").append(moId).
         	append("', extraParameters=").append(Arrays.toString(extraParameters)).
             toString();

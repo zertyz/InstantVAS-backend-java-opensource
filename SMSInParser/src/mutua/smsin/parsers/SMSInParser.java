@@ -40,6 +40,16 @@ public abstract class SMSInParser<REQUEST_OBJECT, RESPONSE_OBJECT> {
 		this.childClassName = childClassName;
 		this.smsAppId       = smsAppId;
 	}
+	
+	/** Returns the list of parameters that should be present on 'REQUEST_OBJECT' in order for an MO to be parsed -- prefixed by 'precedingParameterNames'.
+	 *  On high performance HTTP Servers (like InstantVAS NativeHTTPServer), the requests should define parameters
+	 *  on this exact order and without any other parameters between them -- in this case, the correct method to
+	 *  parse MOs is {@link #parseIncomingSMS(String...)} */
+	public abstract String[] getRequestParameterNames(String... precedingParameterNames);
+	
+	/** High Efficiency parser for an MO, where 'parameterValues' elements should be in the order defined by
+	 *  {@link #getRequestParametersList} */
+	public abstract IncomingSMSDto parseIncomingSMS(String... parameterValues);
 
     /** Responsible for acquiring information from the message and building an 'IncomingSMSDto' object */
     public abstract IncomingSMSDto parseIncomingSMS(REQUEST_OBJECT request);

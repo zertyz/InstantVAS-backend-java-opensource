@@ -1,10 +1,13 @@
 package instantvas.smsengine.producersandconsumers;
 
-import config.InstantVASApplicationConfiguration;
+import static config.InstantVASLicense.IFDEF_INSTRUMENT_MO_AND_MT_TIMES;
+
+import config.InstantVASInstanceConfiguration;
 import mutua.events.EventClient;
 import mutua.events.IEventLink;
 import mutua.hangmansmsgame.smslogic.SMSProcessor;
 import mutua.icc.instrumentation.Instrumentation;
+import mutua.schedule.ScheduleEntryInfo;
 import mutua.smsin.dto.IncomingSMSDto;
 
 /** <pre>
@@ -23,14 +26,25 @@ public class MOConsumer implements EventClient<EInstantVASEvents> {
 	private Instrumentation<?, ?> log;
 	private SMSProcessor smsP;
 	
-	public MOConsumer(InstantVASApplicationConfiguration ivac,
-	                  MTProducer mtProducer) {
-		log  = ivac.log;
+	public MOConsumer(InstantVASInstanceConfiguration ivac,
+	                  MTProducer             mtProducer) {
+		this.log  = ivac.log;
 		smsP = new SMSProcessor(mtProducer, ivac.modulesNavigationStates, ivac.modulesCommandProcessors);
 	}
 	
 	@InstantVASEvent(EInstantVASEvents.MO_ARRIVED)
 	public void processMO(IncomingSMSDto mo) {
+		
+		// MO and MT instrumentation -- register a new milestone: MO just retrieved from the queue
+		if (IFDEF_INSTRUMENT_MO_AND_MT_TIMES) {
+			ScheduleEntryInfo<Integer> scheduledEntry = MOAndMTInstrumentation.schedule.getPendingEventScheduleInfo(mo.getMoId());
+			if (scheduledEntry == null) {
+				log.reportThrowable(new RuntimeException(), "MO/MT instrumentation error: MO was not scheduled: " + mo);
+			} else {
+				scheduledEntry.setMilestone("dequeued MO");
+			}
+		}
+		
 		try {
 			smsP.process(mo);
 		} catch (Throwable t) {

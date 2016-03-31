@@ -1,21 +1,34 @@
 package instantvas.nativewebserver;
 
+import static config.InstantVASLicense.*;
+
 import instantvas.smsengine.InstantVASHTTPInstrumentationRequestProperty;
+import instantvas.smsengine.producersandconsumers.EInstantVASEvents;
+import instantvas.smsengine.producersandconsumers.MOConsumer;
+import instantvas.smsengine.producersandconsumers.MOProducer;
+import instantvas.smsengine.producersandconsumers.MTConsumer;
+import instantvas.smsengine.producersandconsumers.MTProducer;
 import instantvas.smsengine.web.AddToMOQueue;
+import mutua.events.EventClient;
 import mutua.icc.instrumentation.Instrumentation;
+import mutua.smsin.dto.IncomingSMSDto;
+import mutua.smsin.parsers.SMSInParser;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.Executors;
 
 import com.sun.net.httpserver.*;
 
-import config.InstantVASApplicationConfiguration;
+import config.InstantVASInstanceConfiguration;
 
 /** <pre>
  * NativeHTTPServer.java
@@ -51,24 +64,37 @@ import config.InstantVASApplicationConfiguration;
 public class NativeHTTPServer {
 	
 	public static Instrumentation<InstantVASHTTPInstrumentationRequestProperty, String> log;
-	public static InstantVASApplicationConfiguration ivac;
+	public static InstantVASInstanceConfiguration ivac;
 	public static AddToMOQueue addToMOQueue;
 	
-	public static int NUMBER_OF_THREADS        = 20;
-	public static int PARAMETERS_HASH_CAPACITY = 20;	// should be > total number of unique parameter names among all handlers
-	public static int INPUT_BUFFER_SIZE   = 1024;
-	public static long READ_TIMEOUT       = 100;
+	// AddToMOQueue
+	public static SMSInParser<Map<String, String>, byte[]> moParser;
+	public static MTProducer                               mtProducer;
+	public static EventClient<EInstantVASEvents>           moConsumer;
+	public static MOProducer                               moProducer;
+
 
 	public static void instantiate() throws IllegalArgumentException, SecurityException, SQLException, IllegalAccessException, NoSuchFieldException {
-		ivac = new InstantVASApplicationConfiguration();
-		addToMOQueue = new AddToMOQueue(ivac);
+		ivac       = new InstantVASInstanceConfiguration();
+		log        = ivac.log;
+		moParser   = ivac.moParser;
+		mtProducer = new MTProducer(ivac, new MTConsumer(ivac));
+		moConsumer = new MOConsumer(ivac, mtProducer);
+		moProducer = new MOProducer(ivac, moConsumer);
+
+		addToMOQueue = new AddToMOQueue(log, moProducer, moParser,
+		                                InstantVASInstanceConfiguration.ALLOWABLE_MSISDN_MIN_LENGTH,
+		                                InstantVASInstanceConfiguration.ALLOWABLE_MSISDN_MAX_LENGTH,
+		                                InstantVASInstanceConfiguration.ALLOWABLE_MSISDN_PREFIXES,
+		                                InstantVASInstanceConfiguration.ALLOWABLE_CARRIERS,
+		                                InstantVASInstanceConfiguration.ALLOWABLE_SHORT_CODES);
 	}
 	
 	public static void main(String[] args) throws IOException, IllegalArgumentException, SecurityException, SQLException, IllegalAccessException, NoSuchFieldException {
-		InstantVASApplicationConfiguration.setHangmanProductionDefaults();
+		InstantVASInstanceConfiguration.setHangmanProductionDefaults();		// temporary solution, while we can't load the configuration file
 		instantiate();
 		ivac.log.reportDebug("InstantVAS Internal :80 server started. Requests may now commence.");
-		startServer(8080, 9999, InstantVASSMSWebHandlers.values());
+		startServer(NATIVE_HTTP_SERVER_PORT, NATIVE_HTTP_SOCKET_BACKLOG_QUEUE_SLOTS, InstantVASSMSWebHandlers.values());
 		System.out.println("Started a :80 server. Please, request!");
 	}
 	
@@ -79,16 +105,16 @@ public class NativeHTTPServer {
 				server.createContext(handler.getContextPath(), handler);
 			}
 		}
-		server.setExecutor(Executors.newFixedThreadPool(NUMBER_OF_THREADS));
+		server.setExecutor(Executors.newFixedThreadPool(NATIVE_HTTP_NUMBER_OF_THREADS));
 		server.start();
 	}
 	
-	private static WeakHashMap<Thread, HashMap<String, String>> parametersMaps = new WeakHashMap<Thread, HashMap<String, String>>(NUMBER_OF_THREADS);
+	private static WeakHashMap<Thread, HashMap<String, String>> parametersMaps = new WeakHashMap<Thread, HashMap<String, String>>(NATIVE_HTTP_NUMBER_OF_THREADS);
 	
 	public static synchronized HashMap<String, String> getParametersHash() {
 		HashMap<String, String> parameters = parametersMaps.get(Thread.currentThread());
 		if (parameters == null) {
-			parameters = new HashMap<String, String>(PARAMETERS_HASH_CAPACITY);
+			parameters = new HashMap<String, String>(NATIVE_HTTP_PARAMETERS_HASH_CAPACITY);
 			parametersMaps.put(Thread.currentThread(), parameters);
 		}
 		return parameters;
@@ -130,19 +156,118 @@ public class NativeHTTPServer {
 
 		return parameters;
 	}
+	
+	/** By "strict", we mean:
+	 *  1. Parameters are only matched if their order in the 'queryString' corresponds to the order in 'parameterNames'
+	 *  2. Names are case sensitive
+	 *  3. 'queryString' parameters before the first element in 'parameterNames' are ignored
+	 *  4. the same happens to 'queryString' parameters after the last element in 'parameterNames'.
+	 *  Returns an array of string containing parameter values extracted from 'queryString' in the order defined in 'parameterNames'. */
+	public static String[] retrieveStrictGetParameters(String[] parameterNames, String queryString) throws UnsupportedEncodingException {
+		
+		String[] parameterValues = new String[parameterNames.length];
+		
+		int nextTokenStart = 0;
+		int nextTokenEnd   = -1;
+		
+		int i=0;
+		while (i<parameterValues.length) {
+			String expectedParameterName = parameterNames[i];
+			String parameterValue;
+			String parameterName;
+			// gathering parameter name state
+			nextTokenEnd = queryString.indexOf('=', nextTokenStart);
+			if (nextTokenEnd == -1) {
+				break;
+			}
+			// note: for performance reasons, we do not 'URLDecoder' parameter names
+			parameterName = queryString.substring(nextTokenStart, nextTokenEnd);
+			nextTokenStart = nextTokenEnd+1;		// skip the '=' character
+
+			// gathering parameter value state
+			nextTokenEnd = queryString.indexOf('&', nextTokenStart);
+			if (nextTokenEnd == -1) {
+				if (expectedParameterName.equals(parameterName)) {
+					parameterValue = URLDecoder.decode(queryString.substring(nextTokenStart), "UTF-8");
+					parameterValues[i++] = parameterValue;
+				}
+				break;
+			} else {
+				if (expectedParameterName.equals(parameterName)) {
+					parameterValue = URLDecoder.decode(queryString.substring(nextTokenStart, nextTokenEnd), "UTF-8");
+					parameterValues[i++] = parameterValue;
+				}
+				nextTokenStart = nextTokenEnd+1;		// skip the '&' character
+			}
+		}
+
+		return parameterValues;
+	}
 
 	
 	public enum InstantVASSMSWebHandlers implements INativeHTTPServerHandler {
 				
 		ADD_TO_MO_QUEUE("/AddToMOQueue") {
 			
+			static final int    AUTHENTICATION_TOKENParameterIndex       = 0;
+			static final String AUTHENTICATION_TOKENParameterName        = "AUTHENTICATION_TOKEN";
+			static final int    PRECEDING_REQUEST_PARAMETERS_LENGTH      = 1;
+			
+			final byte[] BAD_REQUEST        = "BAD REQUEST".getBytes();
+			final byte[] BAD_AUTHENTICATION = "BAD AUTHENTICATION".getBytes();
+			
+			final String[] parameterNames = ivac.moParser.getRequestParameterNames(AUTHENTICATION_TOKENParameterName);
+			
+			{
+				log.reportDebug("/AddToMOQueue: Expected Parameters: " + Arrays.deepToString(parameterNames));
+			}
+			
 			@Override
-			public void handle(HttpExchange he) throws IOException {
-				String queryString = he.getRequestURI().getRawQuery();
-				byte[] response = addToMOQueue.process(retrieveGetParameters(queryString), queryString);
-				he.sendResponseHeaders(200, response.length);
-				he.getResponseBody().write(response);
-		        he.close();
+			public void handle(HttpExchange he) {
+				try {
+					byte[] response;
+					String queryString = he.getRequestURI().getRawQuery();
+					String[] parameterValues = retrieveStrictGetParameters(parameterNames, queryString);
+					log.reportDebug("/AddToMOQueue: " + Arrays.deepToString(parameterValues));
+					if (parameterValues == null) {
+						log.reportDebug("/AddToMOQueue " + new String(BAD_REQUEST) + ": " + queryString);
+						response = BAD_REQUEST;
+					} else					
+					// should we deny the request?
+					// code shared between 'NavitaHTTPServer.ADD_TO_MO_QUEUE' and 'AddToMOQueue' servlet. Please keep them in sync.
+					if (// test the authentication token
+					    (IFDEF_HARCODED_INSTANCE_RESTRICTION && (!INSTANTVAS_INSTANCE_CONFIG0_TOKEN.equals(parameterValues[AUTHENTICATION_TOKENParameterIndex]))) ||
+						// test additional MO parameter values -- EQUALS check method
+					    ((IFDEF_HARDCODE_CHECK_METHOD_OF_ADDITIONAL_MO_PARAMETER_VALUES == HardCodeCheckMethodOfAdditionalMOParameterValues_EQUALS) && (
+					     ((MO_ADDITIONAL_RULEn_LENGTH > 0) && (!MO_ADDITIONAL_RULE0_VALUE.equals(parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX])))
+					    )) ||
+						// test additional MO parameter values -- STARTS_WITH with MAX_LEN check method
+					    ((IFDEF_HARDCODE_CHECK_METHOD_OF_ADDITIONAL_MO_PARAMETER_VALUES == HardCodeCheckMethodOfAdditionalMOParameterValues_STARTS_WITH) && (
+					     ((MO_ADDITIONAL_RULEn_LENGTH > 0) && ( (parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX] == null) || (parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX].length() > MO_ADDITIONAL_RULE0_MAX_LEN) || (!parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX].startsWith(MO_ADDITIONAL_RULE0_VALUE))) )
+					    )) ||
+					    // test additional MO parameter values -- REGEX
+					    ((IFDEF_HARDCODE_CHECK_METHOD_OF_ADDITIONAL_MO_PARAMETER_VALUES == HardCodeCheckMethodOfAdditionalMOParameterValues_REGEX) && (
+					     ((MO_ADDITIONAL_RULEn_LENGTH > 0) && ( (parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX] == null) || (!MO_ADDITIONAL_RULE0_REGEX.matcher(parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]).matches()) ) )
+					   )) ) {
+						log.reportDebug("/AddToMOQueue " + new String(BAD_AUTHENTICATION) + ": " + queryString);
+						log.reportDebug("IFDEF_HARDCODE_CHECK_METHOD_OF_ADDITIONAL_MO_PARAMETER_VALUES=" + IFDEF_HARDCODE_CHECK_METHOD_OF_ADDITIONAL_MO_PARAMETER_VALUES);
+						log.reportDebug("MO_ADDITIONAL_RULEn_LENGTH=" + MO_ADDITIONAL_RULEn_LENGTH);
+						log.reportDebug("parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]=" + parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]);
+						log.reportDebug("MO_ADDITIONAL_RULE0_REGEX.matcher(parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]).matches()" + MO_ADDITIONAL_RULE0_REGEX.matcher(parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]).matches());
+						response = BAD_AUTHENTICATION;
+					} else {
+						// the request is allowed. Proceed.
+						IncomingSMSDto mo = ivac.moParser.parseIncomingSMS(parameterValues);
+						response = addToMOQueue.processRequest(mo, queryString);
+					}
+					
+					he.sendResponseHeaders(200, response.length);
+					OutputStream os = he.getResponseBody();
+					os.write(response);
+					os.close();		// closing just the output stream seems to allow the connection to be reused (keep-alive)
+				} catch (Throwable t) {
+					log.reportThrowable(t, "Error processing request /AddToMOQueue: "+he.getRequestURI().getRawQuery());
+				}
 			}
 		},
 		

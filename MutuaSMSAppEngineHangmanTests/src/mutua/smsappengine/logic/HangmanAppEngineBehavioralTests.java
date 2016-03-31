@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.sql.SQLException;
 
+import mutua.icc.configuration.ConfigurationManager;
 import mutua.imi.IndirectMethodInvocationInfo;
 import mutua.smsappmodule.SMSAppModuleTestCommons;
 import mutua.smsappmodule.dal.IChatDB;
@@ -21,7 +22,7 @@ import mutua.subscriptionengine.TestableSubscriptionAPI;
 import org.junit.Before;
 import org.junit.Test;
 
-import config.InstantVASApplicationConfiguration;
+import config.InstantVASInstanceConfiguration;
 import instantvas.smsengine.producersandconsumers.EInstantVASEvents;
 
 /** <pre>
@@ -40,7 +41,7 @@ public class HangmanAppEngineBehavioralTests {
 	
 	private static SMSAppModuleTestCommons tc;
 	
-	private static InstantVASApplicationConfiguration ivac;
+	private static InstantVASInstanceConfiguration ivac;
 	
 	// db
 	private static IUserDB         userDB;
@@ -57,8 +58,8 @@ public class HangmanAppEngineBehavioralTests {
 	
 	public static void _HangmanAppEngineBehavioralTests() throws IllegalArgumentException, SecurityException, SQLException, IllegalAccessException, NoSuchFieldException {
 		
-		InstantVASApplicationConfiguration.setHangmanTestDefaults();
-		ivac = new InstantVASApplicationConfiguration();
+		InstantVASInstanceConfiguration.setHangmanTestDefaults();
+		ivac = new InstantVASInstanceConfiguration();
 
 		ivac.subscriptionEngine = new TestableSubscriptionAPI(ivac.log);
 		
@@ -194,6 +195,14 @@ public class HangmanAppEngineBehavioralTests {
 	/*******************************
 	** EXPECTED USAGE PATHS TESTS **
 	*******************************/
+    
+    @Test
+    public void testConfiguration() throws IllegalArgumentException, IllegalAccessException {
+		ConfigurationManager cm = new ConfigurationManager(ivac.log, InstantVASInstanceConfiguration.class);
+		String serializedFields = cm.serializeConfigurableClasses();
+		System.out.println(serializedFields);
+		cm.deserializeConfigurableClasses(serializedFields);
+    }
     
 	@Test
 	public void testDefaultPhrasings() throws SQLException {

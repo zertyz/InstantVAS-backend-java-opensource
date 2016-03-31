@@ -1,6 +1,6 @@
 package instantvas.smsengine.producersandconsumers;
 
-import config.InstantVASApplicationConfiguration;
+import config.InstantVASInstanceConfiguration;
 import instantvas.smsengine.InstantVASHTTPInstrumentationRequestProperty;
 import mutua.events.EventClient;
 import mutua.events.IEventLink;
@@ -23,7 +23,7 @@ public class SCConsumer implements EventClient<EInstantVASEvents> {
 	private Instrumentation<InstantVASHTTPInstrumentationRequestProperty, String> log;
 	private SMSAppModuleCommandsSubscription subscriptionCommands;
 	
-	public SCConsumer(InstantVASApplicationConfiguration ivac) {
+	public SCConsumer(InstantVASInstanceConfiguration ivac) {
 		log  = ivac.log;
 		subscriptionCommands = ivac.subscriptionCommands;
 	}

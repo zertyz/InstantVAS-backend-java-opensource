@@ -1,5 +1,7 @@
 package config;
 
+import static config.InstantVASLicense.*;
+
 import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHelp.CommandNamesHelp.*;
 import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHelp.CommandTriggersHelp.*;
 import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsSubscription.CommandNamesSubscription.*;
@@ -66,6 +68,7 @@ import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesHelp;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesProfile;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesSubscription;
+import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 import mutua.smsin.parsers.SMSInCelltick;
 import mutua.smsin.parsers.SMSInParser;
 import mutua.smsout.senders.SMSOutCelltick;
@@ -76,21 +79,56 @@ import mutua.subscriptionengine.TestableSubscriptionAPI;
 import adapters.PostgreSQLAdapter;
 
 /** <pre>
- * HangmanSMSModulesConfiguration.java
- * ===================================
+ * InstantVASInstanceConfiguration.java
+ * ====================================
  * (created by luiz, Sep 15, 2015)
  *
- * This class sets all 'MutuaSMSAppModule*' projects to behave as an unified Hangman SMS Game
+ * This class defines configurations that m
  *
  * @see RelatedClass(es)
  * @version $Id$
  * @author luiz
  */
 
-public class InstantVASApplicationConfiguration {
+public class InstantVASInstanceConfiguration {
 
-	// MUTUA ICC CONFIGURABLE CONSTANTS
-	///////////////////////////////////
+//	// Instant VAS main configuration
+//	/////////////////////////////////
+//	
+//	public enum EConfigurationSourceType {JAR_FILE/*read-only*/, FS_FILE/*rw*/, HTTP/*rw*/, POSTGRESQL/*rw*/};
+//	
+//	@ConfigurableElement("Defines the retrieve method for the Instant VAS instances definitions")
+//	public static EConfigurationSourceType INSTANTVAS_INSTANCES_SOURCE_TYPE;
+//	@ConfigurableElement("The location, in respect to the above definition, to retrieve the data from")
+//	public static String                   INSTANTVAS_INSTANCES_SOURCE_ACCESS_INFO;
+//	
+//	// Instant VAS instances
+//	////////////////////////
+//	// The following values may be repeated n times -- one for each SMS Application Instance served by this Instant VAS server
+//		
+//	@ConfigurableElement("Defines the retrieve method for the Instant VAS application configuration")
+//	public static EConfigurationSourceType[] INSTANTVAS_INSTANCE_CONFIG_TYPE;
+//	@ConfigurableElement("The location, in respect to the above definition, to retrieve the data from")
+//	public static String[]                   INSTANTVAS_INSTANCE_CONFIG_ACCESS_INFO;
+//	@ConfigurableElement("The token this instance's requests are required to provide to have their authorization granted")
+//	public static String[]                   INSTANTVAS_INSTANCE_CONFIG_TOKEN;
+//	
+//	// Navite HTTP Server
+//	/////////////////////
+//
+//	@ConfigurableElement("The port the Native HTTP server should listen to, on all interfaces")
+//	public static int NATIVE_HTTP_SERVER_PORT                = 8080;
+//	@ConfigurableElement("The number of accepted connections put on wait while one of the request processing threads become available to process them")
+//	public static int NATIVE_HTTP_SOCKET_BACKLOG_QUEUE_SLOTS = 9999;
+//	@ConfigurableElement("The maximum number of requests to be processed in parallel by the native web server")
+//	public static int NATIVE_HTTP_NUMBER_OF_THREADS          = 5;
+//	@ConfigurableElement("For POST methods, the native web server reads chunks at the most this number of bytes")
+//	public static int NATIVE_HTTP_INPUT_BUFFER_SIZE          = 1024;
+//	@ConfigurableElement("While reading the chunks above, wait at most this number of milliseconds before considering the connection stale")
+//	public static int NATIVE_HTTP_READ_TIMEOUT               = 30000;
+	
+	// SMS Application
+	//////////////////
 
 	@ConfigurableElement("Where to store report data")
 	public static EInstrumentationDataPours REPORT_DATA_COLLECTOR_STRATEGY;
@@ -102,8 +140,8 @@ public class InstantVASApplicationConfiguration {
 	public static String LOG_WEBAPP_FILE_PATH;
 	@ConfigurableElement("The name of the Hangman Game, as shown in the logs")
 	public static String APP_NAME;
-	@ConfigurableElement("The short code of the Hangman Game")
-	public static String SHORT_CODE;
+//	@ConfigurableElement("The short code of the Hangman Game")
+//	public static String SHORT_CODE;
 	@ConfigurableElement("The subscription cost to the end user")
 	public static String PRICE_TAG;
 	@ConfigurableElement("Default prefix for invited & new users -- The suffix are the last 4 phone number digits")
@@ -113,24 +151,27 @@ public class InstantVASApplicationConfiguration {
 	/////////////////////////////////////////////////////////////
 	
 	public enum EEventProcessingStrategy {DIRECT, RAM, LOG_FILE, POSTGRESQL};
-	public enum EInstantVASDALs     {RAM, POSTGRESQL}
+	public enum EInstantVASDAL           {RAM, POSTGRESQL}
 		
 	// HTTPClientAdapter
 	////////////////////
 	
 	@ConfigurableElement("General HTTP/HTTPD client behavior, in milliseconds")
 	public static int HTTP_CONNECTION_TIMEOUT_MILLIS;
+	@ConfigurableElement()
 	public static int HTTP_READ_TIMEOUT_MILLIS;
 	
 	// Integration with 'SMSOutCelltick' and 'SubscriptionEngineCelltick'
 	/////////////////////////////////////////////////////////////////////
 
 	@ConfigurableElement("Subscription service URLs & data for 'CelltickLiveScreenSubscriptionAPI'")
-	public static String CELLTICK_SUBSCRIBE_SERVICE_URL;
-	public static String CELLTICK_UNSUBSCRIBE_SERVICE_URL;
-	public static String CELLTICK_SUBSCRIPTION_CHANNEL_NAME;
+	public static String SUBSCRIBE_SERVICE_URL;
+	@ConfigurableElement()
+	public static String UNSUBSCRIBE_SERVICE_URL;
+	@ConfigurableElement()
+	public static String SUBSCRIPTION_CHANNEL_NAME;
 	@ConfigurableElement("MT service URLs & data for Celltick's Kannel APIs")
-	public static String CELLTICK_MT_SERVICE_URL;
+	public static String MT_SERVICE_URL;
 	@ConfigurableElement("the number of times 'sendMessage' will attempt to send the message before reporting it as unsendable")
 	public static int    MT_SERVICE_NUMBER_OF_RETRY_ATTEMPTS;
 	@ConfigurableElement("the number of milliseconds 'sendMessage' will wait between retry attempts")
@@ -140,7 +181,7 @@ public class InstantVASApplicationConfiguration {
 	//////////////
 	
 	@ConfigurableElement("The desired data access handler for all hangman databases")
-	public static EInstantVASDALs  DATA_ACCESS_LAYER;
+	public static EInstantVASDAL  DATA_ACCESS_LAYER;
 	@ConfigurableElement("Hostname (or IP) of the PostgreSQL server. For localhost, try '::1' first")
 	public static String  POSTGRESQL_HOSTNAME;
 	@ConfigurableElement("Connection port for the PostgreSQL server")
@@ -212,8 +253,48 @@ public class InstantVASApplicationConfiguration {
 	@ConfigurableElement("The number of consumer threads. Applyable to all queues (not applyable to the 'DIRECT' event processing strategy). This number may be greater than 'NUMBER_OF_CONCURRENT_CONNECTIONS' and should get bigger as the latency between the two involved servers increase, as the processing time on the MT server increase, as the number of MT retries increase and so on...")
 	public static int    SC_QUEUE_NUMBER_OF_WORKER_THREADS;
 	
-	@ConfigurableElement("Not a good idea to mess with these values")
-	public static EInstantVASModules[] ENABLED_MODULES;
+//	public enum EInstantVASModules {// celltick integration modules, for production
+//	                                CELLTICK_BR_INTEGRATION,
+//	                                // celltick integration modules, for testing
+//	                                CELLTICK_JUNIT_TESTS_INTEGRATION,
+//	                                // infrastructure modules
+//	                                BASE, HELP, SUBSCRIPTION, SUBSCRIPTION_LIFECYCLE, DRAW, PROFILE,
+//	                                // entretainment modules
+//	                                QUIZ, CELEBRITY_AI, REVERSE_AUCTION,
+//	                                // entretainment / mobile learning modules
+//	                                DECISION_TREE,
+//	                                // game modules
+//	                                HANGMAN, TIC_TAC_TOE, XAVECO,
+//	                                // bet modules
+//	                                SWEEPSTAKE,	OFFER_VS_DEMAND,
+//	                                // mobile marketing modules
+//	                                ALERTS, NOTIFICATIONS, PROXIMITY_SEARCH, TEXT4INFO, PIN_CODE, MASS_TEXT_MESSAGING,
+//	                                // social network modules
+//	                                CHAT, DATING, MATCH_MAKING, SMS_TWITTER, SMS_QUORA,
+//	                                // mobile banking modules
+//	                                MPAYMENT,
+//	                                // mobile aggregator modules
+//	                                ZETA, SMS_ROUTER,
+//	};
+//
+//
+//	@ConfigurableElement("Not a good idea to mess with these values")
+//	public static EInstantVASModules[] ENABLED_MODULES;
+	
+	// AddToMOQueue, AddToSubscribeUserQueue and other services (license infringment control)
+	/////////////////////////////////////////////////////////////////////////////////////////
+	
+	@ConfigurableElement("If set, instructs /AddToMOQueue and other services to require received MSISDNs to have a minimum length")
+	public static int                   ALLOWABLE_MSISDN_MIN_LENGTH = -1;
+	@ConfigurableElement("Same as above, but for a maximum length")
+	public static int                   ALLOWABLE_MSISDN_MAX_LENGTH = -1;
+	@ConfigurableElement("If set, MSISDNs used on any service will be required to have one of the listed prefixes")
+	public static String[]              ALLOWABLE_MSISDN_PREFIXES;
+	@ConfigurableElement("If set, /AddToMOQueue will only process MOs from the listed carriers")
+	public static ESMSInParserCarrier[] ALLOWABLE_CARRIERS;
+	@ConfigurableElement("If set, /AddToMOQueue (and other services) will only process MOs and send MTs to the listed short codes -- which may be long codes as well")
+	public static String[]              ALLOWABLE_SHORT_CODES;
+
 
 	
 	// Phrasings
@@ -422,98 +503,73 @@ public class InstantVASApplicationConfiguration {
 	public static String[] HANGMANtrgLocalNewLetterOrWordSuggestionForBot;
 	
 
-	// navigation states
-	////////////////////
-	
-	@ConfigurableElement("Navigation state used to initiate the first interaction with the application and, also, the state after users subscriptions cancellation")
-	public static EInstantVASCommandTriggers[] BASEnstNewUser;
-	@ConfigurableElement("Navigation state used by registered users. Also the 'main loop' navigation state, to which all other states revert to when they finish their businesses")
-	public static EInstantVASCommandTriggers[] BASEnstExistingUser;
-	@ConfigurableElement("Navigation state used to show the composite help messages, containing command triggers to navigate from here on")
-	public static EInstantVASCommandTriggers[] HELPnstPresentingCompositeHelp;
-	@ConfigurableElement("Navigation state used to implement the double opt-in process")
-	public static EInstantVASCommandTriggers[] SUBSCRIPTIONnstAnsweringDoubleOptin;
-	@ConfigurableElement("Navigation state used to interact with the user when asking for a nickname")
-	public static EInstantVASCommandTriggers[] PROFILEnstRegisteringNickname;
-	@ConfigurableElement("Navigation state used when privately chatting with someone -- allows the user to simply type the message (no need to provide the nickname)")
-	public static EInstantVASCommandTriggers[] CHATnstChattingWithSomeone;
-	@ConfigurableElement("Navigation state part of the invitation process of a human to play a hangman match -- on this state, the user must enter the desired word to be guessed, which will be processed by 'cmdHoldMatchWord'")
-	public static EInstantVASCommandTriggers[] 	HANGMANnstEnteringMatchWord;
-	@ConfigurableElement("State an invited user gets into after he/she is invited for a match, which is set by 'cmdHoldMatchWord'. The invited user answer will, then, be processed by 'cmdAnswerToInvitation'")
-	public static EInstantVASCommandTriggers[] HANGMANnstAnsweringToHangmanMatchInvitation;
-	@ConfigurableElement("Navigation state that indicates the user is playing a hangman match with a human (as the invited opponent), and his/her role is to guess the word")
-	public static EInstantVASCommandTriggers[] HANGMANnstGuessingWordFromHangmanHumanOpponent;
-	@ConfigurableElement("Navigation state that indicates the user is playing a hangman match with the robot, and his/her hole is to guess the word")
-	public static EInstantVASCommandTriggers[] HANGMANnstGuessingWordFromHangmanBotOpponent;
-	
-	public enum EInstantVASCommandTriggers {
-		// help
-		HELPtrgGlobalStartCompositeHelpDialog,
-		HELPtrgLocalShowNextCompositeHelpMessage,
-		HELPtrgGlobalShowNewUsersFallbackHelp,
-		HELPtrgGlobalShowExistingUsersFallbackHelp,
-		HELPtrgGlobalShowStatelessHelpMessage,
-		HELPtrgGlobalShowStatefulHelpMessage,
-		// subscription
-		SUBSCRIPTIONtrgLocalStartDoubleOptin,
-		SUBSCRIPTIONtrgLocalAcceptDoubleOptin,
-		SUBSCRIPTIONtrgLocalRefuseDoubleOptin,
-		SUBSCRIPTIONtrgGlobalUnsubscribe,
-		// profile
-		PROFILEtrgGlobalStartAskForNicknameDialog,
-		PROFILEtrgLocalNicknameDialogCancelation,
-		PROFILEtrgLocalRegisterNickname,
-		PROFILEtrgGlobalRegisterNickname,
-		PROFILEtrgGlobalShowUserProfile,
-		// chat
-		CHATtrgGlobalSendPrivateMessage,
-		CHATtrgLocalSendPrivateReply,
-		// hangman
-		HANGMANtrgGlobalInviteNicknameOrPhoneNumber,
-		HANGMANtrgLocalHoldMatchWord,
-		HANGMANtrgLocalAcceptMatchInvitation,
-		HANGMANtrgLocalRefuseMatchInvitation,
-		HANGMANtrgLocalNewLetterOrWordSuggestionForHuman,
-		HANGMANtrgLocalNewLetterOrWordSuggestionForBot;
-		
-		public String[] getCommandTriggerPatterns() throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
-			return (String[])InstantVASApplicationConfiguration.class.getField(name()).get(null);
-		}
-		
-		/** Converts a navigation state's command & triggers set based on an 'EInstantVASCommandTriggers' array to a string based representation */
-		public static String[][] get2DStringArrayFromEInstantVASCommandTriggersArray(EInstantVASCommandTriggers[] navigationStateCommandTriggers) throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
-			String[][] stringArrayNavigationStateTriggers = new String[navigationStateCommandTriggers.length][];
-			for (int i=0; i<stringArrayNavigationStateTriggers.length; i++) {
-				stringArrayNavigationStateTriggers[i] = navigationStateCommandTriggers[i].getCommandTriggerPatterns();
-			}
-			return stringArrayNavigationStateTriggers;
-		}
-	};
-	
-	public enum EInstantVASModules {// celltick integration modules, for production
-	                                CELLTICK_BR_INTEGRATION,
-	                                // celltick integration modules, for testing
-	                                CELLTICK_JUNIT_TESTS_INTEGRATION,
-	                                // infrastructure modules
-	                                BASE, HELP, SUBSCRIPTION, SUBSCRIPTION_LIFECYCLE, DRAW, PROFILE,
-	                                // entretainment modules
-	                                QUIZ, CELEBRITY_AI, REVERSE_AUCTION,
-	                                // entretainment / mobile learning modules
-	                                DECISION_TREE,
-	                                // game modules
-	                                HANGMAN, TIC_TAC_TOE, XAVECO,
-	                                // bet modules
-	                                SWEEPSTAKE,	OFFER_VS_DEMAND,
-	                                // mobile marketing modules
-	                                ALERTS, NOTIFICATIONS, PROXIMITY_SEARCH, TEXT4INFO, PIN_CODE, MASS_TEXT_MESSAGING,
-	                                // social network modules
-	                                CHAT, DATING, MATCH_MAKING, SMS_TWITTER, SMS_QUORA,
-	                                // mobile banking modules
-	                                MPAYMENT,
-	                                // mobile aggregator modules
-	                                ZETA, SMS_ROUTER,
-		
-	};
+//	// navigation states
+//	////////////////////
+//	
+//	@ConfigurableElement("Navigation state used to initiate the first interaction with the application and, also, the state after users subscriptions cancellation")
+//	public static EInstantVASCommandTriggers[] BASEnstNewUser;
+//	@ConfigurableElement("Navigation state used by registered users. Also the 'main loop' navigation state, to which all other states revert to when they finish their businesses")
+//	public static EInstantVASCommandTriggers[] BASEnstExistingUser;
+//	@ConfigurableElement("Navigation state used to show the composite help messages, containing command triggers to navigate from here on")
+//	public static EInstantVASCommandTriggers[] HELPnstPresentingCompositeHelp;
+//	@ConfigurableElement("Navigation state used to implement the double opt-in process")
+//	public static EInstantVASCommandTriggers[] SUBSCRIPTIONnstAnsweringDoubleOptin;
+//	@ConfigurableElement("Navigation state used to interact with the user when asking for a nickname")
+//	public static EInstantVASCommandTriggers[] PROFILEnstRegisteringNickname;
+//	@ConfigurableElement("Navigation state used when privately chatting with someone -- allows the user to simply type the message (no need to provide the nickname)")
+//	public static EInstantVASCommandTriggers[] CHATnstChattingWithSomeone;
+//	@ConfigurableElement("Navigation state part of the invitation process of a human to play a hangman match -- on this state, the user must enter the desired word to be guessed, which will be processed by 'cmdHoldMatchWord'")
+//	public static EInstantVASCommandTriggers[] HANGMANnstEnteringMatchWord;
+//	@ConfigurableElement("State an invited user gets into after he/she is invited for a match, which is set by 'cmdHoldMatchWord'. The invited user answer will, then, be processed by 'cmdAnswerToInvitation'")
+//	public static EInstantVASCommandTriggers[] HANGMANnstAnsweringToHangmanMatchInvitation;
+//	@ConfigurableElement("Navigation state that indicates the user is playing a hangman match with a human (as the invited opponent), and his/her role is to guess the word")
+//	public static EInstantVASCommandTriggers[] HANGMANnstGuessingWordFromHangmanHumanOpponent;
+//	@ConfigurableElement("Navigation state that indicates the user is playing a hangman match with the robot, and his/her hole is to guess the word")
+//	public static EInstantVASCommandTriggers[] HANGMANnstGuessingWordFromHangmanBotOpponent;
+//	
+//	public enum EInstantVASCommandTriggers {
+//		// help
+//		HELPtrgGlobalStartCompositeHelpDialog,
+//		HELPtrgLocalShowNextCompositeHelpMessage,
+//		HELPtrgGlobalShowNewUsersFallbackHelp,
+//		HELPtrgGlobalShowExistingUsersFallbackHelp,
+//		HELPtrgGlobalShowStatelessHelpMessage,
+//		HELPtrgGlobalShowStatefulHelpMessage,
+//		// subscription
+//		SUBSCRIPTIONtrgLocalStartDoubleOptin,
+//		SUBSCRIPTIONtrgLocalAcceptDoubleOptin,
+//		SUBSCRIPTIONtrgLocalRefuseDoubleOptin,
+//		SUBSCRIPTIONtrgGlobalUnsubscribe,
+//		// profile
+//		PROFILEtrgGlobalStartAskForNicknameDialog,
+//		PROFILEtrgLocalNicknameDialogCancelation,
+//		PROFILEtrgLocalRegisterNickname,
+//		PROFILEtrgGlobalRegisterNickname,
+//		PROFILEtrgGlobalShowUserProfile,
+//		// chat
+//		CHATtrgGlobalSendPrivateMessage,
+//		CHATtrgLocalSendPrivateReply,
+//		// hangman
+//		HANGMANtrgGlobalInviteNicknameOrPhoneNumber,
+//		HANGMANtrgLocalHoldMatchWord,
+//		HANGMANtrgLocalAcceptMatchInvitation,
+//		HANGMANtrgLocalRefuseMatchInvitation,
+//		HANGMANtrgLocalNewLetterOrWordSuggestionForHuman,
+//		HANGMANtrgLocalNewLetterOrWordSuggestionForBot;
+//		
+//		public String[] getCommandTriggerPatterns() throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
+//			return (String[])InstantVASInstanceConfiguration.class.getField(name()).get(null);
+//		}
+//		
+//		/** Converts a navigation state's command & triggers set based on an 'EInstantVASCommandTriggers' array to a string based representation */
+//		public static String[][] get2DStringArrayFromEInstantVASCommandTriggersArray(EInstantVASCommandTriggers[] navigationStateCommandTriggers) throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
+//			String[][] stringArrayNavigationStateTriggers = new String[navigationStateCommandTriggers.length][];
+//			for (int i=0; i<stringArrayNavigationStateTriggers.length; i++) {
+//				stringArrayNavigationStateTriggers[i] = navigationStateCommandTriggers[i].getCommandTriggerPatterns();
+//			}
+//			return stringArrayNavigationStateTriggers;
+//		}
+//	};
 	
 	// INSTANCE VARIABLES
 	/////////////////////
@@ -563,7 +619,7 @@ public class InstantVASApplicationConfiguration {
 	public final ICommandProcessor[][]  modulesCommandProcessors;
 
 	
-	public InstantVASApplicationConfiguration() throws SQLException, IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
+	public InstantVASInstanceConfiguration() throws SQLException, IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
 		
 		log = new Instrumentation<InstantVASHTTPInstrumentationRequestProperty, String>(
 			APP_NAME, new InstantVASHTTPInstrumentationRequestProperty(), LOG_STRATEGY, LOG_HANGMAN_FILE_PATH);
@@ -848,9 +904,10 @@ public class InstantVASApplicationConfiguration {
 	/** This one might be used for piracy control if APP_NAME, SHORT_CODE, etc becomes hardcoded, read from an encypted file, read from InstantVAS.com or something like that */
 	private void configureCelltickBRIntegration() {
 		moParser           = new SMSInCelltick(APP_NAME);
-		mtSender           = new SMSOutCelltick(log, APP_NAME, SHORT_CODE, CELLTICK_MT_SERVICE_URL, MT_SERVICE_NUMBER_OF_RETRY_ATTEMPTS, MT_SERVICE_DELAY_BETWEEN_ATTEMPTS);
-		subscriptionEngine = new CelltickLiveScreenSubscriptionAPI(log, CELLTICK_SUBSCRIBE_SERVICE_URL, CELLTICK_UNSUBSCRIBE_SERVICE_URL);
-		subscriptionToken  = CELLTICK_SUBSCRIPTION_CHANNEL_NAME;
+		mtSender           = new SMSOutCelltick(log, APP_NAME, SHORT_CODE, KANNEL_MT_SMSC, MT_SERVICE_URL,
+		                                        MT_SERVICE_NUMBER_OF_RETRY_ATTEMPTS, MT_SERVICE_DELAY_BETWEEN_ATTEMPTS);
+		subscriptionEngine = new CelltickLiveScreenSubscriptionAPI(log, SUBSCRIBE_SERVICE_URL, UNSUBSCRIBE_SERVICE_URL);
+		subscriptionToken  = SUBSCRIPTION_CHANNEL_NAME;
 	}
 	
 	private void configureCelltickJUnitTestsIntegration() {
@@ -876,22 +933,25 @@ public class InstantVASApplicationConfiguration {
 		LOG_HANGMAN_FILE_PATH          = "";
 		LOG_WEBAPP_FILE_PATH           = "";
 		APP_NAME                       = "HANGMAN";
-		SHORT_CODE                     = "993";
+//		SHORT_CODE                     = "993";
 		PRICE_TAG                      = "$0.99";
 		DEFAULT_NICKNAME_PREFIX        = "Guest";
 		
 		HTTP_CONNECTION_TIMEOUT_MILLIS = 30000;
 		HTTP_READ_TIMEOUT_MILLIS       = 30000;
 		
-		CELLTICK_SUBSCRIBE_SERVICE_URL               = "http://localhost:8082/celltick/wapAPI?action=subpkg&msisdn=%%MSISDN%%&pkgname=%%pkgname%%&charge=1";
-		CELLTICK_UNSUBSCRIBE_SERVICE_URL             = "http://localhost:8082/celltick/wapAPI?action=unsubpkg&msisdn=%%MSISDN%%&pkgname=%%pkgname%%&charge=1";
-		CELLTICK_SUBSCRIPTION_CHANNEL_NAME           = "HangMan";
-		CELLTICK_MT_SERVICE_URL                      = "http://localhost:15001/cgi-bin/sendsms";
+		SUBSCRIBE_SERVICE_URL               = "http://localhost:8082/celltick/wapAPI?action=subpkg&msisdn=%%MSISDN%%&pkgname=%%pkgname%%&charge=1";
+		UNSUBSCRIBE_SERVICE_URL             = "http://localhost:8082/celltick/wapAPI?action=unsubpkg&msisdn=%%MSISDN%%&pkgname=%%pkgname%%&charge=1";
+		SUBSCRIBE_SERVICE_URL               = "http://iw.us.to:8181/celltick/wapAPI?action=subpkg&msisdn=%%MSISDN%%&pkgname=%%pkgname%%&charge=1";
+		UNSUBSCRIBE_SERVICE_URL             = "http://iw.us.to:8181/celltick/wapAPI?action=unsubpkg&msisdn=%%MSISDN%%&pkgname=%%pkgname%%&charge=1";
+		SUBSCRIPTION_CHANNEL_NAME           = "HangMan";
+		MT_SERVICE_URL                      = "http://localhost:15001/cgi-bin/sendsms";
+		MT_SERVICE_URL                      = "http://iw.us.to:8181/pingresponse";
 		MT_SERVICE_NUMBER_OF_RETRY_ATTEMPTS = 5;
 		MT_SERVICE_DELAY_BETWEEN_ATTEMPTS   = 5000;
 
-		DATA_ACCESS_LAYER                           = EInstantVASDALs.POSTGRESQL;
-		POSTGRESQL_HOSTNAME                         = "venus";
+		DATA_ACCESS_LAYER                           = EInstantVASDAL.POSTGRESQL;
+		POSTGRESQL_HOSTNAME                         = "::1";
 		POSTGRESQL_PORT                             = 5432;
 		POSTGRESQL_DATABASE                         = "hangman";
 		POSTGRESQL_USER                             = "hangman";
@@ -899,21 +959,21 @@ public class InstantVASApplicationConfiguration {
 		POSTGRESQL_CONNECTION_PROPERTIES            = PostgreSQLAdapter.CONNECTION_PROPERTIES;
 		NUMBER_OF_CONCURRENT_CONNECTIONS            = PostgreSQLAdapter.CONNECTION_POOL_SIZE;
 		POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS = true;
-		POSTGRESQL_SHOULD_DEBUG_QUERIES             = true;
+		POSTGRESQL_SHOULD_DEBUG_QUERIES             = false;
 		
 		MO_PROCESSING_STRATEGY            = EEventProcessingStrategy.POSTGRESQL;
 		MO_RAM_QUEUE_CAPACITY             = 1000;
 		MO_FILE_QUEUE_LOG_DIRECTORY       = "";
 		MO_FILE_QUEUE_POOLING_TIME        = 0;
 		MO_POSTGRESQL_QUEUE_POOLING_TIME  = 0;
-		MO_QUEUE_NUMBER_OF_WORKER_THREADS = 10;
+		MO_QUEUE_NUMBER_OF_WORKER_THREADS = 5;
 		
 		MT_PROCESSING_STRATEGY            = EEventProcessingStrategy.POSTGRESQL;
 		MT_RAM_QUEUE_CAPACITY             = 1000;
 		MT_FILE_QUEUE_LOG_DIRECTORY       = "";
 		MT_FILE_QUEUE_POOLING_TIME        = 0;
 		MT_POSTGRESQL_QUEUE_POOLING_TIME  = 0;
-		MT_QUEUE_NUMBER_OF_WORKER_THREADS = 3;
+		MT_QUEUE_NUMBER_OF_WORKER_THREADS = 5;
 		
 		SUBSCRIPTION_RENEWAL_PROCESSING_STRATEGY = EEventProcessingStrategy.RAM;
 		SR_RAM_QUEUE_CAPACITY                    = 1000;
@@ -929,15 +989,22 @@ public class InstantVASApplicationConfiguration {
 		SC_POSTGRESQL_QUEUE_POOLING_TIME              = 0;
 		SC_QUEUE_NUMBER_OF_WORKER_THREADS             = 2;
 		
-		ENABLED_MODULES = new EInstantVASModules[] {
-			EInstantVASModules.CELLTICK_BR_INTEGRATION,
-			EInstantVASModules.BASE,
-			EInstantVASModules.HELP,
-			EInstantVASModules.SUBSCRIPTION,
-			EInstantVASModules.PROFILE,
-			EInstantVASModules.CHAT,
-			EInstantVASModules.HANGMAN
-		};
+//		ENABLED_MODULES = new EInstantVASModules[] {
+//			EInstantVASModules.CELLTICK_BR_INTEGRATION,
+//			EInstantVASModules.BASE,
+//			EInstantVASModules.HELP,
+//			EInstantVASModules.SUBSCRIPTION,
+//			EInstantVASModules.PROFILE,
+//			EInstantVASModules.CHAT,
+//			EInstantVASModules.HANGMAN
+//		};
+		
+		ALLOWABLE_MSISDN_MIN_LENGTH = -1;
+		ALLOWABLE_MSISDN_MAX_LENGTH = -1;
+		ALLOWABLE_MSISDN_PREFIXES   = null;
+		ALLOWABLE_CARRIERS          = null;
+		ALLOWABLE_SHORT_CODES       = null;
+
 
 		// Help
 		///////
@@ -1069,85 +1136,85 @@ public class InstantVASApplicationConfiguration {
 		};
 
 		
-		// navigation
-		/////////////
-		
-		/* Hoje em dia já é possível que os cmds sejam chamados de forma a imitar o serviço africano 'iText'. Por exemplo, para o envio de emails,
-		 * o comando cmdSendEmail (que recebe dois parâmetros) pode ser usado, mesmo que se esteja enviando sempre email para uma única pessoa,
-		 * situação na qual a regular expression deve ser trocada de algo como "M (%w+) (.*)" para "M (.*)" e a chamada do comando seria trocada de
-		 * cmdSendEmail("$1", "$2") para cmdSendEmail("luiz@InstantVAS.com", "$1") -- esta forma de chamar ainda tem que ser implementada, na verdade. */
-		
-		// TODO aqui é preciso ter um array compartilhado com todos os global triggers pra gente não ter que ficar repetindo em cada estado -- pelo visto isso caducou...
-		
-		// base
-		BASEnstNewUser = new EInstantVASCommandTriggers[] {
-			EInstantVASCommandTriggers.SUBSCRIPTIONtrgLocalAcceptDoubleOptin,	// the double opt-in process starts with a broadcast message, outside the scope of this application
-			EInstantVASCommandTriggers.SUBSCRIPTIONtrgGlobalUnsubscribe,
-			EInstantVASCommandTriggers.SUBSCRIPTIONtrgLocalStartDoubleOptin,
-			EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,			// let the user answer to chats
-			EInstantVASCommandTriggers.HELPtrgGlobalShowNewUsersFallbackHelp,	// fallback help
-		};
-		BASEnstExistingUser = new EInstantVASCommandTriggers[] {
-			EInstantVASCommandTriggers.HELPtrgGlobalShowStatelessHelpMessage,
-			EInstantVASCommandTriggers.SUBSCRIPTIONtrgGlobalUnsubscribe,
-			EInstantVASCommandTriggers.PROFILEtrgGlobalRegisterNickname,
-			EInstantVASCommandTriggers.PROFILEtrgGlobalShowUserProfile,
-			EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
-			EInstantVASCommandTriggers.HANGMANtrgGlobalInviteNicknameOrPhoneNumber,
-			EInstantVASCommandTriggers.HELPtrgGlobalShowNewUsersFallbackHelp,
-		};
-
-		// help
-		HELPnstPresentingCompositeHelp = new EInstantVASCommandTriggers[] {
-			EInstantVASCommandTriggers.HELPtrgGlobalStartCompositeHelpDialog,
-			EInstantVASCommandTriggers.HELPtrgLocalShowNextCompositeHelpMessage,
-			EInstantVASCommandTriggers.HELPtrgGlobalShowExistingUsersFallbackHelp,
-		};
-		
-		// subscription
-		SUBSCRIPTIONnstAnsweringDoubleOptin = new EInstantVASCommandTriggers[] {
-			EInstantVASCommandTriggers.SUBSCRIPTIONtrgLocalAcceptDoubleOptin,
-			EInstantVASCommandTriggers.SUBSCRIPTIONtrgLocalRefuseDoubleOptin,
-			EInstantVASCommandTriggers.SUBSCRIPTIONtrgGlobalUnsubscribe,
-			EInstantVASCommandTriggers.SUBSCRIPTIONtrgLocalStartDoubleOptin,	// for some of known wrong commands, start the double opt-in process again
-		};
-		
-		// profile
-		PROFILEnstRegisteringNickname = new EInstantVASCommandTriggers[] {
-			EInstantVASCommandTriggers.PROFILEtrgGlobalRegisterNickname,
-			EInstantVASCommandTriggers.PROFILEtrgGlobalStartAskForNicknameDialog,
-			EInstantVASCommandTriggers.PROFILEtrgLocalNicknameDialogCancelation,
-			EInstantVASCommandTriggers.PROFILEtrgGlobalShowUserProfile,
-			EInstantVASCommandTriggers.PROFILEtrgLocalRegisterNickname,
-		};
-		
-		// chat
-		CHATnstChattingWithSomeone = new EInstantVASCommandTriggers[] {
-			EInstantVASCommandTriggers.CHATtrgLocalSendPrivateReply,
-		};
-		
-		// hangman
-		HANGMANnstEnteringMatchWord = new EInstantVASCommandTriggers[] {
-			EInstantVASCommandTriggers.HANGMANtrgLocalHoldMatchWord,
-			EInstantVASCommandTriggers.HELPtrgGlobalShowExistingUsersFallbackHelp,
-		};
-		HANGMANnstAnsweringToHangmanMatchInvitation = new EInstantVASCommandTriggers[] {
-			EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
-			EInstantVASCommandTriggers.HANGMANtrgLocalAcceptMatchInvitation,
-			EInstantVASCommandTriggers.HANGMANtrgLocalRefuseMatchInvitation,
-			EInstantVASCommandTriggers.PROFILEtrgGlobalShowUserProfile,
-			EInstantVASCommandTriggers.HELPtrgGlobalShowExistingUsersFallbackHelp,
-		};
-		HANGMANnstGuessingWordFromHangmanHumanOpponent = new EInstantVASCommandTriggers[] {
-			EInstantVASCommandTriggers.HANGMANtrgLocalNewLetterOrWordSuggestionForHuman,
-			EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
-			EInstantVASCommandTriggers.HELPtrgGlobalShowStatefulHelpMessage,
-		};
-		HANGMANnstGuessingWordFromHangmanBotOpponent = new EInstantVASCommandTriggers[] {
-			EInstantVASCommandTriggers.HANGMANtrgLocalNewLetterOrWordSuggestionForBot,
-			EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
-			EInstantVASCommandTriggers.HELPtrgGlobalShowExistingUsersFallbackHelp,
-		};
+//		// navigation
+//		/////////////
+//		
+//		/* Hoje em dia já é possível que os cmds sejam chamados de forma a imitar o serviço africano 'iText'. Por exemplo, para o envio de emails,
+//		 * o comando cmdSendEmail (que recebe dois parâmetros) pode ser usado, mesmo que se esteja enviando sempre email para uma única pessoa,
+//		 * situação na qual a regular expression deve ser trocada de algo como "M (%w+) (.*)" para "M (.*)" e a chamada do comando seria trocada de
+//		 * cmdSendEmail("$1", "$2") para cmdSendEmail("luiz@InstantVAS.com", "$1") -- esta forma de chamar ainda tem que ser implementada, na verdade. */
+//		
+//		// TODO aqui é preciso ter um array compartilhado com todos os global triggers pra gente não ter que ficar repetindo em cada estado -- pelo visto isso caducou...
+//		
+//		// base
+//		BASEnstNewUser = new EInstantVASCommandTriggers[] {
+//			EInstantVASCommandTriggers.SUBSCRIPTIONtrgLocalAcceptDoubleOptin,	// the double opt-in process starts with a broadcast message, outside the scope of this application
+//			EInstantVASCommandTriggers.SUBSCRIPTIONtrgGlobalUnsubscribe,
+//			EInstantVASCommandTriggers.SUBSCRIPTIONtrgLocalStartDoubleOptin,
+//			EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,			// let the user answer to chats
+//			EInstantVASCommandTriggers.HELPtrgGlobalShowNewUsersFallbackHelp,	// fallback help
+//		};
+//		BASEnstExistingUser = new EInstantVASCommandTriggers[] {
+//			EInstantVASCommandTriggers.HELPtrgGlobalShowStatelessHelpMessage,
+//			EInstantVASCommandTriggers.SUBSCRIPTIONtrgGlobalUnsubscribe,
+//			EInstantVASCommandTriggers.PROFILEtrgGlobalRegisterNickname,
+//			EInstantVASCommandTriggers.PROFILEtrgGlobalShowUserProfile,
+//			EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
+//			EInstantVASCommandTriggers.HANGMANtrgGlobalInviteNicknameOrPhoneNumber,
+//			EInstantVASCommandTriggers.HELPtrgGlobalShowNewUsersFallbackHelp,
+//		};
+//
+//		// help
+//		HELPnstPresentingCompositeHelp = new EInstantVASCommandTriggers[] {
+//			EInstantVASCommandTriggers.HELPtrgGlobalStartCompositeHelpDialog,
+//			EInstantVASCommandTriggers.HELPtrgLocalShowNextCompositeHelpMessage,
+//			EInstantVASCommandTriggers.HELPtrgGlobalShowExistingUsersFallbackHelp,
+//		};
+//		
+//		// subscription
+//		SUBSCRIPTIONnstAnsweringDoubleOptin = new EInstantVASCommandTriggers[] {
+//			EInstantVASCommandTriggers.SUBSCRIPTIONtrgLocalAcceptDoubleOptin,
+//			EInstantVASCommandTriggers.SUBSCRIPTIONtrgLocalRefuseDoubleOptin,
+//			EInstantVASCommandTriggers.SUBSCRIPTIONtrgGlobalUnsubscribe,
+//			EInstantVASCommandTriggers.SUBSCRIPTIONtrgLocalStartDoubleOptin,	// for some of known wrong commands, start the double opt-in process again
+//		};
+//		
+//		// profile
+//		PROFILEnstRegisteringNickname = new EInstantVASCommandTriggers[] {
+//			EInstantVASCommandTriggers.PROFILEtrgGlobalRegisterNickname,
+//			EInstantVASCommandTriggers.PROFILEtrgGlobalStartAskForNicknameDialog,
+//			EInstantVASCommandTriggers.PROFILEtrgLocalNicknameDialogCancelation,
+//			EInstantVASCommandTriggers.PROFILEtrgGlobalShowUserProfile,
+//			EInstantVASCommandTriggers.PROFILEtrgLocalRegisterNickname,
+//		};
+//		
+//		// chat
+//		CHATnstChattingWithSomeone = new EInstantVASCommandTriggers[] {
+//			EInstantVASCommandTriggers.CHATtrgLocalSendPrivateReply,
+//		};
+//		
+//		// hangman
+//		HANGMANnstEnteringMatchWord = new EInstantVASCommandTriggers[] {
+//			EInstantVASCommandTriggers.HANGMANtrgLocalHoldMatchWord,
+//			EInstantVASCommandTriggers.HELPtrgGlobalShowExistingUsersFallbackHelp,
+//		};
+//		HANGMANnstAnsweringToHangmanMatchInvitation = new EInstantVASCommandTriggers[] {
+//			EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
+//			EInstantVASCommandTriggers.HANGMANtrgLocalAcceptMatchInvitation,
+//			EInstantVASCommandTriggers.HANGMANtrgLocalRefuseMatchInvitation,
+//			EInstantVASCommandTriggers.PROFILEtrgGlobalShowUserProfile,
+//			EInstantVASCommandTriggers.HELPtrgGlobalShowExistingUsersFallbackHelp,
+//		};
+//		HANGMANnstGuessingWordFromHangmanHumanOpponent = new EInstantVASCommandTriggers[] {
+//			EInstantVASCommandTriggers.HANGMANtrgLocalNewLetterOrWordSuggestionForHuman,
+//			EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
+//			EInstantVASCommandTriggers.HELPtrgGlobalShowStatefulHelpMessage,
+//		};
+//		HANGMANnstGuessingWordFromHangmanBotOpponent = new EInstantVASCommandTriggers[] {
+//			EInstantVASCommandTriggers.HANGMANtrgLocalNewLetterOrWordSuggestionForBot,
+//			EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
+//			EInstantVASCommandTriggers.HELPtrgGlobalShowExistingUsersFallbackHelp,
+//		};
 	}
 
 }

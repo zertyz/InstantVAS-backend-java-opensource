@@ -23,8 +23,9 @@ public enum HangmanSMSGameServicesInstrumentationEvents implements IInstrumentab
 	// queue events
 	///////////////
 	
-	IE_MESSAGE_ACCEPTED  ("MO message accepted on the queue", IP_MO_MESSAGE),
-	IE_MESSAGE_REJECTED  ("MO message rejected by the queue"),
+	IE_MESSAGE_ACCEPTED   ("MO message accepted on the queue",  IP_MO_MESSAGE),
+	IE_MESSAGE_REJECTED   ("MO message rejected by the queue",  IP_REQUEST_DATA),
+	IE_LICENSE_INFRINGMENT("Not allowed MO message parameters", IP_MO_MESSAGE),
 	
 	
 	// errors
