@@ -9,7 +9,6 @@ import mutua.events.IEventLink;
 import mutua.hangmansmsgame.dispatcher.IResponseReceiver;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.imi.IndirectMethodNotFoundException;
-import mutua.schedule.ScheduleEntryInfo;
 import mutua.smsin.dto.IncomingSMSDto;
 import mutua.smsout.dto.OutgoingSMSDto;
 
@@ -46,24 +45,14 @@ public class MTProducer extends EventServer<EInstantVASEvents> implements IRespo
 		
 		// MO and MT instrumentation -- register a new milestone: MO just finish processing
 		if (IFDEF_INSTRUMENT_MO_AND_MT_TIMES) {
-			ScheduleEntryInfo<Integer> scheduledEntry = MOAndMTInstrumentation.schedule.getPendingEventScheduleInfo(mo.getMoId());
-			if (scheduledEntry == null) {
-				log.reportThrowable(new RuntimeException(), "MO/MT instrumentation error: MO was not scheduled: " + mo + ". Response MT: " + mt);
-			} else {
-				scheduledEntry.setMilestone("response is ready");
-			}
+			MOAndMTInstrumentation.reportMTIsReady(log, mt, mo);
 		}
 
 		dispatchConsumableEvent(EInstantVASEvents.INTERACTIVE_MT, mt);
 
 		// MO and MT instrumentation -- register a new milestone: MT just added to the queue
 		if (IFDEF_INSTRUMENT_MO_AND_MT_TIMES) {
-			ScheduleEntryInfo<Integer> scheduledEntry = MOAndMTInstrumentation.schedule.getPendingEventScheduleInfo(mo.getMoId());
-			if (scheduledEntry == null) {
-				log.reportThrowable(new RuntimeException(), "MO/MT instrumentation error: MO was not scheduled: " + mo + ". Response MT: " + mt);
-			} else {
-				scheduledEntry.setMilestone("enqueued MT");
-			}
+			MOAndMTInstrumentation.reportMTEnqueuing(log, mt, mo);
 		}
 
 	}

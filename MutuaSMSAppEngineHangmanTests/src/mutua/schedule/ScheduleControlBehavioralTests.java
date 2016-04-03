@@ -2,6 +2,7 @@ package mutua.schedule;
 
 import static org.junit.Assert.*;
 
+import java.util.Hashtable;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -27,7 +28,7 @@ public class ScheduleControlBehavioralTests {
 	@Test
 	public void testEventRegistrationAndNotification() throws EventAlreadyScheduledException, EventNotScheduledException {
 		
-		IScheduleIndexingFunction<String> sif = new IScheduleIndexingFunction<String>() {
+		IScheduleIndexingFunction<String, String> sif = new IScheduleIndexingFunction<String, String>() {
 			
 			@Override
 			public String getKey(String event) {
@@ -35,14 +36,14 @@ public class ScheduleControlBehavioralTests {
 			}
 		};
 		
-		ScheduleControl<String> schedule = new ScheduleControl<String>(sif);
+		ScheduleControl<String, String> schedule = new ScheduleControl<String, String>(sif);
 		
 		assertFalse("Events that were not registered yet should be considered as not pending", schedule.isEventPending("A"));
 		schedule.registerEvent("A");		
 		assertTrue("Events that were registered and not yet notified should be considered as pending", schedule.isEventPending("A"));
 		schedule.notifyEvent("A");
 		assertFalse("Events that were notified should be considered as not pending", schedule.isEventPending("A"));
-		ScheduleEntryInfo<String>[] consumedEvents = schedule.consumeExecutedEvents();
+		ScheduleEntryInfo<String, String>[] consumedEvents = schedule.consumeExecutedEvents();
 		assertEquals("Wrong number of consumed events", 1, consumedEvents.length);
 		assertEquals("Wrong consumed event reported", "A", consumedEvents[0].getScheduledEvent());
 		
@@ -63,7 +64,7 @@ public class ScheduleControlBehavioralTests {
 	
 	@Test
 	public void testTimeMeasurement() throws EventAlreadyScheduledException, EventNotScheduledException, InterruptedException {
-		ScheduleControl<String> schedule = new ScheduleControl<String>(new IScheduleIndexingFunction<String>() {
+		ScheduleControl<String, String> schedule = new ScheduleControl<String, String>(new IScheduleIndexingFunction<String, String>() {
 			@Override
 			public String getKey(String event) {
 				return event.toLowerCase();
@@ -82,7 +83,7 @@ public class ScheduleControlBehavioralTests {
 		schedule.notifyEvent("late b");
 		assertEquals("Wrong number of events awaiting to be executed (after one on time and another timed out execution)", 0, schedule.getUnnotifiedEventsCount());
 		
-		ScheduleEntryInfo<String>[] executedEvents = schedule.consumeExecutedEvents();
+		ScheduleEntryInfo<String, String>[] executedEvents = schedule.consumeExecutedEvents();
 		assertEquals("Wrong first executed event",              "On time A", executedEvents[0].getScheduledEvent());
 		assertTrue("Wrong first executed event elapsed time -- "+executedEvents[0].getElapsedMillis()+"ms", Math.abs(500-executedEvents[0].getElapsedMillis()) < 10);
 		assertEquals("Wrong first executed event",              "late b", executedEvents[1].getExecutedEvent());
@@ -91,7 +92,7 @@ public class ScheduleControlBehavioralTests {
 	
 	@Test
 	public void testNeverNotifiedEvents() throws EventAlreadyScheduledException, InterruptedException {
-		ScheduleControl<String> schedule = new ScheduleControl<String>(new IScheduleIndexingFunction<String>() {
+		ScheduleControl<String, String> schedule = new ScheduleControl<String, String>(new IScheduleIndexingFunction<String, String>() {
 			@Override
 			public String getKey(String event) {
 				return event;
@@ -118,7 +119,7 @@ public class ScheduleControlBehavioralTests {
 		
 		assertEquals("Wrong number of pending events", 2*eventsPerPass, schedule.getUnnotifiedEventsCount());
 
-		ScheduleEntryInfo<String>[] timedoutEvents = schedule.consumePendingOldEvents(timeoutMillis);
+		ScheduleEntryInfo<String, String>[] timedoutEvents = schedule.consumePendingOldEvents(timeoutMillis);
 		assertTrue("Not just the first pass, but also the second pass' events were conosumed", schedule.getUnnotifiedEventsCount() > 0);
 		assertEquals("First pass events didn't leave the pending list", eventsPerPass, schedule.getUnnotifiedEventsCount());
 		
@@ -136,7 +137,7 @@ public class ScheduleControlBehavioralTests {
 	
 	@Test
 	public void testMilestones() throws EventAlreadyScheduledException, InterruptedException, EventNotScheduledException {
-		ScheduleControl<String> schedule = new ScheduleControl<String>(new IScheduleIndexingFunction<String>() {
+		ScheduleControl<String, String> schedule = new ScheduleControl<String, String>(new IScheduleIndexingFunction<String, String>() {
 			@Override
 			public String getKey(String event) {
 				return event;
@@ -151,7 +152,7 @@ public class ScheduleControlBehavioralTests {
 
 		// milestone 1 -- event start (mo added to the queue)
 		schedule.registerEvent(eventId);
-		ScheduleEntryInfo<String> scheduledEntry = schedule.getPendingEventScheduleInfo(eventId);
+		ScheduleEntryInfo<String, String> scheduledEntry = schedule.getPendingEventScheduleInfo(eventId);
 		Thread.sleep(1);
 		
 		// milestone 2 -- mo consumption process started
@@ -166,8 +167,8 @@ public class ScheduleControlBehavioralTests {
 		schedule.notifyEvent(eventId);
 		
 		// check
-		ScheduleEntryInfo<String>[] executedScheduleEntries = schedule.consumeExecutedEvents();
-		for (ScheduleEntryInfo<String> executedScheduleEntry : executedScheduleEntries) {
+		ScheduleEntryInfo<String, String>[] executedScheduleEntries = schedule.consumeExecutedEvents();
+		for (ScheduleEntryInfo<String, String> executedScheduleEntry : executedScheduleEntries) {
 			String output = executedScheduleEntry.milestonesToString("mt consumed", "MT response time");
 			assertEquals(output, "testEvent: mo consumed (+1ms); mt produced (+2ms); mt consumed (+3ms); MT response time: 6ms");
 		}
@@ -193,8 +194,76 @@ public class ScheduleControlBehavioralTests {
 	}
 	
 	@Test
+	public void testConcurrency() throws InterruptedException {
+		final ScheduleControl<String, String> schedule = new ScheduleControl<String, String>(new IScheduleIndexingFunction<String, String>() {
+			@Override
+			public String getKey(String event) {
+				return event;
+			}
+		});
+		
+		final int numberOfThreads      = 16;
+		final int numberOfInteractions = 100000;
+		
+		final Hashtable<String, Boolean> registeredEvents = new Hashtable<String, Boolean>();
+		final Hashtable<String, Boolean> completedEvents  = new Hashtable<String, Boolean>();
+		final Hashtable<String, Boolean> timedOutEvents   = new Hashtable<String, Boolean>();
+		
+		for (int threadNumber=0; threadNumber<numberOfThreads; threadNumber++) {
+			SplitRun.add(new SplitRun(threadNumber) {
+				@Override
+				public void splitRun(int threadNumber) throws Throwable {
+					String eventId;
+					for (int eventNumber=0; eventNumber<numberOfInteractions; eventNumber++) {
+						eventId = "#"+threadNumber+";#"+eventNumber;
+						registeredEvents.put(eventId, true);
+						schedule.registerEvent(eventId, eventId);
+						ScheduleEntryInfo<String, String> scheduledEntry = schedule.getPendingEventScheduleInfoByKey(eventId);
+						scheduledEntry.setMilestone("myGood");
+						scheduledEntry.setMilestone("myBad");
+						if (eventNumber % 100 != 99) {		// one in 100 is not notifyed
+							if (!registeredEvents.containsKey(eventId)) {
+								System.out.println(eventId + " is not not there!");
+							}
+							schedule.notifyEvent(eventId, eventId);
+							ScheduleEntryInfo<String, String>[] executedEntries = schedule.consumeExecutedEvents();
+							for (ScheduleEntryInfo<String, String> executedEntry : executedEntries) {
+								String milestones = executedEntry.milestonesToString("myDone", "zero=");
+								assertTrue("Milestones text generation went into problems", milestones.indexOf("myGood") != -1);
+								assertTrue("Milestones text generation went into problems", milestones.indexOf("myBad") != -1);
+								assertTrue("Milestones text generation went into problems", milestones.indexOf("myDone") != -1);
+								assertTrue("Milestones text generation went into problems", milestones.indexOf("zero") != -1);
+								completedEvents.put(executedEntry.getExecutedEvent(), true);
+							}
+						} else {
+							// retrieve timedout events
+							ScheduleEntryInfo<String, String>[] timedOutEntries = schedule.consumePendingOldEvents(60*numberOfThreads);
+							for (ScheduleEntryInfo<String, String> timedOutEntry : timedOutEntries) {
+								String milestones = timedOutEntry.milestonesToString("myDone", "zero=");
+								timedOutEvents.put(timedOutEntry.getScheduledEvent(), true);
+							}
+						}
+					}
+				}
+			});
+		}
+		
+		Throwable[] exceptions = SplitRun.runAndWaitForAll();
+		for (int i=0; i<exceptions.length; i++) {
+			Throwable t = exceptions[i];
+			if (t != null) {
+				fail("Thread #"+i+" experienced an exception: " + t);
+			}
+		}
+		
+		assertTrue  ("Number of timed out events ("+timedOutEvents.size()+") might be smaller, but never greater than "+(numberOfThreads*numberOfInteractions/100),
+				timedOutEvents.size() <= (numberOfThreads*numberOfInteractions/100));
+		assertEquals("Wrong number of completed events", numberOfThreads*numberOfInteractions - (numberOfThreads*numberOfInteractions/100), completedEvents.size());
+	}
+	
+	@Test
 	public void testErrorConditions() throws EventAlreadyScheduledException, EventNotScheduledException {
-		ScheduleControl<String> schedule = new ScheduleControl<String>(new IScheduleIndexingFunction<String>() {
+		ScheduleControl<String, String> schedule = new ScheduleControl<String, String>(new IScheduleIndexingFunction<String, String>() {
 			@Override
 			public String getKey(String event) {
 				return event;
@@ -269,7 +338,7 @@ public class ScheduleControlBehavioralTests {
 		// the events controller
 		////////////////////////
 		
-		IScheduleIndexingFunction<SMS> mtKeyGenerator = new IScheduleIndexingFunction<SMS>() {
+		IScheduleIndexingFunction<SMS, String> mtKeyGenerator = new IScheduleIndexingFunction<SMS, String>() {
 			@Override
 			public String getKey(SMS mt) {
 				String condensedText;
@@ -289,7 +358,7 @@ public class ScheduleControlBehavioralTests {
 			}
 		};
 		
-		final ScheduleControl<SMS> schedule = new ScheduleControl<SMS>(mtKeyGenerator);
+		final ScheduleControl<SMS, String> schedule = new ScheduleControl<SMS, String>(mtKeyGenerator);
 		
 		
 		// SMS & Events generators code
@@ -379,7 +448,7 @@ public class ScheduleControlBehavioralTests {
 				long n = 0;
 				while (consumeMTsAndNotifyEvents.running) {
 					Thread.sleep(1000);
-					for (ScheduleEntryInfo<SMS> event : schedule.consumeExecutedEvents()) {
+					for (ScheduleEntryInfo<SMS, String> event : schedule.consumeExecutedEvents()) {
 						long elapsedMillis = event.getElapsedMillis();
 						n++;
 						elapsedAverage += ((((double)elapsedMillis) - elapsedAverage) / ((double)n));

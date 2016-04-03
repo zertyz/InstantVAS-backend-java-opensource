@@ -1,5 +1,6 @@
 package mutua.schedule;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Set;
 
@@ -15,17 +16,17 @@ import java.util.Set;
  * @author luiz
  */
 
-public class ScheduleEntryInfo<EVENT_TYPE> {
+public class ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE> {
 	
 	private final long                  scheduledMillis;
 	private final EVENT_TYPE            scheduledEvent;
-	private final String                key;
+	private final KEY_TYPE              key;
 	private long                        executedMillis = -1;
 	private EVENT_TYPE                  executedEvent  = null;
 	private boolean                     hasTimedOut    = false;
 	private LinkedHashMap<String, Long> milestones     = null;
 	
-	public ScheduleEntryInfo(String key, long scheduledMillis, EVENT_TYPE scheduledEvent, long executedMillis, EVENT_TYPE executedEvent) {
+	public ScheduleEntryInfo(KEY_TYPE key, long scheduledMillis, EVENT_TYPE scheduledEvent, long executedMillis, EVENT_TYPE executedEvent) {
 		this.key             = key;
 		this.scheduledMillis = scheduledMillis;
 		this.scheduledEvent  = scheduledEvent;
@@ -33,13 +34,13 @@ public class ScheduleEntryInfo<EVENT_TYPE> {
 		this.executedEvent   = executedEvent;
 	}
 
-	public ScheduleEntryInfo(String key, EVENT_TYPE scheduledEvent) {
+	public ScheduleEntryInfo(KEY_TYPE key, EVENT_TYPE scheduledEvent) {
 		this.key             = key;
 		this.scheduledMillis = System.currentTimeMillis();
 		this.scheduledEvent  = scheduledEvent;
 	}
 	
-	public void setExecuted(String key, EVENT_TYPE executedEvent) {
+	public void setExecuted(KEY_TYPE key, EVENT_TYPE executedEvent) {
 		this.executedMillis = System.currentTimeMillis();
 		this.executedEvent  = executedEvent;
 	}
@@ -47,6 +48,10 @@ public class ScheduleEntryInfo<EVENT_TYPE> {
 	public void setTimedOut() {
 		hasTimedOut    = true;
 		executedMillis = System.currentTimeMillis();
+	}
+	
+	public KEY_TYPE getKey() {
+		return key;
 	}
 	
 	public long getScheduledMillis() {
@@ -113,7 +118,7 @@ public class ScheduleEntryInfo<EVENT_TYPE> {
 			output.append(lastOperationName).append(" (+").append(lastMilestoneElapsed).append("ms); ");
 		} else {
 			if (hasTimedOut) {
-				output.append("Event completion track lost -- timedout after ").append(getElapsedMillis()).append("ms");
+				output.append("Event completion track lost -- timed out after ").append(getElapsedMillis()).append("ms");
 			} else {
 				output.append("Event not yet completed.");
 			}
@@ -131,6 +136,7 @@ public class ScheduleEntryInfo<EVENT_TYPE> {
 		       append(",executedMillis=").append(executedMillis).
 		       append(",executedEvent=").append(executedEvent != null ? executedEvent.toString() : "NULL").
 		       append(",hasTimedOut=").append(hasTimedOut).
+		       append(",milestones=").append(Arrays.deepToString(getMilestones())).
 		       append('}').toString();
 	}
 

@@ -6,8 +6,6 @@ import config.InstantVASInstanceConfiguration;
 import mutua.events.EventClient;
 import mutua.events.IEventLink;
 import mutua.icc.instrumentation.Instrumentation;
-import mutua.schedule.EventNotScheduledException;
-import mutua.schedule.ScheduleEntryInfo;
 import mutua.smsout.dto.OutgoingSMSDto;
 import mutua.smsout.senders.SMSOutSender;
 
@@ -37,12 +35,7 @@ public class MTConsumer implements EventClient<EInstantVASEvents> {
 		
 		// MO and MT instrumentation -- register a new milestone: MT just retrieved from the queue
 		if (IFDEF_INSTRUMENT_MO_AND_MT_TIMES) {
-			ScheduleEntryInfo<Integer> scheduledEntry = MOAndMTInstrumentation.schedule.getPendingEventScheduleInfo(mt.getMoId());
-			if (scheduledEntry == null) {
-				log.reportThrowable(new RuntimeException(), "MO/MT instrumentation error: MO was not scheduled: moId=" + mt.getMoId() + "; Response MT: " + mt);
-			} else {
-				scheduledEntry.setMilestone("dequeued MT");
-			}
+			MOAndMTInstrumentation.reportMTDequeuing(log, mt);
 		}
 
 		// deliver the MT
@@ -53,12 +46,8 @@ public class MTConsumer implements EventClient<EInstantVASEvents> {
 		}
 		
 		// MO and MT instrumentation -- event finished: MT sent
-		if (IFDEF_INSTRUMENT_MO_AND_MT_TIMES) try {
-			MOAndMTInstrumentation.schedule.notifyEvent(mt.getMoId());
-			MOAndMTInstrumentation.logCompletedEvents(log);
-			MOAndMTInstrumentation.logTimedOutEvents(log);
-		} catch (EventNotScheduledException e) {
-			// ignore, since some MOs might issue multiple MTs and that's ok
+		if (IFDEF_INSTRUMENT_MO_AND_MT_TIMES) {
+			MOAndMTInstrumentation.notifyMTDelivery(log, mt);
 		}
 
 	}

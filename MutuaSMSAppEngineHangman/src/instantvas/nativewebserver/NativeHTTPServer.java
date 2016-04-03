@@ -234,7 +234,7 @@ public class NativeHTTPServer {
 						response = BAD_REQUEST;
 					} else					
 					// should we deny the request?
-					// code shared between 'NavitaHTTPServer.ADD_TO_MO_QUEUE' and 'AddToMOQueue' servlet. Please keep them in sync.
+						// code made in 'InstantVASLicenseTests' and shared between 'NavitaHTTPServer.ADD_TO_MO_QUEUE' and 'AddToMOQueue' servlet.
 					if (// test the authentication token
 					    (IFDEF_HARCODED_INSTANCE_RESTRICTION && (!INSTANTVAS_INSTANCE_CONFIG0_TOKEN.equals(parameterValues[AUTHENTICATION_TOKENParameterIndex]))) ||
 						// test additional MO parameter values -- EQUALS check method

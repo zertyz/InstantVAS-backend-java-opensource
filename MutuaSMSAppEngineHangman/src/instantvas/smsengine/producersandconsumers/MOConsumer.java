@@ -37,12 +37,7 @@ public class MOConsumer implements EventClient<EInstantVASEvents> {
 		
 		// MO and MT instrumentation -- register a new milestone: MO just retrieved from the queue
 		if (IFDEF_INSTRUMENT_MO_AND_MT_TIMES) {
-			ScheduleEntryInfo<Integer> scheduledEntry = MOAndMTInstrumentation.schedule.getPendingEventScheduleInfo(mo.getMoId());
-			if (scheduledEntry == null) {
-				log.reportThrowable(new RuntimeException(), "MO/MT instrumentation error: MO was not scheduled: " + mo);
-			} else {
-				scheduledEntry.setMilestone("dequeued MO");
-			}
+			MOAndMTInstrumentation.reportMODequeuing(log, mo);
 		}
 		
 		try {

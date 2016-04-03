@@ -16,22 +16,22 @@ public class EventNotScheduledException extends Exception {
 
 	private static final long serialVersionUID = -1780380449863356473L;
 	
-	private String key;
+	private Object key;
 	private Object executedEvent;
 	
-	public EventNotScheduledException(String key, Object executedEvent) {
+	public EventNotScheduledException(Object key, Object executedEvent) {
 		this.key           = key;
 		this.executedEvent = executedEvent;
 	}
 	
 	@Override
 	public String getMessage() {
-		return "EventNotScheduledException=" + toString();
+		return toString();
 	}
 
 	@Override
 	public String toString() {
-		return new StringBuffer("{key='").append(key).
+		return new StringBuffer("EventNotScheduledException={key='").append(key).
 		       append("',executedEvent=").append(executedEvent.toString()).append('}').toString();
 	}
 

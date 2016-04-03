@@ -1,10 +1,9 @@
 package mutua.schedule;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 
 /** <pre>
@@ -18,106 +17,148 @@ import java.util.concurrent.Semaphore;
  * Timeout and correct realization should be controlled by the analysis of the data
  * returned by 'getUnnotifiedEventsCount' and 'consumeExecutedEvents'
  *
- * @see RelatedClass(es)
  * @version $Id$
  * @author luiz
  */
 
-public class ScheduleControl<EVENT_TYPE> {
+public class ScheduleControl<EVENT_TYPE, KEY_TYPE> {
 	
-	private IScheduleIndexingFunction<EVENT_TYPE> scheduleIndexingFunction;
-	private Hashtable<String, ScheduleEntryInfo<EVENT_TYPE>> scheduledEvents;	// may as well be a ConcurrentHashMap
-	private ArrayList<ScheduleEntryInfo<EVENT_TYPE>> completedEvents;
+	private IScheduleIndexingFunction<EVENT_TYPE, KEY_TYPE>                      scheduleIndexingFunction;
+	private ConcurrentHashMap<KEY_TYPE, ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE>> scheduledEvents;
+	private ArrayList<ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE>>                   completedEvents;
 
 	/** creates an instance to control its own set of events */
-	public ScheduleControl(IScheduleIndexingFunction<EVENT_TYPE> scheduleIndexingFunction) {
+	public ScheduleControl(IScheduleIndexingFunction<EVENT_TYPE, KEY_TYPE> scheduleIndexingFunction) {
 		this.scheduleIndexingFunction = scheduleIndexingFunction;
-		this.scheduledEvents            = new Hashtable<String, ScheduleEntryInfo<EVENT_TYPE>>();
-		this.completedEvents            = new ArrayList<ScheduleEntryInfo<EVENT_TYPE>>();
+		this.scheduledEvents            = new ConcurrentHashMap<KEY_TYPE, ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE>>(100, 0.75f, 3);
+		this.completedEvents            = new ArrayList<ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE>>();
 	}
 
+	/** The same as {@link #registerEvent(Object, Object)}, but allowing a late event registration, which requires the
+	 *  'scheduledTimeMillis' to provide the correct time */
+	public void registerEvent(EVENT_TYPE toScheduleEvent, KEY_TYPE eventKey, long scheduledTimeMillis) throws EventAlreadyScheduledException {
+		ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE> eventInfo = new ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE>(eventKey, scheduledTimeMillis, toScheduleEvent, -1, null);
+		synchronized (scheduledEvents) {
+			ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE> previouslyScheduledEvent = scheduledEvents.putIfAbsent(eventKey, eventInfo);
+			if (previouslyScheduledEvent != null) {
+				throw new EventAlreadyScheduledException(previouslyScheduledEvent.getScheduledEvent(), toScheduleEvent);
+			}
+		}
+	}
+	
+	/** The same as {@link #registerEvent(Object)}, but using the provided 'eventKey' */
+	public void registerEvent(EVENT_TYPE toScheduleEvent, KEY_TYPE eventKey) throws EventAlreadyScheduledException {
+		registerEvent(toScheduleEvent, eventKey, System.currentTimeMillis());
+	}
 	/** Registers an event which is expected to happen in the future. Events are qualified by their 'key', returned by
 	 *  the 'scheduleIndexingFunction' and if an event with the same key is already registered but not reported as
 	 *  completed with 'notifyEvent', an exception will be thrown */
 	public void registerEvent(EVENT_TYPE toScheduleEvent) throws EventAlreadyScheduledException {
-		String key = scheduleIndexingFunction.getKey(toScheduleEvent);
-		ScheduleEntryInfo<EVENT_TYPE> alreadyScheduledEvent = scheduledEvents.get(key);
-		if (alreadyScheduledEvent != null) {
-			throw new EventAlreadyScheduledException(scheduledEvents.get(key).getScheduledEvent(), toScheduleEvent);
-		} else {
-			ScheduleEntryInfo<EVENT_TYPE> eventInfo = new ScheduleEntryInfo<EVENT_TYPE>(key, toScheduleEvent);
-			scheduledEvents.put(key, eventInfo);
-		}
+		KEY_TYPE eventKey = scheduleIndexingFunction.getKey(toScheduleEvent);
+		registerEvent(toScheduleEvent, eventKey);
 	}
-	
-	/** notifies that an event previously registered with 'registerEvent' has been completed, making it available
-	 *  to be inquired by 'consumeExecutedEvents' */
-	public void notifyEvent(EVENT_TYPE executedEvent) throws EventNotScheduledException {
-		String key = scheduleIndexingFunction.getKey(executedEvent);
-		ScheduleEntryInfo<EVENT_TYPE> scheduledEventInfo = scheduledEvents.remove(key);
+
+	/** The same as {@link #notifyEvent(Object)}, but using the provided 'eventKey' */
+	public void notifyEvent(EVENT_TYPE executedEvent, KEY_TYPE eventKey) throws EventNotScheduledException {
+		ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE> scheduledEventInfo;
+		synchronized (scheduledEvents) {
+			scheduledEventInfo = scheduledEvents.get(eventKey);
+		}
 		if (scheduledEventInfo == null) {
-			throw new EventNotScheduledException(key, executedEvent);
+			throw new EventNotScheduledException(eventKey, executedEvent);
 		} else {
-			scheduledEventInfo.setExecuted(key, executedEvent);
-			completedEvents.add(scheduledEventInfo);
-			//System.out.println("executed event "+executedEvent);
+			scheduledEventInfo.setExecuted(eventKey, executedEvent);
+			synchronized (completedEvents) {
+				completedEvents.add(scheduledEventInfo);
+			}
 		}
 	}
 
-	public boolean isKeyPending(String key) {
-		return scheduledEvents.containsKey(key);
+	/** notifies that an event previously registered with 'registerEvent' has been completed, making it available
+	 *  to be inquired by 'consumeExecutedEvents' */
+	public void notifyEvent(EVENT_TYPE executedEvent) throws EventNotScheduledException {
+		KEY_TYPE key = scheduleIndexingFunction.getKey(executedEvent);
+		notifyEvent(executedEvent, key);
+	}
+	
+	public boolean isKeyPending(KEY_TYPE key) {
+		synchronized (scheduledEvents) {
+			return scheduledEvents.containsKey(key);
+		}
 	}
 	
 	public boolean isEventPending(EVENT_TYPE event) {
 		return isKeyPending(scheduleIndexingFunction.getKey(event));
 	}
 
-	public ScheduleEntryInfo<EVENT_TYPE> getPendingEventScheduleInfo(EVENT_TYPE registeredEvent) {
-		String key = scheduleIndexingFunction.getKey(registeredEvent);
-		ScheduleEntryInfo<EVENT_TYPE> scheduledEvent = scheduledEvents.get(key);
-		return scheduledEvent;
+	public ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE> getPendingEventScheduleInfoByKey(KEY_TYPE eventKey) {
+		synchronized (scheduledEvents) {
+			return scheduledEvents.get(eventKey);
+		}
 	}
 
+	public ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE> getPendingEventScheduleInfo(EVENT_TYPE registeredEvent) {
+		KEY_TYPE eventKey = scheduleIndexingFunction.getKey(registeredEvent);
+		return getPendingEventScheduleInfoByKey(eventKey);
+	}
+	
 	/** monitoring function to tell, at any time, the number of events which didn't happen yet */
 	public int getUnnotifiedEventsCount() {
-		return scheduledEvents.size();
+		synchronized (scheduledEvents) {
+			return scheduledEvents.size();
+		}
 	}
 	
 	/** completes the cycle and frees the memory of executed events, returning auditable data about them */
-	public ScheduleEntryInfo<EVENT_TYPE>[] consumeExecutedEvents() {
-		ArrayList<ScheduleEntryInfo<EVENT_TYPE>> oldCompletedEvents = completedEvents;
-		completedEvents = new ArrayList<ScheduleEntryInfo<EVENT_TYPE>>();
-		return oldCompletedEvents.toArray((ScheduleEntryInfo<EVENT_TYPE>[])new ScheduleEntryInfo<?>[oldCompletedEvents.size()]);
+	public ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE>[] consumeExecutedEvents() {
+		ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE>[] completedEventsArray;
+		synchronized (completedEvents) {
+			completedEventsArray = completedEvents.toArray(zeroLengthEvents);
+			completedEvents.clear();
+		}
+		// remove the elements
+		synchronized (scheduledEvents) {
+			for (ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE> completedEvent : completedEventsArray) {
+				scheduledEvents.remove(completedEvent.getKey(), completedEvent);
+			}
+		}
+		return completedEventsArray;
 	}
 
 	private final Semaphore consumingPendingSemaphore = new Semaphore(1);	// results will only be given to one thread at a time, allowing concurrent threads not to wait, since that wouldn't make sense
-	private final ScheduleEntryInfo<EVENT_TYPE>[] zeroLengthEvents  = (ScheduleEntryInfo<EVENT_TYPE>[]) new ScheduleEntryInfo<?>[0];
+	private final ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE>[] zeroLengthEvents  = (ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE>[]) new ScheduleEntryInfo<?, ?>[0];
 	/** removes events not notified within a certain amount of time, giving up waiting for them to happen */
-	public ScheduleEntryInfo<EVENT_TYPE>[] consumePendingOldEvents(long timeoutMillis) {
+	public ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE>[] consumePendingOldEvents(long timeoutMillis) {
 		if (consumingPendingSemaphore.tryAcquire()) try {
-			ArrayList<ScheduleEntryInfo<EVENT_TYPE>> timedoutEvents = null;
-			Collection<ScheduleEntryInfo<EVENT_TYPE>> events = scheduledEvents.values();
-			Iterator<ScheduleEntryInfo<EVENT_TYPE>> iterator = events.iterator();
-			long currentMillis = System.currentTimeMillis();
-			while (iterator.hasNext()) {
-				ScheduleEntryInfo<EVENT_TYPE> event = iterator.next();
-				if ((currentMillis - event.getScheduledMillis()) > timeoutMillis) {
-					
-					// lazy creation of 'timedoutEvents' list, because the relation between the number elements returned / number of expected calls
-					// is likely to be very, very low -- this strategy avoids the creation of an ArrayList (costly) and a native array (cheap)
-					if (timedoutEvents == null) {
-						timedoutEvents = new ArrayList<ScheduleEntryInfo<EVENT_TYPE>>();
+			synchronized (scheduledEvents) {
+				ArrayList<ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE>> timedOutEvents = null;
+				Collection<ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE>> events = scheduledEvents.values();
+				Iterator<ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE>> iterator = events.iterator();
+				long currentMillis = System.currentTimeMillis();
+				while (iterator.hasNext()) {
+					ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE> event = iterator.next();
+					if ((currentMillis - event.getScheduledMillis()) > timeoutMillis) {
+						
+						// lazy creation of 'timedoutEvents' list, because the relation between the number elements returned / number of expected calls
+						// is likely to be very, very low -- this strategy avoids the creation of an ArrayList (costly) and a native array (cheap)
+						if (timedOutEvents == null) {
+							timedOutEvents = new ArrayList<ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE>>();
+						}
+						
+						event.setTimedOut();
+						timedOutEvents.add(event);
 					}
-					
-					event.setTimedOut();
-					timedoutEvents.add(event);
-					iterator.remove();
 				}
-			}
-			if (timedoutEvents == null) {
-				return zeroLengthEvents;
-			} else {
-				return timedoutEvents.toArray((ScheduleEntryInfo<EVENT_TYPE>[])new ScheduleEntryInfo<?>[timedoutEvents.size()]);
+				if (timedOutEvents == null) {
+					return zeroLengthEvents;
+				} else {
+					ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE>[] timedOutEventsArray = timedOutEvents.toArray(zeroLengthEvents);
+					// remove the elements
+					for (ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE> timedOutEvent : timedOutEventsArray) {
+						scheduledEvents.remove(timedOutEvent.getKey(), timedOutEvent);
+					}
+					return timedOutEventsArray;
+				}
 			}
 		} finally {
 			consumingPendingSemaphore.release();

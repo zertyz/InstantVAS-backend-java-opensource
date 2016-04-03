@@ -13,9 +13,9 @@ package mutua.schedule;
  * @author luiz
  */
 
-public interface IScheduleIndexingFunction<EVENT_TYPE> {
+public interface IScheduleIndexingFunction<EVENT_TYPE, KEY_TYPE> {
 
 	/** index functions must return a string that identifies each possible event, with the desired precision or flexibility */
-	String getKey(EVENT_TYPE event);
+	KEY_TYPE getKey(EVENT_TYPE event);
 
 }

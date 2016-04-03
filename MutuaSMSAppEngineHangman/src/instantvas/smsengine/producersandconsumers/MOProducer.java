@@ -8,8 +8,6 @@ import mutua.events.EventServer;
 import mutua.events.IEventLink;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.imi.IndirectMethodNotFoundException;
-import mutua.schedule.EventAlreadyScheduledException;
-import mutua.schedule.ScheduleEntryInfo;
 import mutua.smsin.dto.IncomingSMSDto;
 
 /** <pre>
@@ -42,21 +40,21 @@ public class MOProducer extends EventServer<EInstantVASEvents> implements IMOPro
 	@Override
 	public int dispatchMOForProcessing(IncomingSMSDto mo) {
 		
-		int moId = dispatchConsumableEvent(EInstantVASEvents.MO_ARRIVED, mo);
+		long arrivedMillis;
+		int moId;
 		
-		// MO and MT instrumentation -- create the event
-		if (IFDEF_INSTRUMENT_MO_AND_MT_TIMES) try {
-			MOAndMTInstrumentation.schedule.registerEvent(moId);
-		} catch (EventAlreadyScheduledException e) {
-			// two MOs for the same MSISDN. Marks the first MO as timed out and register the new event
-			ScheduleEntryInfo<Integer> scheduledEntry = MOAndMTInstrumentation.schedule.getPendingEventScheduleInfo(moId);
-			scheduledEntry.setTimedOut();
-			MOAndMTInstrumentation.logTimedOutEvents(log);
-			try {
-				MOAndMTInstrumentation.schedule.registerEvent(moId);
-			} catch (EventAlreadyScheduledException e2) {
-				log.reportThrowable(e2, "Unable to register MO event for MO/MT Instrumentation: " + mo);
-			}
+		// MO and MT instrumentation -- registers the arrival time for a late registration
+		if (IFDEF_INSTRUMENT_MO_AND_MT_TIMES) {
+			arrivedMillis = System.currentTimeMillis();
+		}
+		
+		moId = dispatchConsumableEvent(EInstantVASEvents.MO_ARRIVED, mo);
+		
+		// MO and MT instrumentation -- create the event and the first milestone: the MO was enqueued
+		// reentrancy problem: the event might be consumed before this code is executed
+		if (IFDEF_INSTRUMENT_MO_AND_MT_TIMES) {
+			MOAndMTInstrumentation.registerLateMOArrival(log, mo, moId, arrivedMillis);
+			MOAndMTInstrumentation.reportMOEnqueuing(log, mo, moId);
 		}
 		
 		return moId;
