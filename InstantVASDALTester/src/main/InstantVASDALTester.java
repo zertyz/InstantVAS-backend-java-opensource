@@ -156,7 +156,7 @@ public class InstantVASDALTester {
 				IMatchDBBehavioralTests.class.getName());
 		} else {
 			// configure postgreSQL queues
-			MutuaEventsAdditionalEventLinksTestsConfiguration.configureMutuaEventsAdditionalEventLinksTests(log, loadFactor, 0, 10, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password, concurrentConnectionsNumber);
+			MutuaEventsAdditionalEventLinksTestsConfiguration.configureDefaultValuesForNewInstances(log, loadFactor, 0, 10, null, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
 
 			System.out.println("\n### Now running the "+dal+" tests:");
 			org.junit.runner.JUnitCore.main(

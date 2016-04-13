@@ -68,7 +68,7 @@ public class InstantVASLicenseTests {
 			// should we deny the request?
 			// code made in 'InstantVASLicenseTests' and shared between 'NavitaHTTPServer.ADD_TO_MO_QUEUE' and 'AddToMOQueue' servlet.
 			if (// test the authentication token
-			    (IFDEF_HARCODED_INSTANCE_RESTRICTION && (!INSTANTVAS_INSTANCE_CONFIG0_TOKEN.equals(parameterValues[AUTHENTICATION_TOKENParameterIndex]))) ||
+			    ((INSTANTVAS_INSTANCE_CONFIGn_LENGTH > 0) && (!INSTANTVAS_INSTANCE_CONFIG0_TOKEN.equals(parameterValues[AUTHENTICATION_TOKENParameterIndex]))) ||
 				// test additional MO parameter values -- EQUALS check method
 			    ((IFDEF_HARDCODE_CHECK_METHOD_OF_ADDITIONAL_MO_PARAMETER_VALUES == HardCodeCheckMethodOfAdditionalMOParameterValues_EQUALS) && (
 			     ((MO_ADDITIONAL_RULEn_LENGTH > 0) && (!MO_ADDITIONAL_RULE0_VALUE.equals(parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX])))

@@ -305,7 +305,7 @@ public abstract class JDBCAdapter {
 	
 	/** reports that an exception has happened and checks the environment to attempt to prevent further errors */
 	private void handleException(SQLException e, AbstractPreparedProcedure abstractPreparedProcedure) {
-		log.reportThrowable(e, "Exception while executing query '"+abstractPreparedProcedure.getPreparedProcedureSQL()+"'. Recheking connections & prepared statements...");
+		log.reportThrowable(e, "Exception while executing query '"+abstractPreparedProcedure.getPreparedProcedureSQL()+"'. Recheking connections and associated prepared statements... (after that, a retry will be transparently performed)");
 		synchronized (pool) {
 			try {
 				checkAndPopulatePoolOfConnections();
@@ -322,13 +322,6 @@ public abstract class JDBCAdapter {
 	/**************************
 	** PUBLIC ACCESS METHODS **
 	**************************/
-	
-	// TODO 04/03/16
-	// 1) Comando listar se dá através do módulo profile, porém usa o campo ATS (access time), que é o renomeio do campo UTS que já tem lá. Criar índice.
-	// 2) Continuar pensando em criar um event link para executar itens de um schedule, em ram ou db, com tolerância para execução mesmo se tiver passado x tempo e com fallback para "not executed" pela razão x.
-	// 3) Continuar, também, a pensar em criar filas em arquivo. Deve ser muuuito mais rápido lá no Interserver...
-	// 3) Remover deste arquivo o mecanismo de detecção de erros baseado na instrumentação. cada função tem sua checagem -- em caso de exception antes de ps.execute..., a retantativa é transparente e obriga a rever o pool de conexões e prepared statements. fazer testes.
-	// 4) deixar rolando minha rola lá no interserver...
 	
 	private int rawInvokeUpdateProcedure(AbstractPreparedProcedure abstractPreparedProcedure, Object... parametersAndValuesPairs) throws SQLException {
 		int connIndex = getNextConnectionPoolIndex();
@@ -347,6 +340,43 @@ public abstract class JDBCAdapter {
 		} catch (SQLException e) {
 			handleException(e, abstractPreparedProcedure);
 			return rawInvokeUpdateProcedure(abstractPreparedProcedure, parametersAndValuesPairs);
+		}
+	}
+	
+	/** Similar to {@link #rawInvokeUpdateProcedure}, but receives several 'parametersAndValuesPairs' */
+	private int[] rawInvokeUpdateBatchProcedure(AbstractPreparedProcedure abstractPreparedProcedure, Object[][] parametersAndValuesPairsSet) throws SQLException {
+		int connIndex = getNextConnectionPoolIndex();
+		PreparedStatement ps = null;
+		for (Object[] parametersAndValuesPairs : parametersAndValuesPairsSet) {
+			if (ps == null) {
+				ps = abstractPreparedProcedure.getPreparedStatement(connIndex, parametersAndValuesPairs);
+				ps.addBatch();
+			} else {
+				abstractPreparedProcedure.fillPreparedStatement(ps, parametersAndValuesPairs);
+				ps.addBatch();
+			}
+		}
+		if (ps != null) {
+			int[] results = ps.executeBatch();
+			abstractPreparedProcedure.returnToThePool(connIndex, ps);
+			return results;
+		} else {
+			return null;
+		}
+	}
+	/** executes, efficiently, many INSERT, UPDATE and/or DELETE queries at once, using the JDBC batch features.
+	 *  parametersAndValuesPairsSet := {parametersAndValuesPairs for command 1, parametersAndValuesPairs for command 2, ...} */
+	public int[] invokeUpdateBatchProcedure(AbstractPreparedProcedure abstractPreparedProcedure, Object[][] parametersAndValuesPairsSet) throws SQLException {
+		if (shouldDebugQueries) {
+			for (Object[] parametersAndValuesPairs : parametersAndValuesPairsSet) {
+				log.reportEvent(IE_DATABASE_QUERY, IP_PREPARED_SQL, abstractPreparedProcedure.getPreparedProcedureSQL(), IP_SQL_TEMPLATE_PARAMETERS, parametersAndValuesPairs);
+			}
+		}
+		try {
+			return rawInvokeUpdateBatchProcedure(abstractPreparedProcedure, parametersAndValuesPairsSet);
+		} catch (SQLException e) {
+			handleException(e, abstractPreparedProcedure);
+			return rawInvokeUpdateBatchProcedure(abstractPreparedProcedure, parametersAndValuesPairsSet);
 		}
 	}
 	

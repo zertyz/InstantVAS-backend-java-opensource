@@ -5,7 +5,6 @@ import mutua.imi.IndirectMethodInvocationInfo;
 import mutua.smsin.dto.IncomingSMSDto;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 import adapters.IJDBCAdapterParameterDefinition;
-import adapters.exceptions.PreparedProcedureException;
 import instantvas.smsengine.producersandconsumers.EInstantVASEvents;
 
 /** <pre>
@@ -47,7 +46,7 @@ public class MOSMSesQueueDataBureau extends IDatabaseQueueDataBureau<EInstantVAS
 
 
 	@Override
-	public Object[] serializeQueueEntry(IndirectMethodInvocationInfo<EInstantVASEvents> entry) throws PreparedProcedureException {
+	public Object[] serializeQueueEntry(IndirectMethodInvocationInfo<EInstantVASEvents> entry) {
 		IncomingSMSDto mo = (IncomingSMSDto)entry.getParameters()[0];
 		return new Object[] {
 			EMOQueueQueryParameters.PHONE, mo.getPhone(),

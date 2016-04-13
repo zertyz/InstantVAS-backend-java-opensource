@@ -39,26 +39,17 @@ public class InstantVASLicense {
 	 *  1) encryption-like configuration (since it will be proguarded);
 	 *  2) need to reverse engineer several hard coded classes in order to unlock this version for other countries; and
 	 *  3) code that would make this a fully unlocked Instant VAS application simply won't be on the binaries */
-	public static final String ConfigurationSourceType_HARDCODED  = "LViJDl";
+	public static final String ConfigurationSourceType_HARDCODED     = "LViJDl";
 	/** Includes code for reading configurations from an encrypted jar file entry. The configuration is, therefore, read-only */
-	public static final String ConfigurationSourceType_RESOURCE   = "KdfJeN";
+	public static final String ConfigurationSourceType_RESOURCE      = "KdfJeN";
 	/** Includes code for reading configurations from an encrypted local file system entry. The configuration file is read-write and may be updated */
-	public static final String ConfigurationSourceType_FS_FILE    = "LfNcxO";
+	public static final String ConfigurationSourceType_ENC_FS_FILE   = "LfNcxO";
+	/** Includes code for reading configurations from a plain local file system entry. The configuration file is read-write and may be updated */
+	public static final String ConfigurationSourceType_PLAIN_FS_FILE = "ZhlXkP";
 	/** Includes code for fetching the configurations from the Instant VAS main website, via HTTP, returning an encrypted file which is cached locally */
-	public static final String ConfigurationSourceType_HTTP       = "nvWkOk";
+	public static final String ConfigurationSourceType_HTTP          = "nvWkOk";
 	/** Includes code for fetching the configurations from a PostgreSQL table and also exporting it via HTTP -- to be used on the InstantVAS.com deployed version */
-	public static final String ConfigurationSourceType_POSTGRESQL = "LvYoKl";
-
-	public enum EConfigurationSourceType {
-		/** configuration is loaded from an encrypted jar file entry */
-		JAR_FILE,		// ro
-		/** configuration will be loaded from and written to a filesystem file */
-		FS_FILE,		// rw
-		/** idem, but get it from an http request */
-		HTTP,			// rw
-		/** get it from a postgresql table */
-		POSTGRESQL,		// rw
-	};
+	public static final String ConfigurationSourceType_POSTGRESQL    = "LvYoKl";
 
 	// possibly we can do something like the above here -- remember to replace the switch cases for if-then-elses on the module loading
 	public enum EInstantVASModules {// celltick integration modules, for production
@@ -89,8 +80,8 @@ public class InstantVASLicense {
 	// Instant VAS main configuration
 	/////////////////////////////////
 	
-	/** */
-	public static final boolean IFDEF_HARDCODED_INSTANTVAS_INSTANCE    = true;		// when true, use the hard-coded instance definition, bringing an extra layer of protection agains reverse-engineering
+	/** when true, use the hard-coded instance definition, bringing an extra layer of protection against reverse-engineering */
+//	public static final boolean IFDEF_HARDCODED_INSTANTVAS_INSTANCE    = true;
 	/** Defines the retrieve method for the Instant VAS instances definitions */
 	public static final String INSTANTVAS_INSTANCES_SOURCE_TYPE        = /**/ ConfigurationSourceType_HARDCODED; //*/ ConfigurationSourceType_FS_FILE; 
 	/** The location, in respect to the above definition, to retrieve the data from */
@@ -99,17 +90,27 @@ public class InstantVASLicense {
 	// Instant VAS instances
 	////////////////////////
 	// The following values may be repeated n times -- one for each SMS Application Instance served by this Instant VAS server.
-	// For the case 'INSTANTVAS_INSTANCE_CONFIG_TYPE' is 'STATIC_CLASS', a single instance is defined, therefore the type of
-	// the variables isn't an array
 	
-	/** Defines the retrieve method for the Instant VAS application configuration */
-	public static final EConfigurationSourceType[] INSTANTVAS_INSTANCE_CONFIG_TYPE        = IFDEF_HARDCODED_INSTANTVAS_INSTANCE ? null : new EConfigurationSourceType[] {EConfigurationSourceType.JAR_FILE};
-	/** The location, in respect to the above definition, to retrieve the data from */
-	public static final String[]                   INSTANTVAS_INSTANCE_CONFIG_ACCESS_INFO = IFDEF_HARDCODED_INSTANTVAS_INSTANCE ? null : new String[] {"/CelltickHangmanClaroBR.config"};
-	/** The token this instance's requests are required to provide to have their authorization granted */
-	public static final String[]                   INSTANTVAS_INSTANCE_CONFIG_TOKEN       = IFDEF_HARDCODED_INSTANTVAS_INSTANCE ? null : new String[] {"AiHfidSIfSmMd84ISi4"};
-	public static final boolean IFDEF_HARCODED_INSTANCE_RESTRICTION = IFDEF_HARDCODED_INSTANTVAS_INSTANCE ? true : false;		// set to true to have 'INSTANTVAS_INSTANCE_CONFIG0_TOKEN' verified after each request's 'AUTHENTICATION_TOKEN' parameter
-	public static final String  INSTANTVAS_INSTANCE_CONFIG0_TOKEN   = "AiHfidSIfSmMd84ISi4";	// IFDEF_HARCODED_INSTANCE_RESTRICTION  ? "AiHfidSIfSmMd84ISi4" : null; seems to not allow hard-coding
+	// these constants are exclusively used for the hard-coded version (when IFDEF_HARDCODED_INSTANTVAS_INSTANCE is true)...
+	
+	/** @see #INSTANTVAS_INSTANCE_CONFIG_TYPE */
+	public static final String INSTANTVAS_INSTANCE_CONFIG0_TYPE         = /**/ ConfigurationSourceType_PLAIN_FS_FILE;	//*/ null; 
+	/** @see #INSTANTVAS_INSTANCE_CONFIG_ACCESS_INFO */
+	public static final String INSTANTVAS_INSTANCE_CONFIG0_ACCESS_INFO  = /**/ "/tmp/InstantVASHangman.config";			//*/ null;
+	/** @see #INSTANTVAS_INSTANCE_CONFIG_TOKEN */
+	public static final String INSTANTVAS_INSTANCE_CONFIG0_TOKEN        = /**/ "AiHfidSIfSmMd84ISi4";					//*/ null;
+	/** Tells how many hard-coded instance definitions the hard-coded version of the "instance recognition code" should consider.
+	 *  Set to 0 to disable the hard-coding -- if hard-coding is enabled, the non hard-coded version bellow won't be used. */
+	public static final int    INSTANTVAS_INSTANCE_CONFIGn_LENGTH       = /**/ 1;										//*/ 0;
+
+	// ... and these are for the non hard-coded version
+	
+	/** Defines the retrieve method for each Instant VAS instance (application) configuration */
+	public static final String[] INSTANTVAS_INSTANCE_CONFIG_TYPE        = /**/ null;		//*/ ConfigurationSourceType_RESOURCE;
+	/** The location, in respect to the above definition, to retrieve each instance configuration from */
+	public static final String[] INSTANTVAS_INSTANCE_CONFIG_ACCESS_INFO = /**/ null;		//*/ new String[] {"/CelltickHangmanClaroBR.config"};
+	/** The token each instance's requests are required to provide to have their authorization granted */
+	public static final String[] INSTANTVAS_INSTANCE_CONFIG_TOKEN       = /**/ null;		//*/ new String[] {"AiHfidSIfSmMd84ISi4"};
 	
 	// the above variables hard-codes into 'NativeHTTPServer' and all Servlet classes, requiring them to be reverse-engineered in order to break the protection
 	
@@ -135,8 +136,17 @@ public class InstantVASLicense {
 	////////////////////////////////////////
 	// The following definitions will cause a hard code in 'InstantVASInstanceConfiguration'
 
-	/** This instance's account name to be sent when attempting to subscribe / unsubscribe using the provided subscription URLs */
-	public static final String SUBSCRIPTION_CHANNEL_NAME = "HangMan";
+	/** The 'CelltickLiveScreenSubscriptionAPI's 'package name' for this service -- the token to be sent when attempting to subscribe / unsubscribe using the provided 'LIFECYCLE_SERVICE_BASE_URL' */
+	public static final String LIFECYCLE_CHANNEL_NAME = "HangMan";
+	
+	// Passive HTTPD Service; Active HTTP Queue Client
+	public static final String MOAcquisitionMethods_ACTIVE_HTTP_QUEUE_CLIENT = "lC9Jz";
+	
+	public static final String MO_ACQUISITION_METHOD                  = MOAcquisitionMethods_ACTIVE_HTTP_QUEUE_CLIENT;
+	public static final String MO_ACTIVE_HTTP_QUEUE_BASE_URL          = "http://test.InstantVAS.com/CelltickMOs.php";
+	public static final String MO_ACTIVE_HTTP_QUEUE_LOCAL_OFFSET_FILE = "/tmp/lastFetchedMO";
+	public static final String MO_ACTIVE_HTTP_QUEUE_BATCH_SIZE        = "50";
+	public static final long   MO_ACTIVE_HTTP_QUEUE_POOLING_DELAY     = 1000;
 	
 	/** The short code of the Hangman Game */
 	public static final String SHORT_CODE  = "993";
@@ -172,6 +182,7 @@ public class InstantVASLicense {
 	// AddToMOQueue, AddToSubscribeUserQueue and other services (license infringement control)
 	//////////////////////////////////////////////////////////////////////////////////////////
 	
+	public static final boolean IFDEF_HARCODED_INSTANCE_RESTRICTION = true;	// if true, the hard-coded information bellow will be used -- please, refactor this name & behavior
 	/** If set, instructs /AddToMOQueue and other services to require received MSISDNs to have a minimum length */
 	public static final int      ALLOWABLE_MSISDN_MIN_LENGTH = /** / -1; //*/ 12;	// if set to -1, restriction code for min length won't be used
 	/** Same as above, but for a maximum length */

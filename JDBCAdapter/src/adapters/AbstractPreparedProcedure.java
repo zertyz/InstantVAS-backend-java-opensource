@@ -41,7 +41,7 @@ public class AbstractPreparedProcedure {
 		return preparedProcedureSQL;
 	}
 	
-	/** Uses the internal cache mechanism to efficiently retrieve a ready to use 'PreparedStatement' */
+	/** Uses the internal cache mechanism to efficiently retrieve a ready to use a 'PreparedStatement' */
 	public PreparedStatement getPreparedStatement(int connIndex, Object... parametersAndValuesPairs) throws SQLException {
 		Connection conn = connectionPool[connIndex];
 		// search for an available prepared statement on the list and return it
@@ -53,14 +53,14 @@ public class AbstractPreparedProcedure {
 				if (psCandidate != null) {
 					// take from the pool and give it to the caller, if it is valid
 					preparedStatements[psIndex] = null;
-					return buildPreparedStatement(psCandidate, parametersAndValuesPairs);
+					return fillPreparedStatement(psCandidate, parametersAndValuesPairs);
 				}
 			}
 		}
 		// no prepared procedure available. create a brand new one
 		PreparedStatement ps = conn.prepareStatement(preparedProcedureSQL);
 		ps.setPoolable(true);
-		return buildPreparedStatement(ps, parametersAndValuesPairs);
+		return fillPreparedStatement(ps, parametersAndValuesPairs);
 	}
 	
 	/** return a known connection prepared statement to the pool -- faster */
@@ -116,7 +116,8 @@ System.err.println("AbstractPreparedProcedure '"+preparedProcedureSQL+"': Connec
 		}
 	}
 
-	private PreparedStatement buildPreparedStatement(PreparedStatement ps, Object... parametersAndValuesPairs) throws SQLException {
+	/** Fill a prepared statement with the values needed to execute it's query */
+	public PreparedStatement fillPreparedStatement(PreparedStatement ps, Object... parametersAndValuesPairs) throws SQLException {
 		int pairsLength = parametersAndValuesPairs.length/2;
 		for (int paramsIndex=0; paramsIndex<params.length; paramsIndex++) {
 			IJDBCAdapterParameterDefinition parameterFromConstructor = params[paramsIndex];

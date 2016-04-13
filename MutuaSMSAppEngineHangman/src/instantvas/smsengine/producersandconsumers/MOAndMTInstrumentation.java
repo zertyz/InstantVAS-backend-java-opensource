@@ -23,6 +23,13 @@ import mutua.smsout.dto.OutgoingSMSDto;
  * @author luiz
 */
 
+// TODO 4/4/16: ScheduleControl pode ser unificado a Instrumentation e relatórios, enquanto resolve os problemas atuais. Pontos:
+// 1) Devido a problemas de reentrância, dormimos até 10 segundos esperando pelo registro de um MO. Solução: registrar cada evento separadamente e só considerar o request como pronto quando todas as propriedades estiverem presentes. Deste modo, as instrumentações podem ser registradas em banco, logs, etc. Isto está de acordo com a visão inicial do Instrumentation
+// 2) Cada uma das propriedades instrumentáveis contaria com propriedades do tipo: debug, log, measurement, average, count, method, etc.
+// 3) Para eventos do tipo method, por exemplo, ao poder se relacionar propriedade A, B e C ao evento com ID=X, toma-se alguma providência: log, notificação, etc.
+// 4) Juntando 1, 2 e 3, tem se a funcionalidade de ScheduleControl (aqui utilizada como um instrumentador) e pronta para substituí-lo aqui.
+// 5) Pergunta: poderia ser substituído também nos testes web?
+
 public class MOAndMTInstrumentation {
 
 	private static final ScheduleControl<Object, Integer> schedule;
@@ -67,8 +74,9 @@ public class MOAndMTInstrumentation {
 			if (scheduledEntry == null) {
 				// we have up to 10 seconds of 10ms sleepings for the reentrancy issue of an MO being consumed before it's registration
 				// method had finished, which makes this function be called before the 'registerEvent'
-				if (i == 1) {
-					log.reportThrowable(new RuntimeException(), "MO/MT instrumentation error after 10 seconds: MO was not scheduled: " + mo);
+				if (i == 2) {
+					//log.reportThrowable(new RuntimeException(), "MO/MT instrumentation error after 10 seconds: MO was not scheduled: " + mo);
+					registerLateMOArrival(log, mo, mo.getMoId(), System.currentTimeMillis());	// workarround for batch processing, where we are unable to register the MO (because we can't know the moId): register now, when i == 2, so that the milestone can be finally set when i == 1
 				} else {
 					Thread.sleep(10);
 				}

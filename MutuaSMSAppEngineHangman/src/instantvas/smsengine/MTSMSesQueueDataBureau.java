@@ -1,7 +1,6 @@
 package instantvas.smsengine;
 
 import adapters.IJDBCAdapterParameterDefinition;
-import adapters.exceptions.PreparedProcedureException;
 import instantvas.smsengine.producersandconsumers.EInstantVASEvents;
 import mutua.events.IDatabaseQueueDataBureau;
 import mutua.imi.IndirectMethodInvocationInfo;
@@ -38,7 +37,7 @@ public class MTSMSesQueueDataBureau extends IDatabaseQueueDataBureau<EInstantVAS
 	}
 	
 	@Override
-	public Object[] serializeQueueEntry(IndirectMethodInvocationInfo<EInstantVASEvents> entry) throws PreparedProcedureException {
+	public Object[] serializeQueueEntry(IndirectMethodInvocationInfo<EInstantVASEvents> entry) {
 		OutgoingSMSDto mt = (OutgoingSMSDto)entry.getParameters()[0];
 		return new Object[] {
 			EMTQueueQueryParameters.MO_ID, mt.getMoId(),

@@ -68,7 +68,6 @@ import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesHelp;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesProfile;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesSubscription;
-import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 import mutua.smsin.parsers.SMSInCelltick;
 import mutua.smsin.parsers.SMSInParser;
 import mutua.smsout.senders.SMSOutCelltick;
@@ -76,6 +75,7 @@ import mutua.smsout.senders.SMSOutSender;
 import mutua.subscriptionengine.CelltickLiveScreenSubscriptionAPI;
 import mutua.subscriptionengine.SubscriptionEngine;
 import mutua.subscriptionengine.TestableSubscriptionAPI;
+import adapters.HTTPClientAdapter;
 import adapters.PostgreSQLAdapter;
 
 /** <pre>
@@ -164,12 +164,10 @@ public class InstantVASInstanceConfiguration {
 	// Integration with 'SMSOutCelltick' and 'SubscriptionEngineCelltick'
 	/////////////////////////////////////////////////////////////////////
 
-	@ConfigurableElement("Subscription service URLs & data for 'CelltickLiveScreenSubscriptionAPI'")
-	public static String SUBSCRIBE_SERVICE_URL;
-	@ConfigurableElement()
-	public static String UNSUBSCRIBE_SERVICE_URL;
-	@ConfigurableElement()
-	public static String SUBSCRIPTION_CHANNEL_NAME;
+	@ConfigurableElement("Lifecycle Client service base URLs for Subscription & Unsubscription using 'CelltickLiveScreenSubscriptionAPI'")
+	public static String LIFECYCLE_SERVICE_BASE_URL;
+//	@ConfigurableElement("The 'CelltickLiveScreenSubscriptionAPI's 'package name' for this service")
+//	public static String LIFECYCLE_CHANNEL_NAME;
 	@ConfigurableElement("MT service URLs & data for Celltick's Kannel APIs")
 	public static String MT_SERVICE_URL;
 	@ConfigurableElement("the number of times 'sendMessage' will attempt to send the message before reporting it as unsendable")
@@ -280,20 +278,20 @@ public class InstantVASInstanceConfiguration {
 //
 //	@ConfigurableElement("Not a good idea to mess with these values")
 //	public static EInstantVASModules[] ENABLED_MODULES;
-	
-	// AddToMOQueue, AddToSubscribeUserQueue and other services (license infringment control)
-	/////////////////////////////////////////////////////////////////////////////////////////
-	
-	@ConfigurableElement("If set, instructs /AddToMOQueue and other services to require received MSISDNs to have a minimum length")
-	public static int                   ALLOWABLE_MSISDN_MIN_LENGTH = -1;
-	@ConfigurableElement("Same as above, but for a maximum length")
-	public static int                   ALLOWABLE_MSISDN_MAX_LENGTH = -1;
-	@ConfigurableElement("If set, MSISDNs used on any service will be required to have one of the listed prefixes")
-	public static String[]              ALLOWABLE_MSISDN_PREFIXES;
-	@ConfigurableElement("If set, /AddToMOQueue will only process MOs from the listed carriers")
-	public static ESMSInParserCarrier[] ALLOWABLE_CARRIERS;
-	@ConfigurableElement("If set, /AddToMOQueue (and other services) will only process MOs and send MTs to the listed short codes -- which may be long codes as well")
-	public static String[]              ALLOWABLE_SHORT_CODES;
+//	
+//	// AddToMOQueue, AddToSubscribeUserQueue and other services (license infringment control)
+//	/////////////////////////////////////////////////////////////////////////////////////////
+//	
+//	@ConfigurableElement("If set, instructs /AddToMOQueue and other services to require received MSISDNs to have a minimum length")
+//	public static int                   ALLOWABLE_MSISDN_MIN_LENGTH = -1;
+//	@ConfigurableElement("Same as above, but for a maximum length")
+//	public static int                   ALLOWABLE_MSISDN_MAX_LENGTH = -1;
+//	@ConfigurableElement("If set, MSISDNs used on any service will be required to have one of the listed prefixes")
+//	public static String[]              ALLOWABLE_MSISDN_PREFIXES;
+//	@ConfigurableElement("If set, /AddToMOQueue will only process MOs from the listed carriers")
+//	public static ESMSInParserCarrier[] ALLOWABLE_CARRIERS;
+//	@ConfigurableElement("If set, /AddToMOQueue (and other services) will only process MOs and send MTs to the listed short codes -- which may be long codes as well")
+//	public static String[]              ALLOWABLE_SHORT_CODES;
 
 
 	
@@ -309,7 +307,7 @@ public class InstantVASInstanceConfiguration {
 	public static String HELPphrStateless;
 	@ConfigurableElement("These are the detailed help messages, sent in response to the HELP/RULES command that will change the navigation state. You can set a second, third and so on help messages, which will be sent in response to the MORE command. Variables: {{shortCode}}, {{appName}}")
 	public static String[] HELPphrComposite;
-	@ConfigurableElement("Not used. For this to be used, a new variable should be created for every state. Example: HELPphrPlayingWithAHuman, ...")
+	@ConfigurableElement("Used on a temporary fix. Search for this variable and fix. For this to be used, a new variable should be created for every state. Example: HELPphrPlayingWithAHuman, ...")
 	public static String[][] HELPphrStatefulHelpMessages;
 	
 	// subscription
@@ -579,7 +577,6 @@ public class InstantVASInstanceConfiguration {
 
 	// integration
 	public SubscriptionEngine subscriptionEngine;
-	public String subscriptionToken;
 	public SMSInParser<Map<String, String>, byte[]>  moParser;
 	public SMSOutSender                              mtSender;
 	
@@ -623,6 +620,9 @@ public class InstantVASInstanceConfiguration {
 		
 		log = new Instrumentation<InstantVASHTTPInstrumentationRequestProperty, String>(
 			APP_NAME, new InstantVASHTTPInstrumentationRequestProperty(), LOG_STRATEGY, LOG_HANGMAN_FILE_PATH);
+		
+		System.out.println("\n### Configuring HTTPClientAdapter...");
+		HTTPClientAdapter.configureDefaultValuesForNewInstances(HTTP_CONNECTION_TIMEOUT_MILLIS, HTTP_READ_TIMEOUT_MILLIS, false, "User-Agent", "InstantVAS.com integration client");
 		
 		List<EInstantVASModules> enabledModulesList = Arrays.asList(ENABLED_MODULES);
 		
@@ -808,6 +808,10 @@ public class InstantVASInstanceConfiguration {
 				baseStates = (SMSAppModuleNavigationStates) baseModuleInstances[0];
 				break;
 			case HELP:
+				// apply this temporary fix -- to solve it, some specific named configurations must be created
+				HELPphrStatefulHelpMessages  = new String[][] {
+					{"GuessingWordFromHangmanHumanOpponent", HANGMANphrGuessingWordHelp},
+				};
 				Object[] helpModuleInstances = SMSAppModuleConfigurationHelp.getHelpModuleInstances(
 					log, SHORT_CODE, APP_NAME,
 					HELPphrNewUsersFallback, HELPphrExistingUsersFallback, HELPphrStateless, HELPphrStatefulHelpMessages, HELPphrComposite,
@@ -820,7 +824,7 @@ public class InstantVASInstanceConfiguration {
 				Object[] subscriptionModuleInstances = SMSAppModuleConfigurationSubscription.getSubscriptionModuleInstances(log, SHORT_CODE, APP_NAME, PRICE_TAG,
 					SUBSCRIPTIONphrDoubleOptinStart, SUBSCRIPTIONphrDisagreeToSubscribe, SUBSCRIPTIONphrSuccessfullySubscribed, SUBSCRIPTIONphrCouldNotSubscribe,
 					SUBSCRIPTIONphrUserRequestedUnsubscription, SUBSCRIPTIONphrLifecycleUnsubscription,
-					baseModuleDAL, subscriptionDAL, subscriptionEngine, subscriptionToken,
+					baseModuleDAL, subscriptionDAL, subscriptionEngine,
 					EInstantVASCommandTriggers.get2DStringArrayFromEInstantVASCommandTriggersArray(SUBSCRIPTIONnstAnsweringDoubleOptin));
 				subscriptionStates       = (SMSAppModuleNavigationStatesSubscription) subscriptionModuleInstances[0];
 				subscriptionCommands     = (SMSAppModuleCommandsSubscription)         subscriptionModuleInstances[1];
@@ -906,21 +910,23 @@ public class InstantVASInstanceConfiguration {
 		moParser           = new SMSInCelltick(APP_NAME);
 		mtSender           = new SMSOutCelltick(log, APP_NAME, SHORT_CODE, KANNEL_MT_SMSC, MT_SERVICE_URL,
 		                                        MT_SERVICE_NUMBER_OF_RETRY_ATTEMPTS, MT_SERVICE_DELAY_BETWEEN_ATTEMPTS);
-		subscriptionEngine = new CelltickLiveScreenSubscriptionAPI(log, SUBSCRIBE_SERVICE_URL, UNSUBSCRIBE_SERVICE_URL);
-		subscriptionToken  = SUBSCRIPTION_CHANNEL_NAME;
+		subscriptionEngine = new CelltickLiveScreenSubscriptionAPI(log, LIFECYCLE_SERVICE_BASE_URL, LIFECYCLE_CHANNEL_NAME);
 	}
 	
 	private void configureCelltickJUnitTestsIntegration() {
 		moParser = null;
 		mtSender = null;
-		subscriptionEngine = new TestableSubscriptionAPI(log);
-		subscriptionToken  = "JUnit tests";
+		subscriptionEngine = new TestableSubscriptionAPI(log, "HangmanTests");
 	}
 	
 	public static void setHangmanTestDefaults() {
 		setHangmanProductionDefaults();
 		ENABLED_MODULES[0] = EInstantVASModules.CELLTICK_JUNIT_TESTS_INTEGRATION;
-		POSTGRESQL_SHOULD_DEBUG_QUERIES             = false;
+		POSTGRESQL_SHOULD_DEBUG_QUERIES     = false;
+		LIFECYCLE_SERVICE_BASE_URL          = "http://test.InstantVAS.com/CelltickSubscriptions.php";
+		MT_SERVICE_URL                      = "http://test.InstantVAS.com/CelltickMTs.php";
+
+
 	}
 
 	/** Set the default configuration for the Hangman SMS Application.
@@ -940,13 +946,9 @@ public class InstantVASInstanceConfiguration {
 		HTTP_CONNECTION_TIMEOUT_MILLIS = 30000;
 		HTTP_READ_TIMEOUT_MILLIS       = 30000;
 		
-		SUBSCRIBE_SERVICE_URL               = "http://localhost:8082/celltick/wapAPI?action=subpkg&msisdn=%%MSISDN%%&pkgname=%%pkgname%%&charge=1";
-		UNSUBSCRIBE_SERVICE_URL             = "http://localhost:8082/celltick/wapAPI?action=unsubpkg&msisdn=%%MSISDN%%&pkgname=%%pkgname%%&charge=1";
-		SUBSCRIBE_SERVICE_URL               = "http://iw.us.to:8181/celltick/wapAPI?action=subpkg&msisdn=%%MSISDN%%&pkgname=%%pkgname%%&charge=1";
-		UNSUBSCRIBE_SERVICE_URL             = "http://iw.us.to:8181/celltick/wapAPI?action=unsubpkg&msisdn=%%MSISDN%%&pkgname=%%pkgname%%&charge=1";
-		SUBSCRIPTION_CHANNEL_NAME           = "HangMan";
+		LIFECYCLE_SERVICE_BASE_URL          = "http://localhost:8082/celltick/wapAPI";
+//		LIFECYCLE_CHANNEL_NAME              = "HangMan";
 		MT_SERVICE_URL                      = "http://localhost:15001/cgi-bin/sendsms";
-		MT_SERVICE_URL                      = "http://iw.us.to:8181/pingresponse";
 		MT_SERVICE_NUMBER_OF_RETRY_ATTEMPTS = 5;
 		MT_SERVICE_DELAY_BETWEEN_ATTEMPTS   = 5000;
 
@@ -998,12 +1000,12 @@ public class InstantVASInstanceConfiguration {
 //			EInstantVASModules.CHAT,
 //			EInstantVASModules.HANGMAN
 //		};
-		
-		ALLOWABLE_MSISDN_MIN_LENGTH = -1;
-		ALLOWABLE_MSISDN_MAX_LENGTH = -1;
-		ALLOWABLE_MSISDN_PREFIXES   = null;
-		ALLOWABLE_CARRIERS          = null;
-		ALLOWABLE_SHORT_CODES       = null;
+//		
+//		ALLOWABLE_MSISDN_MIN_LENGTH = -1;
+//		ALLOWABLE_MSISDN_MAX_LENGTH = -1;
+//		ALLOWABLE_MSISDN_PREFIXES   = null;
+//		ALLOWABLE_CARRIERS          = null;
+//		ALLOWABLE_SHORT_CODES       = null;
 
 
 		// Help
@@ -1130,10 +1132,11 @@ public class InstantVASInstanceConfiguration {
 		
 		// stateful help
 		////////////////
-		
-		HELPphrStatefulHelpMessages  = new String[][] {
-			{"GuessingWordFromHangmanHumanOpponent", HANGMANphrGuessingWordHelp},
-		};
+
+		// this temporary fix was moved to the constructor while awaiting the real refactor.
+//		HELPphrStatefulHelpMessages  = new String[][] {
+//			{"GuessingWordFromHangmanHumanOpponent", HANGMANphrGuessingWordHelp},
+//		};
 
 		
 //		// navigation

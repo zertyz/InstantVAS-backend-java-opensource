@@ -1,17 +1,13 @@
 package mutua.smsout.senders;
 
-import static mutua.smsout.senders.ESMSOutSenderInstrumentationEvents.SMSOUT_ACCEPTED;
-import static mutua.smsout.senders.ESMSOutSenderInstrumentationEvents.SMSOUT_POSTPONED;
-import static mutua.smsout.senders.ESMSOutSenderInstrumentationProperties.REQUEST;
-import static mutua.smsout.senders.ESMSOutSenderInstrumentationProperties.RESPONSE;
+import static mutua.smsout.senders.ESMSOutSenderInstrumentationEvents.*;
+import static mutua.smsout.senders.ESMSOutSenderInstrumentationProperties.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.smsout.dto.OutgoingSMSDto;
 import adapters.HTTPClientAdapter;
-import adapters.dto.HTTPRequestDto;
 
 /** <pre>
  * SMSOutCelltick.java
@@ -33,32 +29,37 @@ public class SMSOutCelltick extends SMSOutSender {
 	
 	public static int    CELLTICK_MAX_MT_CHARS = 134;
 	
-	private final String mtServiceUrl /*= "http://localhost:15001/cgi-bin/sendsms"*/;
-	private final String shortCode;
-	private final String smsc;
+	private final String            mtServiceBaseUrl /*= "http://localhost:15001/cgi-bin/sendsms"*/;
+	private final HTTPClientAdapter mtClient;
+	private final String            shortCode;
+	private final String            smsc;
 
-	public SMSOutCelltick(Instrumentation<?, ?> log, String smsAppId, String shortCode, String smsc, String mtServiceUrl, int numberOfRetryAttempts, long delayBetweenAttempts) {
+	public SMSOutCelltick(Instrumentation<?, ?> log, String smsAppId, String shortCode, String smsc, String mtServiceBaseUrl, int numberOfRetryAttempts, long delayBetweenAttempts) {
 		super(log, "SMSOutCelltick", smsAppId, numberOfRetryAttempts, delayBetweenAttempts);
-		this.shortCode    = shortCode;
-		this.smsc         = smsc;
-		this.mtServiceUrl = mtServiceUrl;
+		this.shortCode        = shortCode;
+		this.smsc             = smsc;
+		this.mtServiceBaseUrl = mtServiceBaseUrl;
+		HTTPClientAdapter.configureDefaultValuesForNewInstances(-1, -1, false, "User-Agent", "InstantVAS.com MT client");
+		mtClient = new HTTPClientAdapter(mtServiceBaseUrl);
+
 	}
 	
-	private static int smsCount = 0;
+	private int smsCount = 0;
 	private synchronized int getNextSMSCount() {
 		return smsCount++;
 	}
 	
 	private String[] getConcatenatedSMSes(String text) {
 		if (text.length() > CELLTICK_MAX_MT_CHARS) {
-			ArrayList<String> SMSes = new ArrayList<String>();
+			String[] SMSes = new String[(int)Math.ceil((double)text.length() / (double)CELLTICK_MAX_MT_CHARS)];
+			int i = 0;
 			String remainingText = text;
 			while (remainingText.length() > 0) {
 				int partLength = Math.min(remainingText.length(), CELLTICK_MAX_MT_CHARS);
-				SMSes.add(remainingText.substring(0, partLength));
+				SMSes[i++] = remainingText.substring(0, partLength);
 				remainingText = remainingText.substring(partLength);
 			}
-			return SMSes.toArray(new String[SMSes.size()]);
+			return SMSes;
 		} else {
 			return new String[] {text};
 		}
@@ -71,55 +72,62 @@ public class SMSOutCelltick extends SMSOutSender {
 		
 		// send normal SMS
 		if (SMSes.length == 1) {
-			HTTPRequestDto requestData = new HTTPRequestDto();
-			requestData.addParameter("coding",    "1");
-			requestData.addParameter("to",        smsOut.getPhone());
-			requestData.addParameter("total",     "1");
-			requestData.addParameter("text",      smsOut.getText());
-			requestData.addParameter("subAct",    "1");
-			requestData.addParameter("from",      shortCode);
-			requestData.addParameter("smsc",      smsc);
-			requestData.addParameter("password",  "celltick");
-			requestData.addParameter("username",  "celltick");
-			requestData.addParameter("bundle",    "R1A");
-			requestData.addParameter("dlrmask",   "2");
-			requestData.addParameter("reportDLR", "0");
-			String response = HTTPClientAdapter.requestGet(mtServiceUrl, requestData, "UTF-8");
+			String[] request = {
+				"coding",    "1",
+				"to",        smsOut.getPhone(),
+				"total",     "1",
+				"text",      smsOut.getText(),
+				"subAct",    "1",
+				"from",      shortCode,
+				"smsc",      smsc,
+				"password",  "celltick",
+				"username",  "celltick",
+				"bundle",    "R1A",
+				"dlrmask",   "2",
+				"reportDLR", "0",
+			};
+			String response = mtClient.requestGet(request);
 			if (response.indexOf("Sent") != -1) {
-				log.reportEvent(SMSOUT_ACCEPTED, REQUEST, HTTPClientAdapter.toString(mtServiceUrl, requestData), RESPONSE, response);
+				log.reportEvent(SMSOUT_ACCEPTED, BASE_URL, mtServiceBaseUrl, REQUEST, request, RESPONSE, response);
 				return EOutgoingSMSAcceptionStatus.ACCEPTED;
 			} else {
-				log.reportEvent(SMSOUT_POSTPONED, REQUEST, HTTPClientAdapter.toString(mtServiceUrl, requestData), RESPONSE, response);
+				log.reportEvent(SMSOUT_POSTPONED, BASE_URL, mtServiceBaseUrl, REQUEST, request, RESPONSE, response);
 				return EOutgoingSMSAcceptionStatus.POSTPONED;
 			}
 		}
 		
+		// send concatenated SMSes
 		String CSMSHexReferenceNumber = toHex(getNextSMSCount() % 256);
 		String hexTotal               = toHex(SMSes.length);
 		String total = Integer.toString(SMSes.length);
-		// send concatenated SMS
 		for (int i=0; i<SMSes.length; i++) {
 			String hexPartNumber = toHex(i+1);
-			String udh           = "%05%00%03%"+CSMSHexReferenceNumber+"%"+hexTotal+"%"+hexPartNumber;
-			HTTPRequestDto requestData = new HTTPRequestDto();
-			requestData.addEncodedParameter("udh", udh);
-			requestData.addParameter("coding",    "1");
-			requestData.addParameter("subAct",    Integer.toString(i+1));
-			requestData.addParameter("total",     total);
-			requestData.addParameter("to",        smsOut.getPhone());
-			requestData.addParameter("text",      SMSes[i]);
-			requestData.addParameter("from",      shortCode);
-			requestData.addParameter("smsc",      smsc);
-			requestData.addParameter("password",  "celltick");
-			requestData.addParameter("username",  "celltick");
-			requestData.addParameter("bundle",    "R1A");
-			requestData.addParameter("dlrmask",   "2");
-			requestData.addParameter("reportDLR", "0");
-			String response = HTTPClientAdapter.requestGet(mtServiceUrl, requestData, "UTF-8");
+			String preEncodedUdh = "%05%00%03%"+CSMSHexReferenceNumber+"%"+hexTotal+"%"+hexPartNumber;	// this value should not be URLEncoded
+			
+			String[] request = {
+				"udh",       "",	// param udh at #0 will be set to 'preEncodedUdh' after URLEncoding all other values
+				"coding",    "1",
+				"subAct",    Integer.toString(i+1),
+				"total",     total,
+				"to",        smsOut.getPhone(),
+				"text",      SMSes[i],
+				"from",      shortCode,
+				"smsc",      smsc,
+				"password",  "celltick",
+				"username",  "celltick",
+				"bundle",    "R1A",
+				"dlrmask",   "2",
+				"reportDLR", "0",
+			};
+			mtClient.encodeParameterValues(request);
+			request[0] = preEncodedUdh;		// set the value that will not be URLEncoded
+			
+			String response = mtClient.requestGetWithAlreadyEncodedValues(request);
+			
 			if (response.indexOf("Sent") != -1) {
-				log.reportEvent(SMSOUT_ACCEPTED, REQUEST, HTTPClientAdapter.toString(mtServiceUrl, requestData), RESPONSE, response);
+				log.reportEvent(SMSOUT_ACCEPTED, BASE_URL, mtServiceBaseUrl, REQUEST, request, RESPONSE, response);
 			} else {
-				log.reportEvent(SMSOUT_POSTPONED, REQUEST, HTTPClientAdapter.toString(mtServiceUrl, requestData), RESPONSE, response);
+				log.reportEvent(SMSOUT_POSTPONED, BASE_URL, mtServiceBaseUrl, REQUEST, request, RESPONSE, response);
 				return EOutgoingSMSAcceptionStatus.POSTPONED;
 			}
 		}

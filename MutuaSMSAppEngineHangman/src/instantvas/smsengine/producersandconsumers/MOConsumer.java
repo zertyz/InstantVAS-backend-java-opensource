@@ -1,6 +1,6 @@
 package instantvas.smsengine.producersandconsumers;
 
-import static config.InstantVASLicense.IFDEF_INSTRUMENT_MO_AND_MT_TIMES;
+import static config.InstantVASLicense.*;
 
 import config.InstantVASInstanceConfiguration;
 import mutua.events.EventClient;

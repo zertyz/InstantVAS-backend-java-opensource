@@ -132,8 +132,7 @@ public class InstantVASSMSAppModuleSubscriptionTestsConfiguration {
 	private InstantVASSMSAppModuleSubscriptionTestsConfiguration() throws SQLException {
 		Object[] subscriptionModule = SMSAppModuleConfigurationSubscription.getSubscriptionModuleInstances(shortCode, appName, priceTag,
 		                                                                                                   BASE_MODULE_DAL, SUBSCRIPTION_DAL,
-		                                                                                                   new TestableSubscriptionAPI(LOG),
-		                                                                                                   "BillingCenterFor_"+appName);
+		                                                                                                   new TestableSubscriptionAPI(LOG, "BillingCenterFor_"+appName));
 		subscriptionModuleNavigationStates = (SMSAppModuleNavigationStatesSubscription) subscriptionModule[0];
 		subscriptionModuleCommands         = (SMSAppModuleCommandsSubscription)         subscriptionModule[1];
 		subscriptionModulePhrasings        = (SMSAppModulePhrasingsSubscription)        subscriptionModule[2];

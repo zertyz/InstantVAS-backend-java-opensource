@@ -39,8 +39,8 @@ public abstract class SubscriptionEngine {
 		/** Server reported the user was already subscribed */ ALREADY_SUBSCRIBED,
     }
 
-    /** Attempts to subscribe the user specified by 'userPhone' into the provided 'channelName' */
-    public abstract ESubscriptionOperationStatus subscribeUser(String userPhone, String channelName);
+    /** Attempts to subscribe the user specified by 'userPhone' into the service */
+    public abstract ESubscriptionOperationStatus subscribeUser(String userPhone);
     
     
     /** Return results for 'unsubscribeUser' operation */
@@ -51,8 +51,8 @@ public abstract class SubscriptionEngine {
 		/** Server reported the user was not subscribed */    NOT_SUBSCRIBED,
     };
 
-    /** Attempts to unsubscribe the user specified by 'userPhone' from the provided 'channelName' */
-    public abstract EUnsubscriptionOperationStatus unsubscribeUser(String userPhone, String channelName);
+    /** Attempts to unsubscribe the user specified by 'userPhone' from the service */
+    public abstract EUnsubscriptionOperationStatus unsubscribeUser(String userPhone);
 
 
 
@@ -64,9 +64,9 @@ public abstract class SubscriptionEngine {
 
 enum ESubscriptionEngineInstrumentationProperties implements IInstrumentableProperty {
 
-	
-	REQUEST  ("request",  String.class),
-	RESPONSE ("response", String.class),
+	BASE_URL ("baseURL",    String.class),
+	REQUEST  ("parameters", String[].class),
+	RESPONSE ("response",   String.class),
 	
 	
 	;
@@ -111,15 +111,15 @@ enum ESubscriptionEngineInstrumentationProperties implements IInstrumentableProp
 enum ESubscriptionEngineInstrumentationEvents implements IInstrumentableEvent {
 
 	
-	SUBSCRIPTION_OK                   ("SubscriptionEngine.subscription OK",                   REQUEST, RESPONSE),
-	SUBSCRIPTION_ALREADY_SUBSCRIBED   ("SubscriptionEngine.subscription ALREADY_SUBSCRIBED",   REQUEST, RESPONSE),
-	SUBSCRIPTION_AUTHENTICATION_ERROR ("SubscriptionEngine.subscription AUTHENTICATION_ERROR", REQUEST, RESPONSE),
-	SUBSCRIPTION_COMMUNICATION_ERROR  ("SubscriptionEngine.subscription COMMUNICATION_ERROR",  REQUEST, DIP_THROWABLE),
+	SUBSCRIPTION_OK                   ("SubscriptionEngine.subscription OK",                   BASE_URL, REQUEST, RESPONSE),
+	SUBSCRIPTION_ALREADY_SUBSCRIBED   ("SubscriptionEngine.subscription ALREADY_SUBSCRIBED",   BASE_URL, REQUEST, RESPONSE),
+	SUBSCRIPTION_AUTHENTICATION_ERROR ("SubscriptionEngine.subscription AUTHENTICATION_ERROR", BASE_URL, REQUEST, RESPONSE),
+	SUBSCRIPTION_COMMUNICATION_ERROR  ("SubscriptionEngine.subscription COMMUNICATION_ERROR",  BASE_URL, REQUEST, DIP_THROWABLE),
 
-	UNSUBSCRIPTION_OK                   ("SubscriptionEngine.unsubscription OK",                   REQUEST, RESPONSE),
-	UNSUBSCRIPTION_NOT_SUBSCRIBED       ("SubscriptionEngine.unsubscription NOT_SUBSCRIBED",       REQUEST, RESPONSE),
-	UNSUBSCRIPTION_AUTHENTICATION_ERROR ("SubscriptionEngine.unsubscription AUTHENTICATION_ERROR", REQUEST, RESPONSE),
-	UNSUBSCRIPTION_COMMUNICATION_ERROR  ("SubscriptionEngine.unsubscription COMMUNICATION_ERROR",  REQUEST, DIP_THROWABLE),
+	UNSUBSCRIPTION_OK                   ("SubscriptionEngine.unsubscription OK",                   BASE_URL, REQUEST, RESPONSE),
+	UNSUBSCRIPTION_NOT_SUBSCRIBED       ("SubscriptionEngine.unsubscription NOT_SUBSCRIBED",       BASE_URL, REQUEST, RESPONSE),
+	UNSUBSCRIPTION_AUTHENTICATION_ERROR ("SubscriptionEngine.unsubscription AUTHENTICATION_ERROR", BASE_URL, REQUEST, RESPONSE),
+	UNSUBSCRIPTION_COMMUNICATION_ERROR  ("SubscriptionEngine.unsubscription COMMUNICATION_ERROR",  BASE_URL, REQUEST, DIP_THROWABLE),
 	
 	
 	;
@@ -133,6 +133,10 @@ enum ESubscriptionEngineInstrumentationEvents implements IInstrumentableEvent {
 	
 	private ESubscriptionEngineInstrumentationEvents(String name, IInstrumentableProperty property1, IInstrumentableProperty property2) {
 		instrumentableEvent = new InstrumentableEvent(name, property1, property2);
+	}
+	
+	private ESubscriptionEngineInstrumentationEvents(String name, IInstrumentableProperty property1, IInstrumentableProperty property2, IInstrumentableProperty property3) {
+		instrumentableEvent = new InstrumentableEvent(name, property1, property2, property3);
 	}
 	
 	private ESubscriptionEngineInstrumentationEvents(String name) {

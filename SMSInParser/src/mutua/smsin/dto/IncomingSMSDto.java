@@ -123,7 +123,7 @@ public class IncomingSMSDto /*implements ILoggableRequest*/ {
     @Override
     public String toString() {
         return new StringBuffer("phone='").
-        	append(phone).append("', text='").append(text).append("', carrier=").
+        	append(phone).append("', text='").append(text.replace("\n", "\\n")).append("', carrier=").
         	append(carrier != null ? carrier.name() : "NULL").append(", largeAccount=").
         	append(largeAccount).append(", messageId='").append(moId).
         	append("', extraParameters=").append(Arrays.toString(extraParameters)).

@@ -80,10 +80,8 @@ public class SMSAppModuleCommandsSubscription {
 	private final IUserDB                        userDB;
 	private final ISessionDB                     sessionDB;
 	private final ISubscriptionDB                subscriptionDB;
-	/** The integration module with the service responsible for managing the subscription lifecycle of each user */
+	/** The integration module with the service responsible for managing the subscription lifecycle for each user of this service */
 	private final SubscriptionEngine             subscriptionEngine;
-	/** The identifier of the billing entity to which the subscribers of this service must be assigned to */
-	private final String                         subscriptionToken;
 	/** The events manager for this module */
 	private final SMSAppModuleEventsSubscription subscriptionEvents;
 
@@ -93,19 +91,17 @@ public class SMSAppModuleCommandsSubscription {
 	 *  @param baseModulesDAL      one of the members of {@link SMSAppModuleDALFactory}
 	 *  @param subscriptionDAL     one of the members of {@link SMSAppModuleDALFactorySubscription}
 	 *  @param subscriptionEngine  see {@link #subscriptionEngine}
-	 *  @param subscriptionToken   see {@link #subscriptionToken} */
+	 *  @param subscriptionEvents  see {@link #subscriptionEvents} */
 	public SMSAppModuleCommandsSubscription(SMSAppModulePhrasingsSubscription  subscriptionPhrases,
 	                                        SMSAppModuleDALFactory             baseModulesDAL,
 	                                        SMSAppModuleDALFactorySubscription subscriptionDAL,
 	                                        SubscriptionEngine                 subscriptionEngine,
-	                                        String                             subscriptionToken,
 	                                        SMSAppModuleEventsSubscription     subscriptionEvents) {
 		this.subscriptionPhrases = subscriptionPhrases;
 		this.userDB              = baseModulesDAL.getUserDB();
 		this.sessionDB           = baseModulesDAL.getSessionDB();
 		this.subscriptionDB      = subscriptionDAL.getSubscriptionDB();
 		this.subscriptionEngine  = subscriptionEngine;
-		this.subscriptionToken   = subscriptionToken;
 		this.subscriptionEvents  = subscriptionEvents;
 	}
 
@@ -127,7 +123,7 @@ public class SMSAppModuleCommandsSubscription {
 		@Override
 		public CommandAnswerDto processCommand(SessionModel session, ESMSInParserCarrier carrier, String[] parameters) throws SQLException {
 			UserDto user = session.getUser();
-			ESubscriptionOperationStatus subscriptionStatus = subscriptionEngine.subscribeUser(user.getPhoneNumber(), subscriptionToken);
+			ESubscriptionOperationStatus subscriptionStatus = subscriptionEngine.subscribeUser(user.getPhoneNumber());
 			if ((subscriptionStatus == ESubscriptionOperationStatus.OK) ||
 			    (subscriptionStatus == ESubscriptionOperationStatus.ALREADY_SUBSCRIBED)) {
 				SubscriptionDto subscriptionRecord = new SubscriptionDto(user, ESubscriptionChannel.SMS);
@@ -146,7 +142,7 @@ public class SMSAppModuleCommandsSubscription {
 		@Override
 		public CommandAnswerDto processCommand(SessionModel session, ESMSInParserCarrier carrier, String[] parameters) throws SQLException {
 			UserDto user = session.getUser();
-			EUnsubscriptionOperationStatus unsubscriptionStatus = subscriptionEngine.unsubscribeUser(user.getPhoneNumber(), subscriptionToken);
+			EUnsubscriptionOperationStatus unsubscriptionStatus = subscriptionEngine.unsubscribeUser(user.getPhoneNumber());
 			if ((unsubscriptionStatus == EUnsubscriptionOperationStatus.OK) ||
 			    (unsubscriptionStatus == EUnsubscriptionOperationStatus.NOT_SUBSCRIBED)) {
 				SubscriptionDto unsubscriptionRecord = new SubscriptionDto(user, EUnsubscriptionChannel.SMS);
@@ -175,7 +171,7 @@ public class SMSAppModuleCommandsSubscription {
 	// TODO assert, on the old web interface, that when celltick sends us an unsubscribe request, we do (or do not) call them back
 	public boolean unsubscribeUser(String phone) throws SQLException {
 		UserDto user = userDB.assureUserIsRegistered(phone);
-		EUnsubscriptionOperationStatus unsubscriptionStatus = subscriptionEngine.unsubscribeUser(phone, subscriptionToken);
+		EUnsubscriptionOperationStatus unsubscriptionStatus = subscriptionEngine.unsubscribeUser(phone);
 		if ((unsubscriptionStatus == EUnsubscriptionOperationStatus.OK) ||
 		    (unsubscriptionStatus == EUnsubscriptionOperationStatus.NOT_SUBSCRIBED)) {
 			SubscriptionDto unsubscriptionRecord = new SubscriptionDto(user, EUnsubscriptionChannel.API);
@@ -191,7 +187,7 @@ public class SMSAppModuleCommandsSubscription {
 	// TODO assert, on the old web interface, that when celltick sends us a subscribe request, we do (or do not) call them back
 	public boolean subscribeUser(String phone) throws SQLException {
 		UserDto user = userDB.assureUserIsRegistered(phone);
-		ESubscriptionOperationStatus subscriptionStatus = subscriptionEngine.subscribeUser(phone, subscriptionToken);
+		ESubscriptionOperationStatus subscriptionStatus = subscriptionEngine.subscribeUser(phone);
 		if ((subscriptionStatus == ESubscriptionOperationStatus.OK) ||
 		    (subscriptionStatus == ESubscriptionOperationStatus.ALREADY_SUBSCRIBED)) {
 			SubscriptionDto subscriptionRecord = new SubscriptionDto(user, ESubscriptionChannel.SMS);

@@ -1,6 +1,7 @@
 package main;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 
 import static main.config.Configuration.log;
 import adapters.PostgreSQLAdapter;
@@ -55,6 +56,54 @@ public class PostgreSQLTester {
                               ID,    11,
                               PHONE, "2192820997");
 		System.out.println("Result: NULL");
+		
+		// Batch INSERT (40 elements at a time)
+		int c = 0;
+		for (int batchCount=0; batchCount<100; batchCount++) {
+			int[] results = db.invokeUpdateBatchProcedure(InsertSimpleRecord, new Object[][] {
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+				{ID, 12+c, PHONE, Long.toString(21991234900L+(c++))},
+			});
+			System.out.println("Batch Results: " + Arrays.toString(results));
+		}
 
 		log.reportRequestFinish();
 	}

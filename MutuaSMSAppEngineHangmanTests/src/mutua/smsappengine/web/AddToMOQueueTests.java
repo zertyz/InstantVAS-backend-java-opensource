@@ -45,6 +45,11 @@ public class AddToMOQueueTests {
 			public int dispatchMOForProcessing(IncomingSMSDto mo) {
 				lastMO[0] = mo;
 				return 1;
+			}
+
+			@Override
+			public int[] dispatchMOsForProcessing(IncomingSMSDto[] moSet) {
+				return null;
 			};
 		};
 		

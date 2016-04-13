@@ -18,5 +18,8 @@ public interface IMOProducer {
 	
 	/** Called to inform a 'MO Just Arrived'. Returns the registered event id */
 	int dispatchMOForProcessing(IncomingSMSDto mo);
+	
+	/** Similar to {@link #dispatchMOForProcessing}, but perform all at once */
+	int[] dispatchMOsForProcessing(IncomingSMSDto[] moSet);
 
 }

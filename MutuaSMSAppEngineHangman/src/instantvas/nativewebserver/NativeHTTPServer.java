@@ -1,6 +1,7 @@
 package instantvas.nativewebserver;
 
 import static config.InstantVASLicense.*;
+import static config.MutuaHardCodedConfiguration.*;
 
 import instantvas.smsengine.InstantVASHTTPInstrumentationRequestProperty;
 import instantvas.smsengine.producersandconsumers.EInstantVASEvents;
@@ -13,12 +14,20 @@ import mutua.events.EventClient;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.smsin.dto.IncomingSMSDto;
 import mutua.smsin.parsers.SMSInParser;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLDecoder;
+import java.nio.channels.FileChannel;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,6 +37,7 @@ import java.util.concurrent.Executors;
 
 import com.sun.net.httpserver.*;
 
+import adapters.HTTPClientAdapter;
 import config.InstantVASInstanceConfiguration;
 
 /** <pre>
@@ -83,19 +93,84 @@ public class NativeHTTPServer {
 		moProducer = new MOProducer(ivac, moConsumer);
 
 		addToMOQueue = new AddToMOQueue(log, moProducer, moParser,
-		                                InstantVASInstanceConfiguration.ALLOWABLE_MSISDN_MIN_LENGTH,
-		                                InstantVASInstanceConfiguration.ALLOWABLE_MSISDN_MAX_LENGTH,
-		                                InstantVASInstanceConfiguration.ALLOWABLE_MSISDN_PREFIXES,
-		                                InstantVASInstanceConfiguration.ALLOWABLE_CARRIERS,
-		                                InstantVASInstanceConfiguration.ALLOWABLE_SHORT_CODES);
+		                                ALLOWABLE_MSISDN_MIN_LENGTH,
+		                                ALLOWABLE_MSISDN_MAX_LENGTH,
+		                                ALLOWABLE_MSISDN_PREFIXES,
+		                                ALLOWABLE_CARRIERS,
+		                                ALLOWABLE_SHORT_CODES);
 	}
 	
 	public static void main(String[] args) throws IOException, IllegalArgumentException, SecurityException, SQLException, IllegalAccessException, NoSuchFieldException {
-		InstantVASInstanceConfiguration.setHangmanProductionDefaults();		// temporary solution, while we can't load the configuration file
+		InstantVASConfigurationLoader.applyConfigurationFromLicenseClass();
 		instantiate();
-		ivac.log.reportDebug("InstantVAS Internal :80 server started. Requests may now commence.");
+		
+		// use the active MO fecthing mechanism?
+		if (MO_ACQUISITION_METHOD == MOAcquisitionMethods_ACTIVE_HTTP_QUEUE_CLIENT) {
+			// debug
+			if (IFDEF_WEB_DEBUG) {
+				ivac.log.reportDebug("Starting the Active HTTP Queue Client for the service '"+MO_ACTIVE_HTTP_QUEUE_BASE_URL+
+				                     "', with a maximum fetch of "+MO_ACTIVE_HTTP_QUEUE_BATCH_SIZE+" elements at a time and "+
+						             "with no more than 1 request every "+MO_ACTIVE_HTTP_QUEUE_POOLING_DELAY+" milliseconds");
+			}
+			new Thread() {
+				
+				@Override
+				public void run() {
+					try {
+						HTTPClientAdapter httpQueueClient = new HTTPClientAdapter(MO_ACTIVE_HTTP_QUEUE_BASE_URL);
+						
+						// check file existence & permissions
+						File f = new File(MO_ACTIVE_HTTP_QUEUE_LOCAL_OFFSET_FILE);
+						if (f.exists() == false) {
+							/* debug */ if (IFDEF_WEB_DEBUG) {log.reportDebug("ActiveMOFetcher: File '"+f.getAbsolutePath()+"' does not exist. Creating...");}
+							f.createNewFile();
+						}
+						if (!f.canWrite()) {
+							throw new RuntimeException("ActiveMOFetcher cannot write to the local offset file '"+f.getAbsolutePath()+"'. Aborting, since we cannot keep track of the last MO processed after this application is restarted.");
+						}
+						
+						// open the file & check it's consistency
+						RandomAccessFile raf = new RandomAccessFile(f, "rw");
+						if (raf.length() != 8)  {
+							/* debug */ if (IFDEF_WEB_DEBUG) {log.reportDebug("ActiveMOFetcher: Invalid offset pointer found on file '"+f.getAbsolutePath()+"'. Recreating...");}
+							raf.writeLong(0);
+							raf.seek(0);
+						}
+						long localOffset = raf.readLong();
+						long remoteFileInitialLength = Long.parseLong(httpQueueClient.requestGetWithAlreadyEncodedValues("offset", "-1"));
+						/* debug */ if (IFDEF_WEB_DEBUG) {log.reportDebug("ActiveMOFetcher: Starting active fetcher from offset "+localOffset+" to a known number of "+remoteFileInitialLength);}
+						while (true) {
+							// fetch the MO queryString parameters (1 one each line), with the last line telling the next offset to pass along to keep fetching the sequence
+							String contents = httpQueueClient.requestGetWithAlreadyEncodedValues("offset", Long.toString(localOffset), "lines", MO_ACTIVE_HTTP_QUEUE_BATCH_SIZE);
+							String[] lines = contents.split("\n");
+							if (lines.length > 1) {
+								String[] queryStrings = new String[lines.length-1];	// the last line is the new offset to be used on the subsequente http get
+								// enqueue the MOs
+								for (int i=0; i<queryStrings.length; i++) {
+									String[] httpQueueData = lines[i].split("§");
+									String remoteAddr      = httpQueueData[0];
+									String queryString     = httpQueueData[2];
+									queryStrings[i] = queryString;
+								}
+								// the new 'localOffset'
+								localOffset = Long.parseLong(lines[lines.length-1]);
+								raf.seek(0);
+								raf.writeLong(localOffset);
+								// batch process
+								addToMOQueue.processRequests(queryStrings);
+							}
+							sleep(MO_ACTIVE_HTTP_QUEUE_POOLING_DELAY);
+						}
+					} catch (Throwable t) {
+						t.printStackTrace();
+					}
+				}
+			}.start();
+		}
+		
 		startServer(NATIVE_HTTP_SERVER_PORT, NATIVE_HTTP_SOCKET_BACKLOG_QUEUE_SLOTS, InstantVASSMSWebHandlers.values());
-		System.out.println("Started a :80 server. Please, request!");
+		ivac.log.reportDebug("InstantVAS Internal :"+NATIVE_HTTP_SERVER_PORT+" server started. Requests may now commence.");
+		/* debug */ if (IFDEF_WEB_DEBUG) {ivac.log.reportDebug("Registered services: "+Arrays.deepToString(InstantVASSMSWebHandlers.values()));}
 	}
 	
 	public static void startServer(int port, int socketBacklogQueueSlots, INativeHTTPServerHandler[]... handlerArrays) throws IOException {
@@ -209,62 +284,18 @@ public class NativeHTTPServer {
 				
 		ADD_TO_MO_QUEUE("/AddToMOQueue") {
 			
-			static final int    AUTHENTICATION_TOKENParameterIndex       = 0;
-			static final String AUTHENTICATION_TOKENParameterName        = "AUTHENTICATION_TOKEN";
-			static final int    PRECEDING_REQUEST_PARAMETERS_LENGTH      = 1;
-			
-			final byte[] BAD_REQUEST        = "BAD REQUEST".getBytes();
-			final byte[] BAD_AUTHENTICATION = "BAD AUTHENTICATION".getBytes();
-			
-			final String[] parameterNames = ivac.moParser.getRequestParameterNames(AUTHENTICATION_TOKENParameterName);
-			
-			{
-				log.reportDebug("/AddToMOQueue: Expected Parameters: " + Arrays.deepToString(parameterNames));
-			}
-			
 			@Override
 			public void handle(HttpExchange he) {
 				try {
 					byte[] response;
 					String queryString = he.getRequestURI().getRawQuery();
-					String[] parameterValues = retrieveStrictGetParameters(parameterNames, queryString);
-					log.reportDebug("/AddToMOQueue: " + Arrays.deepToString(parameterValues));
-					if (parameterValues == null) {
-						log.reportDebug("/AddToMOQueue " + new String(BAD_REQUEST) + ": " + queryString);
-						response = BAD_REQUEST;
-					} else					
-					// should we deny the request?
-						// code made in 'InstantVASLicenseTests' and shared between 'NavitaHTTPServer.ADD_TO_MO_QUEUE' and 'AddToMOQueue' servlet.
-					if (// test the authentication token
-					    (IFDEF_HARCODED_INSTANCE_RESTRICTION && (!INSTANTVAS_INSTANCE_CONFIG0_TOKEN.equals(parameterValues[AUTHENTICATION_TOKENParameterIndex]))) ||
-						// test additional MO parameter values -- EQUALS check method
-					    ((IFDEF_HARDCODE_CHECK_METHOD_OF_ADDITIONAL_MO_PARAMETER_VALUES == HardCodeCheckMethodOfAdditionalMOParameterValues_EQUALS) && (
-					     ((MO_ADDITIONAL_RULEn_LENGTH > 0) && (!MO_ADDITIONAL_RULE0_VALUE.equals(parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX])))
-					    )) ||
-						// test additional MO parameter values -- STARTS_WITH with MAX_LEN check method
-					    ((IFDEF_HARDCODE_CHECK_METHOD_OF_ADDITIONAL_MO_PARAMETER_VALUES == HardCodeCheckMethodOfAdditionalMOParameterValues_STARTS_WITH) && (
-					     ((MO_ADDITIONAL_RULEn_LENGTH > 0) && ( (parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX] == null) || (parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX].length() > MO_ADDITIONAL_RULE0_MAX_LEN) || (!parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX].startsWith(MO_ADDITIONAL_RULE0_VALUE))) )
-					    )) ||
-					    // test additional MO parameter values -- REGEX
-					    ((IFDEF_HARDCODE_CHECK_METHOD_OF_ADDITIONAL_MO_PARAMETER_VALUES == HardCodeCheckMethodOfAdditionalMOParameterValues_REGEX) && (
-					     ((MO_ADDITIONAL_RULEn_LENGTH > 0) && ( (parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX] == null) || (!MO_ADDITIONAL_RULE0_REGEX.matcher(parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]).matches()) ) )
-					   )) ) {
-						log.reportDebug("/AddToMOQueue " + new String(BAD_AUTHENTICATION) + ": " + queryString);
-						log.reportDebug("IFDEF_HARDCODE_CHECK_METHOD_OF_ADDITIONAL_MO_PARAMETER_VALUES=" + IFDEF_HARDCODE_CHECK_METHOD_OF_ADDITIONAL_MO_PARAMETER_VALUES);
-						log.reportDebug("MO_ADDITIONAL_RULEn_LENGTH=" + MO_ADDITIONAL_RULEn_LENGTH);
-						log.reportDebug("parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]=" + parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]);
-						log.reportDebug("MO_ADDITIONAL_RULE0_REGEX.matcher(parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]).matches()" + MO_ADDITIONAL_RULE0_REGEX.matcher(parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]).matches());
-						response = BAD_AUTHENTICATION;
-					} else {
-						// the request is allowed. Proceed.
-						IncomingSMSDto mo = ivac.moParser.parseIncomingSMS(parameterValues);
-						response = addToMOQueue.processRequest(mo, queryString);
-					}
-					
+
+					response = addToMOQueue.processRequest(queryString);
+
 					he.sendResponseHeaders(200, response.length);
 					OutputStream os = he.getResponseBody();
 					os.write(response);
-					os.close();		// closing just the output stream seems to allow the connection to be reused (keep-alive)
+					os.close();		// keep-alive connections may be tested with curl -v 'http://localhost:8080/AddToMOQueue' 'http://localhost:8080/AddToMOQueue'
 				} catch (Throwable t) {
 					log.reportThrowable(t, "Error processing request /AddToMOQueue: "+he.getRequestURI().getRawQuery());
 				}

@@ -74,9 +74,11 @@ public abstract class SMSOutSender {
             	Thread.sleep(delayBetweenAttempts);
             } catch (InterruptedException e) {
             	throw new RuntimeException(childClassName + " ("+smsAppId+"): Thread interrupted while sleeping between reattempts");
+            } else {
+                throw new RuntimeException(childClassName + " ("+smsAppId+"): Couldn't dispatch a message in "+numberOfRetryAttempts+" attempts", sendingException);
             }
 		}
-        throw new RuntimeException(childClassName + " ("+smsAppId+"): Couldn't dispatch a message in 5 attempts");
+        throw new RuntimeException(childClassName + " ("+smsAppId+"): Couldn't dispatch a message in "+numberOfRetryAttempts+" attempts");
 	}
 }
 
@@ -86,8 +88,8 @@ public abstract class SMSOutSender {
 
 enum ESMSOutSenderInstrumentationProperties implements IInstrumentableProperty {
 
-
-	REQUEST  ("request",  String.class),
+	BASE_URL ("baseURL",  String.class),
+	REQUEST  ("request",  String[].class),
 	RESPONSE ("response", String.class),
 	
 	
@@ -149,6 +151,10 @@ enum ESMSOutSenderInstrumentationEvents implements IInstrumentableEvent {
 	
 	private ESMSOutSenderInstrumentationEvents(String name, IInstrumentableProperty property1, IInstrumentableProperty property2) {
 		instrumentableEvent = new InstrumentableEvent(name, property1, property2);
+	}
+	
+	private ESMSOutSenderInstrumentationEvents(String name, IInstrumentableProperty property1, IInstrumentableProperty property2, IInstrumentableProperty property3) {
+		instrumentableEvent = new InstrumentableEvent(name, property1, property2, property3);
 	}
 	
 	private ESMSOutSenderInstrumentationEvents(String name) {

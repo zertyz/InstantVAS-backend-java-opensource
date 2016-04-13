@@ -53,7 +53,6 @@ public class HangmanAppEngineBehavioralTests {
 	private static INextBotWordsDB nextBotWordsDB;
 	
 	private static TestableSubscriptionAPI subscriptionEngine;
-	private static String                  subscriptionChannel;
 	
 	
 	public static void _HangmanAppEngineBehavioralTests() throws IllegalArgumentException, SecurityException, SQLException, IllegalAccessException, NoSuchFieldException {
@@ -61,10 +60,7 @@ public class HangmanAppEngineBehavioralTests {
 		InstantVASInstanceConfiguration.setHangmanTestDefaults();
 		ivac = new InstantVASInstanceConfiguration();
 
-		ivac.subscriptionEngine = new TestableSubscriptionAPI(ivac.log);
-		
 		subscriptionEngine  = (TestableSubscriptionAPI)ivac.subscriptionEngine;
-		subscriptionChannel = ivac.subscriptionToken;
 		
 		userDB         = ivac.baseModuleDAL.getUserDB();
 		sessionDB      = ivac.baseModuleDAL.getSessionDB();
@@ -209,17 +205,17 @@ public class HangmanAppEngineBehavioralTests {
 
 		// user's first message is an invalid command -- restart the double opt-in from scratch
 		checkResponse("21998019167", "help", "You are at the HANGMAN game. To continue, you must subscribe. Send HANGMAN now to 993 and compete for prizes. You will be charged at $0.99 every week.");
-		assertFalse("User should not have been subscribed on the backend", subscriptionEngine._isUserSubscribed("21998019167", subscriptionChannel));
+		assertFalse("User should not have been subscribed on the backend", subscriptionEngine._isUserSubscribed("21998019167"));
 		
 		// user's first message is the double opt-in agreement: register him/her (it is assumed a broadcast message was sent instructing him/her what to reply to subscribe)
 		checkResponse("21991234899", "Hangman", "HANGMAN: Registration succeeded. Send HELP to 993 to know the rules and how to play, or simply send PLAY to 993");
-		assertTrue("User was not subscribed on the backend", subscriptionEngine._isUserSubscribed("21991234899", subscriptionChannel));
+		assertTrue("User was not subscribed on the backend", subscriptionEngine._isUserSubscribed("21991234899"));
 		
 		// user's first message is unsubscribe -- we must assure he/she is unsubscribed...
 		// ... for the user, for some reason, might be subscribed
-		subscriptionEngine.subscribeUser("21998019166", subscriptionChannel);
+		subscriptionEngine.subscribeUser("21998019166");
 		checkResponse("21998019166", "unsubscribe", "You are now unsubscribed from the HANGMAN GAME and will no longer receive invitations to play nor lucky numbers. To join again, send HANGMAN to 993");
-		assertFalse("User should not be still subscribed on the backend", subscriptionEngine._isUserSubscribed("21998019166", subscriptionChannel));
+		assertFalse("User should not be still subscribed on the backend", subscriptionEngine._isUserSubscribed("21998019166"));
 
 		// desperate help
 		checkResponse("21991234899", "how can I use this stuff??",
@@ -337,8 +333,8 @@ public class HangmanAppEngineBehavioralTests {
 		// unsubscribe
 		checkResponse("21998019167", "unsubscribe", "You are now unsubscribed from the HANGMAN GAME and will no longer receive invitations to play nor lucky numbers. To join again, send HANGMAN to 993");
 		checkResponse("21991234899", "unsubscribe", "You are now unsubscribed from the HANGMAN GAME and will no longer receive invitations to play nor lucky numbers. To join again, send HANGMAN to 993");
-		assertFalse("User should not be still subscribed on the backend", subscriptionEngine._isUserSubscribed("21998019167", subscriptionChannel));
-		assertFalse("User should not be still subscribed on the backend", subscriptionEngine._isUserSubscribed("21991234899", subscriptionChannel));
+		assertFalse("User should not be still subscribed on the backend", subscriptionEngine._isUserSubscribed("21998019167"));
+		assertFalse("User should not be still subscribed on the backend", subscriptionEngine._isUserSubscribed("21991234899"));
 
 	}
 	
@@ -423,7 +419,7 @@ public class HangmanAppEngineBehavioralTests {
 		
 		// now, when a user that was registered attempts to play (but he/she has been secretly unsubscribed due to life cycle rules), what happens?
 		// he/she must use the game as if their subscription was still valid...
-		subscriptionEngine.unsubscribeUser("21991234899", subscriptionChannel);
+		subscriptionEngine.unsubscribeUser("21991234899");
 		checkResponse("21991234899", "nick domJon", ivac.profilePhrasings.getNicknameRegistrationNotification("domJon"));
 		sendPrivateMessage("21991234899", "domJon", "I believe I would receive this, but... should I?");
 		

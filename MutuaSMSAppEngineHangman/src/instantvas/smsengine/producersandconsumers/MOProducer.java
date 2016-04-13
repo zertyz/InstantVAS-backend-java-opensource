@@ -2,6 +2,8 @@ package instantvas.smsengine.producersandconsumers;
 
 import static config.InstantVASLicense.*;
 
+import java.util.Arrays;
+
 import config.InstantVASInstanceConfiguration;
 import mutua.events.EventClient;
 import mutua.events.EventServer;
@@ -58,6 +60,14 @@ public class MOProducer extends EventServer<EInstantVASEvents> implements IMOPro
 		}
 		
 		return moId;
+	}
+
+	@Override
+	public int[] dispatchMOsForProcessing(IncomingSMSDto[] moSet) {
+		int[] results = dispatchConsumableEvents(EInstantVASEvents.MO_ARRIVED, moSet);
+		System.out.println("#### while inserting     : " + Arrays.toString(moSet));
+		System.out.println("#### batch MO results are: " + Arrays.toString(results));
+		return results;
 	}
 
 }
