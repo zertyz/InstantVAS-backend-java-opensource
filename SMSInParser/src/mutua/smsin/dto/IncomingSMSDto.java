@@ -1,6 +1,7 @@
 package mutua.smsin.dto;
 
-import java.util.Arrays;
+import mutua.serialization.SerializationRepository;
+import mutua.serialization.SerializationRepository.EfficientTextualSerializationMethod;
 
 /** <pre>
  * IncomingSMSDto.java
@@ -119,15 +120,22 @@ public class IncomingSMSDto /*implements ILoggableRequest*/ {
     public String[][] getExtraParameters() {
         return extraParameters;
     }
+    
+    @EfficientTextualSerializationMethod
+    public void toString(StringBuffer buffer) {
+        buffer.append("phone='").append(phone).append("', text='");
+        SerializationRepository.serialize(buffer, text);
+        buffer.append("', carrier=").append(carrier != null ? carrier.name() : "NULL").append(", largeAccount=").
+               append(largeAccount).append(", messageId='").append(moId).
+               append("', extraParameters=");
+        SerializationRepository.serialize(buffer, extraParameters);
+    }
 
     @Override
     public String toString() {
-        return new StringBuffer("phone='").
-        	append(phone).append("', text='").append(text.replace("\n", "\\n")).append("', carrier=").
-        	append(carrier != null ? carrier.name() : "NULL").append(", largeAccount=").
-        	append(largeAccount).append(", messageId='").append(moId).
-        	append("', extraParameters=").append(Arrays.toString(extraParameters)).
-            toString();
+		StringBuffer buffer = new StringBuffer();
+		toString(buffer);
+		return buffer.toString();
     }
 
 }

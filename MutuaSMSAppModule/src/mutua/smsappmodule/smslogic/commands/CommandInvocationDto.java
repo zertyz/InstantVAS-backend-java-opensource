@@ -1,6 +1,7 @@
 package mutua.smsappmodule.smslogic.commands;
 
-import java.util.Arrays;
+import mutua.serialization.SerializationRepository;
+import mutua.serialization.SerializationRepository.EfficientTextualSerializationMethod;
 	
 /** <pre>
  * CommandInvocationDto.java
@@ -28,13 +29,20 @@ public class CommandInvocationDto {
 	public String[] getParameters() {
 		return parameters;
 	}
+	
+	@EfficientTextualSerializationMethod
+	public void toString(StringBuffer buffer) {
+		buffer.append("command='").append(command.getCommandName()).append("',").
+		       append("parameters={");
+		SerializationRepository.serialize(buffer, parameters);
+		buffer.append("}");
+	}
 
 	@Override
 	public String toString() {
-		return new StringBuffer().
-			append("command='").append(command.getCommandName()).append("',").
-			append("parameters={").append(Arrays.toString(parameters)).append("}").
-			toString();
+		StringBuffer buffer = new StringBuffer();
+		toString(buffer);
+		return buffer.toString();
 	}
 	
 }

@@ -1,7 +1,9 @@
 package mutua.smsappmodule.smslogic.commands;
 
-import java.util.Arrays;
+import java.lang.reflect.Method;
 
+import mutua.serialization.SerializationRepository;
+import mutua.serialization.SerializationRepository.EfficientTextualSerializationMethod;
 import mutua.smsappmodule.smslogic.sessions.SessionModel;
 
 /** <pre>
@@ -38,13 +40,21 @@ public class CommandAnswerDto {
 	public SessionModel getUserSession() {
 		return sessionAfterCommandExecution;
 	}
-
+	
+	private static final Method responseMessagesSerializationMethod = SerializationRepository.getSerializationMethod(CommandMessageDto.class);
+	@EfficientTextualSerializationMethod
+	public void toString(StringBuffer buffer) {
+		String userSession = (sessionAfterCommandExecution != null) ? sessionAfterCommandExecution.toString() : "NULL";
+		buffer.append("{userSession=").append(userSession).append(", ").append("responseMessages=");
+		SerializationRepository.serialize(buffer, responseMessagesSerializationMethod, responseMessages);
+		buffer.append('}');
+	}
+	
 	@Override
 	public String toString() {
-		String userSession = (sessionAfterCommandExecution != null) ? sessionAfterCommandExecution.toString():"null";
-		return new StringBuffer().
-			append("userSession={").append(userSession).append("}, ").
-		    append("responseMessages=").append(Arrays.toString(responseMessages).replace("\n", "\\n")).toString();
+		StringBuffer buffer = new StringBuffer();
+		toString(buffer);
+		return buffer.toString();
 	}
 	
 	

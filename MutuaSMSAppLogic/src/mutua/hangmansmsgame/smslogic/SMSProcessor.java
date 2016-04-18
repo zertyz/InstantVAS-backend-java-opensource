@@ -237,6 +237,7 @@ public class SMSProcessor {
 		CommandInvocationDto invocationHandler = resolveInvocationHandler(session.getNavigationState(), incomingText);
 		if (invocationHandler != null) {
 			
+			System.out.println(invocationHandler.toString());
 			log.reportEvent(IE_PROCESSING_COMMAND, IP_COMMAND_INVOCATION, invocationHandler);
 			
 			// execute

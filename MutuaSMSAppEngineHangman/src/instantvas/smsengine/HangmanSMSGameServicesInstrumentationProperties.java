@@ -1,6 +1,9 @@
 package instantvas.smsengine;
 
+import java.lang.reflect.Method;
+
 import mutua.icc.instrumentation.IInstrumentableProperty;
+import mutua.serialization.SerializationRepository;
 import mutua.smsin.dto.IncomingSMSDto;
 
 /** <pre>
@@ -21,15 +24,8 @@ public enum HangmanSMSGameServicesInstrumentationProperties implements IInstrume
 	// queue events
 	///////////////
 	
-	IP_MO_MESSAGE ("incomingMOMessage", IncomingSMSDto.class) {
-		@Override
-		public void appendSerializedValue(StringBuffer buffer, Object value) {
-			IncomingSMSDto mo = (IncomingSMSDto)value;
-			buffer.append(mo.toString());
-		}
-	},
-	
-	IP_REQUEST_DATA("queryString", String.class),
+	IP_MO_MESSAGE  ("incomingMOMessage", IncomingSMSDto.class),
+	IP_REQUEST_DATA("queryString",       String.class),
 
 	
 	// errors
@@ -58,20 +54,14 @@ public enum HangmanSMSGameServicesInstrumentationProperties implements IInstrume
 		return instrumentationPropertyName;
 	}
 
-	
-	// ISerializationRule implementation
-	////////////////////////////////////
-	
 	@Override
-	public Class<?> getType() {
+	public Class<?> getInstrumentationPropertyType() {
 		return instrumentationPropertyType;
 	}
 
 	@Override
-	public void appendSerializedValue(StringBuffer buffer, Object value) {
-		throw new RuntimeException("Serialization Rule '" + this.getClass().getName() +
-                                   "' didn't overrode 'appendSerializedValue' from " +
-                                   "'ISerializationRule' for type '" + instrumentationPropertyType);
+	public Method getTextualSerializationMethod() {
+		return SerializationRepository.getSerializationMethod(instrumentationPropertyType);
 	}
 
 }

@@ -4,9 +4,12 @@ import mutua.icc.instrumentation.IInstrumentableEvent;
 import mutua.icc.instrumentation.IInstrumentableProperty;
 import mutua.icc.instrumentation.InstrumentableEvent;
 import mutua.icc.instrumentation.Instrumentation;
+import mutua.serialization.SerializationRepository;
 
 import static mutua.subscriptionengine.ESubscriptionEngineInstrumentationProperties.*;
-import static mutua.subscriptionengine.ESubscriptionEngineInstrumentationEvents.*;
+
+import java.lang.reflect.Method;
+
 import static mutua.icc.instrumentation.DefaultInstrumentationProperties.*;
 
 /** <pre>
@@ -95,15 +98,13 @@ enum ESubscriptionEngineInstrumentationProperties implements IInstrumentableProp
 	////////////////////////////////////
 	
 	@Override
-	public Class<?> getType() {
+	public Class<?> getInstrumentationPropertyType() {
 		return instrumentationPropertyType;
 	}
 
 	@Override
-	public void appendSerializedValue(StringBuffer buffer, Object value) {
-		throw new RuntimeException("Serialization Rule '" + this.getClass().getName() +
-                                   "' didn't overrode 'appendSerializedValue' from " +
-                                   "'ISerializationRule' for type '" + instrumentationPropertyType);
+	public Method getTextualSerializationMethod() {
+		return SerializationRepository.getSerializationMethod(instrumentationPropertyType);
 	}
 
 }

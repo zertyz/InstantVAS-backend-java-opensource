@@ -1,5 +1,8 @@
 package mutua.icc.instrumentation;
 
+import java.lang.reflect.Method;
+
+import mutua.serialization.SerializationRepository;
 import mutua.smsappmodule.smslogic.commands.CommandAnswerDto;
 import mutua.smsappmodule.smslogic.commands.CommandInvocationDto;
 import mutua.smsappmodule.smslogic.navigationstates.NavigationState;
@@ -22,32 +25,10 @@ public enum SMSProcessorInstrumentationProperties implements IInstrumentableProp
 	IP_PHONE                 ("phone", String.class),
 	IP_TEXT                  ("text",  String.class),
 	
-	IP_STATE                 ("state", NavigationState.class) {
-		@Override
-		public void appendSerializedValue(StringBuffer logLine, Object value) {
-			// this method will be called only if 'value' isn't member of any enumeration -- the enumeration serialization will be called otherwise
-			NavigationState navigationState = (NavigationState)value;
-			logLine.append("state='").
-			        append(navigationState.getNavigationStateName()).
-			        append("', ");
-		}
-	},
+	IP_STATE                 ("state", NavigationState.class),
 	
-	IP_COMMAND_INVOCATION    ("commandInvocationHandler", CommandInvocationDto.class) {
-		@Override
-		public void appendSerializedValue(StringBuffer logLine, Object value) {
-			CommandInvocationDto commandInvocationHandler = (CommandInvocationDto)value;
-			logLine.append(commandInvocationHandler.toString());
-		}
-	},
-	
-	IP_COMMAND_ANSWER        ("commandAnswer", CommandAnswerDto.class) {
-		@Override
-		public void appendSerializedValue(StringBuffer logLine, Object value) {
-			CommandAnswerDto commandAnswer = (CommandAnswerDto)value;
-			logLine.append(commandAnswer.toString());
-		}
-	},
+	IP_COMMAND_INVOCATION    ("commandInvocationHandler", CommandInvocationDto.class),
+	IP_COMMAND_ANSWER        ("commandAnswer",            CommandAnswerDto.class),
 
 	
 	;
@@ -71,20 +52,14 @@ public enum SMSProcessorInstrumentationProperties implements IInstrumentableProp
 		return instrumentationPropertyName;
 	}
 
-	
-	// ISerializationRule implementation
-	////////////////////////////////////
-	
 	@Override
-	public Class<?> getType() {
+	public Class<?> getInstrumentationPropertyType() {
 		return instrumentationPropertyType;
 	}
 
 	@Override
-	public void appendSerializedValue(StringBuffer buffer, Object value) {
-		throw new RuntimeException("Serialization Rule '" + this.getClass().getName() +
-                                   "' didn't overrode 'appendSerializedValue' from " +
-                                   "'ISerializationRule' for type '" + instrumentationPropertyType);
+	public Method getTextualSerializationMethod() {
+		return SerializationRepository.getSerializationMethod(instrumentationPropertyType);
 	}
 
 }

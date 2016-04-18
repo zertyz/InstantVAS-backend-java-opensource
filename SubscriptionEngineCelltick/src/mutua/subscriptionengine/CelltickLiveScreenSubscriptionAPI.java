@@ -40,10 +40,6 @@ public class CelltickLiveScreenSubscriptionAPI extends SubscriptionEngine {
 
 	@Override
 	public ESubscriptionOperationStatus subscribeUser(String userPhone) {
-//		TODO USE O NOVO HTTPCLIENTADAPTER PARA ESCONDER OS PARAMETROS DO ARQUIVO DE CONFIGURAÇÂO -- EXPONDO lÁ SOMENTE A BASE URL
-//		USAR O NOVO HTTP ADAPTER EM TODO O CODIGO!!
-//		REFAZER OS TESTES, TALVEZ
-//		ASSEGURAR O KEEP-ALIVE
 		
 		String[] request = {
 			"action",  "subpkg",

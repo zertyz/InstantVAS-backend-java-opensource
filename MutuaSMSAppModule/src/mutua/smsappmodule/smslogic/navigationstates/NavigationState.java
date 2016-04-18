@@ -3,6 +3,7 @@ package mutua.smsappmodule.smslogic.navigationstates;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import mutua.serialization.SerializationRepository.EfficientTextualSerializationMethod;
 import mutua.smsappmodule.smslogic.commands.CommandTriggersDto;
 import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
 
@@ -113,6 +114,11 @@ public class NavigationState {
 	/** Builds a 'CommandTriggerDto' to attend to 'command' with the serialized array of strings
 	 * describing the patterns & timeouts */
 	public void deserializeCommandTrigger(String[] serializedData) {
+	}
+	
+	@EfficientTextualSerializationMethod
+	public void toString(StringBuffer buffer) {
+		buffer.append(navigationStateName);
 	}
 
 }

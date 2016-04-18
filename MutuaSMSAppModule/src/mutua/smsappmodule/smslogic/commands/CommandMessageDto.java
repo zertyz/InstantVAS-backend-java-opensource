@@ -1,5 +1,7 @@
 package mutua.smsappmodule.smslogic.commands;
 
+import mutua.serialization.SerializationRepository;
+import mutua.serialization.SerializationRepository.EfficientTextualSerializationMethod;
 
 /** <pre>
  * CommandMessageDto.java
@@ -51,14 +53,18 @@ public class CommandMessageDto {
 	public EResponseMessageType getType() {
 		return type;
 	}
+	
+	@EfficientTextualSerializationMethod
+	public void toString(StringBuffer buffer) {
+		buffer.append("phone='").append(phone).append("', text='");
+		SerializationRepository.serialize(buffer, text);
+		buffer.append("', type='").append((type != null) ? type.name() : "NULL").append('\'');
+	}
 
 	@Override
 	public String toString() {
-		return new StringBuffer().
-			append("phone='").append(phone).append("', text='").append(text).
-			append("', type='").append((type != null) ? type.name() : "null").append("'").
-			toString();
+		StringBuffer buffer = new StringBuffer();
+		toString(buffer);
+		return buffer.toString();
 	}
-	
-
 }

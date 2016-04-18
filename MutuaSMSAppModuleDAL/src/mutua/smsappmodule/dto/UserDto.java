@@ -1,5 +1,6 @@
 package mutua.smsappmodule.dto;
 
+import mutua.serialization.SerializationRepository.EfficientTextualSerializationMethod;
 import mutua.smsappmodule.dal.IUserDB;
 
 /** <pre>
@@ -56,10 +57,17 @@ public class UserDto {
 		}
 	}
 	
+	@EfficientTextualSerializationMethod
+	public void toString(StringBuffer buffer) {
+		buffer.append("{userId=").append(userId).
+		       append(", phoneNumber='").append(phoneNumber).append("'}");
+	}
+	
 	@Override
 	public String toString() {
-		return new StringBuffer().append("{userId=").append(userId).
-		       append(", phoneNumber='").append(phoneNumber).append("'}").toString();
+		StringBuffer buffer = new StringBuffer();
+		toString(buffer);
+		return buffer.toString();
 	}
 
 }

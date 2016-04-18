@@ -3,6 +3,8 @@ package mutua.smsappmodule.smslogic.sessions;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import mutua.serialization.SerializationRepository;
+import mutua.serialization.SerializationRepository.EfficientTextualSerializationMethod;
 import mutua.smsappmodule.dto.SessionDto;
 import mutua.smsappmodule.dto.UserDto;
 import mutua.smsappmodule.smslogic.navigationstates.NavigationState;
@@ -168,6 +170,18 @@ public abstract class SessionModel {
 		String[][] updatedProperties = getUpdatedProperties();
 		String[]   deletedProperties = getDeletedProperties();
 		return new SessionDto(user, newProperties, updatedProperties, deletedProperties);
+	}
+	
+	@EfficientTextualSerializationMethod
+	public void toString(StringBuffer buffer) {
+		buffer.append("{user=");
+		user.toString(buffer);
+		buffer.append(", MO=");
+		MO.toString(buffer);
+		buffer.append(", storedProperties=");
+		SerializationRepository.serialize(buffer, storedProperties);
+		buffer.append(", pendingProperties=");
+		SerializationRepository.serialize(buffer, pendingProperties);		
 	}
 
 }

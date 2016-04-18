@@ -1,11 +1,13 @@
 package mutua.smsout.senders;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 
 import mutua.icc.instrumentation.IInstrumentableEvent;
 import mutua.icc.instrumentation.IInstrumentableProperty;
 import mutua.icc.instrumentation.InstrumentableEvent;
 import mutua.icc.instrumentation.Instrumentation;
+import mutua.serialization.SerializationRepository;
 import mutua.smsout.dto.OutgoingSMSDto;
 import static mutua.smsout.senders.ESMSOutSenderInstrumentationProperties.*;
 
@@ -119,15 +121,13 @@ enum ESMSOutSenderInstrumentationProperties implements IInstrumentableProperty {
 	////////////////////////////////////
 	
 	@Override
-	public Class<?> getType() {
+	public Class<?> getInstrumentationPropertyType() {
 		return instrumentationPropertyType;
 	}
-	
+
 	@Override
-	public void appendSerializedValue(StringBuffer buffer, Object value) {
-		throw new RuntimeException("Serialization Rule '" + this.getClass().getName() +
-		                           "' didn't overrode 'appendSerializedValue' from " +
-		                           "'ISerializationRule' for type '" + instrumentationPropertyType);
+	public Method getTextualSerializationMethod() {
+		return SerializationRepository.getSerializationMethod(instrumentationPropertyType);
 	}
 	
 }

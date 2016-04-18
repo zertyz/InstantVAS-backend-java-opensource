@@ -1,8 +1,10 @@
 package mutua.icc.instrumentation;
 
-import java.util.ArrayList;
+import java.lang.reflect.Method;
 
 import adapters.IJDBCAdapterParameterDefinition;
+import mutua.serialization.SerializationRepository;
+import mutua.serialization.SerializationRepository.EfficientTextualSerializationMethod;
 
 
 /** <pre>
@@ -21,11 +23,11 @@ public enum JDBCAdapterInstrumentationProperties implements	IInstrumentablePrope
 
 
 	IP_PREPARED_SQL            ("preparedSQL", String.class),
-	IP_SQL_TEMPLATE_PARAMETERS ("parameters",  Object[].class) {
-		@Override
+	IP_SQL_TEMPLATE_PARAMETERS ("parameters",  null) {
 		// code based on 'AbstractPreparedProcedure#buildPreparedStatement'
-		public void appendSerializedValue(StringBuffer buffer, Object value) {
-			Object[] parametersAndValuesPairs = (Object[])value;
+		@EfficientTextualSerializationMethod
+		public void toString(StringBuffer buffer) {
+			Object[] parametersAndValuesPairs = (Object[])(Object)this;
 			for (int i=0; i<parametersAndValuesPairs.length; i+=2) {
 				if (i>0) {
 					buffer.append(',');
@@ -52,7 +54,11 @@ public enum JDBCAdapterInstrumentationProperties implements	IInstrumentablePrope
 	
 	private JDBCAdapterInstrumentationProperties(String instrumentationPropertyName, Class<?> instrumentationPropertyType) {
 		this.instrumentationPropertyName = instrumentationPropertyName;
-		this.instrumentationPropertyType = instrumentationPropertyType;
+		if (instrumentationPropertyType != null) {
+			this.instrumentationPropertyType = instrumentationPropertyType;
+		} else {
+			this.instrumentationPropertyType = this.getClass();
+		}
 	}
 
 	
@@ -64,20 +70,14 @@ public enum JDBCAdapterInstrumentationProperties implements	IInstrumentablePrope
 		return instrumentationPropertyName;
 	}
 
-	
-	// ISerializationRule implementation
-	////////////////////////////////////
-	
 	@Override
-	public Class<?> getType() {
+	public Class<?> getInstrumentationPropertyType() {
 		return instrumentationPropertyType;
 	}
 
 	@Override
-	public void appendSerializedValue(StringBuffer buffer, Object value) {
-		throw new RuntimeException("Serialization Rule '" + this.getClass().getName() +
-                                   "' didn't overrode 'appendSerializedValue' from " +
-                                   "'ISerializationRule' for type '" + instrumentationPropertyType);
+	public Method getTextualSerializationMethod() {
+		return SerializationRepository.getSerializationMethod(instrumentationPropertyType);
 	}
 
 }

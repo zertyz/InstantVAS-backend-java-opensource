@@ -1,6 +1,8 @@
 package instantvas.smsengine;
 
 
+import java.lang.reflect.Method;
+
 import mutua.icc.instrumentation.IInstrumentableProperty;
 
 /** <pre>
@@ -23,14 +25,13 @@ public class InstantVASHTTPInstrumentationRequestProperty implements IInstrument
 	}
 
 	@Override
-	public Class<?> getType() {
+	public Class<?> getInstrumentationPropertyType() {
 		return String[].class;
 	}
 
 	@Override
-	public void appendSerializedValue(StringBuffer buffer, Object value) {
-		String[] parameters = (String[])value;
-		buffer.append("parameters={param1='").append(parameters[0]).append("'}");
+	public Method getTextualSerializationMethod() {
+		return null;
 	}
 
 }
