@@ -2,7 +2,7 @@ package mutua.hangmansmsgame;
 
 import static mutua.hangmansmsgame.HangmanSMSGameServicesInstrumentationProperties.*;
 import mutua.icc.instrumentation.IInstrumentableEvent;
-import mutua.icc.instrumentation.IInstrumentableProperty;
+import mutua.icc.instrumentation.InstrumentableProperty;
 import mutua.icc.instrumentation.InstrumentableEvent;
 
 /** <pre>
@@ -36,11 +36,11 @@ public enum HangmanSMSGameServicesInstrumentationEvents implements IInstrumentab
 	
 	private InstrumentableEvent instrumentableEvent;
 	
-	private HangmanSMSGameServicesInstrumentationEvents(String name, IInstrumentableProperty property) {
+	private HangmanSMSGameServicesInstrumentationEvents(String name, InstrumentableProperty property) {
 		instrumentableEvent = new InstrumentableEvent(name, property);
 	}
 	
-	private HangmanSMSGameServicesInstrumentationEvents(String name, IInstrumentableProperty property1, IInstrumentableProperty property2) {
+	private HangmanSMSGameServicesInstrumentationEvents(String name, InstrumentableProperty property1, InstrumentableProperty property2) {
 		instrumentableEvent = new InstrumentableEvent(name, property1, property2);
 	}
 	

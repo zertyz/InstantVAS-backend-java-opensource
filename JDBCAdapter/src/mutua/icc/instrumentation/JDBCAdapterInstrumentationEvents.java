@@ -35,11 +35,11 @@ public enum JDBCAdapterInstrumentationEvents implements IInstrumentableEvent {
 	
 	private InstrumentableEvent instrumentableEvent;
 	
-	private JDBCAdapterInstrumentationEvents(String name, IInstrumentableProperty property) {
+	private JDBCAdapterInstrumentationEvents(String name, InstrumentableProperty property) {
 		instrumentableEvent = new InstrumentableEvent(name, property);
 	}
 	
-	private JDBCAdapterInstrumentationEvents(String name, IInstrumentableProperty property1, IInstrumentableProperty property2) {
+	private JDBCAdapterInstrumentationEvents(String name, InstrumentableProperty property1, InstrumentableProperty property2) {
 		instrumentableEvent = new InstrumentableEvent(name, property1, property2);
 	}
 	

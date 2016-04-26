@@ -19,7 +19,7 @@ import mutua.serialization.SerializationRepository.EfficientTextualSerialization
  * @author luiz
  */
 
-public enum JDBCAdapterInstrumentationProperties implements	IInstrumentableProperty {
+public enum JDBCAdapterInstrumentationProperties implements	InstrumentableProperty {
 
 
 	IP_PREPARED_SQL            ("preparedSQL", String.class),

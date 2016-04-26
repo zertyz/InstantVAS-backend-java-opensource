@@ -1,6 +1,6 @@
 package mutua.hangmansmsgame;
 
-import mutua.icc.instrumentation.IInstrumentableProperty;
+import mutua.icc.instrumentation.InstrumentableProperty;
 import mutua.smsin.dto.IncomingSMSDto;
 
 /** <pre>
@@ -15,7 +15,7 @@ import mutua.smsin.dto.IncomingSMSDto;
  * @author luiz
  */
 
-public enum HangmanSMSGameServicesInstrumentationProperties implements IInstrumentableProperty {
+public enum HangmanSMSGameServicesInstrumentationProperties implements InstrumentableProperty {
 
 	
 	// queue events

@@ -12,7 +12,7 @@ package mutua.icc.instrumentation;
  * @author luiz
  */
 
-public class TestInstrumentationRequestProperty implements IInstrumentableProperty {
+public class TestInstrumentationRequestProperty implements InstrumentableProperty {
 
 	@Override
 	public String getInstrumentationPropertyName() {

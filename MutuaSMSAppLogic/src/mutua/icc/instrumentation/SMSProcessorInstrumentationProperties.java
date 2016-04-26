@@ -19,7 +19,7 @@ import mutua.smsappmodule.smslogic.navigationstates.NavigationState;
  * @author luiz
  */
 
-public enum SMSProcessorInstrumentationProperties implements IInstrumentableProperty {
+public enum SMSProcessorInstrumentationProperties implements InstrumentableProperty {
 
 
 	IP_PHONE                 ("phone", String.class),

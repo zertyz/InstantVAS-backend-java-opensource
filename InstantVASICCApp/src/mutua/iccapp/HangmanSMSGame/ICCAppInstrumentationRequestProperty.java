@@ -1,6 +1,6 @@
 package mutua.iccapp.HangmanSMSGame;
 
-import mutua.icc.instrumentation.IInstrumentableProperty;
+import mutua.icc.instrumentation.InstrumentableProperty;
 
 /** <pre>
  * ICCAppInstrumentationRequestProperty.java
@@ -14,7 +14,7 @@ import mutua.icc.instrumentation.IInstrumentableProperty;
  * @author luiz
  */
 
-public class ICCAppInstrumentationRequestProperty implements IInstrumentableProperty {
+public class ICCAppInstrumentationRequestProperty implements InstrumentableProperty {
 
 	private String propertyName;
 	

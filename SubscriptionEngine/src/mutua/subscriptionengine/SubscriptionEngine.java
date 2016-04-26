@@ -1,7 +1,7 @@
 package mutua.subscriptionengine;
 
 import mutua.icc.instrumentation.IInstrumentableEvent;
-import mutua.icc.instrumentation.IInstrumentableProperty;
+import mutua.icc.instrumentation.InstrumentableProperty;
 import mutua.icc.instrumentation.InstrumentableEvent;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.serialization.SerializationRepository;
@@ -65,7 +65,7 @@ public abstract class SubscriptionEngine {
 // instrumentation events & properties
 //////////////////////////////////////
 
-enum ESubscriptionEngineInstrumentationProperties implements IInstrumentableProperty {
+enum ESubscriptionEngineInstrumentationProperties implements InstrumentableProperty {
 
 	BASE_URL ("baseURL",    String.class),
 	REQUEST  ("parameters", String[].class),
@@ -128,15 +128,15 @@ enum ESubscriptionEngineInstrumentationEvents implements IInstrumentableEvent {
 	
 	private InstrumentableEvent instrumentableEvent;
 	
-	private ESubscriptionEngineInstrumentationEvents(String name, IInstrumentableProperty property) {
+	private ESubscriptionEngineInstrumentationEvents(String name, InstrumentableProperty property) {
 		instrumentableEvent = new InstrumentableEvent(name, property);
 	}
 	
-	private ESubscriptionEngineInstrumentationEvents(String name, IInstrumentableProperty property1, IInstrumentableProperty property2) {
+	private ESubscriptionEngineInstrumentationEvents(String name, InstrumentableProperty property1, InstrumentableProperty property2) {
 		instrumentableEvent = new InstrumentableEvent(name, property1, property2);
 	}
 	
-	private ESubscriptionEngineInstrumentationEvents(String name, IInstrumentableProperty property1, IInstrumentableProperty property2, IInstrumentableProperty property3) {
+	private ESubscriptionEngineInstrumentationEvents(String name, InstrumentableProperty property1, InstrumentableProperty property2, InstrumentableProperty property3) {
 		instrumentableEvent = new InstrumentableEvent(name, property1, property2, property3);
 	}
 	

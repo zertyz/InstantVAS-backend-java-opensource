@@ -16,7 +16,7 @@ import mutua.hangmansmsgame.smslogic.commands.dto.CommandInvocationDto;
  * @author luiz
  */
 
-public enum HangmanSMSGameInstrumentationProperties implements IInstrumentableProperty {
+public enum HangmanSMSGameInstrumentationProperties implements InstrumentableProperty {
 
 
 	IP_PHONE                 ("phone", String.class),

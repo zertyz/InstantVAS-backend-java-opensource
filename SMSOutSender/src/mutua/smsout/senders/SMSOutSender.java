@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 
 import mutua.icc.instrumentation.IInstrumentableEvent;
-import mutua.icc.instrumentation.IInstrumentableProperty;
+import mutua.icc.instrumentation.InstrumentableProperty;
 import mutua.icc.instrumentation.InstrumentableEvent;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.serialization.SerializationRepository;
@@ -88,7 +88,7 @@ public abstract class SMSOutSender {
 //instrumentation events & properties
 //////////////////////////////////////
 
-enum ESMSOutSenderInstrumentationProperties implements IInstrumentableProperty {
+enum ESMSOutSenderInstrumentationProperties implements InstrumentableProperty {
 
 	BASE_URL ("baseURL",  String.class),
 	REQUEST  ("request",  String[].class),
@@ -145,15 +145,15 @@ enum ESMSOutSenderInstrumentationEvents implements IInstrumentableEvent {
 	
 	private InstrumentableEvent instrumentableEvent;
 	
-	private ESMSOutSenderInstrumentationEvents(String name, IInstrumentableProperty property) {
+	private ESMSOutSenderInstrumentationEvents(String name, InstrumentableProperty property) {
 		instrumentableEvent = new InstrumentableEvent(name, property);
 	}
 	
-	private ESMSOutSenderInstrumentationEvents(String name, IInstrumentableProperty property1, IInstrumentableProperty property2) {
+	private ESMSOutSenderInstrumentationEvents(String name, InstrumentableProperty property1, InstrumentableProperty property2) {
 		instrumentableEvent = new InstrumentableEvent(name, property1, property2);
 	}
 	
-	private ESMSOutSenderInstrumentationEvents(String name, IInstrumentableProperty property1, IInstrumentableProperty property2, IInstrumentableProperty property3) {
+	private ESMSOutSenderInstrumentationEvents(String name, InstrumentableProperty property1, InstrumentableProperty property2, InstrumentableProperty property3) {
 		instrumentableEvent = new InstrumentableEvent(name, property1, property2, property3);
 	}
 	

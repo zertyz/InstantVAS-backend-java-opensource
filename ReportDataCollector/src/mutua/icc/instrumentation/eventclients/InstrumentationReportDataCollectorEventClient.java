@@ -5,7 +5,7 @@ import java.lang.reflect.Method;
 import java.util.Hashtable;
 
 import mutua.icc.instrumentation.IInstrumentableEvent;
-import mutua.icc.instrumentation.IInstrumentableProperty;
+import mutua.icc.instrumentation.InstrumentableProperty;
 import mutua.icc.instrumentation.InstrumentableEvent;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.icc.instrumentation.Instrumentation.EInstrumentationPropagableEvents;
@@ -50,13 +50,13 @@ public class InstrumentationReportDataCollectorEventClient implements Instrument
 
 	@InstrumentationPropagableEvent(EInstrumentationPropagableEvents.APPLICATION_INSTRUMENTATION_EVENT)
 	public void handleApplicationInstrumentationEventNotification(InstrumentationEventDto applicationEvent) throws IOException {
-		InstrumentableEvent instrumentableEvent = applicationEvent.getEvent();
+		InstrumentableEvent instrumentableEvent = applicationEvent.getInstrumentableEvent();
 		String applicationName = applicationEvent.getApplicationName();
 		Thread currentThread = Thread.currentThread();
 		
 		// should we take a hit for this event?
 		if (eventsOfInterest.containsKey(instrumentableEvent)) {
-			IInstrumentableProperty[] instrumentableProperties = instrumentableEvent.getProperties();
+			InstrumentableProperty[] instrumentableProperties = instrumentableEvent.getProperties();
 			int numberOfParameters = instrumentableProperties.length;
 			InstrumentationEventDto reportDataCollectionEvent = null;
 			if (numberOfParameters == 0) {
@@ -83,7 +83,7 @@ public class InstrumentationReportDataCollectorEventClient implements Instrument
 //instrumentation events & properties
 //////////////////////////////////////
 
-enum EReportDataCollectorInstrumentationProperties implements IInstrumentableProperty {
+enum EReportDataCollectorInstrumentationProperties implements InstrumentableProperty {
 
 	
 	IP_HIT_NAME        ("hitName",   String.class),
@@ -142,11 +142,11 @@ enum EReportDataCollectorInstrumentationEvents implements IInstrumentableEvent {
 	
 	private InstrumentableEvent instrumentableEvent;
 	
-	private EReportDataCollectorInstrumentationEvents(String name, IInstrumentableProperty property) {
+	private EReportDataCollectorInstrumentationEvents(String name, InstrumentableProperty property) {
 		instrumentableEvent = new InstrumentableEvent(name, property);
 	}
 	
-	private EReportDataCollectorInstrumentationEvents(String name, IInstrumentableProperty property1, IInstrumentableProperty property2) {
+	private EReportDataCollectorInstrumentationEvents(String name, InstrumentableProperty property1, InstrumentableProperty property2) {
 		instrumentableEvent = new InstrumentableEvent(name, property1, property2);
 	}
 	

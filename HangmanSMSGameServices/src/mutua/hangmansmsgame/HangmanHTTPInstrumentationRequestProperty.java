@@ -2,7 +2,7 @@ package mutua.hangmansmsgame;
 
 import javax.servlet.http.HttpServletRequest;
 
-import mutua.icc.instrumentation.IInstrumentableProperty;
+import mutua.icc.instrumentation.InstrumentableProperty;
 
 /** <pre>
  * HangmanHTTPInstrumentationRequestProperty.java
@@ -16,7 +16,7 @@ import mutua.icc.instrumentation.IInstrumentableProperty;
  * @author luiz
  */
 
-public class HangmanHTTPInstrumentationRequestProperty implements IInstrumentableProperty {
+public class HangmanHTTPInstrumentationRequestProperty implements InstrumentableProperty {
 
 	@Override
 	public String getInstrumentationPropertyName() {

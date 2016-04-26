@@ -29,15 +29,15 @@ public enum SMSProcessorInstrumentationEvents implements IInstrumentableEvent {
 	
 	private InstrumentableEvent instrumentableEvent;
 	
-	private SMSProcessorInstrumentationEvents(String name, IInstrumentableProperty property) {
+	private SMSProcessorInstrumentationEvents(String name, InstrumentableProperty property) {
 		instrumentableEvent = new InstrumentableEvent(name, property);
 	}
 	
-	private SMSProcessorInstrumentationEvents(String name, IInstrumentableProperty property1, IInstrumentableProperty property2) {
+	private SMSProcessorInstrumentationEvents(String name, InstrumentableProperty property1, InstrumentableProperty property2) {
 		instrumentableEvent = new InstrumentableEvent(name, property1, property2);
 	}
 	
-	private SMSProcessorInstrumentationEvents(String name, IInstrumentableProperty property1, IInstrumentableProperty property2, IInstrumentableProperty property3) {
+	private SMSProcessorInstrumentationEvents(String name, InstrumentableProperty property1, InstrumentableProperty property2, InstrumentableProperty property3) {
 		instrumentableEvent = new InstrumentableEvent(name, property1, property2, property3);
 	}
 	

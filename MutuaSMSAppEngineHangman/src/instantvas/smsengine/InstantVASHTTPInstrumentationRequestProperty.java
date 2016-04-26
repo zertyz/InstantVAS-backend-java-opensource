@@ -3,7 +3,7 @@ package instantvas.smsengine;
 
 import java.lang.reflect.Method;
 
-import mutua.icc.instrumentation.IInstrumentableProperty;
+import mutua.icc.instrumentation.InstrumentableProperty;
 
 /** <pre>
  * HangmanHTTPInstrumentationRequestProperty.java
@@ -17,7 +17,7 @@ import mutua.icc.instrumentation.IInstrumentableProperty;
  * @author luiz
  */
 
-public class InstantVASHTTPInstrumentationRequestProperty implements IInstrumentableProperty {
+public class InstantVASHTTPInstrumentationRequestProperty implements InstrumentableProperty {
 
 	@Override
 	public String getInstrumentationPropertyName() {
