@@ -2,11 +2,9 @@ package mutua.subscriptionengine;
 
 import java.io.IOException;
 
-import mutua.icc.instrumentation.Instrumentation;
+import static mutua.subscriptionengine.SubscriptionEngineInstrumentationMethods.*;
+
 import adapters.HTTPClientAdapter;
-import static mutua.subscriptionengine.ESubscriptionEngineInstrumentationProperties.*;
-import static mutua.subscriptionengine.ESubscriptionEngineInstrumentationEvents.*;
-import static mutua.icc.instrumentation.DefaultInstrumentationProperties.*;
 
 
 /** <pre>
@@ -30,10 +28,9 @@ public class CelltickLiveScreenSubscriptionAPI extends SubscriptionEngine {
 	private final HTTPClientAdapter lifecycleClient;
 
 
-	public CelltickLiveScreenSubscriptionAPI(Instrumentation<?, ?> log, String liveScreenServiceBaseUrl, String channelName) {
-		super(log);
+	public CelltickLiveScreenSubscriptionAPI(String liveScreenServiceBaseUrl, String channelName) {
 		this.liveScreenServiceBaseUrl   = liveScreenServiceBaseUrl;
-		this.channelName = channelName;
+		this.channelName                = channelName;
 		HTTPClientAdapter.configureDefaultValuesForNewInstances(-1, -1, false, "User-Agent", "InstantVAS.com lifecycle client");
 		lifecycleClient = new HTTPClientAdapter(liveScreenServiceBaseUrl);
 	}
@@ -50,17 +47,17 @@ public class CelltickLiveScreenSubscriptionAPI extends SubscriptionEngine {
 		try {
 			String response = lifecycleClient.requestGet(request);
 			if (response.indexOf("<id>100</id>") != -1) {
-				log.reportEvent(SUBSCRIPTION_OK, BASE_URL, liveScreenServiceBaseUrl, REQUEST, request, RESPONSE, response);
+				reportSubscriptionOK(channelName, liveScreenServiceBaseUrl, request, response);
 				return ESubscriptionOperationStatus.OK;
 			} else if (response.indexOf("<id>120</id>") != -1) {
-				log.reportEvent(SUBSCRIPTION_ALREADY_SUBSCRIBED, BASE_URL, liveScreenServiceBaseUrl, REQUEST, request, RESPONSE, response);
+				reportSubscriptionAlreadySubscribed(channelName, liveScreenServiceBaseUrl, request, response);
 				return ESubscriptionOperationStatus.ALREADY_SUBSCRIBED;
 			} else {
-				log.reportEvent(SUBSCRIPTION_AUTHENTICATION_ERROR, BASE_URL, liveScreenServiceBaseUrl, REQUEST, request, RESPONSE, response);
+				reportSubscriptionAuthenticationError(channelName, liveScreenServiceBaseUrl, request, response);
 				return ESubscriptionOperationStatus.AUTHENTICATION_ERROR;
 			}
 		} catch (IOException e) {
-			log.reportEvent(SUBSCRIPTION_COMMUNICATION_ERROR, BASE_URL, liveScreenServiceBaseUrl, REQUEST, request, DIP_THROWABLE, e);
+			reportSubscriptionCommunicationError(channelName, liveScreenServiceBaseUrl, request, e);
 			return ESubscriptionOperationStatus.COMMUNICATION_ERROR;
 		}
 	}
@@ -77,17 +74,17 @@ public class CelltickLiveScreenSubscriptionAPI extends SubscriptionEngine {
 		try {
 			String response = lifecycleClient.requestGet(request);
 			if (response.indexOf("<id>100</id>") != -1) {
-				log.reportEvent(UNSUBSCRIPTION_OK, BASE_URL, liveScreenServiceBaseUrl, REQUEST, request, RESPONSE, response);
+				reportUnsubscriptionOK(channelName, liveScreenServiceBaseUrl, request, response);
 				return EUnsubscriptionOperationStatus.OK;
 			} else if (response.indexOf("<id>113</id>") != -1) {	// Packages not found for Subscriber
-				log.reportEvent(UNSUBSCRIPTION_NOT_SUBSCRIBED, BASE_URL, liveScreenServiceBaseUrl, REQUEST, request, RESPONSE, response);
+				reportUnsubscriptionNotSubscribed(channelName, liveScreenServiceBaseUrl, request, response);
 				return EUnsubscriptionOperationStatus.NOT_SUBSCRIBED;
 			} else {
-				log.reportEvent(UNSUBSCRIPTION_AUTHENTICATION_ERROR, BASE_URL, liveScreenServiceBaseUrl, REQUEST, request, RESPONSE, response);
+				reportUnsubscriptionAuthenticationError(channelName, liveScreenServiceBaseUrl, request, response);
 				return EUnsubscriptionOperationStatus.AUTHENTICATION_ERROR;
 			}
 		} catch (IOException e) {
-			log.reportEvent(UNSUBSCRIPTION_COMMUNICATION_ERROR, BASE_URL, liveScreenServiceBaseUrl, REQUEST, request, DIP_THROWABLE, e);
+			reportUnsubscriptionCommunicationError(channelName, liveScreenServiceBaseUrl, request, e);
 			return EUnsubscriptionOperationStatus.COMMUNICATION_ERROR;
 		}
 	}

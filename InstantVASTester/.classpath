@@ -17,7 +17,6 @@
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/MutuaSMSAppModuleProfileTests"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/MutuaSMSAppModuleSubscriptionTests"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/MutuaSMSAppModuleTests"/>
-	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/ReportDataCollectorTests"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

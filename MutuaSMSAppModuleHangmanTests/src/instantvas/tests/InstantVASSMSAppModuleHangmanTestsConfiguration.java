@@ -3,9 +3,10 @@ package instantvas.tests;
 import java.sql.SQLException;
 
 import adapters.PostgreSQLAdapter;
-import mutua.icc.instrumentation.DefaultInstrumentationProperties;
 import mutua.icc.instrumentation.Instrumentation;
-import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
+import mutua.icc.instrumentation.InstrumentableEvent.ELogSeverity;
+import mutua.icc.instrumentation.handlers.IInstrumentationHandler;
+import mutua.icc.instrumentation.handlers.InstrumentationHandlerLogConsole;
 import mutua.smsappmodule.config.InstantVASSMSAppModuleConfiguration;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationHangman;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
@@ -42,7 +43,6 @@ public class InstantVASSMSAppModuleHangmanTestsConfiguration {
 	
 	private static InstantVASSMSAppModuleHangmanTestsConfiguration instance = null;
 
-	public static Instrumentation<DefaultInstrumentationProperties, String> LOG;
 	public static SMSAppModuleDALFactory                                    BASE_MODULE_DAL;
 	public static SMSAppModuleDALFactoryProfile                             PROFILE_MODULE_DAL;
 	public static SMSAppModuleDALFactoryHangman                             HANGMAN_MODULE_DAL;
@@ -58,7 +58,7 @@ public class InstantVASSMSAppModuleHangmanTestsConfiguration {
 	**************************/
 	
 	/** method to be called to configure all the modules needed to get instances of the test classes */
-	public static void configureDefaultValuesForNewInstances(Instrumentation<DefaultInstrumentationProperties, String> log, 
+	public static void configureDefaultValuesForNewInstances(
 		int performanceTestsLoadFactor, SMSAppModuleDALFactoryHangman hangmanModuleDAL,
 		String postgreSQLconnectionProperties, int postgreSQLConnectionPoolSize,
 		boolean postgreSQLAllowDataStructuresAssertion, boolean postgreSQLShouldDebugQueries,
@@ -66,7 +66,6 @@ public class InstantVASSMSAppModuleHangmanTestsConfiguration {
 		
 		instance = null;
 		
-		LOG                           = log;
 		HANGMAN_MODULE_DAL            = hangmanModuleDAL;
 		PERFORMANCE_TESTS_LOAD_FACTOR = performanceTestsLoadFactor;
 		
@@ -74,11 +73,11 @@ public class InstantVASSMSAppModuleHangmanTestsConfiguration {
 		switch (hangmanModuleDAL) {
 			case POSTGRESQL:
 				PostgreSQLAdapter.configureDefaultValuesForNewInstances(postgreSQLconnectionProperties, postgreSQLConnectionPoolSize);
-				SMSAppModulePostgreSQLAdapter.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
+				SMSAppModulePostgreSQLAdapter.configureDefaultValuesForNewInstances(postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
 					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
-				SMSAppModulePostgreSQLAdapterProfile.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
+				SMSAppModulePostgreSQLAdapterProfile.configureDefaultValuesForNewInstances(postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
 					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
-				SMSAppModulePostgreSQLAdapterHangman.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
+				SMSAppModulePostgreSQLAdapterHangman.configureDefaultValuesForNewInstances(postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
 					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
 				// other databases
 				BASE_MODULE_DAL    = SMSAppModuleDALFactory       .POSTGRESQL;
@@ -105,12 +104,14 @@ public class InstantVASSMSAppModuleHangmanTestsConfiguration {
 		return instance;
 	}
 	static {
+
+		// Instrumentation
+		IInstrumentationHandler log = new InstrumentationHandlerLogConsole(appName, ELogSeverity.DEBUG);
+		Instrumentation.configureDefaultValuesForNewInstances(log, log, log);
+
 		// configure with the default values
 		try {
 			configureDefaultValuesForNewInstances(
-				// log
-				new Instrumentation<DefaultInstrumentationProperties, String>(
-					appName, DefaultInstrumentationProperties.DIP_MSG, EInstrumentationDataPours.CONSOLE, null),
 				// module DAL
 				1, SMSAppModuleDALFactoryHangman.POSTGRESQL,
 				// PostgreSQL properties
@@ -137,7 +138,7 @@ public class InstantVASSMSAppModuleHangmanTestsConfiguration {
 		hangmanModulePhrasings        = (SMSAppModulePhrasingsHangman)        hangmanModule[2];
 		
 		// base module -- configured to interact with the Profile Module commands 
-		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(LOG, BASE_MODULE_DAL,
+		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(BASE_MODULE_DAL,
 			/*nstNewUserTriggers*/
 			new Object[][] {
 //				{cmdStartAskForNicknameDialog, trgGlobalStartAskForNicknameDialog},

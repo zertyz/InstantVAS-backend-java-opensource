@@ -3,16 +3,23 @@ package main;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import adapters.PostgreSQLAdapter;
 import instantvas.tests.InstantVASSMSAppModuleChatTestsConfiguration;
 import instantvas.tests.InstantVASSMSAppModuleHangmanTestsConfiguration;
+import instantvas.tests.InstantVASSMSAppModuleHelpTestsConfiguration;
 import instantvas.tests.InstantVASSMSAppModuleProfileTestsConfiguration;
 import instantvas.tests.InstantVASSMSAppModuleSubscriptionTestsConfiguration;
 import instantvas.tests.InstantVASSMSAppModuleTestsConfiguration;
-import mutua.icc.instrumentation.DefaultInstrumentationProperties;
+import mutua.hangmansmsgame.smslogic.SMSProcessor;
+import mutua.icc.configuration.ConfigurationManagerTests;
 import mutua.icc.instrumentation.Instrumentation;
-import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
+import mutua.icc.instrumentation.InstrumentableEvent.ELogSeverity;
+import mutua.icc.instrumentation.handlers.IInstrumentationHandler;
+import mutua.icc.instrumentation.handlers.InstrumentationHandlerLogConsole;
+import mutua.smsappengine.web.AddToMOQueueTests;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactoryChat;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactoryHangman;
@@ -35,8 +42,8 @@ public class InstantVASTester {
 	
 	public static void main(String[] args) throws ClassNotFoundException, IOException, URISyntaxException, SQLException {
 		System.out.println("InstantVASTester.jar: Runs all known JUnit tests available for modules used by the InstantVAS.com service.");
-		System.out.println("                      Use this tool regularly to validate refactorings, performance enhancements and the");
-		System.out.println("                      ProGuard obfuscation parameters.");
+		System.out.println("                      Use this tool regularly to validate refactorings, performance enhancements and");
+		System.out.println("                      ProGuard settings.");
 		System.out.println("                      For a correct algorithm analysis, run these tests on a idle system, with an empty database.");
 		if ((args.length < 5) || (args.length > 10)) {
 			System.out.println("Usage: sudo bash -c 'echo 0 >/proc/sys/vm/swappiness'");
@@ -61,17 +68,18 @@ public class InstantVASTester {
 		// from InstantVASDALTester:
 		////////////////////////////
 		
-		String  hostname                     = args[0];
-		int     port                         = Integer.parseInt(args[1]);
-		String  database                     = args[2];
-		String  user                         = args[3];
-		String  password                     = args[4];
-		int     concurrentConnectionsNumber  = args.length >= 6  ? Integer.parseInt(args[5])     : 8;
-		String  dal                          = args.length >= 7  ? args[6]                       : "POSTGRESQL";
-		int     loadFactor                   = args.length >= 8  ? Integer.parseInt(args[7])     : 42;
-		boolean allowDataStructuresAssertion = args.length >= 9  ? Boolean.parseBoolean(args[8]) : true;
-		boolean shouldDebugQueries           = args.length >= 10 ? Boolean.parseBoolean(args[9]) : false;
-		String  connectionProperties         = PostgreSQLAdapter.CONNECTION_PROPERTIES;
+		String       hostname                     = args[0];
+		int          port                         = Integer.parseInt(args[1]);
+		String       database                     = args[2];
+		String       user                         = args[3];
+		String       password                     = args[4];
+		int          concurrentConnectionsNumber  = args.length >= 6  ? Integer.parseInt(args[5])     : 8;
+		String       dal                          = args.length >= 7  ? args[6]                       : "POSTGRESQL";
+		int          loadFactor                   = args.length >= 8  ? Integer.parseInt(args[7])     : 42;
+		boolean      allowDataStructuresAssertion = args.length >= 9  ? Boolean.parseBoolean(args[8]) : true;
+		boolean      shouldDebugQueries           = args.length >= 10 ? Boolean.parseBoolean(args[9]) : false;
+		ELogSeverity logSeverity                  = shouldDebugQueries ? ELogSeverity.DEBUG : ELogSeverity.ERROR;
+		String       connectionProperties         = PostgreSQLAdapter.CONNECTION_PROPERTIES;
 
 		System.out.println("Configuration:");
 		System.out.println("\thostname                    : "+hostname);
@@ -84,6 +92,7 @@ public class InstantVASTester {
 		System.out.println("\tloadFactor                  : "+loadFactor);
 		System.out.println("\tallowDataStructuresAssertion: "+allowDataStructuresAssertion);
 		System.out.println("\tshouldDebugQueries          : "+shouldDebugQueries);
+		System.out.println("\tlogSeverity                 : "+logSeverity);
 		System.out.println("\tconnectionProperties        : "+connectionProperties);
 
 		// DALs
@@ -111,19 +120,28 @@ public class InstantVASTester {
 		}
 		
 		System.out.println("\n### Starting. Please copy & paste it to luiz@InstantVAS.com:");
-		Instrumentation<DefaultInstrumentationProperties, String> log = new Instrumentation<DefaultInstrumentationProperties, String>(InstantVASTester.class.getCanonicalName(), DefaultInstrumentationProperties.DIP_MSG, EInstrumentationDataPours.CONSOLE, null);
 				
 		System.out.println("\n### Applying configuration:");
-		MutuaEventsAdditionalEventLinksTestsConfiguration   .configureDefaultValuesForNewInstances(log, loadFactor, -1, -1,           connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
-		InstantVASSMSAppModuleTestsConfiguration            .configureDefaultValuesForNewInstances(log, loadFactor, baseModuleDAL,    connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
-		InstantVASSMSAppModuleSubscriptionTestsConfiguration.configureDefaultValuesForNewInstances(log, loadFactor, subscriptionDAL,  connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
-		InstantVASSMSAppModuleProfileTestsConfiguration     .configureDefaultValuesForNewInstances(log, loadFactor, profileModuleDAL, connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
-		InstantVASSMSAppModuleChatTestsConfiguration        .configureDefaultValuesForNewInstances(log, loadFactor, chatModuleDAL,    connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
-		InstantVASSMSAppModuleHangmanTestsConfiguration     .configureDefaultValuesForNewInstances(log, loadFactor, hangmanModuleDAL, connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
+		InstantVASSMSAppModuleTestsConfiguration            .configureDefaultValuesForNewInstances(loadFactor, baseModuleDAL,    connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
+		InstantVASSMSAppModuleHelpTestsConfiguration        .configureDefaultValuesForNewInstances(            baseModuleDAL,    connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
+		InstantVASSMSAppModuleSubscriptionTestsConfiguration.configureDefaultValuesForNewInstances(loadFactor, subscriptionDAL,  connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
+		InstantVASSMSAppModuleProfileTestsConfiguration     .configureDefaultValuesForNewInstances(loadFactor, profileModuleDAL, connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
+		InstantVASSMSAppModuleChatTestsConfiguration        .configureDefaultValuesForNewInstances(loadFactor, chatModuleDAL,    connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
+		InstantVASSMSAppModuleHangmanTestsConfiguration     .configureDefaultValuesForNewInstances(loadFactor, hangmanModuleDAL, connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
+		MutuaEventsAdditionalEventLinksTestsConfiguration   .configureDefaultValuesForNewInstances(loadFactor, -1, -1,           connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
 		
+		
+				
+		System.out.println("\n### Configuring Instrumentation:");
+		new ConfigurationManagerTests();
+		new AddToMOQueueTests();
+		IInstrumentationHandler log = new InstrumentationHandlerLogConsole(InstantVASTester.class.getCanonicalName(), logSeverity);
+		Instrumentation.configureDefaultValuesForNewInstances(log, log, log);
+
 		System.out.println("\n### Instantiating database engines:");
 		// MutuaEventsAdditionalEventLinksTestsConfiguration does not have instances
 		InstantVASSMSAppModuleTestsConfiguration            .getInstance();
+		InstantVASSMSAppModuleHelpTestsConfiguration        .getInstance();
 		InstantVASSMSAppModuleSubscriptionTestsConfiguration.getInstance();
 		InstantVASSMSAppModuleProfileTestsConfiguration     .getInstance();
 		InstantVASSMSAppModuleChatTestsConfiguration        .getInstance();
@@ -131,7 +149,8 @@ public class InstantVASTester {
 		
 		// please, periodically update the classes listed here with the following command, keeping the order implied by the comments:
 		// w=~/workspace/celltick/SMSGames/; find "$w" -name "*.java" -exec grep -l 'org.junit.Test' "{}" \; | sed "s|$w[^/]*/src/||" | grep -v main/InstantVASTester.java | sed 's|.java$|.class.getName(),|' | sed 's|/|.|g'
-		String[] jUnitTestClasses = new String[] {
+		ArrayList<String> jUnitTestClasses = new ArrayList<String>();
+		jUnitTestClasses.addAll(Arrays.asList(new String[] {
 			// Mutua libs tests
 			adapters.HTTPClientAdapterTest.class.getName(),
 			mutua.serialization.SerializationTests.class.getName(),
@@ -139,15 +158,15 @@ public class InstantVASTester {
 			mutua.events.TestEvents.class.getName(),
 			mutua.events.QueueEventLinkTests.class.getName(),
 			mutua.events.DirectEventTests.class.getName(),
-			mutua.icc.instrumentation.InstrumentationTests.class.getName(),
+			//mutua.icc.instrumentation.InstrumentationTests.class.getName(),
 			// these seems, currently, not to make sense while obfuscated. Please, verify
-/*			mutua.p2pcommunications.P2PServicesManagerTest.class.getName(),
+/*			mutua.p2pcommunications.P2PServicesManagerTest.class.getName(),*/
 			mutua.icc.configuration.ConfigurationManagerTests.class.getName(),
-			mutua.icc.configuration.ConfigurationParserTests.class.getName(),*/
+			mutua.icc.configuration.ConfigurationParserTests.class.getName(),
 			// Instant VAS application tests
 			instantvas.nativewebserver.NativeHTTPServerBehavioralTests.class.getName(),
 			mutua.schedule.ScheduleControlBehavioralTests.class.getName(),
-//			mutua.smsappengine.logic.HangmanAppEngineBehavioralTests.class.getName(),
+			mutua.smsappengine.logic.HangmanAppEngineBehavioralTests.class.getName(),
 			// SMS Module tests
 			mutua.smsappmodule.smslogic.navigationstates.NavigationStateCommonsTests.class.getName(),
 			mutua.smsappmodule.smslogic.sessions.SessionModelTests.class.getName(),
@@ -168,9 +187,18 @@ public class InstantVASTester {
 			mutua.smsappmodule.ProfileModuleBehavioralTests.class.getName(),
 			mutua.smsappmodule.ProfileModuleSMSProcessorTests.class.getName(),
 			mutua.smsappmodule.dal.IProfileDBBehavioralTests.class.getName(),
-			// SMS Modules DAL performance tests
-			mutua.events.PostgreSQLQueueEventLinkTests.class.getName(),
-			mutua.events.PostgreSQLQueueEventLinkPerformanceTests.class.getName(),
+		}));
+		
+		// only include PostgreSQLQueue tests if we are using the PostgreSQL DAL
+		if ("POSTGRESQL".equals(dal)) {
+			jUnitTestClasses.addAll(Arrays.asList(new String[] {
+				// SMS Modules DAL performance tests
+				mutua.events.PostgreSQLQueueEventLinkTests.class.getName(),
+				mutua.events.PostgreSQLQueueEventLinkPerformanceTests.class.getName(),
+			}));
+		}
+		
+		jUnitTestClasses.addAll(Arrays.asList(new String[] {
 			// Additional Events DAL performance tests
 			mutua.smsappmodule.dal.IUserDBPerformanceTests.class.getName(),
 			mutua.smsappmodule.dal.ISessionDBPerformanceTests.class.getName(),
@@ -179,9 +207,9 @@ public class InstantVASTester {
 			mutua.smsappmodule.dal.IChatDBPerformanceTests.class.getName(),
 			mutua.smsappmodule.dal.IMatchDBPerformanceTests.class.getName(),
 			mutua.smsappmodule.dal.INextBotWordsDBPerformanceTests.class.getName(),
-		};
+		}));
 
 		System.out.println("Running the tests:");
-		org.junit.runner.JUnitCore.main(jUnitTestClasses);
+		org.junit.runner.JUnitCore.main(jUnitTestClasses.toArray(new String[0]));
 	}
 }

@@ -23,12 +23,10 @@ import mutua.smsin.dto.IncomingSMSDto;
 
 public class MOConsumer implements EventClient<EInstantVASEvents> {
 
-	private Instrumentation<?, ?> log;
 	private SMSProcessor smsP;
 	
 	public MOConsumer(InstantVASInstanceConfiguration ivac,
 	                  MTProducer             mtProducer) {
-		this.log  = ivac.log;
 		smsP = new SMSProcessor(mtProducer, ivac.modulesNavigationStates, ivac.modulesCommandProcessors);
 	}
 	
@@ -37,13 +35,13 @@ public class MOConsumer implements EventClient<EInstantVASEvents> {
 		
 		// MO and MT instrumentation -- register a new milestone: MO just retrieved from the queue
 		if (IFDEF_INSTRUMENT_MO_AND_MT_TIMES) {
-			MOAndMTInstrumentation.reportMODequeuing(log, mo);
+			MOAndMTInstrumentation.reportMODequeuing(mo);
 		}
 		
 		try {
 			smsP.process(mo);
 		} catch (Throwable t) {
-			log.reportThrowable(t, "Error while processing MO -- "+mo.toString());
+			Instrumentation.reportThrowable(t, "Error while processing MO -- "+mo.toString());
 		}
 	}
 }

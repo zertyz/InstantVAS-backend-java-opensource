@@ -95,7 +95,7 @@ public class SMSAppModuleConfigurationHangman {
 	 *  @param nstGuessingWordFromHangmanHumanOpponentTriggers &
 	 *  @param nstGuessingWordFromHangmanBotOpponentTriggers   see {@link SMSAppModuleNavigationStatesHangman#SMSAppModuleNavigationStatesHangman(SMSAppModuleCommandsHangman, Object[][], Object[][], Object[][], Object[][])}
 	 *  @returns {(SMSAppModuleNavigationStatesHangman)navigationStates, (SMSAppModuleCommandsHangman)commands, (SMSAppModulePhrasingsHangman)phrasings} */
-	public static Object[] getHangmanModuleInstances(Instrumentation<?, ?> log, String shortCode, String appName,
+	public static Object[] getHangmanModuleInstances(String shortCode, String appName,
 	                                                 String winningArt,
 	                                                 String losingArt,
 	                                                 String headCharacter,
@@ -151,7 +151,7 @@ public class SMSAppModuleConfigurationHangman {
 		
 		// log
 		String logPrefix = "Chat Module";
-		log.reportDebug(logPrefix + ": new instances:");
+		Instrumentation.reportDebug(logPrefix + ": new instances:");
 		Object[][] logPhrasings = {
 			{"winningArt",                                                   winningArt},
 			{"losingArt",                                                    losingArt},
@@ -183,7 +183,7 @@ public class SMSAppModuleConfigurationHangman {
 			{"phrMatchGiveupNotificationForWordProvidingPlayer",             phrMatchGiveupNotificationForWordProvidingPlayer},
 			{"phrGuessingWordHelp",                                          phrGuessingWordHelp},
 		};
-		log.reportDebug(logPrefix + ": Phrasings        : " + Arrays.deepToString(logPhrasings));
+		Instrumentation.reportDebug(logPrefix + ": Phrasings        : " + Arrays.deepToString(logPhrasings));
 		Object[][] logCommands = {
 			{"subscriptionEventsServer", subscriptionEventsServer},
 			{"baseModuleDAL",            baseModuleDAL},
@@ -191,14 +191,14 @@ public class SMSAppModuleConfigurationHangman {
 			{"hangmanModuleDAL",         hangmanModuleDAL},
 			{"defaultNicknamePrefix",    defaultNicknamePrefix},
 		};
-		log.reportDebug(logPrefix + ": Commands         : " + Arrays.deepToString(logCommands));
+		Instrumentation.reportDebug(logPrefix + ": Commands         : " + Arrays.deepToString(logCommands));
 		Object[][] logCommandTriggers = {
 			{"nstEnteringMatchWordTriggers",                    nstEnteringMatchWordTriggers},
 			{"nstAnsweringToHangmanMatchInvitationTriggers",    nstAnsweringToHangmanMatchInvitationTriggers},
 			{"nstGuessingWordFromHangmanHumanOpponentTriggers", nstGuessingWordFromHangmanHumanOpponentTriggers},
 			{"nstGuessingWordFromHangmanBotOpponentTriggers",	nstGuessingWordFromHangmanBotOpponentTriggers},
 		};
-		log.reportDebug(logPrefix + ": Navigation States: " + Arrays.deepToString(logCommandTriggers));
+		Instrumentation.reportDebug(logPrefix + ": Navigation States: " + Arrays.deepToString(logCommandTriggers));
 		
 		
 		return new Object[] {navigationStates, commands, phrasings};

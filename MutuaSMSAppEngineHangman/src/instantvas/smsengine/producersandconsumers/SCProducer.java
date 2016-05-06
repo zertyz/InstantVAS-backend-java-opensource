@@ -4,6 +4,7 @@ import config.InstantVASInstanceConfiguration;
 import mutua.events.EventClient;
 import mutua.events.EventServer;
 import mutua.events.IEventLink;
+import mutua.icc.instrumentation.Instrumentation;
 import mutua.imi.IndirectMethodNotFoundException;
 
 /** <pre>
@@ -26,7 +27,7 @@ public class SCProducer extends EventServer<EInstantVASEvents> {
 		try {
 			setConsumer(scConsumer);
 		} catch (IndirectMethodNotFoundException e) {
-			ivac.log.reportThrowable(e, "Error while setting srConsumer");
+			Instrumentation.reportThrowable(e, "Error while setting srConsumer");
 		}
 	}
 

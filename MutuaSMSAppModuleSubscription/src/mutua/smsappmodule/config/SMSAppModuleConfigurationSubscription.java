@@ -53,7 +53,6 @@ public class SMSAppModuleConfigurationSubscription {
 	}
 	
 	/** Constructs the full version of this SMS Module, with all options set programmatically.<pre>
-	 *  @param log
 	 *  @param shortCode                      &
 	 *  @param appName                        &
 	 *  @param priceTag                       &
@@ -68,7 +67,7 @@ public class SMSAppModuleConfigurationSubscription {
 	 *  @param subscriptionEngine see {@link SMSAppModuleCommandsSubscription#SMSAppModuleCommandsSubscription(SMSAppModulePhrasingsSubscription, SMSAppModuleDALFactory, SMSAppModuleDALFactorySubscription, SubscriptionEngine, SMSAppModuleEventsSubscription))}
 	 *  @param nstAnsweringDoubleOptinTriggers see {@link SMSAppModuleNavigationStatesSubscription#SMSAppModuleNavigationStatesSubscription(SMSAppModuleCommandsSubscription, Object[][])}
 	 *  @returns {(SMSAppModuleNavigationStatesSubscription)navigationStates, (SMSAppModuleCommandsSubscription)commands, (SMSAppModulePhrasingsSubscription)phrasings, (SMSAppModuleEventsSubscription)subscriptionEvents} */
-	public static Object[] getSubscriptionModuleInstances(Instrumentation<?, ?> log, String shortCode, String appName, String priceTag,
+	public static Object[] getSubscriptionModuleInstances(String shortCode, String appName, String priceTag,
 		                                                  String phrDoubleOptinStart,
 		                                                  String phrDisagreeToSubscribe,
 		                                                  String phrSuccessfullySubscribed,
@@ -89,7 +88,7 @@ public class SMSAppModuleConfigurationSubscription {
 		
 		// log
 		String logPrefix = "Subscription Module";
-		log.reportDebug(logPrefix + ": new instances:");
+		Instrumentation.reportDebug(logPrefix + ": new instances:");
 		Object[][] logPhrasings = {
 			{"phrDoubleOptinStart",            phrDoubleOptinStart},
 			{"phrDisagreeToSubscribe",         phrDisagreeToSubscribe},
@@ -98,17 +97,17 @@ public class SMSAppModuleConfigurationSubscription {
 			{"phrUserRequestedUnsubscription", phrUserRequestedUnsubscription},
 			{"phrLifecycleUnsubscription",     phrLifecycleUnsubscription},
 		};
-		log.reportDebug(logPrefix + ": Phrasings        : " + Arrays.deepToString(logPhrasings));
+		Instrumentation.reportDebug(logPrefix + ": Phrasings        : " + Arrays.deepToString(logPhrasings));
 		Object[][] logCommands = {
 			{"baseModuleDAL",      baseModuleDAL},
 	        {"subscriptionDAL",    subscriptionDAL},
 	        {"subscriptionEngine", subscriptionEngine},
 		};
-		log.reportDebug(logPrefix + ": Commands         : " + Arrays.deepToString(logCommands));
+		Instrumentation.reportDebug(logPrefix + ": Commands         : " + Arrays.deepToString(logCommands));
 		Object[][] logCommandTriggers = {
 			{"nstAnsweringDoubleOptinTriggers", nstAnsweringDoubleOptinTriggers},	
 		};
-		log.reportDebug(logPrefix + ": Navigation States: " + Arrays.deepToString(logCommandTriggers));
+		Instrumentation.reportDebug(logPrefix + ": Navigation States: " + Arrays.deepToString(logCommandTriggers));
 
 		return new Object[] {navigationStates, commands, phrasings, subscriptionEvents};
 	}

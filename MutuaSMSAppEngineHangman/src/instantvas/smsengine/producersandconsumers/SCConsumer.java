@@ -1,7 +1,8 @@
 package instantvas.smsengine.producersandconsumers;
 
+import static instantvas.smsengine.SMSAppEngineInstrumentationMethods.*;
+
 import config.InstantVASInstanceConfiguration;
-import instantvas.smsengine.InstantVASHTTPInstrumentationRequestProperty;
 import mutua.events.EventClient;
 import mutua.events.IEventLink;
 import mutua.icc.instrumentation.Instrumentation;
@@ -20,23 +21,21 @@ import mutua.smsappmodule.smslogic.SMSAppModuleCommandsSubscription;
 
 public class SCConsumer implements EventClient<EInstantVASEvents> {
 
-	private Instrumentation<InstantVASHTTPInstrumentationRequestProperty, String> log;
 	private SMSAppModuleCommandsSubscription subscriptionCommands;
 	
 	public SCConsumer(InstantVASInstanceConfiguration ivac) {
-		log  = ivac.log;
 		subscriptionCommands = ivac.subscriptionCommands;
 	}
 	
 	@InstantVASEvent(EInstantVASEvents.SUBSCRIPTION_CANCELLED)
 	public void assureMSISDNIsNotSubscribed(String msisdn) {
 		try {
-			log.reportRequestStart("Assuring MSISDN '"+msisdn+"' is not a Subscriber");
+			startConsumeUnsubscribeUserRequest(msisdn);
 			subscriptionCommands.unsubscribeUser(msisdn);
 		} catch (Throwable t) {
-			log.reportThrowable(t, "Error while assuring MSISDN '"+msisdn+"' is not subscribed");
+			Instrumentation.reportThrowable(t, "Error while assuring MSISDN '"+msisdn+"' is not subscribed");
 		} finally {
-			log.reportRequestFinish();
+			finishRequest();
 		}
 	}
 }

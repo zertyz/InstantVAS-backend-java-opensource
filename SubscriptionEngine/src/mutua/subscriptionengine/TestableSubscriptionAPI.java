@@ -1,11 +1,8 @@
 package mutua.subscriptionengine;
 
-import static mutua.subscriptionengine.ESubscriptionEngineInstrumentationEvents.*;
-import static mutua.subscriptionengine.ESubscriptionEngineInstrumentationProperties.*;
+import static mutua.subscriptionengine.SubscriptionEngineInstrumentationMethods.*;
 
 import java.util.Hashtable;
-
-import mutua.icc.instrumentation.Instrumentation;
 
 /** <pre>
  * TestableSubscriptionAPI.java
@@ -33,8 +30,7 @@ public class TestableSubscriptionAPI extends SubscriptionEngine {
 	}
 	
 	
-	public TestableSubscriptionAPI(Instrumentation<?, ?> log, String channelName) {
-		super(log);
+	public TestableSubscriptionAPI(String channelName) {
 		this.channelName = channelName;
 	}
 	
@@ -75,14 +71,14 @@ public class TestableSubscriptionAPI extends SubscriptionEngine {
 	@Override
 	public ESubscriptionOperationStatus subscribeUser(String userPhone) {
 		
-		String request = "subscribe '"+userPhone+"' to '"+channelName+"'";
+		String[] request = {"please, subscribe '"+userPhone+"' to '"+channelName+"'"};
 		
 		if (_isUserSubscribed(userPhone)) {
-			log.reportEvent(SUBSCRIPTION_OK, REQUEST, request, RESPONSE, "_wasUserSubscribed == true");
+			reportSubscriptionAlreadySubscribed(channelName, "internal://", request, "_wasUserSubscribed == true");
 			return ESubscriptionOperationStatus.ALREADY_SUBSCRIBED;
 		} else {
 			_subscribeUser(userPhone);
-			log.reportEvent(SUBSCRIPTION_OK, REQUEST, request, RESPONSE, "_wasUserSubscribed == false");
+			reportSubscriptionOK(channelName, "internal://", request, "_wasUserSubscribed == false");
 			return ESubscriptionOperationStatus.OK;
 		}
 	}
@@ -90,14 +86,14 @@ public class TestableSubscriptionAPI extends SubscriptionEngine {
 	@Override
 	public EUnsubscriptionOperationStatus unsubscribeUser(String userPhone) {
 		
-		String request = "unsubscribe '"+userPhone+"' from '"+channelName+"'";
+		String[] request = {"please, unsubscribe '"+userPhone+"' from '"+channelName+"'"};
 
 		if (!_isUserSubscribed(userPhone)) {
-			log.reportEvent(UNSUBSCRIPTION_NOT_SUBSCRIBED, REQUEST, request, RESPONSE, "_wasUserSubscribed == false");
+			reportUnsubscriptionNotSubscribed(channelName, "internal://", request, "_wasUserSubscribed == false");
 			return EUnsubscriptionOperationStatus.NOT_SUBSCRIBED;
 		} else {
 			_unsubscribeUser(userPhone);
-			log.reportEvent(UNSUBSCRIPTION_OK, REQUEST, request, RESPONSE, "_wasUserSubscribed == true");
+			reportUnsubscriptionOK(channelName, "internal://", request, "_wasUserSubscribed == true");
 			return EUnsubscriptionOperationStatus.OK;
 		}
 	}

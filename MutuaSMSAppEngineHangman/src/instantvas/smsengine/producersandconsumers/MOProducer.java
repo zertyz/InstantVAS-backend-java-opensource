@@ -26,16 +26,13 @@ import mutua.smsin.dto.IncomingSMSDto;
 
 public class MOProducer extends EventServer<EInstantVASEvents> implements IMOProducer {
 	
-	private Instrumentation<?, ?> log;
-	
 	public MOProducer(InstantVASInstanceConfiguration ivac,
 	                  EventClient<EInstantVASEvents> moConsumer) {
 		super(ivac.MOpcLink);
-		this.log = ivac.log;
 		try {
 			setConsumer(moConsumer);
 		} catch (IndirectMethodNotFoundException e) {
-			log.reportThrowable(e, "Error while setting moConsumer");
+			Instrumentation.reportThrowable(e, "Error while setting moConsumer");
 		}
 	}
 	
@@ -55,8 +52,8 @@ public class MOProducer extends EventServer<EInstantVASEvents> implements IMOPro
 		// MO and MT instrumentation -- create the event and the first milestone: the MO was enqueued
 		// reentrancy problem: the event might be consumed before this code is executed
 		if (IFDEF_INSTRUMENT_MO_AND_MT_TIMES) {
-			MOAndMTInstrumentation.registerLateMOArrival(log, mo, moId, arrivedMillis);
-			MOAndMTInstrumentation.reportMOEnqueuing(log, mo, moId);
+			MOAndMTInstrumentation.registerLateMOArrival(mo, moId, arrivedMillis);
+			MOAndMTInstrumentation.reportMOEnqueuing(mo, moId);
 		}
 		
 		return moId;

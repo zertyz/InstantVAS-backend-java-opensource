@@ -2,10 +2,8 @@ package main;
 
 import java.sql.SQLException;
 
-import main.config.Configuration;
 import adapters.AbstractPreparedProcedure;
 import adapters.IJDBCAdapterParameterDefinition;
-import adapters.JDBCAdapter;
 import adapters.MySQLAdapter;
 
 /**
@@ -20,7 +18,7 @@ public class MySQLAdapterConfiguration extends MySQLAdapter {
 	 
 	
 	private MySQLAdapterConfiguration() throws SQLException {
-		super(Configuration.log, true, true, "192.168.0.3", 3306, "MysqlHelperTester", "root", "");
+		super(true, true, "192.168.0.3", 3306, "MysqlHelperTester", "root", "");
 	}
 
 	@Override

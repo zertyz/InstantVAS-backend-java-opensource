@@ -153,15 +153,15 @@ public class ScheduleControlBehavioralTests {
 		// milestone 1 -- event start (mo added to the queue)
 		schedule.registerEvent(eventId);
 		ScheduleEntryInfo<String, String> scheduledEntry = schedule.getPendingEventScheduleInfo(eventId);
-		Thread.sleep(1);
+		Thread.sleep(2);
 		
 		// milestone 2 -- mo consumption process started
 		scheduledEntry.setMilestone("mo consumed");
-		Thread.sleep(2);
+		Thread.sleep(4);
 		
 		// milestone 3 -- mt added to the queue
 		scheduledEntry.setMilestone("mt produced");
-		Thread.sleep(3);
+		Thread.sleep(6);
 		
 		// milestone 4 -- event concluded (mt sent)
 		schedule.notifyEvent(eventId);
@@ -170,12 +170,12 @@ public class ScheduleControlBehavioralTests {
 		ScheduleEntryInfo<String, String>[] executedScheduleEntries = schedule.consumeExecutedEvents();
 		for (ScheduleEntryInfo<String, String> executedScheduleEntry : executedScheduleEntries) {
 			String output = executedScheduleEntry.milestonesToString("mt consumed", "MT response time");
-			assertEquals(output, "testEvent: mo consumed (+1ms); mt produced (+2ms); mt consumed (+3ms); MT response time: 6ms");
+			assertEquals("testEvent: mo consumed (+2ms); mt produced (+4ms); mt consumed (+6ms); MT response time: 12ms", output);
 		}
 		
 		// again. Test error paths
 		schedule.registerEvent(eventId);
-		Thread.sleep(1);
+		Thread.sleep(2);
 		scheduledEntry = schedule.getPendingEventScheduleInfo(eventId);
 		
 		// no milestones
@@ -185,12 +185,12 @@ public class ScheduleControlBehavioralTests {
 		// unfinished event
 		scheduledEntry.setMilestone("mo consumed");
 		output = scheduledEntry.milestonesToString("mt consumed", "MT response time");
-		assertEquals(output, "testEvent: mo consumed (+1ms); Event not yet completed.");
+		assertEquals("testEvent: mo consumed (+2ms); Event not yet completed.", output);
 		
 		// timed out event
 		scheduledEntry.setTimedOut();
 		output = scheduledEntry.milestonesToString("mt consumed", "MT response time");
-		assertEquals(output, "testEvent: mo consumed (+1ms); Event completion track lost -- timedout after 1ms");
+		assertEquals("testEvent: mo consumed (+2ms); Event completion track lost -- timed out after 2ms", output);
 	}
 	
 	@Test
@@ -237,7 +237,7 @@ public class ScheduleControlBehavioralTests {
 							}
 						} else {
 							// retrieve timedout events
-							ScheduleEntryInfo<String, String>[] timedOutEntries = schedule.consumePendingOldEvents(60*numberOfThreads);
+							ScheduleEntryInfo<String, String>[] timedOutEntries = schedule.consumePendingOldEvents(80*numberOfThreads);
 							for (ScheduleEntryInfo<String, String> timedOutEntry : timedOutEntries) {
 								String milestones = timedOutEntry.milestonesToString("myDone", "zero=");
 								timedOutEvents.put(timedOutEntry.getScheduledEvent(), true);
@@ -330,8 +330,8 @@ public class ScheduleControlBehavioralTests {
 			"second expected MT in response to super ping MO",
 		};
 		
-		final ArrayBlockingQueue<SMS> MOQueue = new ArrayBlockingQueue<SMS>(phoneNumbers.length, false);
-		final ArrayBlockingQueue<SMS> MTQueue = new ArrayBlockingQueue<SMS>(phoneNumbers.length, false);
+		final ArrayBlockingQueue<SMS> MOQueue = new ArrayBlockingQueue<SMS>(phoneNumbers.length, true);
+		final ArrayBlockingQueue<SMS> MTQueue = new ArrayBlockingQueue<SMS>(phoneNumbers.length, true);
 		
 		final int testLoopCount = 400000;
 		
@@ -388,7 +388,7 @@ public class ScheduleControlBehavioralTests {
 					}
 					MOQueue.put(new SMS(phoneNumbers[n], MOs[m]));
 				}
-//				System.out.println("generateMOsAndRegisterEvents is done");
+				//System.out.println("generateMOsAndRegisterEvents is done");
 			}
 		};
 		
@@ -422,7 +422,7 @@ public class ScheduleControlBehavioralTests {
 						scheduledEventsCount[0]++;
 					}
 				}
-//				System.out.println("consumeMOsAndGenerateMTs is done");
+				//System.out.println("consumeMOsAndGenerateMTs is done");
 			}
 		};
 		
@@ -437,7 +437,7 @@ public class ScheduleControlBehavioralTests {
 						notifiedEventsCount[0]++;
 					}
 				}
-//				System.out.println("consumeMTsAndNotifyEvents is done");
+				//System.out.println("consumeMTsAndNotifyEvents is done");
 			}
 		};
 		
@@ -453,9 +453,9 @@ public class ScheduleControlBehavioralTests {
 						n++;
 						elapsedAverage += ((((double)elapsedMillis) - elapsedAverage) / ((double)n));
 					}
-//					System.err.println("elapsedAverage("+n+") = "+elapsedAverage);
+					//System.err.println("elapsedAverage("+n+") = "+elapsedAverage);
 				}
-//				System.out.println("consolidateStatistics is done");
+				//System.out.println("consolidateStatistics is done");
 				consumedEventsCount[0] = n;
 			}
 		};

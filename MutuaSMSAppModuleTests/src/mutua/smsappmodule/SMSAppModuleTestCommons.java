@@ -9,7 +9,6 @@ import java.util.Random;
 import mutua.hangmansmsgame.dispatcher.IResponseReceiver;
 import mutua.hangmansmsgame.smslogic.SMSProcessor;
 import mutua.hangmansmsgame.smslogic.SMSProcessorException;
-import mutua.icc.instrumentation.Instrumentation;
 import mutua.smsappmodule.dal.ISessionDB;
 import mutua.smsappmodule.dal.IUserDB;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
@@ -45,11 +44,11 @@ public class SMSAppModuleTestCommons {
 	private final ISessionDB sessionDB;
 
 
-	public SMSAppModuleTestCommons(Instrumentation<?, ?> log, SMSAppModuleDALFactory baseModuleDAL, NavigationState[][] navigationStatesArrays, ICommandProcessor[][] commandProcessorsArrays) {
+	public SMSAppModuleTestCommons(SMSAppModuleDALFactory baseModuleDAL, NavigationState[][] navigationStatesArrays, ICommandProcessor[][] commandProcessorsArrays) {
 		userDB    = baseModuleDAL.getUserDB();
 		sessionDB = baseModuleDAL.getSessionDB();
 		responseReceiver = new TestResponseReceiver();
-		SMSProcessor.configureDefaultValuesForNewInstances(log, baseModuleDAL);
+		SMSProcessor.configureDefaultValuesForNewInstances(baseModuleDAL);
 		smsP = new SMSProcessor(responseReceiver, navigationStatesArrays, commandProcessorsArrays);
 	}
 	

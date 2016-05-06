@@ -7,12 +7,13 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import mutua.icc.instrumentation.Instrumentation;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import adapters.exceptions.PreparedProcedureException;
 
 /** <pre>
- * JDBCAdapterPreparedProcedure.java  --  $Id: JDBCPreparedProceduresHelper.java,v 1.1 2010/07/01 22:02:14 luiz Exp $
- * =================================
+ * AbstractPreparedProcedure.java  --  $Id: JDBCPreparedProceduresHelper.java,v 1.1 2010/07/01 22:02:14 luiz Exp $
+ * ==============================
  * (created by luiz, Dec 15, 2008)
  *
  * A member of "JDBC Adapter Configuration" pattern to abstract a 'PreparedProcedure', freeing it from the
@@ -22,10 +23,10 @@ import adapters.exceptions.PreparedProcedureException;
 
 public class AbstractPreparedProcedure {
 	
-	private String preparedProcedureSQL;
+	private String                            preparedProcedureSQL;
 	private IJDBCAdapterParameterDefinition[] params;
-	private Connection[]        connectionPool;
-	private PreparedStatement[][] preparedStatementsList;
+	private Connection[]                      connectionPool;
+	private PreparedStatement[][]             preparedStatementsList;
 
 	/** Keep the structures needed to transform 'sqlStatementBits' into a 'PreparedProcedure',
 	 *  according to the "JDBC Adapter Configuration" pattern. */
@@ -78,7 +79,7 @@ public class AbstractPreparedProcedure {
 			if (psIndex == preparedStatements.length) {
 				preparedStatements = Arrays.copyOf(preparedStatements, preparedStatements.length+1);
 				preparedStatementsList[connIndex] = preparedStatements;
-System.err.println("PreparedStatementList '"+preparedProcedureSQL+"'["+connIndex+"] just grew to "+preparedStatements.length+" elements!");
+				Instrumentation.reportDebug("PreparedStatementList '"+preparedProcedureSQL+"'["+connIndex+"] just grew to "+preparedStatements.length+" elements!");
 			}
 			// return to the pool
 			preparedStatements[psIndex] = ps;
@@ -109,7 +110,7 @@ System.err.println("PreparedStatementList '"+preparedProcedureSQL+"'["+connIndex
 				PreparedStatement ps = preparedStatements[psIndex];
 				// remove prepared procedures that are no longer valid or that belongs to a connection that is no longer used
 				if ((ps != null) && ((ps.isClosed()) || (ps.getConnection() != conn)) ) {
-System.err.println("AbstractPreparedProcedure '"+preparedProcedureSQL+"': Connection #"+connIndex+", PreparedStatement #"+psIndex+" is invalid. Removing...");
+					Instrumentation.reportDebug("AbstractPreparedProcedure '"+preparedProcedureSQL+"': Connection #"+connIndex+", PreparedStatement #"+psIndex+" is invalid. Removing...");
 					preparedStatements[psIndex] = null;
 				}
 			}

@@ -1,8 +1,9 @@
 package main;
 
-import java.sql.SQLException;
-
-import static main.config.Configuration.log;
+import mutua.icc.instrumentation.Instrumentation;
+import mutua.icc.instrumentation.InstrumentableEvent.ELogSeverity;
+import mutua.icc.instrumentation.handlers.IInstrumentationHandler;
+import mutua.icc.instrumentation.handlers.InstrumentationHandlerLogConsole;
 
 /* Main.java  --  $Id: Main.java,v 1.1 2010/07/01 22:03:06 luiz Exp $
  * =========
@@ -14,6 +15,9 @@ import static main.config.Configuration.log;
 public class Main {
 
 	public static void main(String[] args) {
+
+		IInstrumentationHandler log = new InstrumentationHandlerLogConsole("JDBCAdapterTester", ELogSeverity.DEBUG);
+		Instrumentation.configureDefaultValuesForNewInstances(log, log, log);
 
 		try {
 			
@@ -33,7 +37,7 @@ public class Main {
 			
 		} catch (Throwable e) {
 			e.printStackTrace();
-			log.reportThrowable(e, "Error running 'JDBCAdapterTester'");
+			Instrumentation.reportThrowable(e, "Error running 'JDBCAdapterTester'");
 		}
 	}
 

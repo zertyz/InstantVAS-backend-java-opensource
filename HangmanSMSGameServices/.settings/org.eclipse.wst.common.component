@@ -53,9 +53,6 @@
         <dependent-module archiveName="MutuaEventsAdditionalEventLinks.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/MutuaEventsAdditionalEventLinks/MutuaEventsAdditionalEventLinks">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module archiveName="ReportDataCollector.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/ReportDataCollector/ReportDataCollector">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
         <property name="context-root" value="HangmanSMSGameServices"/>
         <property name="java-output-path" value="/HangmanSMSGameServices/build/classes"/>
         <property name="context-root" value="QuizTacaBandSMSQueueService"/>

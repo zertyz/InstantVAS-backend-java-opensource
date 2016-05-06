@@ -41,7 +41,7 @@ public class ProfileModuleSMSProcessorTests {
 	private ISessionDB sessionDB = BASE_MODULE_DAL.getSessionDB();
 	private IProfileDB profileDB = PROFILE_MODULE_DAL.getProfileDB();
 	
-	private SMSAppModuleTestCommons tc = new SMSAppModuleTestCommons(LOG, BASE_MODULE_DAL,
+	private SMSAppModuleTestCommons tc = new SMSAppModuleTestCommons(BASE_MODULE_DAL,
 		new NavigationState[][]   {config.baseModuleNavigationStates.values, config.profileModuleNavigationStates.values},
 		new ICommandProcessor[][] {config.profileModuleCommands.values});
 

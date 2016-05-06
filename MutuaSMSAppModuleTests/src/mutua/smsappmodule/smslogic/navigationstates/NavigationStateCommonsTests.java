@@ -62,7 +62,7 @@ public class NavigationStateCommonsTests {
 		config.baseModuleNavigationStates.nstNewUser.setCommandTriggers(new Object[][] {
 				{availableCommandName, 101l}}, availableCommands);
 		assertEquals("serialization of timeout & without regex didn't work",
-		             "command='TestCommandProcessor', patterns=null, timeout=101",
+		             "command='TestCommandProcessor', patterns=[], timeout=101",
 		             config.baseModuleNavigationStates.nstNewUser.serializeCommandTrigger(null)[0]);
 	}
 

@@ -49,7 +49,6 @@ public class SMSAppModuleConfigurationChat {
 	}
 
 	/** Constructs the simple version of this SMS Module, with all options set programmatically.<pre>
-	 *  @param log
 	 *  @param profilePhrasings                    an instance returned by {@link SMSAppModuleConfigurationProfile#getProfileModuleInstances}
 	 *  @param shortCode                             &
 	 *  @param appName                               &
@@ -59,7 +58,7 @@ public class SMSAppModuleConfigurationChat {
 	 *  @param profileModuleDAL  &
 	 *  @param chatModuleDAL     see {@link SMSAppModuleCommandsChat#SMSAppModuleCommandsChat}
 	 *  @returns {(SMSAppModuleNavigationStatesChat)navigationStates, (SMSAppModuleCommandsChat)commands, (SMSAppModulePhrasingsChat)chatPhrasings} */
-	public static Object[] getChatModuleInstances(Instrumentation<?, ?> log, String shortCode, String appName,
+	public static Object[] getChatModuleInstances(String shortCode, String appName,
 	                                              SMSAppModulePhrasingsProfile profilePhrasings,
 	                                              String phrPrivateMessage,
 	                                              String phrPrivateMessageDeliveryNotification,
@@ -74,22 +73,22 @@ public class SMSAppModuleConfigurationChat {
 		
 		// log
 		String logPrefix = "Chat Module";
-		log.reportDebug(logPrefix + ": new instances:");
+		Instrumentation.reportDebug(logPrefix + ": new instances:");
 		Object[][] logPhrasings = {
 			{"phrPrivateMessage",                     phrPrivateMessage},
 			{"phrPrivateMessageDeliveryNotification", phrPrivateMessageDeliveryNotification},
 			{"phrDoNotKnowWhoYouAreChattingTo",       phrDoNotKnowWhoYouAreChattingTo},
 		};
-		log.reportDebug(logPrefix + ": Phrasings        : " + Arrays.deepToString(logPhrasings));
+		Instrumentation.reportDebug(logPrefix + ": Phrasings        : " + Arrays.deepToString(logPhrasings));
 		Object[][] logCommands = {
 			{"profileModuleDAL",      profileModuleDAL},
 			{"chatModuleDAL",         chatModuleDAL},
 		};
-		log.reportDebug(logPrefix + ": Commands         : " + Arrays.deepToString(logCommands));
+		Instrumentation.reportDebug(logPrefix + ": Commands         : " + Arrays.deepToString(logCommands));
 		Object[][] logCommandTriggers = {
 			{"nstChattingWithSomeoneTriggers", nstChattingWithSomeoneTriggers},	
 		};
-		log.reportDebug(logPrefix + ": Navigation States: " + Arrays.deepToString(logCommandTriggers));
+		Instrumentation.reportDebug(logPrefix + ": Navigation States: " + Arrays.deepToString(logCommandTriggers));
 		
 		return new Object[] {navigationStates, commands, chatPhrasings};
 	}

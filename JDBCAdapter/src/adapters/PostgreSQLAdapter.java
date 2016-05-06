@@ -4,8 +4,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import mutua.icc.instrumentation.Instrumentation;
-
 /** <pre>
  * PostgresSQLAdapter.java
  * =======================
@@ -49,9 +47,9 @@ public abstract class PostgreSQLAdapter extends JDBCAdapter {
 	}
 
 	
-	public PostgreSQLAdapter(Instrumentation<?, ?> log, boolean allowDataStructuresAssertion, boolean shouldDebugQueries,
+	public PostgreSQLAdapter(boolean allowDataStructuresAssertion, boolean shouldDebugQueries,
 	                         String hostname, int port, String database, String user, String password) throws SQLException {
-		super(log, new org.postgresql.Driver().getClass(), allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password, connectionPool);
+		super(new org.postgresql.Driver().getClass(), allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password, connectionPool);
 	}
 	
 	@Override

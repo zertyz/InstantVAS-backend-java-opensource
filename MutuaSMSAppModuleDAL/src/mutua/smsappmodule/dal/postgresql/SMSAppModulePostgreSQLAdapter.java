@@ -2,7 +2,6 @@ package mutua.smsappmodule.dal.postgresql;
 
 import java.sql.SQLException;
 
-import mutua.icc.instrumentation.Instrumentation;
 import adapters.AbstractPreparedProcedure;
 import adapters.IJDBCAdapterParameterDefinition;
 import adapters.JDBCAdapter;
@@ -32,7 +31,6 @@ public class SMSAppModulePostgreSQLAdapter extends PostgreSQLAdapter {
 	private static SMSAppModulePostgreSQLAdapter instance = null;
 	
 	// JDBCAdapter default values
-	private static Instrumentation<?, ?> LOG;
 	/** @see JDBCAdapter#hostname */
 	private static String HOSTNAME;
 	/** @see JDBCAdapter#port */
@@ -58,10 +56,9 @@ public class SMSAppModulePostgreSQLAdapter extends PostgreSQLAdapter {
 	 *  @param user                         see {@link #USER}
 	 *  @param password                     see {@link #PASSWORD} */
 	public static void configureDefaultValuesForNewInstances(
-		Instrumentation<?, ?> log, boolean allowDataStructuresAssertion, boolean shouldDebugQueries,
+		boolean allowDataStructuresAssertion, boolean shouldDebugQueries,
 	    String hostname, int port, String database, String user, String password) throws SQLException {
 				
-		LOG      = log;
 		ALLOW_DATA_STRUCTURES_ASSERTION = allowDataStructuresAssertion;
 		SHOULD_DEBUG_QUERIES            = shouldDebugQueries;
 		HOSTNAME = hostname;
@@ -75,7 +72,7 @@ public class SMSAppModulePostgreSQLAdapter extends PostgreSQLAdapter {
 	
 	
 	private SMSAppModulePostgreSQLAdapter() throws SQLException {
-		super(LOG, ALLOW_DATA_STRUCTURES_ASSERTION, SHOULD_DEBUG_QUERIES, HOSTNAME, PORT, DATABASE, USER, PASSWORD);
+		super(ALLOW_DATA_STRUCTURES_ASSERTION, SHOULD_DEBUG_QUERIES, HOSTNAME, PORT, DATABASE, USER, PASSWORD);
 	}
 
 	@Override

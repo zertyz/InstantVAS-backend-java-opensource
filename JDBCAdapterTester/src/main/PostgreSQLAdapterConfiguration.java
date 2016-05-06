@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import adapters.AbstractPreparedProcedure;
 import adapters.IJDBCAdapterParameterDefinition;
 import adapters.PostgreSQLAdapter;
-import main.config.Configuration;
 
 /** <pre>
  * PostgreSQLAdapterConfiguration.java
@@ -23,7 +22,7 @@ public class PostgreSQLAdapterConfiguration extends PostgreSQLAdapter {
 	 
 	
 	private PostgreSQLAdapterConfiguration() throws SQLException {
-		super(Configuration.log, true, true, "venus", 5432, "hangmantest", "hangman", "hangman");
+		super(true, true, "venus", 5432, "hangmantest", "hangman", "hangman");
 	}
 
 	@Override

@@ -1,12 +1,11 @@
 package instantvas.smsengine.web;
 
 import static config.InstantVASLicense.*;
-import static config.MutuaHardCodedConfiguration.IFDEF_USE_STRICT_GET_PARSER;
-import static config.MutuaHardCodedConfiguration.IFDEF_WEB_DEBUG;
+import static config.MutuaHardCodedConfiguration.*;
+
+import static instantvas.smsengine.SMSAppEngineInstrumentationMethods.*;
 
 import instantvas.nativewebserver.NativeHTTPServer;
-import instantvas.smsengine.HangmanSMSGameServicesInstrumentationEvents;
-import instantvas.smsengine.InstantVASHTTPInstrumentationRequestProperty;
 import instantvas.smsengine.producersandconsumers.IMOProducer;
 
 import java.io.UnsupportedEncodingException;
@@ -20,13 +19,7 @@ import mutua.smsin.parsers.SMSInParser;
 import mutua.smsin.parsers.SMSInParser.ESMSInParserSMSAcceptionStatus;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import static instantvas.smsengine.HangmanSMSGameServicesInstrumentationEvents.*;
-import static instantvas.smsengine.HangmanSMSGameServicesInstrumentationProperties.*;
-
-
 public class AddToMOQueue {
-	
-	private final Instrumentation<InstantVASHTTPInstrumentationRequestProperty, String> log;
 	
 	// license infringment control
     private final int                   allowableMSISDNMinLength;
@@ -65,8 +58,7 @@ public class AddToMOQueue {
 
 	*******************************************************************************************************************************************/
 	
-	public AddToMOQueue(Instrumentation<InstantVASHTTPInstrumentationRequestProperty, String> log,
-	                    IMOProducer            moProducer,
+	public AddToMOQueue(IMOProducer            moProducer,
 	                    SMSInParser<?, byte[]> moParser,
 	                    int                    allowableMSISDNMinLength,
 	                    int                    allowableMSISDNMaxLength,
@@ -74,9 +66,6 @@ public class AddToMOQueue {
 	                    ESMSInParserCarrier[]  allowableCarriers,
 	                    String[]               allowableShortCodes) {
 
-		log.addInstrumentableEvents(HangmanSMSGameServicesInstrumentationEvents.values());
-
-		this.log        = log;		
 		this.moProducer = moProducer;
 		this.moParser   = moParser;
 		this.allowableMSISDNMinLength = allowableMSISDNMinLength;
@@ -86,7 +75,7 @@ public class AddToMOQueue {
 		this.allowableShortCodes      = allowableShortCodes;
 		
 		parameterNames = moParser.getRequestParameterNames(AUTHENTICATION_TOKENParameterName);
-		/* debug */ if (IFDEF_WEB_DEBUG) {log.reportDebug("/AddToMOQueue: Expected Parameters: " + Arrays.deepToString(parameterNames));}
+		/* debug */ if (IFDEF_WEB_DEBUG) {Instrumentation.reportDebug("/AddToMOQueue: Expected Parameters: " + Arrays.deepToString(parameterNames));}
 	}
 	
 	public boolean attemptToAuthenticateFromStrictGetParameters(String[] parameterValues) {
@@ -126,17 +115,17 @@ public class AddToMOQueue {
 			throw new NotImplementedException();
 		}
 		
-		/* debug */ if (IFDEF_WEB_DEBUG) {log.reportDebug("/AddToMOQueue: " + Arrays.deepToString(parameterValues));}
+		/* debug */ if (IFDEF_WEB_DEBUG) {Instrumentation.reportDebug("/AddToMOQueue: " + Arrays.deepToString(parameterValues));}
 		if (parameterValues == null) {
-			/* debug */ if (IFDEF_WEB_DEBUG) {log.reportDebug("/AddToMOQueue " + new String(BAD_REQUEST) + ": " + queryString);}
+			/* debug */ if (IFDEF_WEB_DEBUG) {Instrumentation.reportDebug("/AddToMOQueue " + new String(BAD_REQUEST) + ": " + queryString);}
 			response = BAD_REQUEST;
 		} else if (attemptToAuthenticateFromStrictGetParameters(parameterValues)) {
 			/* debug */ if (IFDEF_WEB_DEBUG) {
-				log.reportDebug("/AddToMOQueue " + new String(BAD_AUTHENTICATION) + ": " + queryString);
-				log.reportDebug("IFDEF_HARDCODE_CHECK_METHOD_OF_ADDITIONAL_MO_PARAMETER_VALUES=" + IFDEF_HARDCODE_CHECK_METHOD_OF_ADDITIONAL_MO_PARAMETER_VALUES);
-				log.reportDebug("MO_ADDITIONAL_RULEn_LENGTH=" + MO_ADDITIONAL_RULEn_LENGTH);
-				log.reportDebug("parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]=" + parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]);
-				log.reportDebug("MO_ADDITIONAL_RULE0_REGEX.matcher(parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]).matches()" + MO_ADDITIONAL_RULE0_REGEX.matcher(parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]).matches());
+				Instrumentation.reportDebug("/AddToMOQueue " + new String(BAD_AUTHENTICATION) + ": " + queryString);
+				Instrumentation.reportDebug("IFDEF_HARDCODE_CHECK_METHOD_OF_ADDITIONAL_MO_PARAMETER_VALUES=" + IFDEF_HARDCODE_CHECK_METHOD_OF_ADDITIONAL_MO_PARAMETER_VALUES);
+				Instrumentation.reportDebug("MO_ADDITIONAL_RULEn_LENGTH=" + MO_ADDITIONAL_RULEn_LENGTH);
+				Instrumentation.reportDebug("parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]=" + parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]);
+				Instrumentation.reportDebug("MO_ADDITIONAL_RULE0_REGEX.matcher(parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]).matches()" + MO_ADDITIONAL_RULE0_REGEX.matcher(parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]).matches());
 			}
 			response = BAD_AUTHENTICATION;
 		} else {
@@ -167,17 +156,17 @@ public class AddToMOQueue {
 				throw new NotImplementedException();
 			}
 			
-			/* debug */ if (IFDEF_WEB_DEBUG) {log.reportDebug("/AddToMOQueue: " + Arrays.deepToString(parameterValues));}
+			/* debug */ if (IFDEF_WEB_DEBUG) {Instrumentation.reportDebug("/AddToMOQueue: " + Arrays.deepToString(parameterValues));}
 			if (parameterValues == null) {
-				/* debug */ if (IFDEF_WEB_DEBUG) {log.reportDebug("/AddToMOQueue " + new String(BAD_REQUEST) + ": " + queryString);}
+				/* debug */ if (IFDEF_WEB_DEBUG) {Instrumentation.reportDebug("/AddToMOQueue " + new String(BAD_REQUEST) + ": " + queryString);}
 				moSet[i] = null;
 			} else if (attemptToAuthenticateFromStrictGetParameters(parameterValues)) {
 				/* debug */ if (IFDEF_WEB_DEBUG) {
-					log.reportDebug("/AddToMOQueue " + new String(BAD_AUTHENTICATION) + ": " + queryString);
-					log.reportDebug("IFDEF_HARDCODE_CHECK_METHOD_OF_ADDITIONAL_MO_PARAMETER_VALUES=" + IFDEF_HARDCODE_CHECK_METHOD_OF_ADDITIONAL_MO_PARAMETER_VALUES);
-					log.reportDebug("MO_ADDITIONAL_RULEn_LENGTH=" + MO_ADDITIONAL_RULEn_LENGTH);
-					log.reportDebug("parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]=" + parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]);
-					log.reportDebug("MO_ADDITIONAL_RULE0_REGEX.matcher(parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]).matches()" + MO_ADDITIONAL_RULE0_REGEX.matcher(parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]).matches());
+					Instrumentation.reportDebug("/AddToMOQueue " + new String(BAD_AUTHENTICATION) + ": " + queryString);
+					Instrumentation.reportDebug("IFDEF_HARDCODE_CHECK_METHOD_OF_ADDITIONAL_MO_PARAMETER_VALUES=" + IFDEF_HARDCODE_CHECK_METHOD_OF_ADDITIONAL_MO_PARAMETER_VALUES);
+					Instrumentation.reportDebug("MO_ADDITIONAL_RULEn_LENGTH=" + MO_ADDITIONAL_RULEn_LENGTH);
+					Instrumentation.reportDebug("parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]=" + parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]);
+					Instrumentation.reportDebug("MO_ADDITIONAL_RULE0_REGEX.matcher(parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]).matches()" + MO_ADDITIONAL_RULE0_REGEX.matcher(parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]).matches());
 				}
 				moSet[i] = null;
 			} else {
@@ -253,7 +242,7 @@ public class AddToMOQueue {
 
 	public void processRequests(IncomingSMSDto[] moSet, String[] requestDataSet) {
 		
-		log.reportRequestStart("AddToMOQueue in batch: " + Arrays.deepToString(requestDataSet));
+		startBatchAddToMOQueueRequest(requestDataSet);
 		
 		ArrayList<IncomingSMSDto> moSetAcceptedForProcessing          = new ArrayList<IncomingSMSDto>(moSet.length+1);
 		ArrayList<String>         requestDataSetAcceptedForProcessing = new ArrayList<String>(moSet.length+1);
@@ -264,47 +253,46 @@ public class AddToMOQueue {
 			String         requestData = requestDataSet[i];
 			
 			if (mo == null) {
-				log.reportEvent(IE_MESSAGE_REJECTED, IP_REQUEST_DATA, requestData);
+				reportMOQueueRejection(requestData);
 			} else if (attemptToValidateMO(mo)) {
-				
-				log.reportEvent(IE_MESSAGE_ACCEPTED, IP_MO_MESSAGE, mo);
+				reportMOQueueAddition(mo);
 				moSetAcceptedForProcessing         .add(mo);
 				requestDataSetAcceptedForProcessing.add(requestData);
 				
 			} else {
-				log.reportEvent(IE_LICENSE_INFRINGMENT, IP_MO_MESSAGE, mo);
+				reportLicenseInfringment(mo);
 			}
 		}
 		
 		moProducer.dispatchMOsForProcessing(moSetAcceptedForProcessing.toArray(new IncomingSMSDto[0]));
 
-		log.reportRequestFinish();
+		finishRequest();
 	}
 	
 	/** Method to be called from web handlers, such as Tomcat Servlets */
 	public byte[] processRequest(IncomingSMSDto mo, String requestData) {
 		byte[] response;
-		log.reportRequestStart("AddToMOQueue " + requestData);
+		startAddToMOQueueRequest(requestData);
 		if (mo == null) {
-			log.reportEvent(IE_MESSAGE_REJECTED, IP_REQUEST_DATA, requestData);
+			reportMOQueueRejection(requestData);
 			response = moParser.getReply(ESMSInParserSMSAcceptionStatus.REJECTED);
 		} else if (attemptToValidateMO(mo)) {
 			
 			try {
-				log.reportEvent(IE_MESSAGE_ACCEPTED, IP_MO_MESSAGE, mo);
+				reportMOQueueAddition(mo);
 				moProducer.dispatchMOForProcessing(mo);
 				response = moParser.getReply(ESMSInParserSMSAcceptionStatus.ACCEPTED);
 			} catch (Throwable t) {
 				response = moParser.getReply(ESMSInParserSMSAcceptionStatus.POSTPONED);
-				log.reportThrowable(t, "Error detected while attempting to add an MO to the queue");
+				Instrumentation.reportThrowable(t, "Error detected while attempting to add an MO to the queue");
 			}
 			
 		} else {
-			log.reportEvent(IE_LICENSE_INFRINGMENT, IP_MO_MESSAGE, mo);
+			reportLicenseInfringment(mo);
 			response = moParser.getReply(ESMSInParserSMSAcceptionStatus.REJECTED);
 		}
 
-		log.reportRequestFinish();
+		finishRequest();
 		return response;
 	}
 

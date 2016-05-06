@@ -29,7 +29,7 @@ public class HelpModuleSMSProcessorTests {
 	// variables
 	////////////
 	
-	private SMSAppModuleTestCommons tc = new SMSAppModuleTestCommons(LOG,
+	private SMSAppModuleTestCommons tc = new SMSAppModuleTestCommons(
 		BASE_MODULE_DAL,
 		new NavigationState[][] {baseModuleNavigationStates.values, helpModuleNavigationStates.values},
 		new ICommandProcessor[][] {helpModuleCommands.values});

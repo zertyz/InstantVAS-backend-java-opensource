@@ -1,9 +1,6 @@
 package mutua.smsappmodule;
 
 import static org.junit.Assert.*;
-import mutua.icc.instrumentation.DefaultInstrumentationProperties;
-import mutua.icc.instrumentation.Instrumentation;
-import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
 
 import org.junit.Test;
 

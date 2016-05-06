@@ -63,8 +63,10 @@ public class NavigationState {
 	 *  where 'commandTriggersData' := {{(String)commandName, (String...|long)regular_expressions_array|timeout_millis, ...}, ...}
 	 *  and 'commandName' is a name of a command present in 'availableCommands' */
 	public void applyCommandTriggersData(ICommandProcessor[] availableCommands) {
-		setCommandTriggers(commandTriggersData, availableCommands);
-		commandTriggersData = null;
+		if (commandTriggersData != null) {
+			setCommandTriggers(commandTriggersData, availableCommands);
+			commandTriggersData = null;
+		}
 	}
 	
 	/** @see #applyCommandTriggersData */
@@ -80,7 +82,7 @@ public class NavigationState {
 				if (commandTriggersData[i] instanceof Long) {
 					timeout = (Long)commandTriggersData[i];
 				} else if (commandTriggersData[i] instanceof String[]) {
-					regularExpressions.addAll(Arrays.asList((String[])commandsAndTriggersData[i]));
+					regularExpressions.addAll(Arrays.asList((String[])commandTriggersData[i]));
 				} else if (commandTriggersData[i] instanceof String) {
 					regularExpressions.add((String)commandTriggersData[i]);
 				} else {

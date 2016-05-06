@@ -1,14 +1,11 @@
 package mutua.smsappmodule.dal.postgresql;
 
-import static mutua.icc.instrumentation.DefaultInstrumentationProperties.DIP_MSG;
-import static mutua.icc.instrumentation.JDBCAdapterInstrumentationEvents.IE_DATABASE_ADMINISTRATION_WARNING;
-
 import java.sql.SQLException;
 
-import mutua.icc.instrumentation.Instrumentation;
 import adapters.AbstractPreparedProcedure;
 import adapters.IJDBCAdapterParameterDefinition;
 import adapters.JDBCAdapter;
+import adapters.JDBCAdapterInstrumentationMethods;
 import adapters.PostgreSQLAdapter;
 
 /** <pre>
@@ -40,7 +37,6 @@ public class SMSAppModulePostgreSQLAdapterChat extends PostgreSQLAdapter {
 	private static String MO_TEXT_FIELD_NAME;
 	
 	// JDBCAdapter default values
-	private static Instrumentation<?, ?> LOG;
 	/** @see JDBCAdapter#hostname */
 	private static String HOSTNAME;
 	/** @see JDBCAdapter#port */
@@ -57,7 +53,6 @@ public class SMSAppModulePostgreSQLAdapterChat extends PostgreSQLAdapter {
 	private static boolean SHOULD_DEBUG_QUERIES;	
 	
 	/** method to be called when attempting to configure the singleton for new instances of 'PostgreSQLAdapter'.
-	 *  @param log
 	 *  @param allowDataStructuresAssertion see {@link #ALLOW_DATA_STRUCTURES_ASSERTION}
 	 *  @param shouldDebugQueries           see {@link #SHOULD_DEBUG_QUERIES}
 	 *  @param hostname                     see {@link #HOSTNAME}
@@ -66,11 +61,10 @@ public class SMSAppModulePostgreSQLAdapterChat extends PostgreSQLAdapter {
 	 *  @param user                         see {@link #USER}
 	 *  @param password                     see {@link #PASSWORD} */
 	public static void configureDefaultValuesForNewInstances(
-		Instrumentation<?, ?> log, boolean allowDataStructuresAssertion, boolean shouldDebugQueries,
+		boolean allowDataStructuresAssertion, boolean shouldDebugQueries,
 	    String hostname, int port, String database, String user, String password,
 	    String moTableName, String moIdFieldName, String moTextFieldName) throws SQLException {
-				
-		LOG      = log;
+
 		ALLOW_DATA_STRUCTURES_ASSERTION = allowDataStructuresAssertion;
 		SHOULD_DEBUG_QUERIES            = shouldDebugQueries;
 		HOSTNAME = hostname;
@@ -146,14 +140,14 @@ public class SMSAppModulePostgreSQLAdapterChat extends PostgreSQLAdapter {
 	private final String moIdFieldName;
 	private final String moTextFieldName;
 	private SMSAppModulePostgreSQLAdapterChat() throws SQLException {
-		super(LOG, false, SHOULD_DEBUG_QUERIES, HOSTNAME, PORT, DATABASE, USER, PASSWORD);
+		super(false, SHOULD_DEBUG_QUERIES, HOSTNAME, PORT, DATABASE, USER, PASSWORD);
 		this.moTableName     = MO_TABLE_NAME;
 		this.moIdFieldName   = MO_ID_FIELD_NAME;
 		this.moTextFieldName = MO_TEXT_FIELD_NAME;
 		// the execution of the following method was delayed by invoking the super constructor with 'false' in order for the fields
 		// needed by 'getTableDefinitions' to be set
 		if (ALLOW_DATA_STRUCTURES_ASSERTION) {
-			log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "WARNING: executing delayed 'assureDataStructures' for '"+getClass().getName()+"'");
+			JDBCAdapterInstrumentationMethods.reportAdministrationWarningMessage("WARNING: executing delayed 'assureDataStructures' for '"+getClass().getName()+"'");
 			assureDataStructures();
 		}
 		

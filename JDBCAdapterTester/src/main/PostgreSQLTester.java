@@ -3,10 +3,9 @@ package main;
 import java.sql.SQLException;
 import java.util.Arrays;
 
-import static main.config.Configuration.log;
+import mutua.icc.instrumentation.Instrumentation;
 import adapters.PostgreSQLAdapter;
 import adapters.exceptions.PreparedProcedureException;
-
 import static main.PostgreSQLAdapterConfiguration.PostgreSQLStatements.*;
 import static main.PostgreSQLAdapterConfiguration.PostgreSQLParameters.*;
 
@@ -26,8 +25,7 @@ import static main.PostgreSQLAdapterConfiguration.PostgreSQLParameters.*;
 public class PostgreSQLTester {
 
 	public static void postgreSQLTesterMain(String[] args) throws SQLException, PreparedProcedureException {
-		log.reportRequestStart("PostgreSQLTester");
-		log.reportDebug("Attempting to get a PostgreSQL connection...");
+		Instrumentation.reportDebug("Attempting to get a PostgreSQL connection...");
 		PostgreSQLAdapter db = PostgreSQLAdapterConfiguration.getDBAdapter();
 		db.resetDatabase();
 
@@ -105,7 +103,6 @@ public class PostgreSQLTester {
 			System.out.println("Batch Results: " + Arrays.toString(results));
 		}
 
-		log.reportRequestFinish();
 	}
 
 }

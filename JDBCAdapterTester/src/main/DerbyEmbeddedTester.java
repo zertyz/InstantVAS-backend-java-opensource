@@ -1,12 +1,10 @@
 package main;
 
-import static main.config.Configuration.log;
-
 import java.sql.SQLException;
 
+import mutua.icc.instrumentation.Instrumentation;
 import adapters.DerbyEmbeddedAdapter;
 import adapters.JDBCAdapter;
-
 import static main.DerbyEmbeddedAdapterConfiguration.DerbyStatements.*;
 import static main.DerbyEmbeddedAdapterConfiguration.DerbyParameters.*;
 
@@ -25,8 +23,7 @@ import static main.DerbyEmbeddedAdapterConfiguration.DerbyParameters.*;
 public class DerbyEmbeddedTester {
 
 	public static void embeddedDerbyTesterMain(String[] args) throws SQLException {
-		log.reportRequestStart("DerbyEmbeddedTester");
-		log.reportDebug("Attempting to get a Derby Embedded connection...");
+		Instrumentation.reportDebug("Attempting to get a Derby Embedded connection...");
 		DerbyEmbeddedAdapter db = DerbyEmbeddedAdapterConfiguration.getDBAdapter();
 		db.resetDatabase();
 
@@ -49,10 +46,6 @@ public class DerbyEmbeddedTester {
 		                                  ID, 11);
 		System.out.println("Result: " + result);
 		
-
-		log.reportRequestFinish();
-	}
-	
-	
+	}	
 
 }

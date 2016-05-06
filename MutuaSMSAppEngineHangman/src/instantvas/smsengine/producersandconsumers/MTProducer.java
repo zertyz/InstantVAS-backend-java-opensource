@@ -26,17 +26,14 @@ import mutua.smsout.dto.OutgoingSMSDto;
 */
 
 public class MTProducer extends EventServer<EInstantVASEvents> implements IResponseReceiver {
-	
-	private Instrumentation<?, ?> log;
 
 	public MTProducer(InstantVASInstanceConfiguration ivac,
 	                  EventClient<EInstantVASEvents> mtConsumer) {
 		super(ivac.MTpcLink);
-		this.log = ivac.log;
 		try {
 			setConsumer(mtConsumer);
 		} catch (IndirectMethodNotFoundException e) {
-			log.reportThrowable(e, "Error while adding mtConsumer");
+			Instrumentation.reportThrowable(e, "Error while adding mtConsumer");
 		}
 	}
 
@@ -45,14 +42,14 @@ public class MTProducer extends EventServer<EInstantVASEvents> implements IRespo
 		
 		// MO and MT instrumentation -- register a new milestone: MO just finish processing
 		if (IFDEF_INSTRUMENT_MO_AND_MT_TIMES) {
-			MOAndMTInstrumentation.reportMTIsReady(log, mt, mo);
+			MOAndMTInstrumentation.reportMTIsReady(mt, mo);
 		}
 
 		dispatchConsumableEvent(EInstantVASEvents.INTERACTIVE_MT, mt);
 
 		// MO and MT instrumentation -- register a new milestone: MT just added to the queue
 		if (IFDEF_INSTRUMENT_MO_AND_MT_TIMES) {
-			MOAndMTInstrumentation.reportMTEnqueuing(log, mt, mo);
+			MOAndMTInstrumentation.reportMTEnqueuing(mt, mo);
 		}
 
 	}

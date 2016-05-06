@@ -1,11 +1,9 @@
 package mutua.smsout.senders;
 
-import static mutua.smsout.senders.ESMSOutSenderInstrumentationEvents.*;
-import static mutua.smsout.senders.ESMSOutSenderInstrumentationProperties.*;
+import static mutua.smsout.senders.SMSOutSenderInstrumentationMethods.*;
 
 import java.io.IOException;
 
-import mutua.icc.instrumentation.Instrumentation;
 import mutua.smsout.dto.OutgoingSMSDto;
 import adapters.HTTPClientAdapter;
 
@@ -27,15 +25,17 @@ public class SMSOutCelltick extends SMSOutSender {
 	// CONFIGURATION
 	////////////////
 	
-	public static int    CELLTICK_MAX_MT_CHARS = 134;
+	public static final int    CELLTICK_MAX_MT_CHARS = 134;
+	
+	private static final String integrationClassName = "SMSOutCelltick";
 	
 	private final String            mtServiceBaseUrl /*= "http://localhost:15001/cgi-bin/sendsms"*/;
 	private final HTTPClientAdapter mtClient;
 	private final String            shortCode;
 	private final String            smsc;
 
-	public SMSOutCelltick(Instrumentation<?, ?> log, String smsAppId, String shortCode, String smsc, String mtServiceBaseUrl, int numberOfRetryAttempts, long delayBetweenAttempts) {
-		super(log, "SMSOutCelltick", smsAppId, numberOfRetryAttempts, delayBetweenAttempts);
+	public SMSOutCelltick(String smsAppId, String shortCode, String smsc, String mtServiceBaseUrl, int numberOfRetryAttempts, long delayBetweenAttempts) {
+		super(integrationClassName, smsAppId, numberOfRetryAttempts, delayBetweenAttempts);
 		this.shortCode        = shortCode;
 		this.smsc             = smsc;
 		this.mtServiceBaseUrl = mtServiceBaseUrl;
@@ -88,10 +88,10 @@ public class SMSOutCelltick extends SMSOutSender {
 			};
 			String response = mtClient.requestGet(request);
 			if (response.indexOf("Sent") != -1) {
-				log.reportEvent(SMSOUT_ACCEPTED, BASE_URL, mtServiceBaseUrl, REQUEST, request, RESPONSE, response);
+				reportMTDeliveryAccepted(integrationClassName, mtServiceBaseUrl, request, response);
 				return EOutgoingSMSAcceptionStatus.ACCEPTED;
 			} else {
-				log.reportEvent(SMSOUT_POSTPONED, BASE_URL, mtServiceBaseUrl, REQUEST, request, RESPONSE, response);
+				reportMTDeliveryPostponed(integrationClassName, mtServiceBaseUrl, request, response);
 				return EOutgoingSMSAcceptionStatus.POSTPONED;
 			}
 		}
@@ -125,9 +125,9 @@ public class SMSOutCelltick extends SMSOutSender {
 			String response = mtClient.requestGetWithAlreadyEncodedValues(request);
 			
 			if (response.indexOf("Sent") != -1) {
-				log.reportEvent(SMSOUT_ACCEPTED, BASE_URL, mtServiceBaseUrl, REQUEST, request, RESPONSE, response);
+				reportMTDeliveryAccepted(integrationClassName, mtServiceBaseUrl, request, response);
 			} else {
-				log.reportEvent(SMSOUT_POSTPONED, BASE_URL, mtServiceBaseUrl, REQUEST, request, RESPONSE, response);
+				reportMTDeliveryPostponed(integrationClassName, mtServiceBaseUrl, request, response);
 				return EOutgoingSMSAcceptionStatus.POSTPONED;
 			}
 		}

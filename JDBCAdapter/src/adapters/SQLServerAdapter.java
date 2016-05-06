@@ -4,8 +4,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import mutua.icc.instrumentation.Instrumentation;
-
 /** <pre>
  * SQLServerAdapter.java  --  $Id: SQLServerHelper.java,v 1.1 2010/07/01 22:02:14 luiz Exp $
  * =====================
@@ -18,9 +16,9 @@ import mutua.icc.instrumentation.Instrumentation;
 public abstract class SQLServerAdapter extends JDBCAdapter {
 
 
-	protected SQLServerAdapter(Instrumentation<?, ?> log, boolean allowDataStructuresAssertion, boolean shouldDebugQueries,
+	protected SQLServerAdapter(boolean allowDataStructuresAssertion, boolean shouldDebugQueries,
                                String hostname, int port, String database, String user, String password) throws SQLException {
-		super(log, new net.sourceforge.jtds.jdbc.Driver().getClass(), allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password, new Connection[1]);
+		super(new net.sourceforge.jtds.jdbc.Driver().getClass(), allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password, new Connection[1]);
 	}
 	
 	@Override

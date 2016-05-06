@@ -43,7 +43,6 @@ public class SMSAppModuleConfigurationHelp {
 	}
 	
 	/** Constructs the full version of this SMS Module, with all options set programmatically.<pre>
-	 *  @param log
 	 *  @param shortCode                                 &
 	 *  @param appName                                   see {@link SMSAppModulePhrasingsHelp#SMSAppModulePhrasingsHelp(String, String, String, String, String, String[][], String[])}
 	 *  @param phrNewUsersFallbackHelp                   see {@link SMSAppModulePhrasingsHelp#getNewUsersFallbackHelp()}
@@ -53,7 +52,7 @@ public class SMSAppModuleConfigurationHelp {
 	 *  @param phrCompositeHelps                         see {@link SMSAppModulePhrasingsHelp#getCompositeHelpMessage(int)}
 	 *  @param nstPresentingCompositeHelpCommandTriggers see {@link SMSAppModuleNavigationStatesHelp#SMSAppModuleNavigationStatesHelp(SMSAppModuleCommandsHelp, Object[][])}
 	 *  @returns {(SMSAppModuleNavigationStatesHelp)navigationStates, (SMSAppModuleCommandsHelp)commands, (SMSAppModulePhrasingsHelp)phrasings} */
-	public static Object[] getHelpModuleInstances(Instrumentation<?, ?> log, String shortCode, String appName,
+	public static Object[] getHelpModuleInstances(String shortCode, String appName,
 		                                          String phrNewUsersFallbackHelp,
 		                                          String phrExistingUsersFallbackHelp,
 		                                          String phrStatelessHelp,
@@ -68,7 +67,7 @@ public class SMSAppModuleConfigurationHelp {
 		
 		// log
 		String logPrefix = "Help Module";
-		log.reportDebug(logPrefix + ": new instances:");
+		Instrumentation.reportDebug(logPrefix + ": new instances:");
 		Object[][] logPhrasings = {
 			{"phrNewUsersFallbackHelp",      phrNewUsersFallbackHelp},
 			{"phrExistingUsersFallbackHelp", phrExistingUsersFallbackHelp},
@@ -76,13 +75,13 @@ public class SMSAppModuleConfigurationHelp {
 			{"phrStatefulHelpMessages",      phrStatefulHelpMessages},
 			{"phrCompositeHelps",            phrCompositeHelps},
 		};
-		log.reportDebug(logPrefix + ": Phrasings        : " + Arrays.deepToString(logPhrasings));
+		Instrumentation.reportDebug(logPrefix + ": Phrasings        : " + Arrays.deepToString(logPhrasings));
 		Object[][] logCommands = {};
-		log.reportDebug(logPrefix + ": Commands         : " + Arrays.deepToString(logCommands));
+		Instrumentation.reportDebug(logPrefix + ": Commands         : " + Arrays.deepToString(logCommands));
 		Object[][] logCommandTriggers = {
 			{"nstPresentingCompositeHelpCommandTriggers", nstPresentingCompositeHelpCommandTriggers},	
 		};
-		log.reportDebug(logPrefix + ": Navigation States: " + Arrays.deepToString(logCommandTriggers));
+		Instrumentation.reportDebug(logPrefix + ": Navigation States: " + Arrays.deepToString(logCommandTriggers));
 		
 		return new Object[] {navigationStates, commands, phrasings};
 	}

@@ -3,7 +3,6 @@ package instantvas.nativewebserver;
 import static config.InstantVASLicense.*;
 import static config.MutuaHardCodedConfiguration.*;
 
-import instantvas.smsengine.InstantVASHTTPInstrumentationRequestProperty;
 import instantvas.smsengine.producersandconsumers.EInstantVASEvents;
 import instantvas.smsengine.producersandconsumers.MOConsumer;
 import instantvas.smsengine.producersandconsumers.MOProducer;
@@ -12,22 +11,15 @@ import instantvas.smsengine.producersandconsumers.MTProducer;
 import instantvas.smsengine.web.AddToMOQueue;
 import mutua.events.EventClient;
 import mutua.icc.instrumentation.Instrumentation;
-import mutua.smsin.dto.IncomingSMSDto;
 import mutua.smsin.parsers.SMSInParser;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLDecoder;
-import java.nio.channels.FileChannel;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -73,7 +65,6 @@ import config.InstantVASInstanceConfiguration;
 
 public class NativeHTTPServer {
 	
-	public static Instrumentation<InstantVASHTTPInstrumentationRequestProperty, String> log;
 	public static InstantVASInstanceConfiguration ivac;
 	public static AddToMOQueue addToMOQueue;
 	
@@ -86,13 +77,12 @@ public class NativeHTTPServer {
 
 	public static void instantiate() throws IllegalArgumentException, SecurityException, SQLException, IllegalAccessException, NoSuchFieldException {
 		ivac       = new InstantVASInstanceConfiguration();
-		log        = ivac.log;
 		moParser   = ivac.moParser;
 		mtProducer = new MTProducer(ivac, new MTConsumer(ivac));
 		moConsumer = new MOConsumer(ivac, mtProducer);
 		moProducer = new MOProducer(ivac, moConsumer);
 
-		addToMOQueue = new AddToMOQueue(log, moProducer, moParser,
+		addToMOQueue = new AddToMOQueue(moProducer, moParser,
 		                                ALLOWABLE_MSISDN_MIN_LENGTH,
 		                                ALLOWABLE_MSISDN_MAX_LENGTH,
 		                                ALLOWABLE_MSISDN_PREFIXES,
@@ -108,9 +98,9 @@ public class NativeHTTPServer {
 		if (MO_ACQUISITION_METHOD == MOAcquisitionMethods_ACTIVE_HTTP_QUEUE_CLIENT) {
 			// debug
 			if (IFDEF_WEB_DEBUG) {
-				ivac.log.reportDebug("Starting the Active HTTP Queue Client for the service '"+MO_ACTIVE_HTTP_QUEUE_BASE_URL+
-				                     "', with a maximum fetch of "+MO_ACTIVE_HTTP_QUEUE_BATCH_SIZE+" elements at a time and "+
-						             "with no more than 1 request every "+MO_ACTIVE_HTTP_QUEUE_POOLING_DELAY+" milliseconds");
+				Instrumentation.reportDebug("Starting the Active HTTP Queue Client for the service '"+MO_ACTIVE_HTTP_QUEUE_BASE_URL+
+				                            "', with a maximum fetch of "+MO_ACTIVE_HTTP_QUEUE_BATCH_SIZE+" elements at a time and "+
+						                    "with no more than 1 request every "+MO_ACTIVE_HTTP_QUEUE_POOLING_DELAY+" milliseconds");
 			}
 			new Thread() {
 				
@@ -122,7 +112,7 @@ public class NativeHTTPServer {
 						// check file existence & permissions
 						File f = new File(MO_ACTIVE_HTTP_QUEUE_LOCAL_OFFSET_FILE);
 						if (f.exists() == false) {
-							/* debug */ if (IFDEF_WEB_DEBUG) {log.reportDebug("ActiveMOFetcher: File '"+f.getAbsolutePath()+"' does not exist. Creating...");}
+							/* debug */ if (IFDEF_WEB_DEBUG) {Instrumentation.reportDebug("ActiveMOFetcher: File '"+f.getAbsolutePath()+"' does not exist. Creating...");}
 							f.createNewFile();
 						}
 						if (!f.canWrite()) {
@@ -132,13 +122,13 @@ public class NativeHTTPServer {
 						// open the file & check it's consistency
 						RandomAccessFile raf = new RandomAccessFile(f, "rw");
 						if (raf.length() != 8)  {
-							/* debug */ if (IFDEF_WEB_DEBUG) {log.reportDebug("ActiveMOFetcher: Invalid offset pointer found on file '"+f.getAbsolutePath()+"'. Recreating...");}
+							/* debug */ if (IFDEF_WEB_DEBUG) {Instrumentation.reportDebug("ActiveMOFetcher: Invalid offset pointer found on file '"+f.getAbsolutePath()+"'. Recreating...");}
 							raf.writeLong(0);
 							raf.seek(0);
 						}
 						long localOffset = raf.readLong();
 						long remoteFileInitialLength = Long.parseLong(httpQueueClient.requestGetWithAlreadyEncodedValues("offset", "-1"));
-						/* debug */ if (IFDEF_WEB_DEBUG) {log.reportDebug("ActiveMOFetcher: Starting active fetcher from offset "+localOffset+" to a known number of "+remoteFileInitialLength);}
+						/* debug */ if (IFDEF_WEB_DEBUG) {Instrumentation.reportDebug("ActiveMOFetcher: Starting active fetcher from offset "+localOffset+" to a known number of "+remoteFileInitialLength);}
 						while (true) {
 							// fetch the MO queryString parameters (1 one each line), with the last line telling the next offset to pass along to keep fetching the sequence
 							String contents = httpQueueClient.requestGetWithAlreadyEncodedValues("offset", Long.toString(localOffset), "lines", MO_ACTIVE_HTTP_QUEUE_BATCH_SIZE);
@@ -169,8 +159,8 @@ public class NativeHTTPServer {
 		}
 		
 		startServer(NATIVE_HTTP_SERVER_PORT, NATIVE_HTTP_SOCKET_BACKLOG_QUEUE_SLOTS, InstantVASSMSWebHandlers.values());
-		ivac.log.reportDebug("InstantVAS Internal :"+NATIVE_HTTP_SERVER_PORT+" server started. Requests may now commence.");
-		/* debug */ if (IFDEF_WEB_DEBUG) {ivac.log.reportDebug("Registered services: "+Arrays.deepToString(InstantVASSMSWebHandlers.values()));}
+		Instrumentation.reportDebug("InstantVAS Internal :"+NATIVE_HTTP_SERVER_PORT+" server started. Requests may now commence.");
+		/* debug */ if (IFDEF_WEB_DEBUG) {Instrumentation.reportDebug("Registered services: "+Arrays.deepToString(InstantVASSMSWebHandlers.values()));}
 	}
 	
 	public static void startServer(int port, int socketBacklogQueueSlots, INativeHTTPServerHandler[]... handlerArrays) throws IOException {
@@ -297,7 +287,7 @@ public class NativeHTTPServer {
 					os.write(response);
 					os.close();		// keep-alive connections may be tested with curl -v 'http://localhost:8080/AddToMOQueue' 'http://localhost:8080/AddToMOQueue'
 				} catch (Throwable t) {
-					log.reportThrowable(t, "Error processing request /AddToMOQueue: "+he.getRequestURI().getRawQuery());
+					Instrumentation.reportThrowable(t, "Error processing request /AddToMOQueue: "+he.getRequestURI().getRawQuery());
 				}
 			}
 		},
@@ -313,7 +303,7 @@ public class NativeHTTPServer {
 				} catch (Throwable t) {
 					System.err.println("Error reloading configuration");
 					t.printStackTrace();
-					ivac.log.reportThrowable(t, "Error reloading configuration");
+					Instrumentation.reportThrowable(t, "Error reloading configuration");
 					response = "FAILED".intern().getBytes();
 				}
 				he.sendResponseHeaders(200, response.length);

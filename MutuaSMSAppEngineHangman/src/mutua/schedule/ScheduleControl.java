@@ -62,7 +62,7 @@ public class ScheduleControl<EVENT_TYPE, KEY_TYPE> {
 	public void notifyEvent(EVENT_TYPE executedEvent, KEY_TYPE eventKey) throws EventNotScheduledException {
 		ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE> scheduledEventInfo;
 		synchronized (scheduledEvents) {
-			scheduledEventInfo = scheduledEvents.get(eventKey);
+			scheduledEventInfo = scheduledEvents.remove(eventKey);
 		}
 		if (scheduledEventInfo == null) {
 			throw new EventNotScheduledException(eventKey, executedEvent);
@@ -115,12 +115,6 @@ public class ScheduleControl<EVENT_TYPE, KEY_TYPE> {
 		synchronized (completedEvents) {
 			completedEventsArray = completedEvents.toArray(zeroLengthEvents);
 			completedEvents.clear();
-		}
-		// remove the elements
-		synchronized (scheduledEvents) {
-			for (ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE> completedEvent : completedEventsArray) {
-				scheduledEvents.remove(completedEvent.getKey(), completedEvent);
-			}
 		}
 		return completedEventsArray;
 	}

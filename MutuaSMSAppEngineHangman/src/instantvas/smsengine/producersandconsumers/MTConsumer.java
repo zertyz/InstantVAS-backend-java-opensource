@@ -22,11 +22,9 @@ import mutua.smsout.senders.SMSOutSender;
 
 public class MTConsumer implements EventClient<EInstantVASEvents> {
 	
-	private Instrumentation<?, ?> log;
 	private SMSOutSender mtSender;
 	
 	public MTConsumer(InstantVASInstanceConfiguration ivac) {
-		this.log      = ivac.log;
 		this.mtSender = ivac.mtSender;
 	}
 	
@@ -35,19 +33,19 @@ public class MTConsumer implements EventClient<EInstantVASEvents> {
 		
 		// MO and MT instrumentation -- register a new milestone: MT just retrieved from the queue
 		if (IFDEF_INSTRUMENT_MO_AND_MT_TIMES) {
-			MOAndMTInstrumentation.reportMTDequeuing(log, mt);
+			MOAndMTInstrumentation.reportMTDequeuing(mt);
 		}
 
 		// deliver the MT
 		try {
 			mtSender.sendMessage(mt);
 		} catch (Throwable t) {
-			log.reportThrowable(t, "Error while sending MT -- " + mt.toString());
+			Instrumentation.reportThrowable(t, "Error while sending MT -- " + mt.toString());
 		}
 		
 		// MO and MT instrumentation -- event finished: MT sent
 		if (IFDEF_INSTRUMENT_MO_AND_MT_TIMES) {
-			MOAndMTInstrumentation.notifyMTDelivery(log, mt);
+			MOAndMTInstrumentation.notifyMTDelivery(mt);
 		}
 
 	}

@@ -1,15 +1,10 @@
 package mutua.smsout.senders;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 
-import mutua.icc.instrumentation.IInstrumentableEvent;
-import mutua.icc.instrumentation.InstrumentableProperty;
-import mutua.icc.instrumentation.InstrumentableEvent;
-import mutua.icc.instrumentation.Instrumentation;
-import mutua.serialization.SerializationRepository;
+import static mutua.smsout.senders.SMSOutSenderInstrumentationMethods.*;
+
 import mutua.smsout.dto.OutgoingSMSDto;
-import static mutua.smsout.senders.ESMSOutSenderInstrumentationProperties.*;
 
 /** <pre>
  * SMSOutSender.java
@@ -28,7 +23,6 @@ import static mutua.smsout.senders.ESMSOutSenderInstrumentationProperties.*;
 
 public abstract class SMSOutSender {
 
-		
 	/** the unified reply codes given by the gateway when we attempt to send */
 	public enum EOutgoingSMSAcceptionStatus {
 		ACCEPTED,		// message was accepted and ready for processing
@@ -37,10 +31,8 @@ public abstract class SMSOutSender {
 	}
 	
 
-	protected final Instrumentation<?, ?> log;
-	
 	/** the name of the child class implementing this one -- for instrumentation */
-	private String childClassName;
+	private String integrationClassName;
 	
 	/** the name application id using the child implementation -- for instrumentation */
 	public final String smsAppId;
@@ -53,14 +45,11 @@ public abstract class SMSOutSender {
 	
 	
 	/** constructor to be used by subclasses to provide instrumentation information */
-	protected SMSOutSender(Instrumentation<?, ?> log, String childClassName, String smsAppId, int numberOfRetryAttempts, long delayBetweenAttempts) {
-		this.childClassName        = childClassName;
+	protected SMSOutSender(String childClassName, String smsAppId, int numberOfRetryAttempts, long delayBetweenAttempts) {
+		this.integrationClassName  = childClassName;
 		this.smsAppId              = smsAppId;
 		this.numberOfRetryAttempts = numberOfRetryAttempts;
 		this.delayBetweenAttempts  = delayBetweenAttempts;
-		this.log = log;
-		log.addInstrumentableEvents(ESMSOutSenderInstrumentationEvents.values());
-
 	}
 
 	/** the actual sending method extensions should provide */
@@ -72,97 +61,15 @@ public abstract class SMSOutSender {
 		for (int attempt=0; attempt<numberOfRetryAttempts; attempt++) try {
             return rawSendMessage(smsOut);
 		} catch (IOException sendingException) {
+			reportMTDeliveryRetryAttempt(integrationClassName, attempt, smsOut);
             if (attempt < (numberOfRetryAttempts-1)) try {
             	Thread.sleep(delayBetweenAttempts);
             } catch (InterruptedException e) {
-            	throw new RuntimeException(childClassName + " ("+smsAppId+"): Thread interrupted while sleeping between reattempts");
+            	throw new RuntimeException(integrationClassName + " ("+smsAppId+"): Thread interrupted while sleeping between reattempts");
             } else {
-                throw new RuntimeException(childClassName + " ("+smsAppId+"): Couldn't dispatch a message in "+numberOfRetryAttempts+" attempts", sendingException);
+                throw new RuntimeException(integrationClassName + " ("+smsAppId+"): Couldn't dispatch a message in "+numberOfRetryAttempts+" attempts", sendingException);
             }
 		}
-        throw new RuntimeException(childClassName + " ("+smsAppId+"): Couldn't dispatch a message in "+numberOfRetryAttempts+" attempts");
-	}
-}
-
-
-//instrumentation events & properties
-//////////////////////////////////////
-
-enum ESMSOutSenderInstrumentationProperties implements InstrumentableProperty {
-
-	BASE_URL ("baseURL",  String.class),
-	REQUEST  ("request",  String[].class),
-	RESPONSE ("response", String.class),
-	
-	
-	;
-	
-	
-	private String instrumentationPropertyName;
-	private Class<?> instrumentationPropertyType;
-	
-	
-	private ESMSOutSenderInstrumentationProperties(String instrumentationPropertyName, Class<?> instrumentationPropertyType) {
-		this.instrumentationPropertyName = instrumentationPropertyName;
-		this.instrumentationPropertyType = instrumentationPropertyType;
-	}
-	
-	
-	// IInstrumentableProperty implementation
-	/////////////////////////////////////////
-	
-	@Override
-	public String getInstrumentationPropertyName() {
-		return instrumentationPropertyName;
-	}
-	
-	
-	// ISerializationRule implementation
-	////////////////////////////////////
-	
-	@Override
-	public Class<?> getInstrumentationPropertyType() {
-		return instrumentationPropertyType;
-	}
-
-	@Override
-	public Method getTextualSerializationMethod() {
-		return SerializationRepository.getSerializationMethod(instrumentationPropertyType);
-	}
-	
-}
-
-enum ESMSOutSenderInstrumentationEvents implements IInstrumentableEvent {
-
-
-	SMSOUT_ACCEPTED  ("SMSOutSender.sending ACCEPTED",   REQUEST, RESPONSE),
-	SMSOUT_REJECTED  ("SMSOutSender.sending REJECTED",   REQUEST, RESPONSE),
-	SMSOUT_POSTPONED ("SMSOutSender.sending POSTPONED",  REQUEST, RESPONSE),
-	
-	
-	;
-	
-	
-	private InstrumentableEvent instrumentableEvent;
-	
-	private ESMSOutSenderInstrumentationEvents(String name, InstrumentableProperty property) {
-		instrumentableEvent = new InstrumentableEvent(name, property);
-	}
-	
-	private ESMSOutSenderInstrumentationEvents(String name, InstrumentableProperty property1, InstrumentableProperty property2) {
-		instrumentableEvent = new InstrumentableEvent(name, property1, property2);
-	}
-	
-	private ESMSOutSenderInstrumentationEvents(String name, InstrumentableProperty property1, InstrumentableProperty property2, InstrumentableProperty property3) {
-		instrumentableEvent = new InstrumentableEvent(name, property1, property2, property3);
-	}
-	
-	private ESMSOutSenderInstrumentationEvents(String name) {
-		instrumentableEvent = new InstrumentableEvent(name);
-	}
-	
-	@Override
-	public InstrumentableEvent getInstrumentableEvent() {
-		return instrumentableEvent;
+        throw new RuntimeException(integrationClassName + " ("+smsAppId+"): Couldn't dispatch a message in "+numberOfRetryAttempts+" attempts");
 	}
 }

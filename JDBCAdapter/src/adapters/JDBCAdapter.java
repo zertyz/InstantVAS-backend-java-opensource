@@ -1,8 +1,6 @@
 package adapters;
 
-import static mutua.icc.instrumentation.DefaultInstrumentationProperties.*;
-import static mutua.icc.instrumentation.JDBCAdapterInstrumentationEvents.*;
-import static mutua.icc.instrumentation.JDBCAdapterInstrumentationProperties.*;
+import static adapters.JDBCAdapterInstrumentationMethods.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,7 +16,6 @@ import java.util.Arrays;
 import java.util.Hashtable;
 
 import mutua.icc.instrumentation.Instrumentation;
-import mutua.icc.instrumentation.JDBCAdapterInstrumentationEvents;
 import adapters.exceptions.JDBCAdapterError;
 
 /** <pre>
@@ -39,7 +36,6 @@ public abstract class JDBCAdapter {
 	
 	
 	// instance variables
-	protected Instrumentation<?, ?> log;
 	/** Indicates whether or not to perform any needed administrative tasks, such as database creation */
 	protected boolean allowDataStructuresAssertion;
 	/** Set to true to have all database queries logged */
@@ -67,14 +63,14 @@ public abstract class JDBCAdapter {
 	
 	// load the needed JDBC drivers
 	private static void loadDriverClasses(Class<?> jdbcDriverClass) {
-		// simply getting a Class instance already means the class is loaded
+		// simply getting a Class instance already means the class is loaded -- unless one is allowing ProGuard to optimize methods...
 	}
 	
 	// verifies that the appropriate database exists, creating if necessary
 	private void assureDatabaseIsOk() throws SQLException {
 		Connection con = createAdministrativeConnection();
 		if (con == null) {
-			log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "Specialized 'JDBCAdapter' class '"+getClass().getName()+"' states it can't handle database administration features -- therefore we are not going to check if the database '"+database+"' exists");
+			reportAdministrationWarningMessage("Specialized 'JDBCAdapter' class '"+getClass().getName()+"' states it can't handle database administration features -- therefore we are not going to check if the database '"+database+"' exists");
 			return;
 		}
 		Statement stm = con.createStatement();
@@ -90,9 +86,9 @@ public abstract class JDBCAdapter {
 		}
 		
 		// database does not exist. Create it
-		log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "Database '"+database+"' seems not to exist. Attempting to create it...");
+		reportAdministrationWarningMessage("Database '"+database+"' seems not to exist. Attempting to create it...");
 		stm.executeUpdate("CREATE DATABASE "+database+";");
-		log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "Database '"+database+"': created.");
+		reportAdministrationWarningMessage("Database '"+database+"': created.");
 		
 		stm.close();
 		con.close();
@@ -103,7 +99,7 @@ public abstract class JDBCAdapter {
 		SQLException t = null;
 		String[][] tableDefinitions = getTableDefinitions();
 		if (tableDefinitions == null) {
-			log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "Specialized 'JDBCAdapter' class '"+getClass().getName()+"' states it can't handle table administration features -- therefore we are not going to check if the needed tables exist");
+			reportAdministrationWarningMessage("Specialized 'JDBCAdapter' class '"+getClass().getName()+"' states it can't handle table administration features -- therefore we are not going to check if the needed tables exist");
 			return;
 		}
 
@@ -126,19 +122,19 @@ public abstract class JDBCAdapter {
 					}
 				}
 				if (!found) {
-					log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "Table '"+requiredTableName+"' seems not to exist. Attempting to create it...");
+					reportAdministrationWarningMessage("Table '"+requiredTableName+"' seems not to exist. Attempting to create it...");
 					for (int j=1; j<tableCreationStatements.length; j++) {
 						stm.addBatch(tableCreationStatements[j]);
 					}
 					int[] result = stm.executeBatch();
-					log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "Table '"+requiredTableName+"': created uppon the execution of "+tableCreationStatements.length+" statement(s).");
+					reportAdministrationWarningMessage("Table '"+requiredTableName+"': created uppon the execution of "+tableCreationStatements.length+" statement(s).");
 				}
 			}
 		} catch (SQLException e) {
 			t = e;
-			log.reportThrowable(e, "Error creating table '"+requiredTableName+"'");
+			Instrumentation.reportThrowable(e, "Error creating table '"+requiredTableName+"'");
 			for (SQLException nextException = e.getNextException(); nextException != null; nextException = nextException.getNextException()) {
-				log.reportThrowable(nextException, "Neasted exception while creating table '"+requiredTableName+"'");
+				Instrumentation.reportThrowable(nextException, "Neasted exception while creating table '"+requiredTableName+"'");
 			}
 		} finally {
 			stm.close();
@@ -256,11 +252,9 @@ public abstract class JDBCAdapter {
 	
 	/** instantiate a brand new object to deal with the database, with it's own 'log' and data structure assertion option */	
 	protected JDBCAdapter(
-		Instrumentation<?, ?> log, Class<?> jdbcDriverClass,
-		boolean allowDataStructuresAssertion, boolean shouldDebugQueries,
+		Class<?> jdbcDriverClass, boolean allowDataStructuresAssertion, boolean shouldDebugQueries,
 		String hostname, int port, String database, String user, String password, Connection[] pool) throws SQLException {
 
-		this.log  = log;
 		this.allowDataStructuresAssertion = allowDataStructuresAssertion;
 		this.shouldDebugQueries           = shouldDebugQueries;
 		this.hostname      = hostname;
@@ -271,14 +265,12 @@ public abstract class JDBCAdapter {
 		this.pool = pool;
 		
 		
-		log.addInstrumentableEvents(JDBCAdapterInstrumentationEvents.values());
-		
 		loadDriverClasses(jdbcDriverClass);
 		
 		if (allowDataStructuresAssertion) {
 			assureDataStructures();
 		} else {
-			log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "WARNING: '"+this.getClass().getName()+"' instance initiated without data structures verification");
+			reportAdministrationWarningMessage("WARNING: '"+this.getClass().getName()+"' instance initiated without data structures verification");
 		}
 		checkAndPopulatePoolOfConnections();
 	}
@@ -287,13 +279,13 @@ public abstract class JDBCAdapter {
 		for (int i=0; i<pool.length; i++) {
 			if (pool[i] != null) try {
 				if (pool[i].isValid(30)) {
-					log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "Connection Pool: Connection #" + i + " is valid.");
+					reportAdministrationWarningMessage("Connection Pool: Connection #" + i + " is valid.");
 					continue;
 				} else {
 					pool[i].close();
 				}
 			} catch (SQLException e) {}
-			log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "Connection Pool: Connection #" + i + " is invalid. Attempting to (re)open it...");
+			reportAdministrationWarningMessage("Connection Pool: Connection #" + i + " is invalid. Attempting to (re)open it...");
 			pool[i] = createDatabaseConnection();
 		}
 	}
@@ -304,14 +296,14 @@ public abstract class JDBCAdapter {
 	***************************/
 	
 	/** reports that an exception has happened and checks the environment to attempt to prevent further errors */
-	private void handleException(SQLException e, AbstractPreparedProcedure abstractPreparedProcedure) {
-		log.reportThrowable(e, "Exception while executing query '"+abstractPreparedProcedure.getPreparedProcedureSQL()+"'. Recheking connections and associated prepared statements... (after that, a retry will be transparently performed)");
+	private void handleException(SQLException e, AbstractPreparedProcedure abstractPreparedProcedure, Object[] parametersAndValuesPairs) {
+		reportRetryingQueryDueToException(e, abstractPreparedProcedure, parametersAndValuesPairs);
 		synchronized (pool) {
 			try {
 				checkAndPopulatePoolOfConnections();
 				abstractPreparedProcedure.checkPreparedStatements();
 			} catch (Throwable t) {
-				log.reportThrowable(t, "Exception while validating the pool of connections & prepared statements. Please consider checking the database and/or rebooting the server & restarting the application");
+				Instrumentation.reportThrowable(t, "Exception while validating the pool of connections & prepared statements. Please consider checking the database and/or rebooting the server & restarting the application");
 			}
 		}
 	}
@@ -333,12 +325,12 @@ public abstract class JDBCAdapter {
 	/** executes an INSERT, UPDATE, DELETE, and possibly other commands */
 	public int invokeUpdateProcedure(AbstractPreparedProcedure abstractPreparedProcedure, Object... parametersAndValuesPairs) throws SQLException {
 		if (shouldDebugQueries) {
-			log.reportEvent(IE_DATABASE_QUERY, IP_PREPARED_SQL, abstractPreparedProcedure.getPreparedProcedureSQL(), IP_SQL_TEMPLATE_PARAMETERS, parametersAndValuesPairs);
+			reportDatabaseSQL(abstractPreparedProcedure, parametersAndValuesPairs);
 		}
 		try {
 			return rawInvokeUpdateProcedure(abstractPreparedProcedure, parametersAndValuesPairs);
 		} catch (SQLException e) {
-			handleException(e, abstractPreparedProcedure);
+			handleException(e, abstractPreparedProcedure, parametersAndValuesPairs);
 			return rawInvokeUpdateProcedure(abstractPreparedProcedure, parametersAndValuesPairs);
 		}
 	}
@@ -369,13 +361,13 @@ public abstract class JDBCAdapter {
 	public int[] invokeUpdateBatchProcedure(AbstractPreparedProcedure abstractPreparedProcedure, Object[][] parametersAndValuesPairsSet) throws SQLException {
 		if (shouldDebugQueries) {
 			for (Object[] parametersAndValuesPairs : parametersAndValuesPairsSet) {
-				log.reportEvent(IE_DATABASE_QUERY, IP_PREPARED_SQL, abstractPreparedProcedure.getPreparedProcedureSQL(), IP_SQL_TEMPLATE_PARAMETERS, parametersAndValuesPairs);
+				reportDatabaseSQL(abstractPreparedProcedure, parametersAndValuesPairs);
 			}
 		}
 		try {
 			return rawInvokeUpdateBatchProcedure(abstractPreparedProcedure, parametersAndValuesPairsSet);
 		} catch (SQLException e) {
-			handleException(e, abstractPreparedProcedure);
+			handleException(e, abstractPreparedProcedure, parametersAndValuesPairsSet);
 			return rawInvokeUpdateBatchProcedure(abstractPreparedProcedure, parametersAndValuesPairsSet);
 		}
 	}
@@ -410,12 +402,12 @@ public abstract class JDBCAdapter {
 	/** executes SELECT statements that return a single value */
 	public Object invokeScalarProcedure(AbstractPreparedProcedure abstractPreparedProcedure, Object... parametersAndValuesPairs) throws SQLException {
 		if (shouldDebugQueries) {
-			log.reportEvent(IE_DATABASE_QUERY, IP_PREPARED_SQL, abstractPreparedProcedure.getPreparedProcedureSQL(), IP_SQL_TEMPLATE_PARAMETERS, parametersAndValuesPairs);
+			reportDatabaseSQL(abstractPreparedProcedure, parametersAndValuesPairs);
 		}
 		try {
 			return rawInvokeScalarProcedure(abstractPreparedProcedure, parametersAndValuesPairs);
 		} catch (SQLException e) {
-			handleException(e, abstractPreparedProcedure);
+			handleException(e, abstractPreparedProcedure, parametersAndValuesPairs);
 			return rawInvokeScalarProcedure(abstractPreparedProcedure, parametersAndValuesPairs);
 		}
 	}
@@ -435,12 +427,12 @@ public abstract class JDBCAdapter {
 	 *  in it, which the order is known -- possibly via SELECT a, b, c... clause */
 	public Object[] invokeRowProcedure(AbstractPreparedProcedure abstractPreparedProcedure, Object... parametersAndValuesPairs) throws SQLException {
 		if (shouldDebugQueries) {
-			log.reportEvent(IE_DATABASE_QUERY, IP_PREPARED_SQL, abstractPreparedProcedure.getPreparedProcedureSQL(), IP_SQL_TEMPLATE_PARAMETERS, parametersAndValuesPairs);
+			reportDatabaseSQL(abstractPreparedProcedure, parametersAndValuesPairs);
 		}
 		try {
 			return rawInvokeRowProcedure(abstractPreparedProcedure, parametersAndValuesPairs);
 		} catch (SQLException e) {
-			handleException(e, abstractPreparedProcedure);
+			handleException(e, abstractPreparedProcedure, parametersAndValuesPairs);
 			return rawInvokeRowProcedure(abstractPreparedProcedure, parametersAndValuesPairs);
 		}
 	}
@@ -456,12 +448,12 @@ public abstract class JDBCAdapter {
 	 *  few and foreseeable amount of elements -- possibly using the LIMIT clause */
 	public Object[][] invokeArrayProcedure(AbstractPreparedProcedure abstractPreparedProcedure, Object... parametersAndValuesPairs) throws SQLException {
 		if (shouldDebugQueries) {
-			log.reportEvent(IE_DATABASE_QUERY, IP_PREPARED_SQL, abstractPreparedProcedure.getPreparedProcedureSQL(), IP_SQL_TEMPLATE_PARAMETERS, parametersAndValuesPairs);
+			reportDatabaseSQL(abstractPreparedProcedure, parametersAndValuesPairs);
 		}
 		try {
 			return rawInvokeArrayProcedure(abstractPreparedProcedure, parametersAndValuesPairs);
 		} catch (SQLException e) {
-			handleException(e, abstractPreparedProcedure);
+			handleException(e, abstractPreparedProcedure, parametersAndValuesPairs);
 			return rawInvokeArrayProcedure(abstractPreparedProcedure, parametersAndValuesPairs);
 		}
 	}
@@ -475,12 +467,12 @@ public abstract class JDBCAdapter {
 	 *  the returned 'ResultSet' needs to be closed after use and the associated 'PreparedStatement', returned to the AbstractPreparedProcedure pool */
 	public ResultSet invokeVirtualTableProcedure(AbstractPreparedProcedure abstractPreparedProcedure, Object... parametersAndValuesPairs) throws SQLException {
 		if (shouldDebugQueries) {
-			log.reportEvent(IE_DATABASE_QUERY, IP_PREPARED_SQL, abstractPreparedProcedure.getPreparedProcedureSQL(), IP_SQL_TEMPLATE_PARAMETERS, parametersAndValuesPairs);
+			reportDatabaseSQL(abstractPreparedProcedure, parametersAndValuesPairs);
 		}
 		try {
 			return rawInvokeVirtualTableProcedure(abstractPreparedProcedure, parametersAndValuesPairs);
 		} catch (SQLException e) {
-			handleException(e, abstractPreparedProcedure);
+			handleException(e, abstractPreparedProcedure, parametersAndValuesPairs);
 			return rawInvokeVirtualTableProcedure(abstractPreparedProcedure, parametersAndValuesPairs);
 		}
 	}
@@ -489,7 +481,7 @@ public abstract class JDBCAdapter {
 	public void resetDatabase() {
 		try {
 			// erase all
-			log.reportEvent(IE_DATABASE_ADMINISTRATION_WARNING, DIP_MSG, "ATTENDING TO THE REQUEST OF ERASING ALL DATA OF DATABASE '"+database+"'");
+			reportAdministrationWarningMessage("ATTENDING TO THE REQUEST OF ERASING ALL DATA OF DATABASE '"+database+"'");
 			Connection conn = createAdministrativeConnection();
 			Statement stm = conn.createStatement();
 			

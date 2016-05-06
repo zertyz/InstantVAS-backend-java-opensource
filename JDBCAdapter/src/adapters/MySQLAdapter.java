@@ -5,7 +5,6 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import mutua.icc.configuration.annotations.ConfigurableElement;
-import mutua.icc.instrumentation.Instrumentation;
 
 /** <pre>
  * MySQLAdapter.java  --  $Id: MySQLHelper.java,v 1.1 2010/07/01 22:02:14 luiz Exp $
@@ -47,9 +46,9 @@ public abstract class MySQLAdapter extends JDBCAdapter {
 	}
 
 	
-	protected MySQLAdapter(Instrumentation<?, ?> log, boolean allowDataStructuresAssertion, boolean shouldDebugQueries,
+	protected MySQLAdapter(boolean allowDataStructuresAssertion, boolean shouldDebugQueries,
                            String hostname, int port, String database, String user, String password) throws SQLException {
-		super(log, com.mysql.jdbc.Driver.class, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password, connectionPool);
+		super(com.mysql.jdbc.Driver.class, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password, connectionPool);
 	}
 	
 	@Override

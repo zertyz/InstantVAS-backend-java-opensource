@@ -45,7 +45,9 @@ public class SMSAppModuleNavigationStatesSubscription {
 	public SMSAppModuleNavigationStatesSubscription() { 
 		this(new Object[][] {
 			{cmdSubscribe,             trgLocalAcceptDoubleOptin},
-			{cmdDoNotAgreeToSubscribe, trgLocalRefuseDoubleOptin}});
+			{cmdDoNotAgreeToSubscribe, trgLocalRefuseDoubleOptin},
+			// ... possibly other commands before the fallback
+			{cmdDoNotAgreeToSubscribe, ".*"}});
 	}
 
 	/** Provides the navigation states instance with custom triggers.

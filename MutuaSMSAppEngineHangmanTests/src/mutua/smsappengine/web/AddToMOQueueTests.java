@@ -5,13 +5,12 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 import static config.InstantVASLicense.*;
-
-import instantvas.smsengine.HangmanSMSGameServicesInstrumentationEvents;
-import instantvas.smsengine.InstantVASHTTPInstrumentationRequestProperty;
 import instantvas.smsengine.producersandconsumers.IMOProducer;
 import instantvas.smsengine.web.AddToMOQueue;
 import mutua.icc.instrumentation.Instrumentation;
-import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
+import mutua.icc.instrumentation.InstrumentableEvent.ELogSeverity;
+import mutua.icc.instrumentation.handlers.IInstrumentationHandler;
+import mutua.icc.instrumentation.handlers.InstrumentationHandlerLogConsole;
 import mutua.smsin.dto.IncomingSMSDto;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 import mutua.smsin.parsers.SMSInParser;
@@ -29,16 +28,17 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 */
 
 public class AddToMOQueueTests {
+	
+	static {
+		// Instrumentation
+		IInstrumentationHandler log = new InstrumentationHandlerLogConsole("MyTests", ELogSeverity.DEBUG);
+		Instrumentation.configureDefaultValuesForNewInstances(log, log, log);
+	}
 
 	@Test
 	public void testLicenseEnforcement() {
 
-		final IncomingSMSDto[] lastMO = {null}; 
-		
-		Instrumentation<InstantVASHTTPInstrumentationRequestProperty, String> log =
-			new Instrumentation<InstantVASHTTPInstrumentationRequestProperty, String>(
-				"MyTests", new InstantVASHTTPInstrumentationRequestProperty(), EInstrumentationDataPours.CONSOLE, null);
-		log.addInstrumentableEvents(HangmanSMSGameServicesInstrumentationEvents.values());
+		final IncomingSMSDto[] lastMO = {null};
 		
 		IMOProducer moProducer = new IMOProducer() {
 			@Override
@@ -78,7 +78,7 @@ public class AddToMOQueueTests {
 			
 		};
 		
-		AddToMOQueue amoq = new AddToMOQueue(log, moProducer, moParser,
+		AddToMOQueue amoq = new AddToMOQueue(moProducer, moParser,
 			ALLOWABLE_MSISDN_MIN_LENGTH, ALLOWABLE_MSISDN_MAX_LENGTH,
 			ALLOWABLE_MSISDN_PREFIXES,
 			ALLOWABLE_CARRIERS,

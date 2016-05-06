@@ -70,7 +70,7 @@ public class HangmanAppEngineBehavioralTests {
 		matchDB        = ivac.hangmanModuleDAL.getMatchDB();
 		nextBotWordsDB = ivac.hangmanModuleDAL.getNextBotWordsDB();
 		
-		tc = new SMSAppModuleTestCommons(ivac.log, ivac.baseModuleDAL, ivac.modulesNavigationStates, ivac.modulesCommandProcessors);
+		tc = new SMSAppModuleTestCommons(ivac.baseModuleDAL, ivac.modulesNavigationStates, ivac.modulesCommandProcessors);
 	}
 
 	static {
@@ -194,7 +194,7 @@ public class HangmanAppEngineBehavioralTests {
     
     @Test
     public void testConfiguration() throws IllegalArgumentException, IllegalAccessException {
-		ConfigurationManager cm = new ConfigurationManager(ivac.log, InstantVASInstanceConfiguration.class);
+		ConfigurationManager cm = new ConfigurationManager(InstantVASInstanceConfiguration.class);
 		String serializedFields = cm.serializeConfigurableClasses();
 		System.out.println(serializedFields);
 		cm.deserializeConfigurableClasses(serializedFields);

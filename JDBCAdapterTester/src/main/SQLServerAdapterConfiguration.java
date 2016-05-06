@@ -2,7 +2,6 @@ package main;
 
 import java.sql.SQLException;
 
-import main.config.Configuration;
 import adapters.JDBCAdapter;
 import adapters.SQLServerAdapter;
 

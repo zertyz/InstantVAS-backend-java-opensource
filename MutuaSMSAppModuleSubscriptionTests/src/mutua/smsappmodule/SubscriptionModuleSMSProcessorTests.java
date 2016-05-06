@@ -33,7 +33,7 @@ public class SubscriptionModuleSMSProcessorTests {
 	// variables
 	////////////
 	
-	private SMSAppModuleTestCommons tc = new SMSAppModuleTestCommons(LOG,
+	private SMSAppModuleTestCommons tc = new SMSAppModuleTestCommons(
 		BASE_MODULE_DAL,
 		new NavigationState[][]   {config.baseModuleNavigationStates.values, config.subscriptionModuleNavigationStates.values},
 		new ICommandProcessor[][] {config.subscriptionModuleCommands.values});
@@ -65,7 +65,7 @@ public class SubscriptionModuleSMSProcessorTests {
 		
 		// test answering neither yes nor no to the double opt-in acceptance and, then, staring it over
 		tc.checkResponse("991234899", "MyApp", config.subscriptionModulePhrasings.getDoubleOptinStart());
-		tc.checkResponse("991234899", "dods", config.subscriptionModulePhrasings.getDisagreeToSubscribe());
+		tc.checkResponse("991234899", "dods",  config.subscriptionModulePhrasings.getDisagreeToSubscribe());
 		tc.checkResponse("991234899", "MyApp", config.subscriptionModulePhrasings.getDoubleOptinStart());
 		tc.checkResponse("991234899", "yes", config.subscriptionModulePhrasings.getSuccessfullySubscribed());
 		tc.checkNavigationState("991234899", nstExistingUser);

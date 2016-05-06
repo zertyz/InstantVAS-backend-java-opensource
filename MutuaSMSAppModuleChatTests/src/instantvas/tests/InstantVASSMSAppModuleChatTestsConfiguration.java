@@ -4,15 +4,15 @@ import java.sql.SQLException;
 
 import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsChat.CommandNamesChat.*;
 import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsChat.CommandTriggersChat.*;
-
 import mutua.events.PostgreSQLQueueEventLink;
 import mutua.events.SpecializedMOQueueDataBureau;
 import mutua.events.TestAdditionalEventServer;
 import mutua.events.TestAdditionalEventServer.ETestAdditionalEventServices;
 import mutua.events.postgresql.QueuesPostgreSQLAdapter;
-import mutua.icc.instrumentation.DefaultInstrumentationProperties;
 import mutua.icc.instrumentation.Instrumentation;
-import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
+import mutua.icc.instrumentation.InstrumentableEvent.ELogSeverity;
+import mutua.icc.instrumentation.handlers.IInstrumentationHandler;
+import mutua.icc.instrumentation.handlers.InstrumentationHandlerLogConsole;
 import mutua.smsappmodule.config.InstantVASSMSAppModuleConfiguration;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationChat;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
@@ -27,7 +27,6 @@ import mutua.smsappmodule.smslogic.SMSAppModuleCommandsChat;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesChat;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 import adapters.PostgreSQLAdapter;
 
 /** <pre>
@@ -52,7 +51,6 @@ public class InstantVASSMSAppModuleChatTestsConfiguration {
 	
 	private static InstantVASSMSAppModuleChatTestsConfiguration instance = null;
 
-	public static Instrumentation<DefaultInstrumentationProperties, String> LOG;
 	public static SMSAppModuleDALFactory                                    BASE_MODULE_DAL;
 	public static SMSAppModuleDALFactoryProfile                             PROFILE_MODULE_DAL;
 	public static SMSAppModuleDALFactoryChat                                CHAT_MODULE_DAL;
@@ -60,19 +58,19 @@ public class InstantVASSMSAppModuleChatTestsConfiguration {
 	public static String                                                    MO_TABLE_NAME;
 	
 	public PostgreSQLQueueEventLink<ETestAdditionalEventServices>  MO_QUEUE_LINK;
-	public TestAdditionalEventServer                     MO_QUEUE_PRODUCER;
-	public SMSAppModuleNavigationStates                  baseModuleNavigationStates;
-	public SMSAppModulePhrasingsProfile                  profileModulePhrasings;
-	public SMSAppModulePhrasingsChat                     chatModulePhrasings;
-	public SMSAppModuleCommandsChat                      chatModuleCommands;
-	public SMSAppModuleNavigationStatesChat              chatModuleNavigationStates;
+	public TestAdditionalEventServer                               MO_QUEUE_PRODUCER;
+	public SMSAppModuleNavigationStates                            baseModuleNavigationStates;
+	public SMSAppModulePhrasingsProfile                            profileModulePhrasings;
+	public SMSAppModulePhrasingsChat                               chatModulePhrasings;
+	public SMSAppModuleCommandsChat                                chatModuleCommands;
+	public SMSAppModuleNavigationStatesChat                        chatModuleNavigationStates;
 	
 	/**************************
 	** CONFIGURATION METHODS **
 	**************************/
 	
 	/** method to be called to configure all the modules needed to get instances of the test classes */
-	public static void configureDefaultValuesForNewInstances(Instrumentation<DefaultInstrumentationProperties, String> log, 
+	public static void configureDefaultValuesForNewInstances(
 		int performanceTestsLoadFactor, SMSAppModuleDALFactoryChat chatModuleDAL,
 		String postgreSQLconnectionProperties, int postgreSQLConnectionPoolSize,
 		boolean postgreSQLAllowDataStructuresAssertion, boolean postgreSQLShouldDebugQueries,
@@ -80,7 +78,6 @@ public class InstantVASSMSAppModuleChatTestsConfiguration {
 		
 		instance = null;
 		
-		LOG                           = log;
 		PERFORMANCE_TESTS_LOAD_FACTOR = performanceTestsLoadFactor;
 		CHAT_MODULE_DAL               = chatModuleDAL;
 		MO_TABLE_NAME                 = "ChatTestMOQueue";
@@ -89,15 +86,15 @@ public class InstantVASSMSAppModuleChatTestsConfiguration {
 		switch (chatModuleDAL) {
 			case POSTGRESQL:
 				PostgreSQLAdapter.configureDefaultValuesForNewInstances(postgreSQLconnectionProperties, postgreSQLConnectionPoolSize);
-				SMSAppModulePostgreSQLAdapter.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
+				SMSAppModulePostgreSQLAdapter.configureDefaultValuesForNewInstances(postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
 					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
-				SMSAppModulePostgreSQLAdapterProfile.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
+				SMSAppModulePostgreSQLAdapterProfile.configureDefaultValuesForNewInstances(postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
 					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
 				// MO simulation
-				QueuesPostgreSQLAdapter.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries, postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
-				PostgreSQLQueueEventLink.configureDefaultValuesForNewInstances(log, -1, -1);
+				QueuesPostgreSQLAdapter.configureDefaultValuesForNewInstances(postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries, postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
+				PostgreSQLQueueEventLink.configureDefaultValuesForNewInstances(-1, -1);
 				// chat db
-				SMSAppModulePostgreSQLAdapterChat.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
+				SMSAppModulePostgreSQLAdapterChat.configureDefaultValuesForNewInstances(postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
 					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword,
 					MO_TABLE_NAME, "eventId", "text");
 				// other databases
@@ -126,12 +123,14 @@ public class InstantVASSMSAppModuleChatTestsConfiguration {
 	}
 
 	static {
+		
+		// Instrumentation
+		IInstrumentationHandler log = new InstrumentationHandlerLogConsole(appName, ELogSeverity.DEBUG);
+		Instrumentation.configureDefaultValuesForNewInstances(log, log, log);
+
 		// configure with the default values
 		try {
 			configureDefaultValuesForNewInstances(
-				// log
-				new Instrumentation<DefaultInstrumentationProperties, String>(
-					appName, DefaultInstrumentationProperties.DIP_MSG, EInstrumentationDataPours.CONSOLE, null),
 				// module DAL
 				1, SMSAppModuleDALFactoryChat   .POSTGRESQL,
 				// PostgreSQL properties
@@ -173,7 +172,7 @@ public class InstantVASSMSAppModuleChatTestsConfiguration {
 		profileModulePhrasings     = (SMSAppModulePhrasingsProfile)     chatModule[3];
 		
 		// base module -- configured to interact with the Chat Module commands 
-		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(LOG, BASE_MODULE_DAL,
+		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(BASE_MODULE_DAL,
 			/*nstNewUserTriggers*/
 			new Object[][] {
 				{cmdSendPrivateMessage, trgGlobalSendPrivateMessage},

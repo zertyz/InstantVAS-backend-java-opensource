@@ -3,9 +3,10 @@ package instantvas.tests;
 import java.sql.SQLException;
 
 import adapters.PostgreSQLAdapter;
-import mutua.icc.instrumentation.DefaultInstrumentationProperties;
 import mutua.icc.instrumentation.Instrumentation;
-import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
+import mutua.icc.instrumentation.InstrumentableEvent.ELogSeverity;
+import mutua.icc.instrumentation.handlers.IInstrumentationHandler;
+import mutua.icc.instrumentation.handlers.InstrumentationHandlerLogConsole;
 import mutua.smsappmodule.config.InstantVASSMSAppModuleConfiguration;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationSubscription;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
@@ -18,7 +19,6 @@ import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesSubscription;
 import mutua.subscriptionengine.TestableSubscriptionAPI;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsSubscription.CommandNamesSubscription.*;
 import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsSubscription.CommandTriggersSubscription.*;
 
@@ -45,7 +45,6 @@ public class InstantVASSMSAppModuleSubscriptionTestsConfiguration {
 	
 	private static InstantVASSMSAppModuleSubscriptionTestsConfiguration instance = null;
 
-	public static Instrumentation<DefaultInstrumentationProperties, String> LOG;
 	public static SMSAppModuleDALFactory                                    BASE_MODULE_DAL;
 	public static SMSAppModuleDALFactorySubscription                        SUBSCRIPTION_DAL;
 	public static int                                                       PERFORMANCE_TESTS_LOAD_FACTOR;
@@ -61,7 +60,7 @@ public class InstantVASSMSAppModuleSubscriptionTestsConfiguration {
 	**************************/
 	
 	/** method to be called to configure all the modules needed to get instances of the test classes */
-	public static void configureDefaultValuesForNewInstances(Instrumentation<DefaultInstrumentationProperties, String> log, 
+	public static void configureDefaultValuesForNewInstances( 
 		int performanceTestsLoadFactor, SMSAppModuleDALFactorySubscription subscriptionDAL,
 		String postgreSQLconnectionProperties, int postgreSQLConnectionPoolSize,
 		boolean postgreSQLAllowDataStructuresAssertion, boolean postgreSQLShouldDebugQueries,
@@ -69,7 +68,6 @@ public class InstantVASSMSAppModuleSubscriptionTestsConfiguration {
 
 		instance = null;
 
-		LOG                           = log;
 		SUBSCRIPTION_DAL              = subscriptionDAL;
 		PERFORMANCE_TESTS_LOAD_FACTOR = performanceTestsLoadFactor;
 		
@@ -77,9 +75,9 @@ public class InstantVASSMSAppModuleSubscriptionTestsConfiguration {
 		switch (subscriptionDAL) {
 			case POSTGRESQL:
 				PostgreSQLAdapter.configureDefaultValuesForNewInstances(postgreSQLconnectionProperties, postgreSQLConnectionPoolSize);
-				SMSAppModulePostgreSQLAdapter.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
+				SMSAppModulePostgreSQLAdapter.configureDefaultValuesForNewInstances(postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
 					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
-				SMSAppModulePostgreSQLAdapterSubscription.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
+				SMSAppModulePostgreSQLAdapterSubscription.configureDefaultValuesForNewInstances(postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
 					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
 				// other databases
 				BASE_MODULE_DAL = SMSAppModuleDALFactory.POSTGRESQL;
@@ -106,12 +104,14 @@ public class InstantVASSMSAppModuleSubscriptionTestsConfiguration {
 	
 	// preconfigure with default values
 	static {
+
+		// Instrumentation
+		IInstrumentationHandler log = new InstrumentationHandlerLogConsole(appName, ELogSeverity.DEBUG);
+		Instrumentation.configureDefaultValuesForNewInstances(log, log, log);
+
 		// configure with the default values
 		try {
 			configureDefaultValuesForNewInstances(
-				// log
-				new Instrumentation<DefaultInstrumentationProperties, String>(
-					appName, DefaultInstrumentationProperties.DIP_MSG, EInstrumentationDataPours.CONSOLE, null),
 				// modules DAL
 				1, SMSAppModuleDALFactorySubscription.POSTGRESQL,
 				// PostgreSQL properties
@@ -132,13 +132,13 @@ public class InstantVASSMSAppModuleSubscriptionTestsConfiguration {
 	private InstantVASSMSAppModuleSubscriptionTestsConfiguration() throws SQLException {
 		Object[] subscriptionModule = SMSAppModuleConfigurationSubscription.getSubscriptionModuleInstances(shortCode, appName, priceTag,
 		                                                                                                   BASE_MODULE_DAL, SUBSCRIPTION_DAL,
-		                                                                                                   new TestableSubscriptionAPI(LOG, "BillingCenterFor_"+appName));
+		                                                                                                   new TestableSubscriptionAPI("BillingCenterFor_"+appName));
 		subscriptionModuleNavigationStates = (SMSAppModuleNavigationStatesSubscription) subscriptionModule[0];
 		subscriptionModuleCommands         = (SMSAppModuleCommandsSubscription)         subscriptionModule[1];
 		subscriptionModulePhrasings        = (SMSAppModulePhrasingsSubscription)        subscriptionModule[2];
 		
 		// base module -- configured to interact with the Subscription Module commands 
-		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(LOG, BASE_MODULE_DAL,
+		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(BASE_MODULE_DAL,
 			/*nstNewUserTriggers*/
 			new Object[][] {
 				{cmdStartDoubleOptinProcess, trgLocalStartDoubleOptin},

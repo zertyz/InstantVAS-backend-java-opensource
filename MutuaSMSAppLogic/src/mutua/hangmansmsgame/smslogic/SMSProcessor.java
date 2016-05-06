@@ -1,9 +1,7 @@
 package mutua.hangmansmsgame.smslogic;
 
-import static mutua.icc.instrumentation.DefaultInstrumentationEvents.*;
-import static mutua.icc.instrumentation.DefaultInstrumentationProperties.*;
-import static mutua.icc.instrumentation.SMSProcessorInstrumentationEvents.*;
-import static mutua.icc.instrumentation.SMSProcessorInstrumentationProperties.*;
+import static mutua.hangmansmsgame.smslogic.SMSProcessorInstrumentationMethods.*;
+
 import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates.NavigationStatesNames.*;
 
 import java.sql.SQLException;
@@ -15,7 +13,6 @@ import java.util.regex.Pattern;
 import mutua.hangmansmsgame.dispatcher.IResponseReceiver;
 import mutua.hangmansmsgame.dispatcher.MessageDispatcher;
 import mutua.icc.instrumentation.Instrumentation;
-import mutua.icc.instrumentation.SMSProcessorInstrumentationEvents;
 import mutua.smsappmodule.dal.ISessionDB;
 import mutua.smsappmodule.dal.IUserDB;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
@@ -47,23 +44,18 @@ import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 public class SMSProcessor {
 
 	
-	private static Instrumentation<?, ?> LOG;
 	private static SMSAppModuleDALFactory BASE_MODULE_DAL;
 	
 	// TODO put on the configurable class pattern format
 	// na verdade, todos os valores do construtor podem vir pra cá. De outro modo, não fica complicado
 	// criar os workers? Os parâmetros terão que dar a volta ao mundo... não?
-	public static void configureDefaultValuesForNewInstances(Instrumentation<?, ?> log, SMSAppModuleDALFactory baseModuleDAL) {
-		LOG             = log;
+	public static void configureDefaultValuesForNewInstances(SMSAppModuleDALFactory baseModuleDAL) {
 		BASE_MODULE_DAL = baseModuleDAL;
-		log.reportDebug(SMSProcessor.class.getCanonicalName() + ": new configuration loaded.");
+		Instrumentation.reportDebug(SMSProcessor.class.getCanonicalName() + ": new configuration loaded.");
 	}
 	
-	
-	private final Instrumentation<?, ?> log = LOG;
 	private final IUserDB    userDB         = BASE_MODULE_DAL.getUserDB();
 	private final ISessionDB sessionDB      = BASE_MODULE_DAL.getSessionDB();
-	
 	
 	// message dispatchers
 	//////////////////////
@@ -80,9 +72,8 @@ public class SMSProcessor {
 	/** Gets a processor instance which will deliver Output SMSes (MT's) to the 
 	 * provided 'interactionReceiver' MessageReceiver instance */
 	public SMSProcessor(IResponseReceiver defaultReceiver, NavigationState[][] navigationStatesArrays, ICommandProcessor[][] commandProcessorsArrays) {
-		log.addInstrumentableEvents(SMSProcessorInstrumentationEvents.values());
 		mtDispatcher          = new MessageDispatcher(defaultReceiver);
-		log.reportDebug("SMSProcessor started with navigation states '"+Arrays.deepToString(navigationStatesArrays)+"' and commands '"+Arrays.deepToString(commandProcessorsArrays)+"'");
+		Instrumentation.reportDebug("SMSProcessor started with navigation states '"+Arrays.deepToString(navigationStatesArrays)+"' and commands '"+Arrays.deepToString(commandProcessorsArrays)+"'");
 				
 		// rearrange for 'commandProcessors'
 		ArrayList<ICommandProcessor> tempCmdProcessors = new ArrayList<ICommandProcessor>();
@@ -150,11 +141,10 @@ public class SMSProcessor {
 		CommandAnswerDto commandAnswer;
 		try {
 			commandAnswer = commandProcessor.processCommand(session, carrier, parameters);
-			log.reportEvent(IE_ANSWER_FROM_COMMAND, IP_COMMAND_ANSWER, commandAnswer);
+			reportAnswerFromCommand(incomingPhone, invocationHandler, commandAnswer);
 		} catch (Throwable t) {
 			// in case of error...
-			t.printStackTrace();
-			log.reportThrowable(t, "Error processing command {"+invocationHandler.toString()+"} for userPhone {"+incomingPhone+"}");
+			Instrumentation.reportThrowable(t, "Error processing command {"+invocationHandler.toString()+"} for userPhone {"+incomingPhone+"}");
 			CommandMessageDto message = new CommandMessageDto(incomingPhone,
 				// turn this into a phrase of 'MutuaSMSAppModule'
 				"Desculpe o transtorno mas sua mensagem nao pode ser processada agora. Por favor, tente novamente mais tarde",
@@ -214,10 +204,10 @@ public class SMSProcessor {
 			if (sessionDto == null) {
 				session = new NavigationStateAwareSessionModel(user, MO);
 				session.setNavigationState(nstNewUser);
-				log.reportEvent(IE_REQUEST_FROM_NEW_USER, IP_PHONE, phone, IP_TEXT, text);
+				reportRequestFromNewUser(phone, text);
 			} else {
 				session = new NavigationStateAwareSessionModel(sessionDto, MO);
-				log.reportEvent(IE_REQUEST_FROM_EXISTING_USER, IP_PHONE, phone, IP_STATE, session.getNavigationState(), IP_TEXT, text);
+				reportRequestFromExistingUser(phone, text, session.getNavigationState());
 			}
 		} catch (Exception e) {
 			throw new RuntimeException("Database communication problem: cannot retrieve the session for user '"+phone+"'", e);
@@ -237,9 +227,6 @@ public class SMSProcessor {
 		CommandInvocationDto invocationHandler = resolveInvocationHandler(session.getNavigationState(), incomingText);
 		if (invocationHandler != null) {
 			
-			System.out.println(invocationHandler.toString());
-			log.reportEvent(IE_PROCESSING_COMMAND, IP_COMMAND_INVOCATION, invocationHandler);
-			
 			// execute
 			CommandAnswerDto commandResponse = invokeCommand(invocationHandler, session, MO.getPhone(), MO.getCarrier());
 			
@@ -249,14 +236,14 @@ public class SMSProcessor {
 				// set the user state
 				SessionDto newUserSession = session.getChangedSessionDto();
 				if (newUserSession != null) {
-					log.reportEvent(DIE_DEBUG, DIP_MSG, "Setting new user session: " + newUserSession);
+					Instrumentation.reportDebug("Setting new user session: " + newUserSession);
 					try {
 						sessionDB.setSession(newUserSession);
 					} catch (SQLException e) {
 						throw new RuntimeException("Database communication problem: cannot store the session for user '"+incomingPhone+"'", e);
 					}
 				} else {
-					log.reportEvent(DIE_DEBUG, DIP_MSG, "Not setting a new user session");
+					Instrumentation.reportDebug("Not setting a new user session");
 				}
 			}
 		} else {

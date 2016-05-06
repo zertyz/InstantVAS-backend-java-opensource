@@ -2,7 +2,6 @@ package mutua.smsappmodule.dal.postgresql;
 
 import java.sql.SQLException;
 
-import mutua.icc.instrumentation.Instrumentation;
 import adapters.AbstractPreparedProcedure;
 import adapters.IJDBCAdapterParameterDefinition;
 import adapters.JDBCAdapter;
@@ -33,7 +32,6 @@ public class SMSAppModulePostgreSQLAdapterProfile extends PostgreSQLAdapter {
 	private static SMSAppModulePostgreSQLAdapterProfile instance = null;
 	
 	// JDBCAdapter default values
-	private static Instrumentation<?, ?> LOG;
 	/** @see JDBCAdapter#hostname */
 	private static String HOSTNAME;
 	/** @see JDBCAdapter#port */
@@ -50,7 +48,6 @@ public class SMSAppModulePostgreSQLAdapterProfile extends PostgreSQLAdapter {
 	private static boolean SHOULD_DEBUG_QUERIES;	
 	
 	/** method to be called when attempting to configure the singleton for new instances of 'PostgreSQLAdapter'.
-	 *  @param log
 	 *  @param allowDataStructuresAssertion see {@link #ALLOW_DATA_STRUCTURES_ASSERTION}
 	 *  @param shouldDebugQueries           see {@link #SHOULD_DEBUG_QUERIES}
 	 *  @param hostname                     see {@link #HOSTNAME}
@@ -59,10 +56,9 @@ public class SMSAppModulePostgreSQLAdapterProfile extends PostgreSQLAdapter {
 	 *  @param user                         see {@link #USER}
 	 *  @param password                     see {@link #PASSWORD} */
 	public static void configureDefaultValuesForNewInstances(
-		Instrumentation<?, ?> log, boolean allowDataStructuresAssertion, boolean shouldDebugQueries,
+		boolean allowDataStructuresAssertion, boolean shouldDebugQueries,
 	    String hostname, int port, String database, String user, String password) throws SQLException {
-				
-		LOG      = log;
+
 		ALLOW_DATA_STRUCTURES_ASSERTION = allowDataStructuresAssertion;
 		SHOULD_DEBUG_QUERIES            = shouldDebugQueries;
 		HOSTNAME = hostname;
@@ -76,7 +72,7 @@ public class SMSAppModulePostgreSQLAdapterProfile extends PostgreSQLAdapter {
 	
 	
 	private SMSAppModulePostgreSQLAdapterProfile() throws SQLException {
-		super(LOG, ALLOW_DATA_STRUCTURES_ASSERTION, SHOULD_DEBUG_QUERIES, HOSTNAME, PORT, DATABASE, USER, PASSWORD);
+		super(ALLOW_DATA_STRUCTURES_ASSERTION, SHOULD_DEBUG_QUERIES, HOSTNAME, PORT, DATABASE, USER, PASSWORD);
 	}
 
 	@Override

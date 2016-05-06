@@ -1,15 +1,10 @@
 package main;
 
-import java.io.Serializable;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import adapters.AbstractPreparedProcedure;
 import adapters.DerbyEmbeddedAdapter;
 import adapters.IJDBCAdapterParameterDefinition;
-import adapters.exceptions.PreparedProcedureException;
-import main.config.Configuration;
 
 /** <pre>
  * DerbyEmbeddedAdapterConfiguration.java
@@ -28,7 +23,7 @@ public class DerbyEmbeddedAdapterConfiguration extends DerbyEmbeddedAdapter {
 	
 	
 	private DerbyEmbeddedAdapterConfiguration() throws SQLException {
-		super(Configuration.log, true, true, null, -1, "/temp/tmp/DerbyDBSpikes", null, null);
+		super(true, true, null, -1, "/temp/tmp/DerbyDBSpikes", null, null);
 	}
 
 	@Override

@@ -21,7 +21,6 @@ import mutua.icc.instrumentation.Instrumentation;
 
 public abstract class DerbyEmbeddedAdapter extends JDBCAdapter {
 
-	
 	// for the shutdown hook
 	private static DerbyEmbeddedAdapter firstInstance = null;
 	
@@ -54,9 +53,9 @@ public abstract class DerbyEmbeddedAdapter extends JDBCAdapter {
 	}
 
 	
-	public DerbyEmbeddedAdapter(Instrumentation<?, ?> log, boolean allowDataStructuresAssertion, boolean shouldDebugQueries,
+	public DerbyEmbeddedAdapter(boolean allowDataStructuresAssertion, boolean shouldDebugQueries,
 	                            String hostname, int port, String database, String user, String password) throws SQLException {
-		super(log, new org.apache.derby.jdbc.EmbeddedDriver().getClass(), allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password, connectionPool);
+		super(new org.apache.derby.jdbc.EmbeddedDriver().getClass(), allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password, connectionPool);
 		// register the shutdown hook
 		if (firstInstance == null) {
 			firstInstance = this;
@@ -115,7 +114,7 @@ public abstract class DerbyEmbeddedAdapter extends JDBCAdapter {
 			conn.close();
 			return dropCommands.toArray(new String[dropCommands.size()]);
 		} catch (SQLException e) {
-			log.reportThrowable(e, "Error while assembling the drop database command set");
+			Instrumentation.reportThrowable(e, "Error while assembling the drop database command set");
 			return null;
 		}
 		

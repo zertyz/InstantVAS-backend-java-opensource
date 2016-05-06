@@ -36,18 +36,17 @@ public class InstantVASSMSAppModuleConfiguration {
 	 *   {@link PostgreSQLAdapter#configureDefaultValuesForNewInstances}(
 	 *       CONNECTION_PROPERTIES,
 	 *       CONNECTION_POOL_SIZE);</pre> 
-	 *  @param log
 	 * @param baseModuleDAL                          one of the members of {@link SMSAppModuleDALFactory}
 	 * @param nstNewUserTriggers                     &
 	 * @param nstExistingUserTriggers                see {@link SMSAppModuleNavigationStates#SMSAppModuleNavigationStates(ICommandProcessor[], Object[][], Object[][])}
 	 *  @returns {(SMSAppModuleNavigationStates)navigationStates, (SMSAppModuleCommandsHelp)commands, (SMSAppModulePhrasingsHelp)phrasings} */
-	public static Object[] getBaseModuleInstances(Instrumentation<?, ?> log, SMSAppModuleDALFactory baseModuleDAL,
+	public static Object[] getBaseModuleInstances(SMSAppModuleDALFactory baseModuleDAL,
 		Object[][] nstNewUserTriggers,
 		Object[][] nstExistingUserTriggers) throws SQLException {
 		
 		SMSAppModuleNavigationStates navigationStates = new SMSAppModuleNavigationStates(nstNewUserTriggers, nstExistingUserTriggers);
 		
-		log.reportDebug(InstantVASSMSAppModuleConfiguration.class.getCanonicalName() + ": new configuration loaded.");
+		Instrumentation.reportDebug(InstantVASSMSAppModuleConfiguration.class.getCanonicalName() + ": new configuration loaded.");
 		
 		return new Object[] {navigationStates, null, null};
 	}

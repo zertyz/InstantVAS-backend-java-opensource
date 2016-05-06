@@ -3,9 +3,10 @@ package instantvas.tests;
 import java.sql.SQLException;
 
 import adapters.PostgreSQLAdapter;
-import mutua.icc.instrumentation.DefaultInstrumentationProperties;
 import mutua.icc.instrumentation.Instrumentation;
-import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
+import mutua.icc.instrumentation.InstrumentableEvent.ELogSeverity;
+import mutua.icc.instrumentation.handlers.IInstrumentationHandler;
+import mutua.icc.instrumentation.handlers.InstrumentationHandlerLogConsole;
 import mutua.smsappmodule.config.InstantVASSMSAppModuleConfiguration;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
 import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapter;
@@ -33,7 +34,6 @@ public class InstantVASSMSAppModuleTestsConfiguration {
 	
 	private static InstantVASSMSAppModuleTestsConfiguration instance = null;
 
-	private static Instrumentation<?, ?>   LOG;
 	public  static SMSAppModuleDALFactory  BASE_MODULE_DAL;
 	public  static int                     PERFORMANCE_TESTS_LOAD_FACTOR;
 
@@ -44,7 +44,7 @@ public class InstantVASSMSAppModuleTestsConfiguration {
 	**************************/
 	
 	/** method to be called to configure all the modules needed to get the desired instance of 'InstantVASSMSAppModule' base modules */
-	public static void configureDefaultValuesForNewInstances(Instrumentation<?, ?> log, 
+	public static void configureDefaultValuesForNewInstances(
 		int performanceTestsLoadFactor, SMSAppModuleDALFactory baseModuleDAL,
 		String postgreSQLConnectionProperties, int postgreSQLConnectionPoolSize,
 		boolean postgreSQLAllowDataStructuresAssertion, boolean postreSQLShouldDebugQueries, String postreSQLHostname, int postreSQLPort, String postreSQLDatabase,
@@ -52,7 +52,6 @@ public class InstantVASSMSAppModuleTestsConfiguration {
 		
 		instance = null;
 
-		LOG                           = log;
 		BASE_MODULE_DAL               = baseModuleDAL;
 		PERFORMANCE_TESTS_LOAD_FACTOR = performanceTestsLoadFactor;
 		
@@ -60,7 +59,7 @@ public class InstantVASSMSAppModuleTestsConfiguration {
 		switch (baseModuleDAL) {
 			case POSTGRESQL:
 				PostgreSQLAdapter.configureDefaultValuesForNewInstances(postgreSQLConnectionProperties, postgreSQLConnectionPoolSize);
-				SMSAppModulePostgreSQLAdapter.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postreSQLShouldDebugQueries,
+				SMSAppModulePostgreSQLAdapter.configureDefaultValuesForNewInstances(postgreSQLAllowDataStructuresAssertion, postreSQLShouldDebugQueries,
 					postreSQLHostname, postreSQLPort, postreSQLDatabase, postreSQLUser, postreSQLPassword);
 				break;
 			case RAM:
@@ -82,11 +81,13 @@ public class InstantVASSMSAppModuleTestsConfiguration {
 	}
 	
 	static {
+		
+		// Instrumentation
+		IInstrumentationHandler log = new InstrumentationHandlerLogConsole("SMSModuleTests", ELogSeverity.DEBUG);
+		Instrumentation.configureDefaultValuesForNewInstances(log, log, log);
+
 		try {
 			configureDefaultValuesForNewInstances(
-				// log
-				new Instrumentation<DefaultInstrumentationProperties, String>(
-					"SMSModuleTests", DefaultInstrumentationProperties.DIP_MSG, EInstrumentationDataPours.CONSOLE, null),
 				1, SMSAppModuleDALFactory.POSTGRESQL,
 				// PostgreSQL properties (don't touch default connection properties & pool size)
 				null, 0,
@@ -101,7 +102,7 @@ public class InstantVASSMSAppModuleTestsConfiguration {
 	*****************/
 	
 	private InstantVASSMSAppModuleTestsConfiguration() throws SQLException {
-		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(LOG, BASE_MODULE_DAL,
+		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(BASE_MODULE_DAL,
 			new Object[0][], new Object[0][]);
 		baseModuleNavigationStates = (SMSAppModuleNavigationStates) baseModule[0];
 

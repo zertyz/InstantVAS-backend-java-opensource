@@ -1,8 +1,9 @@
 package instantvas.tests;
 
-import mutua.icc.instrumentation.DefaultInstrumentationProperties;
 import mutua.icc.instrumentation.Instrumentation;
-import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
+import mutua.icc.instrumentation.InstrumentableEvent.ELogSeverity;
+import mutua.icc.instrumentation.handlers.IInstrumentationHandler;
+import mutua.icc.instrumentation.handlers.InstrumentationHandlerLogConsole;
 import mutua.smsappmodule.config.InstantVASSMSAppModuleConfiguration;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationProfile;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
@@ -14,7 +15,6 @@ import mutua.smsappmodule.smslogic.SMSAppModuleCommandsProfile;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesProfile;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsProfile.CommandNamesProfile.*;
 import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsProfile.CommandTriggersProfile.*;
 
@@ -44,7 +44,6 @@ public class InstantVASSMSAppModuleProfileTestsConfiguration {
 	
 	private static InstantVASSMSAppModuleProfileTestsConfiguration instance = null;
 
-	public static Instrumentation<DefaultInstrumentationProperties, String> LOG;
 	public static SMSAppModuleDALFactory                                    BASE_MODULE_DAL;
 	public static SMSAppModuleDALFactoryProfile                             PROFILE_MODULE_DAL;
 	public static int                                                       PERFORMANCE_TESTS_LOAD_FACTOR;
@@ -59,7 +58,7 @@ public class InstantVASSMSAppModuleProfileTestsConfiguration {
 	**************************/
 	
 	/** method to be called to configure all the modules needed to get instances of the test classes */
-	public static void configureDefaultValuesForNewInstances(Instrumentation<DefaultInstrumentationProperties, String> log, 
+	public static void configureDefaultValuesForNewInstances(
 		int performanceTestsLoadFactor, SMSAppModuleDALFactoryProfile profileModuleDAL,
 		String postgreSQLconnectionProperties, int postgreSQLConnectionPoolSize,
 		boolean postgreSQLAllowDataStructuresAssertion, boolean postgreSQLShouldDebugQueries,
@@ -67,7 +66,6 @@ public class InstantVASSMSAppModuleProfileTestsConfiguration {
 		
 		instance = null;
 		
-		LOG                           = log;
 		PROFILE_MODULE_DAL            = profileModuleDAL;
 		PERFORMANCE_TESTS_LOAD_FACTOR = performanceTestsLoadFactor;
 		
@@ -75,9 +73,9 @@ public class InstantVASSMSAppModuleProfileTestsConfiguration {
 		switch (profileModuleDAL) {
 			case POSTGRESQL:
 				PostgreSQLAdapter.configureDefaultValuesForNewInstances(postgreSQLconnectionProperties, postgreSQLConnectionPoolSize);
-				SMSAppModulePostgreSQLAdapter.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
+				SMSAppModulePostgreSQLAdapter.configureDefaultValuesForNewInstances(postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
 					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
-				SMSAppModulePostgreSQLAdapterProfile.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
+				SMSAppModulePostgreSQLAdapterProfile.configureDefaultValuesForNewInstances(postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
 					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
 				// other databases
 				BASE_MODULE_DAL = SMSAppModuleDALFactory.POSTGRESQL;
@@ -103,12 +101,14 @@ public class InstantVASSMSAppModuleProfileTestsConfiguration {
 	}
 
 	static {
+
+		// Instrumentation
+		IInstrumentationHandler log = new InstrumentationHandlerLogConsole(appName, ELogSeverity.DEBUG);
+		Instrumentation.configureDefaultValuesForNewInstances(log, log, log);
+
 		// configure with the default values
 		try {
 			configureDefaultValuesForNewInstances(
-				// log
-				new Instrumentation<DefaultInstrumentationProperties, String>(
-					appName, DefaultInstrumentationProperties.DIP_MSG, EInstrumentationDataPours.CONSOLE, null),
 				// module DAL
 				1, SMSAppModuleDALFactoryProfile.POSTGRESQL,
 				// PostgreSQL properties
@@ -135,7 +135,7 @@ public class InstantVASSMSAppModuleProfileTestsConfiguration {
 		profileModulePhrasings        = (SMSAppModulePhrasingsProfile)        profileModule[2];
 		
 		// base module -- configured to interact with the Profile Module commands 
-		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(LOG, BASE_MODULE_DAL,
+		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(BASE_MODULE_DAL,
 			/*nstNewUserTriggers*/
 			new Object[][] {
 				{cmdStartAskForNicknameDialog, trgGlobalStartAskForNicknameDialog},

@@ -43,7 +43,6 @@ public class SMSAppModuleConfigurationProfile {
 	}
 	
 	/** Constructs the full version of this SMS Module, with all options set programmatically.<pre>
-	 *  @param log
 	 *  @param shortCode                            &
 	 *  @param appName                              &
 	 *  @param phrAskForFirstNickname               &
@@ -55,7 +54,7 @@ public class SMSAppModuleConfigurationProfile {
 	 *  @param profileModuleDAL                     see {@link SMSAppModuleCommandsProfile#SMSAppModuleCommandsProfile}
 	 *  @param nstRegisteringNicknameTriggers       see {@link SMSAppModuleNavigationStatesProfile#SMSAppModuleNavigationStatesProfile(SMSAppModuleCommandsProfile, Object[][])}
 	 *  @returns {(SMSAppModuleNavigationStatesProfile)navigationStates, (SMSAppModuleCommandsProfile)commands, (SMSAppModulePhrasingsProfile)phrasings} */
-	public static Object[] getProfileModuleInstances(Instrumentation<?, ?> log, String shortCode, String appName,
+	public static Object[] getProfileModuleInstances(String shortCode, String appName,
 		                                             String phrAskForFirstNickname,
 		                                             String phrAskForNewNickname,
 		                                             String phrAskForNicknameCancelation,
@@ -73,7 +72,7 @@ public class SMSAppModuleConfigurationProfile {
 		
 		// log
 		String logPrefix = "Profile Module";
-		log.reportDebug(logPrefix + ": new instances:");
+		Instrumentation.reportDebug(logPrefix + ": new instances:");
 		Object[][] logPhrasings = {
 			{"phrAskForFirstNickname",              phrAskForFirstNickname},
 			{"phrAskForNewNickname",                phrAskForNewNickname},
@@ -82,15 +81,15 @@ public class SMSAppModuleConfigurationProfile {
 			{"phrUserProfilePresentation",          phrUserProfilePresentation},
 			{"phrNicknameNotFound",                 phrNicknameNotFound},
 		};
-		log.reportDebug(logPrefix + ": Phrasings        : " + Arrays.deepToString(logPhrasings));
+		Instrumentation.reportDebug(logPrefix + ": Phrasings        : " + Arrays.deepToString(logPhrasings));
 		Object[][] logCommands = {
 			{"profileModuleDAL",      profileModuleDAL},
 		};
-		log.reportDebug(logPrefix + ": Commands         : " + Arrays.deepToString(logCommands));
+		Instrumentation.reportDebug(logPrefix + ": Commands         : " + Arrays.deepToString(logCommands));
 		Object[][] logCommandTriggers = {
 			{"nstRegisteringNicknameTriggers", nstRegisteringNicknameTriggers},	
 		};
-		log.reportDebug(logPrefix + ": Navigation States: " + Arrays.deepToString(logCommandTriggers));
+		Instrumentation.reportDebug(logPrefix + ": Navigation States: " + Arrays.deepToString(logCommandTriggers));
 
 		return new Object[] {navigationStates, commands, phrasings};
 	}

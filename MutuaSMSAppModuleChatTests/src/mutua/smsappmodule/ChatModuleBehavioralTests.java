@@ -60,7 +60,7 @@ public class ChatModuleBehavioralTests {
 
 	@Test
 	public void testConfigurationFile() throws IllegalArgumentException, IllegalAccessException {
-		ConfigurationManager cm = new ConfigurationManager(LOG, SMSAppModuleConfigurationChat.class);
+		ConfigurationManager cm = new ConfigurationManager(SMSAppModuleConfigurationChat.class);
 		String serializedFields = cm.serializeConfigurableClasses();
 		System.out.println(serializedFields);
 		cm.deserializeConfigurableClasses(serializedFields);

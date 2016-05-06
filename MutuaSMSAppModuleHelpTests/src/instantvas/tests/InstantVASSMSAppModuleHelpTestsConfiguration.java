@@ -1,8 +1,9 @@
 package instantvas.tests;
 
-import mutua.icc.instrumentation.DefaultInstrumentationProperties;
 import mutua.icc.instrumentation.Instrumentation;
-import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
+import mutua.icc.instrumentation.InstrumentableEvent.ELogSeverity;
+import mutua.icc.instrumentation.handlers.IInstrumentationHandler;
+import mutua.icc.instrumentation.handlers.InstrumentationHandlerLogConsole;
 import mutua.smsappmodule.config.InstantVASSMSAppModuleConfiguration;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationHelp;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
@@ -36,9 +37,10 @@ public class InstantVASSMSAppModuleHelpTestsConfiguration {
 	
 	private static final String shortCode = "975";
 	private static final String appName   = "HelpTestApp";
+	
+	private static InstantVASSMSAppModuleHelpTestsConfiguration instance = null;
 
-	public static Instrumentation<DefaultInstrumentationProperties, String> LOG;
-	public static SMSAppModuleDALFactory                                    BASE_MODULE_DAL;
+	public static SMSAppModuleDALFactory           BASE_MODULE_DAL;
 	public static SMSAppModuleNavigationStates     baseModuleNavigationStates;
 	public static SMSAppModulePhrasingsHelp        helpModulePhrasings;
 	public static SMSAppModuleCommandsHelp         helpModuleCommands;
@@ -53,19 +55,20 @@ public class InstantVASSMSAppModuleHelpTestsConfiguration {
 	************/
 	
 	/** method to be called to configure all the modules needed to get instances of the test classes */
-	public static void configureDefaultValuesForNewInstances(Instrumentation<DefaultInstrumentationProperties, String> log, 
+	public static void configureDefaultValuesForNewInstances(
 		SMSAppModuleDALFactory baseModuleDAL, String postgreSQLconnectionProperties, int postgreSQLConnectionPoolSize,
 		boolean postgreSQLAllowDataStructuresAssertion, boolean postreSQLShouldDebugQueries,
 		String postreSQLHostname, int postreSQLPort, String postreSQLDatabase, String postreSQLUser, String postreSQLPassword) throws SQLException {
 		
-		LOG             = log;
 		BASE_MODULE_DAL = baseModuleDAL;
+		
+		instance = null;
 		
 		// database configuration
 		switch (baseModuleDAL) {
 			case POSTGRESQL:
 				PostgreSQLAdapter.configureDefaultValuesForNewInstances(postgreSQLconnectionProperties, postgreSQLConnectionPoolSize);
-				SMSAppModulePostgreSQLAdapter.configureDefaultValuesForNewInstances(log, postgreSQLAllowDataStructuresAssertion, postreSQLShouldDebugQueries,
+				SMSAppModulePostgreSQLAdapter.configureDefaultValuesForNewInstances(postgreSQLAllowDataStructuresAssertion, postreSQLShouldDebugQueries,
 					postreSQLHostname, postreSQLPort, postreSQLDatabase, postreSQLUser, postreSQLPassword);
 				break;
 			case RAM:
@@ -83,7 +86,7 @@ public class InstantVASSMSAppModuleHelpTestsConfiguration {
 		helpModulePhrasings        = (SMSAppModulePhrasingsHelp)        helpModule[2];
 		
 		// base module -- configured to interact with the Help Module commands
-		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(log, baseModuleDAL,
+		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(baseModuleDAL,
 			/*nstNewUserTriggers*/
 			new Object[0][],	// zeroed since we are not testing the help modules through the command processor
 			/*nstExistingUserTriggers*/
@@ -93,14 +96,24 @@ public class InstantVASSMSAppModuleHelpTestsConfiguration {
 		System.err.println(InstantVASSMSAppModuleHelpTestsConfiguration.class.getCanonicalName() + ": test configuration loaded.");
 	}
 
+	public static InstantVASSMSAppModuleHelpTestsConfiguration getInstance() {
+		if (instance == null) try {
+			instance = new InstantVASSMSAppModuleHelpTestsConfiguration();
+		} catch (Throwable t) {
+			throw new RuntimeException(t);
+		}
+		return instance;
+	}
 	
 	static {
+		
+		// Instrumentation
+		IInstrumentationHandler log = new InstrumentationHandlerLogConsole(appName, ELogSeverity.DEBUG);
+		Instrumentation.configureDefaultValuesForNewInstances(log, log, log);
+
 		// configure with the default values
 		try {
 			configureDefaultValuesForNewInstances(
-				// log
-				new Instrumentation<DefaultInstrumentationProperties, String>(
-					appName, DefaultInstrumentationProperties.DIP_MSG, EInstrumentationDataPours.CONSOLE, null),
 				// modules DAL
 				SMSAppModuleDALFactory.POSTGRESQL,
 				// PostgreSQL properties
