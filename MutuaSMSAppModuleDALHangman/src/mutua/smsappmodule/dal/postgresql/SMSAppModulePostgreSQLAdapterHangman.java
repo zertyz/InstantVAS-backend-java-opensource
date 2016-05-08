@@ -79,8 +79,8 @@ public class SMSAppModulePostgreSQLAdapterHangman extends PostgreSQLAdapter {
 	@Override
 	protected String[][] getTableDefinitions() {
 		return new String[][] {
-			{"Matches", "DROP TYPE IF EXISTS MatchStatuses;" + 
-			            "CREATE TYPE MatchStatuses AS ENUM (" + list(EMatchStatus.values(), "'", ",") + ");" + 	// SELECT enum_range(NULL::MatchStatuses)
+			{"Matches", "DROP TYPE IF EXISTS MatchStatuses", 
+			            "CREATE TYPE MatchStatuses AS ENUM (" + list(EMatchStatus.values(), "'", ",") + ")", 	// SELECT enum_range(NULL::MatchStatuses)
 			            "CREATE TABLE Matches(" +
 			            "matchId                   SERIAL        PRIMARY KEY, " +
 			            "wordProvidingPlayerUserId INTEGER       NOT NULL REFERENCES Users(userId) ON DELETE CASCADE, " +
@@ -89,10 +89,10 @@ public class SMSAppModulePostgreSQLAdapterHangman extends PostgreSQLAdapter {
 			            "matchStartMillis          BIGINT        NOT NULL, " +
 			            "status                    MatchStatuses NOT NULL, " +
 			            "cts                       TIMESTAMP     DEFAULT CURRENT_TIMESTAMP," +
-			            "uts                       TIMESTAMP     DEFAULT NULL);" +
+			            "uts                       TIMESTAMP     DEFAULT NULL)",
 			            
 			            // trigger for 'uts' -- the updated timestamp
-			            "CREATE TRIGGER Matches_update_timestamp BEFORE UPDATE ON Matches FOR EACH ROW EXECUTE PROCEDURE set_updated_timestamp();" +
+			            "CREATE TRIGGER Matches_update_timestamp BEFORE UPDATE ON Matches FOR EACH ROW EXECUTE PROCEDURE set_updated_timestamp()",
 
 				        // Meta record
 				        "INSERT INTO Meta(tableName, modelVersion) VALUES ('Matches', '"+modelVersionForMetaTable+"')"},
@@ -101,10 +101,10 @@ public class SMSAppModulePostgreSQLAdapterHangman extends PostgreSQLAdapter {
 			                 "userId      INTEGER   PRIMARY KEY REFERENCES Users(userId) ON DELETE CASCADE, " +
 			                 "nextBotWord INTEGER   NOT NULL, " +
 			                 "cts         TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
-			                 "uts         TIMESTAMP DEFAULT NULL);" +
+			                 "uts         TIMESTAMP DEFAULT NULL)",
 			                 
 			                 // trigger for 'uts' -- the updated timestamp
-			                 "CREATE TRIGGER NextBotWords_update_timestamp BEFORE UPDATE ON NextBotWords FOR EACH ROW EXECUTE PROCEDURE set_updated_timestamp();" +
+			                 "CREATE TRIGGER NextBotWords_update_timestamp BEFORE UPDATE ON NextBotWords FOR EACH ROW EXECUTE PROCEDURE set_updated_timestamp()",
 			                 
 			                 // stored procedure
 			                 "CREATE OR REPLACE FUNCTION SelectAndIncrementNextBotWord(p_userId INTEGER) RETURNS NextBotWords.nextBotWord%TYPE AS $$\n" +
@@ -117,7 +117,7 @@ public class SMSAppModulePostgreSQLAdapterHangman extends PostgreSQLAdapter {
 			                 "    END IF;\n" +
 			                 "    RETURN cursor;\n" +
 			                 "END;\n" +			          
-			                 "$$ LANGUAGE plpgsql;" +
+			                 "$$ LANGUAGE plpgsql",
   
 			                 // Meta record
 			                 "INSERT INTO Meta(tableName, modelVersion) VALUES ('NextBotWords', '"+modelVersionForMetaTable+"')"},

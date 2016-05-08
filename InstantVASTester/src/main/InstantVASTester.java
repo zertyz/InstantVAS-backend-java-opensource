@@ -13,6 +13,9 @@ import instantvas.tests.InstantVASSMSAppModuleHelpTestsConfiguration;
 import instantvas.tests.InstantVASSMSAppModuleProfileTestsConfiguration;
 import instantvas.tests.InstantVASSMSAppModuleSubscriptionTestsConfiguration;
 import instantvas.tests.InstantVASSMSAppModuleTestsConfiguration;
+import mutua.events.PostgreSQLQueueEventLink;
+import mutua.events.SpecializedMOQueueDataBureau;
+import mutua.events.TestAdditionalEventServer.ETestAdditionalEventServices;
 import mutua.hangmansmsgame.smslogic.SMSProcessor;
 import mutua.icc.configuration.ConfigurationManagerTests;
 import mutua.icc.instrumentation.Instrumentation;
@@ -122,13 +125,16 @@ public class InstantVASTester {
 		System.out.println("\n### Starting. Please copy & paste it to luiz@InstantVAS.com:");
 				
 		System.out.println("\n### Applying configuration:");
+		if ("POSTGRESQL".equals(dal)) {
+			// configure postgreSQL queues
+			MutuaEventsAdditionalEventLinksTestsConfiguration   .configureDefaultValuesForNewInstances(loadFactor, -1, -1,           connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
+		}
 		InstantVASSMSAppModuleTestsConfiguration            .configureDefaultValuesForNewInstances(loadFactor, baseModuleDAL,    connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
 		InstantVASSMSAppModuleHelpTestsConfiguration        .configureDefaultValuesForNewInstances(            baseModuleDAL,    connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
 		InstantVASSMSAppModuleSubscriptionTestsConfiguration.configureDefaultValuesForNewInstances(loadFactor, subscriptionDAL,  connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
-		InstantVASSMSAppModuleProfileTestsConfiguration     .configureDefaultValuesForNewInstances(loadFactor, profileModuleDAL, connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
+		InstantVASSMSAppModuleProfileTestsConfiguration     .configureDefaultValuesForNewInstances(loadFactor, profileModuleDAL, connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);	
 		InstantVASSMSAppModuleChatTestsConfiguration        .configureDefaultValuesForNewInstances(loadFactor, chatModuleDAL,    connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
 		InstantVASSMSAppModuleHangmanTestsConfiguration     .configureDefaultValuesForNewInstances(loadFactor, hangmanModuleDAL, connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
-		MutuaEventsAdditionalEventLinksTestsConfiguration   .configureDefaultValuesForNewInstances(loadFactor, -1, -1,           connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
 		
 		
 				
@@ -144,7 +150,14 @@ public class InstantVASTester {
 		InstantVASSMSAppModuleHelpTestsConfiguration        .getInstance();
 		InstantVASSMSAppModuleSubscriptionTestsConfiguration.getInstance();
 		InstantVASSMSAppModuleProfileTestsConfiguration     .getInstance();
+		
+		// chat module instantiation
+		if ("POSTGRESQL".equals(dal)) {
+			// assure MO queues table exists -- they are needed for the chat module
+			new PostgreSQLQueueEventLink<ETestAdditionalEventServices>(ETestAdditionalEventServices.class, MutuaEventsAdditionalEventLinksTestsConfiguration.ANNOTATION_CLASSES, "MOSMSes", new SpecializedMOQueueDataBureau());
+		}
 		InstantVASSMSAppModuleChatTestsConfiguration        .getInstance();
+
 		InstantVASSMSAppModuleHangmanTestsConfiguration     .getInstance();
 		
 		// please, periodically update the classes listed here with the following command, keeping the order implied by the comments:

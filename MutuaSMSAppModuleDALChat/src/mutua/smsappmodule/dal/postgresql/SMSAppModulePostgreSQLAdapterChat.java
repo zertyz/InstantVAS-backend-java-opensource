@@ -89,11 +89,11 @@ public class SMSAppModulePostgreSQLAdapterChat extends PostgreSQLAdapter {
 			                    "senderUserId     INTEGER   NOT NULL REFERENCES Users(userId) ON DELETE CASCADE, " +
 			                    "recipientUserId  INTEGER   NOT NULL REFERENCES Users(userId) ON DELETE CASCADE, " +
 			                    "moTextStartIndex INTEGER   NOT NULL, " +
-			                    "cts              TIMESTAMP DEFAULT CURRENT_TIMESTAMP);" +
+			                    "cts              TIMESTAMP DEFAULT CURRENT_TIMESTAMP)",
 			                    
 			                    // custom indexes
-			                    "CREATE INDEX SenderUserIds    ON PrivateMessages(senderUserId);" +
-			                    "CREATE INDEX RecipientUserIds ON PrivateMessages(recipientUserId);" +
+			                    "CREATE INDEX SenderUserIds    ON PrivateMessages(senderUserId)",
+			                    "CREATE INDEX RecipientUserIds ON PrivateMessages(recipientUserId)",
 			                    
 				                // Meta record
 				                "INSERT INTO Meta(tableName, modelVersion) VALUES ('PrivateMessages', '"+modelVersionForMetaTable+"_"+moIdReference+"')"},

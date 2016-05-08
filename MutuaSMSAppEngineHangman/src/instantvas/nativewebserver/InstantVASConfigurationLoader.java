@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import config.InstantVASInstanceConfiguration;
-import instantvas.smsengine.InstantVASHTTPInstrumentationRequestProperty;
 import mutua.icc.configuration.ConfigurationManager;
 import mutua.icc.instrumentation.InstrumentableEvent;
 import mutua.icc.instrumentation.InstrumentableEvent.ELogSeverity;
@@ -30,31 +29,14 @@ import mutua.icc.instrumentation.handlers.InstrumentationHandlerRAM;
 
 public class InstantVASConfigurationLoader {
 
-	private static InstrumentationEventDto[]   temporaryLoggedEvents;
-	//private static final Instrumentation<?, ?> log = new Instrumentation<InstantVASHTTPInstrumentationRequestProperty, String>("InstantVAS Configuration Loader", new InstantVASHTTPInstrumentationRequestProperty(), EInstrumentationDataPours.CONSOLE, "");
-	
-	private static void setTemporaryLog() {
-		IInstrumentationHandler ramLogger = new InstrumentationHandlerRAM() {
-			public void analyzeRequest(ArrayList<InstrumentationEventDto> requestEvents) {
-				temporaryLoggedEvents = requestEvents.toArray(new InstrumentationEventDto[0]);
-			}
-			public void close() {
-				onRequestFinish(new InstrumentationEventDto(System.currentTimeMillis(), Thread.currentThread(),
-					new InstrumentableEvent("Reconfiguring Instrumentation", ELogSeverity.CRITICAL)));
-			}
-		};
-		Instrumentation.configureDefaultValuesForNewInstances(ramLogger, ramLogger, ramLogger);
-	}
-	
 	public static void applyConfigurationFromString(String configurationContents) {
 		
 	}
 	
 	public static void applyConfigurationFromPlainFSFile(String fsFilePath) throws IllegalArgumentException, IOException, IllegalAccessException {
-		setTemporaryLog();
 		ConfigurationManager cm = new ConfigurationManager(InstantVASInstanceConfiguration.class);
 		cm.loadFromFile(fsFilePath);
-		InstantVASInstanceConfiguration.applyConfiguration(temporaryLoggedEvents);
+		// static values for 'InstantVASInstanceConfiguration' are set, which will eventually be used to generate a new instance of that class
 	}
 	
 	public static void applyConfigurationFromLicenseClass() throws IllegalArgumentException, IOException, IllegalAccessException {

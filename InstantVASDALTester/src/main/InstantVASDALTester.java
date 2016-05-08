@@ -8,8 +8,11 @@ import instantvas.tests.InstantVASSMSAppModuleHangmanTestsConfiguration;
 import instantvas.tests.InstantVASSMSAppModuleProfileTestsConfiguration;
 import instantvas.tests.InstantVASSMSAppModuleSubscriptionTestsConfiguration;
 import instantvas.tests.InstantVASSMSAppModuleTestsConfiguration;
+import mutua.events.PostgreSQLQueueEventLink;
 import mutua.events.PostgreSQLQueueEventLinkPerformanceTests;
 import mutua.events.PostgreSQLQueueEventLinkTests;
+import mutua.events.SpecializedMOQueueDataBureau;
+import mutua.events.TestAdditionalEventServer.ETestAdditionalEventServices;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.icc.instrumentation.InstrumentableEvent.ELogSeverity;
 import mutua.icc.instrumentation.handlers.IInstrumentationHandler;
@@ -124,15 +127,15 @@ public class InstantVASDALTester {
 		System.out.println("\n### Starting. Please copy & paste it to luiz@InstantVAS.com:");
 				
 		System.out.println("\n### Applying configuration:");
+		if ("POSTGRESQL".equals(dal)) {
+			// configure postgreSQL queues
+			MutuaEventsAdditionalEventLinksTestsConfiguration.configureDefaultValuesForNewInstances(loadFactor, -1, -1, connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
+		}
 		InstantVASSMSAppModuleTestsConfiguration            .configureDefaultValuesForNewInstances(loadFactor, baseModuleDAL,    connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
 		InstantVASSMSAppModuleSubscriptionTestsConfiguration.configureDefaultValuesForNewInstances(loadFactor, subscriptionDAL,  connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
 		InstantVASSMSAppModuleProfileTestsConfiguration     .configureDefaultValuesForNewInstances(loadFactor, profileModuleDAL, connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
 		InstantVASSMSAppModuleChatTestsConfiguration        .configureDefaultValuesForNewInstances(loadFactor, chatModuleDAL,    connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
 		InstantVASSMSAppModuleHangmanTestsConfiguration     .configureDefaultValuesForNewInstances(loadFactor, hangmanModuleDAL, connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
-		if ("POSTGRESQL".equals(dal)) {
-			// configure postgreSQL queues
-			MutuaEventsAdditionalEventLinksTestsConfiguration.configureDefaultValuesForNewInstances(loadFactor, 0, 10, null, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
-		}
 		
 		System.out.println("\n### Configuring Instrumentation:");
 		IInstrumentationHandler log = new InstrumentationHandlerLogConsole(InstantVASDALTester.class.getCanonicalName(), shouldDebugQueries == true ? ELogSeverity.DEBUG : ELogSeverity.ERROR);
@@ -143,7 +146,14 @@ public class InstantVASDALTester {
 		InstantVASSMSAppModuleTestsConfiguration            .getInstance();
 		InstantVASSMSAppModuleSubscriptionTestsConfiguration.getInstance();
 		InstantVASSMSAppModuleProfileTestsConfiguration     .getInstance();
+
+		// chat module instantiation
+		if ("POSTGRESQL".equals(dal)) {
+			// assure MO queues table exists -- they are needed for the chat module
+			new PostgreSQLQueueEventLink<ETestAdditionalEventServices>(ETestAdditionalEventServices.class, MutuaEventsAdditionalEventLinksTestsConfiguration.ANNOTATION_CLASSES, "MOSMSes", new SpecializedMOQueueDataBureau());
+		}
 		InstantVASSMSAppModuleChatTestsConfiguration        .getInstance();
+		
 		InstantVASSMSAppModuleHangmanTestsConfiguration     .getInstance();
 		
 		if ("RAM".equals(dal)) {

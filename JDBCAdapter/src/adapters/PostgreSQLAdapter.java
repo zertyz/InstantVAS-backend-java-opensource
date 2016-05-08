@@ -26,7 +26,8 @@ public abstract class PostgreSQLAdapter extends JDBCAdapter {
 	/** The number of concurrent connections allowed to each PostgreSQL server. Suggestion: fine tune to get the optimum number for this particular app/database, paying attention to the fact that a pool smaller than the sum of all consumer threads may be suboptimal, and that a greater than it can be a waste. As an initial value, set this to nDbCPUs * nDbHDs and adjust the consumer threads accordingly */
 	public static int CONNECTION_POOL_SIZE = 8;
 	
-	protected static Connection[] connectionPool = null;
+	// public here is only needed because of 'mutua.events.PostgreSQLQueueEventLinkTests.testDeleteEvents'
+	public static Connection[] connectionPool = null;
 	
 	/** method to be called when attempting to configure the default behavior for new instances of 'PostgreSQLAdapter'.
 	 *  @param connectionProperties if null, the default value won't be touched. See {@link #CONNECTION_PROPERTIES}

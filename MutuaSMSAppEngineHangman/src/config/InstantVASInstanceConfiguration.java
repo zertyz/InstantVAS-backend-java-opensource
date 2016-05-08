@@ -1,7 +1,6 @@
 package config;
 
 import static config.InstantVASLicense.*;
-
 import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHelp.CommandNamesHelp.*;
 import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHelp.CommandTriggersHelp.*;
 import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsSubscription.CommandNamesSubscription.*;
@@ -15,11 +14,11 @@ import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHangman.CommandTri
 
 import java.lang.annotation.Annotation;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import instantvas.smsengine.InstantVASHTTPInstrumentationRequestProperty;
 import instantvas.smsengine.MOSMSesQueueDataBureau;
 import instantvas.smsengine.MTSMSesQueueDataBureau;
 import instantvas.smsengine.producersandconsumers.EInstantVASEvents;
@@ -31,8 +30,13 @@ import mutua.events.QueueEventLink;
 import mutua.events.postgresql.QueuesPostgreSQLAdapter;
 import mutua.hangmansmsgame.smslogic.SMSProcessor;
 import mutua.icc.configuration.annotations.ConfigurableElement;
+import mutua.icc.instrumentation.InstrumentableEvent.ELogSeverity;
+import mutua.icc.instrumentation.InstrumentableEvent;
 import mutua.icc.instrumentation.Instrumentation;
-import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
+import mutua.icc.instrumentation.dto.InstrumentationEventDto;
+import mutua.icc.instrumentation.handlers.IInstrumentationHandler;
+import mutua.icc.instrumentation.handlers.InstrumentationHandlerLogConsole;
+import mutua.icc.instrumentation.handlers.InstrumentationHandlerRAM;
 import mutua.smsappmodule.config.InstantVASSMSAppModuleConfiguration;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationChat;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationHangman;
@@ -129,11 +133,17 @@ public class InstantVASInstanceConfiguration {
 	
 	// SMS Application
 	//////////////////
+	
+	public enum ELogEventHandler    {CONSOLE, PLAIN_FILE, ROTATORY_PLAIN_FILE, ROTATORY_COMPRESSED_FILE};
+	public enum EReportEventHandler {CONSOLE, PLAIN_FILE, ROTATORY_PLAIN_FILE, ROTATORY_COMPRESSED_FILE, POSTGRESQL};
 
 	@ConfigurableElement("Where to store report data")
-	public static EInstrumentationDataPours REPORT_DATA_COLLECTOR_STRATEGY;
+	public static EReportEventHandler REPORT_DATA_COLLECTOR_STRATEGY;
 	@ConfigurableElement("Where to store log data")
-	public static EInstrumentationDataPours LOG_STRATEGY;
+	public static ELogEventHandler LOG_STRATEGY;
+	@ConfigurableElement("What severity of log events should be persisted?")
+	public static ELogSeverity MINIMUM_LOG_SEVERITY;
+	// TODO review those file name variables -- one should be for the reports and the other for the logs. There should be a prefix and suffix
 	@ConfigurableElement("File name to log Hangman Logic logs")
 	public static String LOG_HANGMAN_FILE_PATH;
 	@ConfigurableElement("File name to log Hangman Web / Integration logs")
@@ -568,13 +578,28 @@ public class InstantVASInstanceConfiguration {
 //			return stringArrayNavigationStateTriggers;
 //		}
 //	};
+
+	// temporary log -- meant to record events before the configuration file tells what to do with them (mainly records parsing and application of the configuration file)
+	private static InstrumentationEventDto[]   temporaryLoggedEvents;
+	private static void setTemporaryLog() {
+		IInstrumentationHandler ramLogger = new InstrumentationHandlerRAM() {
+			public void analyzeRequest(ArrayList<InstrumentationEventDto> requestEvents) {
+				temporaryLoggedEvents = requestEvents.toArray(new InstrumentationEventDto[0]);
+			}
+			public void close() {
+				onRequestFinish(new InstrumentationEventDto(System.currentTimeMillis(), Thread.currentThread(),
+					new InstrumentableEvent("Reconfiguring Instrumentation", ELogSeverity.CRITICAL)));
+			}
+		};
+		Instrumentation.configureDefaultValuesForNewInstances(ramLogger, ramLogger, ramLogger);
+	}
+	static {
+		setTemporaryLog();
+	}
 	
 	// INSTANCE VARIABLES
 	/////////////////////
 	
-	// generic
-	public final Instrumentation<InstantVASHTTPInstrumentationRequestProperty, String> log;
-
 	// integration
 	public SubscriptionEngine subscriptionEngine;
 	public SMSInParser<Map<String, String>, byte[]>  moParser;
@@ -618,10 +643,31 @@ public class InstantVASInstanceConfiguration {
 	
 	public InstantVASInstanceConfiguration() throws SQLException, IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
 		
-		log = new Instrumentation<InstantVASHTTPInstrumentationRequestProperty, String>(
-			APP_NAME, new InstantVASHTTPInstrumentationRequestProperty(), LOG_STRATEGY, LOG_HANGMAN_FILE_PATH);
+		IInstrumentationHandler logHandler;
+		IInstrumentationHandler reportHandler;
+		IInstrumentationHandler profileHandler;
 		
-		System.out.println("\n### Configuring HTTPClientAdapter...");
+		switch (LOG_STRATEGY) {
+		case CONSOLE:
+			logHandler = new InstrumentationHandlerLogConsole(APP_NAME, MINIMUM_LOG_SEVERITY);
+			break;
+		default:
+			throw new RuntimeException("LOG_STRATEGY '"+LOG_STRATEGY+"' isn't implemented yet");
+		}
+		
+		profileHandler = reportHandler = logHandler;
+		
+		Instrumentation.configureDefaultValuesForNewInstances(logHandler, reportHandler, profileHandler);
+		
+		// register any eventually recorded RAM events (that happened before we know how/where to log)
+		if (temporaryLoggedEvents != null) {
+			for (InstrumentationEventDto temporaryLoggedEvent : temporaryLoggedEvents) {
+				logHandler.onRequestStart(temporaryLoggedEvent);
+			}
+			temporaryLoggedEvents = null;
+		}
+				
+		Instrumentation.reportDebug("### Configuring HTTPClientAdapter...");
 		HTTPClientAdapter.configureDefaultValuesForNewInstances(HTTP_CONNECTION_TIMEOUT_MILLIS, HTTP_READ_TIMEOUT_MILLIS, false, "User-Agent", "InstantVAS.com integration client");
 		
 		List<EInstantVASModules> enabledModulesList = Arrays.asList(ENABLED_MODULES);
@@ -629,51 +675,49 @@ public class InstantVASInstanceConfiguration {
 		// configure modules dal
 		switch (DATA_ACCESS_LAYER) {
 		case POSTGRESQL:
-			System.out.println("\n### Configuring PostgreSQLAdapter...");
+			Instrumentation.reportDebug("### Configuring PostgreSQLAdapter...");
 			PostgreSQLAdapter.configureDefaultValuesForNewInstances(POSTGRESQL_CONNECTION_PROPERTIES, NUMBER_OF_CONCURRENT_CONNECTIONS);
-			System.out.print("### Configuring modules DALs: ");
-			boolean first = true;
+			Instrumentation.reportDebug("### Configuring modules DALs: ");
 			for (EInstantVASModules module : EInstantVASModules.values()) {
 				if (!enabledModulesList.contains(module)) {
 					continue;
 				}
-				if (!first) {
-					System.out.print(", ");
-				} else {
-					first = false;
-				}
-				System.out.print(module.name().toLowerCase());
+				Instrumentation.reportDebug("  "+module.name().toLowerCase()+",");
 				switch (module) {
 				case CELLTICK_BR_INTEGRATION:
 				case CELLTICK_JUNIT_TESTS_INTEGRATION:
 					break;
 				case BASE:
 					baseModuleDAL = SMSAppModuleDALFactory.POSTGRESQL;
-					SMSAppModulePostgreSQLAdapter.configureDefaultValuesForNewInstances(log, POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD);
+					SMSAppModulePostgreSQLAdapter.configureDefaultValuesForNewInstances(POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD);
+					baseModuleDAL.checkDataAccessLayers();
 					break;
 				case HELP:
 					break;
 				case SUBSCRIPTION:
 					subscriptionDAL = SMSAppModuleDALFactorySubscription.POSTGRESQL;
-					SMSAppModulePostgreSQLAdapterSubscription.configureDefaultValuesForNewInstances(log, POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD);
+					SMSAppModulePostgreSQLAdapterSubscription.configureDefaultValuesForNewInstances(POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD);
+					subscriptionDAL.checkDataAccessLayers();
 					break;
 				case PROFILE:
 					profileModuleDAL = SMSAppModuleDALFactoryProfile.POSTGRESQL;
-					SMSAppModulePostgreSQLAdapterProfile.configureDefaultValuesForNewInstances(log, POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD);
+					SMSAppModulePostgreSQLAdapterProfile.configureDefaultValuesForNewInstances(POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD);
+					profileModuleDAL.checkDataAccessLayers();
 					break;
 				case CHAT:
 					chatModuleDAL = SMSAppModuleDALFactoryChat.POSTGRESQL;
-					SMSAppModulePostgreSQLAdapterChat.configureDefaultValuesForNewInstances(log, POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD, MOSMSesQueueDataBureau.MO_TABLE_NAME, MOSMSesQueueDataBureau.MO_ID_FIELD_NAME, MOSMSesQueueDataBureau.MO_TEXT_FIELD_NAME);
+					SMSAppModulePostgreSQLAdapterChat.configureDefaultValuesForNewInstances(POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD, MOSMSesQueueDataBureau.MO_TABLE_NAME, MOSMSesQueueDataBureau.MO_ID_FIELD_NAME, MOSMSesQueueDataBureau.MO_TEXT_FIELD_NAME);
+					chatModuleDAL.checkDataAccessLayers();
 					break;
 				case HANGMAN:
 					hangmanModuleDAL = SMSAppModuleDALFactoryHangman.POSTGRESQL;
-					SMSAppModulePostgreSQLAdapterHangman.configureDefaultValuesForNewInstances(log, POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD);
+					SMSAppModulePostgreSQLAdapterHangman.configureDefaultValuesForNewInstances(POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD);
+					hangmanModuleDAL.checkDataAccessLayers();
 					break;
 				default:
 					throw new RuntimeException("InstantVAS Module '"+module+"' isn't present");
 				}
 			}
-			System.out.println(".");
 			break;
 		case RAM:
 			baseModuleDAL    = SMSAppModuleDALFactory            .RAM;
@@ -688,51 +732,51 @@ public class InstantVASInstanceConfiguration {
 		
 		// configure event processing strategies
 		Class<? extends Annotation>[] eventProcessingAnnotationClasses = (Class<? extends Annotation>[]) new Class<?>[] {InstantVASEvent.class};
-		System.out.print("\n### Configuring 'MO arrived' event processing strategy: ");
+		Instrumentation.reportDebug("### Configuring 'MO arrived' event processing strategy: ");
 		switch (MO_PROCESSING_STRATEGY) {
 		case POSTGRESQL:
-			System.out.println("PostgreSQL Queue...");
-			QueuesPostgreSQLAdapter.configureDefaultValuesForNewInstances(log, POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD);
-			PostgreSQLQueueEventLink.configureDefaultValuesForNewInstances(log, MO_POSTGRESQL_QUEUE_POOLING_TIME, MO_QUEUE_NUMBER_OF_WORKER_THREADS);
+			Instrumentation.reportDebug("  PostgreSQL Queue...");
+			QueuesPostgreSQLAdapter.configureDefaultValuesForNewInstances(POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD);
+			PostgreSQLQueueEventLink.configureDefaultValuesForNewInstances(MO_POSTGRESQL_QUEUE_POOLING_TIME, MO_QUEUE_NUMBER_OF_WORKER_THREADS);
 			MOpcLink = new PostgreSQLQueueEventLink<EInstantVASEvents>(
 				EInstantVASEvents.class, eventProcessingAnnotationClasses, MOSMSesQueueDataBureau.MO_TABLE_NAME, new MOSMSesQueueDataBureau(SHORT_CODE));
 			break;
 		case RAM:
-			System.out.println("RAM Queue...");
+			Instrumentation.reportDebug("  RAM Queue...");
 			MOpcLink = new QueueEventLink<EInstantVASEvents>(
 				EInstantVASEvents.class, eventProcessingAnnotationClasses, MO_RAM_QUEUE_CAPACITY, MO_QUEUE_NUMBER_OF_WORKER_THREADS);
 			break;
 		case DIRECT:
-			System.out.println("Direct...");
+			Instrumentation.reportDebug("  Direct...");
 			MOpcLink = new DirectEventLink<EInstantVASEvents>(
 				EInstantVASEvents.class, eventProcessingAnnotationClasses);
 			break;
 		default:
 			throw new RuntimeException("InstantVAS 'MO arrived' Event Processing Strategy '"+MO_PROCESSING_STRATEGY+"' is not implemented");
 		}
-		System.out.print("\n### Configuring 'MT ready for delivert' event processing strategy: ");
+		Instrumentation.reportDebug("### Configuring 'MT ready for delivert' event processing strategy: ");
 		switch (MO_PROCESSING_STRATEGY) {
 		case POSTGRESQL:
-			System.out.println("PostgreSQL Queue...");
-			QueuesPostgreSQLAdapter.configureDefaultValuesForNewInstances(log, POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD);
-			PostgreSQLQueueEventLink.configureDefaultValuesForNewInstances(log, MT_POSTGRESQL_QUEUE_POOLING_TIME, MT_QUEUE_NUMBER_OF_WORKER_THREADS);
+			Instrumentation.reportDebug("  PostgreSQL Queue...");
+			QueuesPostgreSQLAdapter.configureDefaultValuesForNewInstances(POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD);
+			PostgreSQLQueueEventLink.configureDefaultValuesForNewInstances(MT_POSTGRESQL_QUEUE_POOLING_TIME, MT_QUEUE_NUMBER_OF_WORKER_THREADS);
 			MTpcLink = new PostgreSQLQueueEventLink<EInstantVASEvents>(
 				EInstantVASEvents.class, eventProcessingAnnotationClasses, MTSMSesQueueDataBureau.MT_TABLE_NAME, new MTSMSesQueueDataBureau());
 			break;
 		case RAM:
-			System.out.println("RAM Queue...");
+			Instrumentation.reportDebug("  RAM Queue...");
 			MTpcLink = new QueueEventLink<EInstantVASEvents>(
 				EInstantVASEvents.class, eventProcessingAnnotationClasses, MT_RAM_QUEUE_CAPACITY, MT_QUEUE_NUMBER_OF_WORKER_THREADS);
 			break;
 		case DIRECT:
-			System.out.println("Direct...");
+			Instrumentation.reportDebug("  Direct...");
 			MTpcLink = new DirectEventLink<EInstantVASEvents>(
 				EInstantVASEvents.class, eventProcessingAnnotationClasses);
 			break;
 		default:
 			throw new RuntimeException("InstantVAS 'MT ready for delivery' Event Processing Strategy '"+MT_PROCESSING_STRATEGY+"' is not implemented");
 		}
-		System.out.println("\n### Configuring 'Subscription Renewal' event processing strategy:");
+		Instrumentation.reportDebug("### Configuring 'Subscription Renewal' event processing strategy:");
 		switch (SUBSCRIPTION_RENEWAL_PROCESSING_STRATEGY) {
 		case POSTGRESQL:
 //			System.out.println("PostgreSQL Queue...");
@@ -744,17 +788,17 @@ public class InstantVASInstanceConfiguration {
 		default:
 			throw new RuntimeException("InstantVAS 'Subscription Renewal' Event Processing Strategy '"+SUBSCRIPTION_RENEWAL_PROCESSING_STRATEGY+"' is not implemented");
 		case RAM:
-			System.out.println("RAM Queue...");
+			Instrumentation.reportDebug("  RAM Queue...");
 			SRpcLink = new QueueEventLink<EInstantVASEvents>(
 				EInstantVASEvents.class, eventProcessingAnnotationClasses, SR_RAM_QUEUE_CAPACITY, SR_QUEUE_NUMBER_OF_WORKER_THREADS);
 			break;
 		case DIRECT:
-			System.out.println("Direct...");
+			Instrumentation.reportDebug("  Direct...");
 			SRpcLink = new DirectEventLink<EInstantVASEvents>(
 				EInstantVASEvents.class, eventProcessingAnnotationClasses);
 			break;
 		}
-		System.out.println("\n### Configuring 'Subscription Cancellation' event processing strategy:");
+		Instrumentation.reportDebug("### Configuring 'Subscription Cancellation' event processing strategy:");
 		switch (SUBSCRIPTION_CANCELLATION_PROCESSING_STRATEGY) {
 		case POSTGRESQL:
 //			System.out.println("PostgreSQL Queue...");
@@ -766,34 +810,27 @@ public class InstantVASInstanceConfiguration {
 		default:
 			throw new RuntimeException("InstantVAS 'Subscription Cancellation' Event Processing Strategy '"+SUBSCRIPTION_CANCELLATION_PROCESSING_STRATEGY+"' is not implemented");
 		case RAM:
-			System.out.println("RAM Queue...");
+			Instrumentation.reportDebug("  RAM Queue...");
 			SCpcLink = new QueueEventLink<EInstantVASEvents>(
 				EInstantVASEvents.class, eventProcessingAnnotationClasses, SC_RAM_QUEUE_CAPACITY, SC_QUEUE_NUMBER_OF_WORKER_THREADS);
 			break;
 		case DIRECT:
-			System.out.println("Direct...");
+			Instrumentation.reportDebug("  Direct...");
 			SCpcLink = new DirectEventLink<EInstantVASEvents>(
 				EInstantVASEvents.class, eventProcessingAnnotationClasses);
 			break;
 		}
 		
 		// configure the SMSProcessor
-		System.out.print("\n### Configuring the SMS Processor...");
-		SMSProcessor.configureDefaultValuesForNewInstances(log, baseModuleDAL);
-		System.out.println(" OK");
+		Instrumentation.reportDebug("### Configuring the SMS Processor...");
+		SMSProcessor.configureDefaultValuesForNewInstances(baseModuleDAL);
 		
-		System.out.print("\n### Instantiating modules: ");
-		boolean first = true;
+		Instrumentation.reportDebug("### Instantiating modules: ");
 		for (EInstantVASModules module : EInstantVASModules.values()) {
 			if (!enabledModulesList.contains(module)) {
 				continue;
 			}
-			if (!first) {
-				System.out.print(", ");
-			} else {
-				first = false;
-			}
-			System.out.print(module.name().toLowerCase());
+			Instrumentation.reportDebug("  " + module.name().toLowerCase() + ",");
 			switch (module) {
 			case CELLTICK_BR_INTEGRATION:
 				configureCelltickBRIntegration();
@@ -802,7 +839,7 @@ public class InstantVASInstanceConfiguration {
 				configureCelltickJUnitTestsIntegration();
 				break;
 			case BASE:
-				Object[] baseModuleInstances = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(log, baseModuleDAL,
+				Object[] baseModuleInstances = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(baseModuleDAL,
 					EInstantVASCommandTriggers.get2DStringArrayFromEInstantVASCommandTriggersArray(BASEnstNewUser),
 					EInstantVASCommandTriggers.get2DStringArrayFromEInstantVASCommandTriggersArray(BASEnstExistingUser));
 				baseStates = (SMSAppModuleNavigationStates) baseModuleInstances[0];
@@ -813,7 +850,7 @@ public class InstantVASInstanceConfiguration {
 					{"GuessingWordFromHangmanHumanOpponent", HANGMANphrGuessingWordHelp},
 				};
 				Object[] helpModuleInstances = SMSAppModuleConfigurationHelp.getHelpModuleInstances(
-					log, SHORT_CODE, APP_NAME,
+					SHORT_CODE, APP_NAME,
 					HELPphrNewUsersFallback, HELPphrExistingUsersFallback, HELPphrStateless, HELPphrStatefulHelpMessages, HELPphrComposite,
 					EInstantVASCommandTriggers.get2DStringArrayFromEInstantVASCommandTriggersArray(HELPnstPresentingCompositeHelp));
 				helpStates    = (SMSAppModuleNavigationStatesHelp) helpModuleInstances[0];
@@ -821,7 +858,7 @@ public class InstantVASInstanceConfiguration {
 				helpPhrasings = (SMSAppModulePhrasingsHelp)        helpModuleInstances[2];
 				break;
 			case SUBSCRIPTION:
-				Object[] subscriptionModuleInstances = SMSAppModuleConfigurationSubscription.getSubscriptionModuleInstances(log, SHORT_CODE, APP_NAME, PRICE_TAG,
+				Object[] subscriptionModuleInstances = SMSAppModuleConfigurationSubscription.getSubscriptionModuleInstances(SHORT_CODE, APP_NAME, PRICE_TAG,
 					SUBSCRIPTIONphrDoubleOptinStart, SUBSCRIPTIONphrDisagreeToSubscribe, SUBSCRIPTIONphrSuccessfullySubscribed, SUBSCRIPTIONphrCouldNotSubscribe,
 					SUBSCRIPTIONphrUserRequestedUnsubscription, SUBSCRIPTIONphrLifecycleUnsubscription,
 					baseModuleDAL, subscriptionDAL, subscriptionEngine,
@@ -832,7 +869,7 @@ public class InstantVASInstanceConfiguration {
 				subscriptionEventsServer = (SMSAppModuleEventsSubscription)           subscriptionModuleInstances[3];
 				break;
 			case PROFILE:
-				Object[] profileModuleInstances = SMSAppModuleConfigurationProfile.getProfileModuleInstances(log, SHORT_CODE, APP_NAME,
+				Object[] profileModuleInstances = SMSAppModuleConfigurationProfile.getProfileModuleInstances(SHORT_CODE, APP_NAME,
 					PROFILEphrAskForFirstNickname, PROFILEphrAskForNewNickname, PROFILEphrAskForNicknameCancelation,
 					PROFILEphrNicknameRegistrationNotification, PROFILEphrUserProfilePresentation, PROFILEphrNicknameNotFound,
 					profileModuleDAL,
@@ -842,7 +879,7 @@ public class InstantVASInstanceConfiguration {
 				profilePhrasings = (SMSAppModulePhrasingsProfile)        profileModuleInstances[2];
 				break;
 			case CHAT:
-				Object[] chatModuleInstances = SMSAppModuleConfigurationChat.getChatModuleInstances(log, SHORT_CODE, APP_NAME,
+				Object[] chatModuleInstances = SMSAppModuleConfigurationChat.getChatModuleInstances(SHORT_CODE, APP_NAME,
 					profilePhrasings,
 					CHATphrPrivateMessage, CHATphrPrivateMessageDeliveryNotification, CHATphrDoNotKnowWhoYouAreChattingTo,
 					profileModuleDAL, chatModuleDAL,
@@ -852,7 +889,7 @@ public class InstantVASInstanceConfiguration {
 				chatPhrasings = (SMSAppModulePhrasingsChat)        chatModuleInstances[2];
 				break;
 			case HANGMAN:
-				Object[] hangmanModuleInstances = SMSAppModuleConfigurationHangman.getHangmanModuleInstances(log, SHORT_CODE, APP_NAME,
+				Object[] hangmanModuleInstances = SMSAppModuleConfigurationHangman.getHangmanModuleInstances(SHORT_CODE, APP_NAME,
 					HANGMANwinningArt, HANGMANlosingArt, HANGMANheadCharacter, HANGMANleftArmCharacter, HANGMANchestCharacter,
 					HANGMANrightArmCharacter, HANGMANleftLegCharacter, HANGMANrightLegCharacter, 
 					HANGMANphr_gallowsArt, HANGMANphrAskOpponentNicknameOrPhone, HANGMANphrAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation,
@@ -876,7 +913,6 @@ public class InstantVASInstanceConfiguration {
 				throw new RuntimeException("InstantVAS Module '"+module+"' isn't present");
 			}
 		}
-		System.out.println(".");
 		
 		// keep track of the loaded module's navigation states...
 		modulesNavigationStates = new NavigationState[][] {
@@ -908,15 +944,15 @@ public class InstantVASInstanceConfiguration {
 	/** This one might be used for piracy control if APP_NAME, SHORT_CODE, etc becomes hardcoded, read from an encypted file, read from InstantVAS.com or something like that */
 	private void configureCelltickBRIntegration() {
 		moParser           = new SMSInCelltick(APP_NAME);
-		mtSender           = new SMSOutCelltick(log, APP_NAME, SHORT_CODE, KANNEL_MT_SMSC, MT_SERVICE_URL,
+		mtSender           = new SMSOutCelltick(APP_NAME, SHORT_CODE, KANNEL_MT_SMSC, MT_SERVICE_URL,
 		                                        MT_SERVICE_NUMBER_OF_RETRY_ATTEMPTS, MT_SERVICE_DELAY_BETWEEN_ATTEMPTS);
-		subscriptionEngine = new CelltickLiveScreenSubscriptionAPI(log, LIFECYCLE_SERVICE_BASE_URL, LIFECYCLE_CHANNEL_NAME);
+		subscriptionEngine = new CelltickLiveScreenSubscriptionAPI(LIFECYCLE_SERVICE_BASE_URL, LIFECYCLE_CHANNEL_NAME);
 	}
 	
 	private void configureCelltickJUnitTestsIntegration() {
 		moParser = null;
 		mtSender = null;
-		subscriptionEngine = new TestableSubscriptionAPI(log, "HangmanTests");
+		subscriptionEngine = new TestableSubscriptionAPI("HangmanTests");
 	}
 	
 	public static void setHangmanTestDefaults() {
@@ -934,8 +970,9 @@ public class InstantVASInstanceConfiguration {
 	 *  which would fill in piracy protection variables for CELLTICK_BR or CELLTICK_TEST */
 	public static void setHangmanProductionDefaults() {
 		
-		REPORT_DATA_COLLECTOR_STRATEGY = EInstrumentationDataPours.POSTGRESQL_DATABASE;
-		LOG_STRATEGY                   = EInstrumentationDataPours.CONSOLE;
+		REPORT_DATA_COLLECTOR_STRATEGY = EReportEventHandler.CONSOLE;
+		LOG_STRATEGY                   = ELogEventHandler.CONSOLE;
+		MINIMUM_LOG_SEVERITY           = ELogSeverity.DEBUG;
 		LOG_HANGMAN_FILE_PATH          = "";
 		LOG_WEBAPP_FILE_PATH           = "";
 		APP_NAME                       = "HANGMAN";

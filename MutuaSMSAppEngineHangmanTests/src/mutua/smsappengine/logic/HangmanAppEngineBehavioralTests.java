@@ -55,7 +55,7 @@ public class HangmanAppEngineBehavioralTests {
 	private static TestableSubscriptionAPI subscriptionEngine;
 	
 	
-	public static void _HangmanAppEngineBehavioralTests() throws IllegalArgumentException, SecurityException, SQLException, IllegalAccessException, NoSuchFieldException {
+	public HangmanAppEngineBehavioralTests() throws IllegalArgumentException, SecurityException, SQLException, IllegalAccessException, NoSuchFieldException {
 		
 		InstantVASInstanceConfiguration.setHangmanTestDefaults();
 		ivac = new InstantVASInstanceConfiguration();
@@ -71,14 +71,6 @@ public class HangmanAppEngineBehavioralTests {
 		nextBotWordsDB = ivac.hangmanModuleDAL.getNextBotWordsDB();
 		
 		tc = new SMSAppModuleTestCommons(ivac.baseModuleDAL, ivac.modulesNavigationStates, ivac.modulesCommandProcessors);
-	}
-
-	static {
-		try {
-			_HangmanAppEngineBehavioralTests();
-		} catch (Throwable t) {
-			t.printStackTrace();
-		}
 	}
 
 	private void checkResponse(String phone, String inputText, String... expectedResponsesText) throws SQLException {

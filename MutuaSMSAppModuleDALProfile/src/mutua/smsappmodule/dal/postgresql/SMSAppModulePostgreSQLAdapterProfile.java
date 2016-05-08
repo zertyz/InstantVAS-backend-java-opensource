@@ -82,13 +82,13 @@ public class SMSAppModulePostgreSQLAdapterProfile extends PostgreSQLAdapter {
 			             "userId        INTEGER     PRIMARY KEY REFERENCES Users(userId) ON DELETE CASCADE," +
 			             "nickname      TEXT        NOT NULL," +
 			             "cts           TIMESTAMP   DEFAULT CURRENT_TIMESTAMP," +
-			             "uts           TIMESTAMP   DEFAULT NULL);" +
+			             "uts           TIMESTAMP   DEFAULT NULL)",
 			            
 			             // custom indexes
-			             "CREATE UNIQUE INDEX unique_caseinsensitive_nickname ON Profiles (lower(nickname) text_pattern_ops);" +
+			             "CREATE UNIQUE INDEX unique_caseinsensitive_nickname ON Profiles (lower(nickname) text_pattern_ops)",
 			            
 			             // trigger for 'uts' -- the updated timestamp
-			             "CREATE TRIGGER Profiles_update_timestamp BEFORE UPDATE ON Profiles FOR EACH ROW EXECUTE PROCEDURE set_updated_timestamp();" +
+			             "CREATE TRIGGER Profiles_update_timestamp BEFORE UPDATE ON Profiles FOR EACH ROW EXECUTE PROCEDURE set_updated_timestamp()",
 
 			             // stored procedure
 			             "CREATE OR REPLACE FUNCTION AssertProfile(p_userId INTEGER, p_nickname TEXT, OUT userId INTEGER, OUT nickname TEXT) RETURNS RECORD AS $$\n" +
@@ -132,7 +132,7 @@ public class SMSAppModulePostgreSQLAdapterProfile extends PostgreSQLAdapter {
 			             "        END;\n" +
 			             "    END LOOP retry;\n" +
 			             "END;\n" + 
-			             "$$ LANGUAGE plpgsql;" +
+			             "$$ LANGUAGE plpgsql",
 				          
 				         // Meta record
 				         "INSERT INTO Meta(tableName, modelVersion) VALUES ('Profiles', '"+modelVersionForMetaTable+"')"},

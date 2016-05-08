@@ -2,7 +2,6 @@ package instantvas.nativewebserver;
 
 import static config.InstantVASLicense.*;
 import static config.MutuaHardCodedConfiguration.*;
-
 import instantvas.smsengine.producersandconsumers.EInstantVASEvents;
 import instantvas.smsengine.producersandconsumers.MOConsumer;
 import instantvas.smsengine.producersandconsumers.MOProducer;
@@ -10,7 +9,12 @@ import instantvas.smsengine.producersandconsumers.MTConsumer;
 import instantvas.smsengine.producersandconsumers.MTProducer;
 import instantvas.smsengine.web.AddToMOQueue;
 import mutua.events.EventClient;
+import mutua.icc.instrumentation.InstrumentableEvent;
 import mutua.icc.instrumentation.Instrumentation;
+import mutua.icc.instrumentation.InstrumentableEvent.ELogSeverity;
+import mutua.icc.instrumentation.dto.InstrumentationEventDto;
+import mutua.icc.instrumentation.handlers.IInstrumentationHandler;
+import mutua.icc.instrumentation.handlers.InstrumentationHandlerRAM;
 import mutua.smsin.parsers.SMSInParser;
 
 import java.io.File;
@@ -21,6 +25,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -73,8 +78,7 @@ public class NativeHTTPServer {
 	public static MTProducer                               mtProducer;
 	public static EventClient<EInstantVASEvents>           moConsumer;
 	public static MOProducer                               moProducer;
-
-
+	
 	public static void instantiate() throws IllegalArgumentException, SecurityException, SQLException, IllegalAccessException, NoSuchFieldException {
 		ivac       = new InstantVASInstanceConfiguration();
 		moParser   = ivac.moParser;

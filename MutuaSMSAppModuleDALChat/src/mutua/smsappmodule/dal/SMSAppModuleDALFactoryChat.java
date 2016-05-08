@@ -2,6 +2,8 @@ package mutua.smsappmodule.dal;
 
 import java.sql.SQLException;
 
+import mutua.icc.instrumentation.Instrumentation;
+
 /** <pre>
  * SMSAppModuleDALFactoryChat.java
  * ===============================
@@ -48,8 +50,7 @@ public enum SMSAppModuleDALFactoryChat {
 			instantiateDataAccessLayers();
 			wasInstantiated = true;
 		} catch (Throwable t) {
-			// TODO instrument it
-			t.printStackTrace();
+			Instrumentation.reportThrowable(t, "Error instantiating 'SMSAppModuleDALChat'");
 		}
 	}
 	
