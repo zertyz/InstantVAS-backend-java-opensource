@@ -140,9 +140,10 @@ public class InstantVASLicense {
 	public static final String LIFECYCLE_CHANNEL_NAME = "HangMan";
 	
 	// Passive HTTPD Service; Active HTTP Queue Client
+	public static final String MOAcquisitionMethods_PASSIVE_ONLY             = "kBc8A";
 	public static final String MOAcquisitionMethods_ACTIVE_HTTP_QUEUE_CLIENT = "lC9Jz";
 	
-	public static final String MO_ACQUISITION_METHOD                  = MOAcquisitionMethods_ACTIVE_HTTP_QUEUE_CLIENT;
+	public static final String MO_ACQUISITION_METHOD                  = /**/ MOAcquisitionMethods_PASSIVE_ONLY; //*/ MOAcquisitionMethods_ACTIVE_HTTP_QUEUE_CLIENT;
 	public static final String MO_ACTIVE_HTTP_QUEUE_BASE_URL          = "http://test.InstantVAS.com/CelltickMOs.php";
 	public static final String MO_ACTIVE_HTTP_QUEUE_LOCAL_OFFSET_FILE = "/tmp/lastFetchedMO";
 	public static final String MO_ACTIVE_HTTP_QUEUE_BATCH_SIZE        = "50";

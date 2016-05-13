@@ -279,7 +279,6 @@ public class AddToMOQueue {
 		} else if (attemptToValidateMO(mo)) {
 			
 			try {
-				reportMOQueueAddition(mo);
 				moProducer.dispatchMOForProcessing(mo);
 				response = moParser.getReply(ESMSInParserSMSAcceptionStatus.ACCEPTED);
 			} catch (Throwable t) {

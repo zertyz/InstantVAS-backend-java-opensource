@@ -1,6 +1,7 @@
 package instantvas.smsengine.producersandconsumers;
 
-import static config.InstantVASLicense.IFDEF_INSTRUMENT_MO_AND_MT_TIMES;
+import static config.InstantVASLicense.*;
+import static instantvas.smsengine.SMSAppEngineInstrumentationMethods.*;
 
 import config.InstantVASInstanceConfiguration;
 import mutua.events.EventClient;
@@ -31,10 +32,12 @@ public class MTConsumer implements EventClient<EInstantVASEvents> {
 	@InstantVASEvent(EInstantVASEvents.INTERACTIVE_MT)
 	public void sendMT(OutgoingSMSDto mt) {
 		
-		// MO and MT instrumentation -- register a new milestone: MT just retrieved from the queue
-		if (IFDEF_INSTRUMENT_MO_AND_MT_TIMES) {
-			MOAndMTInstrumentation.reportMTDequeuing(mt);
-		}
+		startMTDeliveryRequest(mt);
+		
+//		// MO and MT instrumentation -- register a new milestone: MT just retrieved from the queue
+//		if (IFDEF_INSTRUMENT_MO_AND_MT_TIMES) {
+//			MOAndMTInstrumentation.reportMTDequeuing(mt);
+//		}
 
 		// deliver the MT
 		try {
@@ -43,10 +46,12 @@ public class MTConsumer implements EventClient<EInstantVASEvents> {
 			Instrumentation.reportThrowable(t, "Error while sending MT -- " + mt.toString());
 		}
 		
-		// MO and MT instrumentation -- event finished: MT sent
-		if (IFDEF_INSTRUMENT_MO_AND_MT_TIMES) {
-			MOAndMTInstrumentation.notifyMTDelivery(mt);
-		}
+		finishRequest();
+		
+//		// MO and MT instrumentation -- event finished: MT sent
+//		if (IFDEF_INSTRUMENT_MO_AND_MT_TIMES) {
+//			MOAndMTInstrumentation.notifyMTDelivery(mt);
+//		}
 
 	}
 	

@@ -1,13 +1,13 @@
 package instantvas.smsengine.producersandconsumers;
 
 import static config.InstantVASLicense.*;
+import static instantvas.smsengine.SMSAppEngineInstrumentationMethods.*;
 
 import config.InstantVASInstanceConfiguration;
 import mutua.events.EventClient;
 import mutua.events.IEventLink;
 import mutua.hangmansmsgame.smslogic.SMSProcessor;
 import mutua.icc.instrumentation.Instrumentation;
-import mutua.schedule.ScheduleEntryInfo;
 import mutua.smsin.dto.IncomingSMSDto;
 
 /** <pre>
@@ -33,15 +33,19 @@ public class MOConsumer implements EventClient<EInstantVASEvents> {
 	@InstantVASEvent(EInstantVASEvents.MO_ARRIVED)
 	public void processMO(IncomingSMSDto mo) {
 		
-		// MO and MT instrumentation -- register a new milestone: MO just retrieved from the queue
-		if (IFDEF_INSTRUMENT_MO_AND_MT_TIMES) {
-			MOAndMTInstrumentation.reportMODequeuing(mo);
-		}
+		startMOProcessingRequest(mo);
+		
+//		// MO and MT instrumentation -- register a new milestone: MO just retrieved from the queue
+//		if (IFDEF_INSTRUMENT_MO_AND_MT_TIMES) {
+//			MOAndMTInstrumentation.reportMODequeuing(mo);
+//		}
 		
 		try {
 			smsP.process(mo);
 		} catch (Throwable t) {
 			Instrumentation.reportThrowable(t, "Error while processing MO -- "+mo.toString());
 		}
+		
+		finishRequest();
 	}
 }

@@ -23,6 +23,7 @@ import instantvas.smsengine.MOSMSesQueueDataBureau;
 import instantvas.smsengine.MTSMSesQueueDataBureau;
 import instantvas.smsengine.producersandconsumers.EInstantVASEvents;
 import instantvas.smsengine.producersandconsumers.InstantVASEvent;
+import instantvas.smsengine.producersandconsumers.MOAndMTProfileInstrumentationHandler;
 import mutua.events.DirectEventLink;
 import mutua.events.IEventLink;
 import mutua.events.PostgreSQLQueueEventLink;
@@ -581,7 +582,7 @@ public class InstantVASInstanceConfiguration {
 
 	// temporary log -- meant to record events before the configuration file tells what to do with them (mainly records parsing and application of the configuration file)
 	private static InstrumentationEventDto[]   temporaryLoggedEvents;
-	private static void setTemporaryLog() {
+	public static void setTemporaryLog() {
 		IInstrumentationHandler ramLogger = new InstrumentationHandlerRAM() {
 			public void analyzeRequest(ArrayList<InstrumentationEventDto> requestEvents) {
 				temporaryLoggedEvents = requestEvents.toArray(new InstrumentationEventDto[0]);
@@ -655,7 +656,8 @@ public class InstantVASInstanceConfiguration {
 			throw new RuntimeException("LOG_STRATEGY '"+LOG_STRATEGY+"' isn't implemented yet");
 		}
 		
-		profileHandler = reportHandler = logHandler;
+		reportHandler = logHandler;
+		profileHandler = new MOAndMTProfileInstrumentationHandler();
 		
 		Instrumentation.configureDefaultValuesForNewInstances(logHandler, reportHandler, profileHandler);
 		

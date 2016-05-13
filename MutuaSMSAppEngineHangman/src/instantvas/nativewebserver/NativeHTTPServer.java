@@ -9,12 +9,7 @@ import instantvas.smsengine.producersandconsumers.MTConsumer;
 import instantvas.smsengine.producersandconsumers.MTProducer;
 import instantvas.smsengine.web.AddToMOQueue;
 import mutua.events.EventClient;
-import mutua.icc.instrumentation.InstrumentableEvent;
 import mutua.icc.instrumentation.Instrumentation;
-import mutua.icc.instrumentation.InstrumentableEvent.ELogSeverity;
-import mutua.icc.instrumentation.dto.InstrumentationEventDto;
-import mutua.icc.instrumentation.handlers.IInstrumentationHandler;
-import mutua.icc.instrumentation.handlers.InstrumentationHandlerRAM;
 import mutua.smsin.parsers.SMSInParser;
 
 import java.io.File;
@@ -25,7 +20,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -94,9 +88,15 @@ public class NativeHTTPServer {
 		                                ALLOWABLE_SHORT_CODES);
 	}
 	
-	public static void main(String[] args) throws IOException, IllegalArgumentException, SecurityException, SQLException, IllegalAccessException, NoSuchFieldException {
-		InstantVASConfigurationLoader.applyConfigurationFromLicenseClass();
-		instantiate();
+	public static void main(String[] args) {
+		try {
+			InstantVASInstanceConfiguration.setTemporaryLog();
+			InstantVASConfigurationLoader.applyConfigurationFromLicenseClass();
+			instantiate();
+		} catch (Throwable t) {
+			t.printStackTrace();
+			return;
+		}
 		
 		// use the active MO fecthing mechanism?
 		if (MO_ACQUISITION_METHOD == MOAcquisitionMethods_ACTIVE_HTTP_QUEUE_CLIENT) {
@@ -162,7 +162,12 @@ public class NativeHTTPServer {
 			}.start();
 		}
 		
-		startServer(NATIVE_HTTP_SERVER_PORT, NATIVE_HTTP_SOCKET_BACKLOG_QUEUE_SLOTS, InstantVASSMSWebHandlers.values());
+		try {
+			startServer(NATIVE_HTTP_SERVER_PORT, NATIVE_HTTP_SOCKET_BACKLOG_QUEUE_SLOTS, InstantVASSMSWebHandlers.values());
+		} catch (Throwable t) {
+			t.printStackTrace();
+			return;
+		}
 		Instrumentation.reportDebug("InstantVAS Internal :"+NATIVE_HTTP_SERVER_PORT+" server started. Requests may now commence.");
 		/* debug */ if (IFDEF_WEB_DEBUG) {Instrumentation.reportDebug("Registered services: "+Arrays.deepToString(InstantVASSMSWebHandlers.values()));}
 	}
