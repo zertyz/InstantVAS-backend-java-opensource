@@ -100,9 +100,10 @@ public class SMSAppEngineInstrumentationMethods {
 		Instrumentation.logProfileAndCompute(moQueueAdditionEvent, moIdProperty, moId, moMessageProperty, mo);
 	}
 
-	/** overload to be used in batch addition. May defecate the profiling algorithm (since the moId isn't valid) */
+	/** overload to be used in batch addition. A temporary (negative) 'moId' (based on 'phone') will be issued and later corrected by 'MOAndMTProfileInstrumentationHandler' */
+	// TODO 14/05/2016 MO and MT instrumentation just doesn't work when fetching in batch!
 	public static void reportMOQueueAddition(IncomingSMSDto mo) {
-		Instrumentation.logProfileAndCompute(moQueueAdditionEvent, moIdProperty, -1, moMessageProperty, mo);
+		Instrumentation.logProfileAndCompute(moQueueAdditionEvent, moIdProperty, -(int)(Long.parseLong(mo.getPhone().replaceAll("[^0-9]", "")) % Integer.MIN_VALUE), moMessageProperty, mo);
 	}
 
 	

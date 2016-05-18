@@ -594,9 +594,6 @@ public class InstantVASInstanceConfiguration {
 		};
 		Instrumentation.configureDefaultValuesForNewInstances(ramLogger, ramLogger, ramLogger);
 	}
-	static {
-		setTemporaryLog();
-	}
 	
 	// INSTANCE VARIABLES
 	/////////////////////
@@ -647,6 +644,15 @@ public class InstantVASInstanceConfiguration {
 		IInstrumentationHandler logHandler;
 		IInstrumentationHandler reportHandler;
 		IInstrumentationHandler profileHandler;
+		
+		// pre-instrumentation instantiation error messages
+		///////////////////////////////////////////////////
+		if (APP_NAME == null) {
+			System.out.println("Configuration ERROR: 'APP_NAME' seems not to be defined! Configuration file is likely to be invalid");
+		}
+		if (MINIMUM_LOG_SEVERITY == null) {
+			System.out.println("Configuration ERROR: 'MINIMUM_LOG_SEVERITY' seems not to be defined! Configuration is likely to be invalid");
+		}
 		
 		switch (LOG_STRATEGY) {
 		case CONSOLE:

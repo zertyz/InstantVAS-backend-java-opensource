@@ -119,13 +119,13 @@ public class AddToMOQueue {
 		if (parameterValues == null) {
 			/* debug */ if (IFDEF_WEB_DEBUG) {Instrumentation.reportDebug("/AddToMOQueue " + new String(BAD_REQUEST) + ": " + queryString);}
 			response = BAD_REQUEST;
-		} else if (attemptToAuthenticateFromStrictGetParameters(parameterValues)) {
+		} else if (!attemptToAuthenticateFromStrictGetParameters(parameterValues)) {
 			/* debug */ if (IFDEF_WEB_DEBUG) {
 				Instrumentation.reportDebug("/AddToMOQueue " + new String(BAD_AUTHENTICATION) + ": " + queryString);
 				Instrumentation.reportDebug("IFDEF_HARDCODE_CHECK_METHOD_OF_ADDITIONAL_MO_PARAMETER_VALUES=" + IFDEF_HARDCODE_CHECK_METHOD_OF_ADDITIONAL_MO_PARAMETER_VALUES);
 				Instrumentation.reportDebug("MO_ADDITIONAL_RULEn_LENGTH=" + MO_ADDITIONAL_RULEn_LENGTH);
 				Instrumentation.reportDebug("parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]=" + parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]);
-				Instrumentation.reportDebug("MO_ADDITIONAL_RULE0_REGEX.matcher(parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]).matches()" + MO_ADDITIONAL_RULE0_REGEX.matcher(parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]).matches());
+				Instrumentation.reportDebug("MO_ADDITIONAL_RULE0_REGEX.matcher(parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]).matches(): " + MO_ADDITIONAL_RULE0_REGEX.matcher(parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]).matches());
 			}
 			response = BAD_AUTHENTICATION;
 		} else {
