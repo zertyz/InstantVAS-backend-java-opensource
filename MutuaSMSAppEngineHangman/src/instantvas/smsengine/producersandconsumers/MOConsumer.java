@@ -35,11 +35,6 @@ public class MOConsumer implements EventClient<EInstantVASEvents> {
 		
 		startMOProcessingRequest(mo);
 		
-//		// MO and MT instrumentation -- register a new milestone: MO just retrieved from the queue
-//		if (IFDEF_INSTRUMENT_MO_AND_MT_TIMES) {
-//			MOAndMTInstrumentation.reportMODequeuing(mo);
-//		}
-		
 		try {
 			smsP.process(mo);
 		} catch (Throwable t) {

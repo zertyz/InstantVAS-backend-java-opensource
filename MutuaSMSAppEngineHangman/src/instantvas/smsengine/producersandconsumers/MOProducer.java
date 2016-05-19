@@ -40,26 +40,12 @@ public class MOProducer extends EventServer<EInstantVASEvents> implements IMOPro
 	@Override
 	public int dispatchMOForProcessing(IncomingSMSDto mo) {
 		
-		long arrivedMillis;
 		int moId;
-		
-		
-//		// MO and MT instrumentation -- registers the arrival time for a late registration
-//		if (IFDEF_INSTRUMENT_MO_AND_MT_TIMES) {
-//			arrivedMillis = System.currentTimeMillis();
-//		}
-//		
+
 		moId = dispatchConsumableEvent(EInstantVASEvents.MO_ARRIVED, mo);
 
 		reportMOQueueAddition(moId, mo);
 
-//		// MO and MT instrumentation -- create the event and the first milestone: the MO was enqueued
-//		// reentrancy problem: the event might be consumed before this code is executed
-//		if (IFDEF_INSTRUMENT_MO_AND_MT_TIMES) {
-//			MOAndMTInstrumentation.registerLateMOArrival(mo, moId, arrivedMillis);
-//			MOAndMTInstrumentation.reportMOEnqueuing(mo, moId);
-//		}
-		
 		return moId;
 	}
 

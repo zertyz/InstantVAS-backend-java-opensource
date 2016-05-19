@@ -40,26 +40,12 @@ public class MTProducer extends EventServer<EInstantVASEvents> implements IRespo
 
 	@Override
 	public void onMessage(OutgoingSMSDto mt, IncomingSMSDto mo) {
-		
+
 		reportMTIsReady(mo, mt);
 		
-//		
-//		// MO and MT instrumentation -- register a new milestone: MO just finish processing
-//		if (IFDEF_INSTRUMENT_MO_AND_MT_TIMES) {
-//			Instrumentation.reportDebug("MT is ready!!");
-//			MOAndMTInstrumentation.reportMTIsReady(mt, mo);
-//		}
-
 		dispatchConsumableEvent(EInstantVASEvents.INTERACTIVE_MT, mt);
 		
 		reportMTEnqueued(mo, mt);
-		
-		// log, report and profile that the mt was enqueued
-
-//		// MO and MT instrumentation -- register a new milestone: MT just added to the queue
-//		if (IFDEF_INSTRUMENT_MO_AND_MT_TIMES) {
-//			MOAndMTInstrumentation.reportMTEnqueuing(mt, mo);
-//		}
 
 	}
 	

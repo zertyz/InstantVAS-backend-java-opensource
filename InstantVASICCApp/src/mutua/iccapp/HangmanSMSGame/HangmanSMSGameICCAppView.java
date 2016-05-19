@@ -1067,23 +1067,28 @@ public class HangmanSMSGameICCAppView extends FrameView {
             dateStr = DateTimeHelper.getSimpleDateStringFromMillis(System.currentTimeMillis());
             txt += "<br/><font color="+userColor+">&gt;&gt;&gt; <i>("+dateStr+") " + phone + "</i></font>: <b>" + inputText + "</b>";
             
-            String[][] MTs = smsFrontend.process(phone, inputText, carrier);
-            
-			for (int i=0; i<MTs.length; i++) {
-				String outgoingBillingType = MTs[i][0];
-				String outgoingPhone       = MTs[i][1];
-				String outgoingText        = MTs[i][2];
+            try {
+            	String[][] MTs = smsFrontend.process(phone, inputText, carrier);
+                
+    			for (int i=0; i<MTs.length; i++) {
+    				String outgoingBillingType = MTs[i][0];
+    				String outgoingPhone       = MTs[i][1];
+    				String outgoingText        = MTs[i][2];
 
-				// number of chars presentation
-				String chars = outgoingText.length() + " chars";
-				if (outgoingText.length() > 138) {
-					chars = "<font color='#FF0000'>" + chars + "</font>";
-				}
-				
-				dateStr = DateTimeHelper.getSimpleDateStringFromMillis(System.currentTimeMillis());
-				txt += "<br/>"+"<font color="+userColor+">&lt;&lt;&lt; <i>("+dateStr+") " + outgoingPhone + "</i></font>: '" + outgoingText + "' <i>("+chars+", <b>"+outgoingBillingType+"</b>)</i>";
-			}
+    				// number of chars presentation
+    				String chars = outgoingText.length() + " chars";
+    				if (outgoingText.length() > 138) {
+    					chars = "<font color='#FF0000'>" + chars + "</font>";
+    				}
+    				
+    				dateStr = DateTimeHelper.getSimpleDateStringFromMillis(System.currentTimeMillis());
+    				txt += "<br/>"+"<font color="+userColor+">&lt;&lt;&lt; <i>("+dateStr+") " + outgoingPhone + "</i></font>: '" + outgoingText + "' <i>("+chars+", <b>"+outgoingBillingType+"</b>)</i>";
+    			}
 
+            } catch (Throwable t) {
+            	t.printStackTrace();
+            	txt += "<br/>ERROR. Consult the console.";
+            }
             txp_history.setText("<html><head></head><body><p style='margin-top: 0'>"+txt+"</p></body></html>");
 
             txa_message.setText("");

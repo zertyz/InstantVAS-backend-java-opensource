@@ -65,4 +65,39 @@ public class InstantVASConfigurationLoader {
 		
 	}
 
+	/** temporary log -- meant to record events before the configuration file tells what to do with them (mainly records parsing and application of the configuration file) */
+	private static ArrayList<InstrumentationEventDto> temporaryLoggedEvents = null;
+
+	/** automatically called to allow logging events before the configuration is loaded. Don't forget to call {@link #purgeTemporaryLog} */
+	public static void setTemporaryLog() {
+		if (temporaryLoggedEvents == null) {
+			temporaryLoggedEvents = new ArrayList<InstrumentationEventDto>();
+			IInstrumentationHandler ramLogger = new InstrumentationHandlerRAM() {
+				public void analyzeRequest(ArrayList<InstrumentationEventDto> requestEvents) {
+					temporaryLoggedEvents.addAll(requestEvents);
+				}
+				public void close() {
+					onRequestFinish(new InstrumentationEventDto(System.currentTimeMillis(), Thread.currentThread(),
+						new InstrumentableEvent("Reconfiguring Instrumentation", ELogSeverity.CRITICAL)));
+				}
+			};
+			Instrumentation.configureDefaultValuesForNewInstances(ramLogger, null, null);
+		}
+	}
+
+	/** register any eventually recorded RAM events (that happened before we know how/where to log) */
+	public static void purgeTemporaryLog(IInstrumentationHandler newLogHandler) {
+		if (temporaryLoggedEvents != null) {
+			for (int i=1; i<temporaryLoggedEvents.size(); i++) {	// skip the first element, a redundant 'APP_START' event
+				InstrumentationEventDto temporaryLoggedEvent = temporaryLoggedEvents.get(i);
+				newLogHandler.onInstrumentationEvent(temporaryLoggedEvent);
+			}
+			temporaryLoggedEvents = null;
+		}
+	}
+	
+	static {
+		setTemporaryLog();
+	}
+
 }

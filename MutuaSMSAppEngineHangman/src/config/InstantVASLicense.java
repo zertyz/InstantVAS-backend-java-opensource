@@ -86,6 +86,18 @@ public class InstantVASLicense {
 	public static final String INSTANTVAS_INSTANCES_SOURCE_TYPE        = /**/ ConfigurationSourceType_HARDCODED; //*/ ConfigurationSourceType_FS_FILE; 
 	/** The location, in respect to the above definition, to retrieve the data from */
 	public static final String INSTANTVAS_INSTANCES_SOURCE_ACCESS_INFO = /**/ null;                              //*/ "/InstantVASInstances.config";
+
+	// TODO 18/5/2016 -- corrigir a arquitetura de Instancias: O ConnectionPoolPolicy (uma nova variável a ser criada em InstanceConfiguration, ou até mesmo em InstantVASMainConfiguration)
+	//      pode ser 'private' ou shared. Também há o campo 'DatabaseSchema', que pode ser deixado em branco ou definido. Todas as tabelas
+	//      (exceto as filas) respeitarão estas definições. Caso seja 'private', o schema é setado no momento da criação da conexão; se
+	//      'shared', as informações de conexão não mais poderão ser definidas em cada instância e o schema deve ser setado antes de cada
+	//      comando -- e o JDBCAdapter guarda o 'ThreadSchema', que deve ser setado pelos MO/MT Producers & Consumers, e incluídos ou não
+	//      via IFDEV, lógico
+	
+	// TODO 18/5/2016 -- corrigir a arquitetura de Instancias: Logs, Relatórios, Profiles... podem ser UNIQUE ou PerInstance. Caso sejam perInstance,
+	//      códigos IFDEF na recepção e processamento de MOs, MTs, etc. devem setar o LogOutput, ReportOutput, ProfileOutput... para cada thread.
+	//      Parece ser uma boa solução isso?? Não teria sido melhor continuar passando as instâncias de log para todos? Certamente isto fere a
+	//      determinação "nada deve ser estático", porém esta é uma boa excessão pela simplificação dos construtores.
 	
 	// Instant VAS instances
 	////////////////////////

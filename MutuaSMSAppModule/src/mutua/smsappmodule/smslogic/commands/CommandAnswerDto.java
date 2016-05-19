@@ -41,12 +41,20 @@ public class CommandAnswerDto {
 		return sessionAfterCommandExecution;
 	}
 	
-	private static final Method responseMessagesSerializationMethod = SerializationRepository.getSerializationMethod(CommandMessageDto.class);
+	private static final Method responseMessageSerializationMethod = SerializationRepository.getSerializationMethod(CommandMessageDto.class);
 	@EfficientTextualSerializationMethod
 	public void toString(StringBuffer buffer) {
-		String userSession = (sessionAfterCommandExecution != null) ? sessionAfterCommandExecution.toString() : "NULL";
-		buffer.append("{userSession=").append(userSession).append(", ").append("responseMessages=");
-		SerializationRepository.serialize(buffer, responseMessagesSerializationMethod, responseMessages);
+
+		buffer.append("{userSession=");
+		if (sessionAfterCommandExecution != null) {
+			sessionAfterCommandExecution.toString(buffer);
+		} else {
+			buffer.append("<unchanged>");
+		}
+		
+		buffer.append(", ").append("responseMessages=");
+		
+		SerializationRepository.serialize(buffer, responseMessageSerializationMethod, responseMessages);
 		buffer.append('}');
 	}
 	

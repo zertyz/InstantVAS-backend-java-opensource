@@ -1,20 +1,16 @@
 package mutua.iccapp.HangmanSMSGame;
 
-import java.sql.SQLException;
-
+import static instantvas.smsengine.SMSAppEngineInstrumentationMethods.reportMOQueueAddition;
+import instantvas.nativewebserver.InstantVASConfigurationLoader;
+import instantvas.smsengine.producersandconsumers.EInstantVASEvents;
 import config.InstantVASInstanceConfiguration;
-import adapters.dto.PreparedProcedureInvocationDto;
-import mutua.events.postgresql.QueuesPostgreSQLAdapter;
 import mutua.hangmansmsgame.smslogic.SMSProcessor;
+import mutua.hangmansmsgame.smslogic.SMSProcessorException;
 import mutua.icc.instrumentation.Instrumentation;
-import mutua.icc.instrumentation.eventclients.InstrumentationProfilingEventsClient;
-import mutua.icc.instrumentation.pour.PourFactory.EInstrumentationDataPours;
-import mutua.imi.IndirectMethodNotFoundException;
-import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterChat;
+import mutua.imi.IndirectMethodInvocationInfo;
 import mutua.smsin.dto.IncomingSMSDto;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 import mutua.smsout.dto.OutgoingSMSDto;
-import mutua.subscriptionengine.TestableSubscriptionAPI;
 
 /** <pre>
  * SMSAppFrontend.java  --  $Id$
@@ -27,96 +23,55 @@ import mutua.subscriptionengine.TestableSubscriptionAPI;
 
 public class SMSAppFrontend {
 
-	
-	private static Instrumentation<ICCAppInstrumentationRequestProperty, String> log;
+	private static InstantVASInstanceConfiguration ivac;
 	
 	private SMSProcessor                   smsP;
 	private SimulationMessageReceiver      responseReceiver;
-	private static TestableSubscriptionAPI subscriptionEngine;
 	private static String                  subscriptionChannel = "InstantVASSimulator";
-	
-	// MO and MT databases (clones of the web application queue structures)
-	private QueuesPostgreSQLAdapter moDB;
-	private QueuesPostgreSQLAdapter mtDB;
-	
 
-    
     static {
-    	log = new Instrumentation<ICCAppInstrumentationRequestProperty, String>("HangmanSMSGameICCApp", new ICCAppInstrumentationRequestProperty("phone"),
-    			EInstrumentationDataPours.CONSOLE, null);
-    	try {
-        	InstrumentationProfilingEventsClient instrumentationProfilingEventsClient = new InstrumentationProfilingEventsClient(log, EInstrumentationDataPours.CONSOLE, null);
-			log.addInstrumentationPropagableEventsClient(instrumentationProfilingEventsClient);
-		} catch (IndirectMethodNotFoundException e) {
-			e.printStackTrace();
+		try {
+			// code based on NativeHTTPServer#main
+			InstantVASConfigurationLoader.applyConfigurationFromLicenseClass();
+			ivac = new InstantVASInstanceConfiguration();
+		} catch (Throwable t) {
+			t.printStackTrace();
 		}
     }
 
     
     public SMSAppFrontend() {
-    	subscriptionEngine  = new TestableSubscriptionAPI(log);
-    	
-    	// attempt to use the same MO/MT registration as the main web application
-    	try {
-    		// TODO fix this hard coded info
-    		// MutuaEventsAdditionalEventLinks configuration
-    		QueuesPostgreSQLAdapter.configureDefaultValuesForNewInstances(log, "venus", 5432, "hangman", "hangman", "hangman");
-    		moDB = QueuesPostgreSQLAdapter.getQueuesDBAdapter(null, "MOQueue",
-			                                                  "phone  TEXT NOT NULL, text   TEXT NOT NULL, ",
-			                                                  "phone, text",
-			                                                  "${PHONE}, ${TEXT}");
-			mtDB = QueuesPostgreSQLAdapter.getQueuesDBAdapter(null, "MTQueue",
-			                                                  "moId  INTEGER NOT NULL, phone  TEXT NOT NULL, text   TEXT NOT NULL, ",
-			                                                  "moId, phone, text",
-			                                                  "${MO_ID}, ${PHONE}, ${TEXT}");
-	    	SMSAppModulePostgreSQLAdapterChat.configureChatDatabaseModule(log, "venus", 5432, "hangman", "hangman", "hangman",
-	    	                                                              "MOQueue", "eventId", "text");
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-    	
-    	InstantVASInstanceConfiguration.setDefaults(log, subscriptionEngine, subscriptionChannel);
     	responseReceiver = new SimulationMessageReceiver();
-    	smsP = new SMSProcessor(log, responseReceiver, InstantVASInstanceConfiguration.navigationStates);
+    	
+    	// code based on 'MOConsumer'
+    	smsP = new SMSProcessor(responseReceiver, ivac.modulesNavigationStates, ivac.modulesCommandProcessors);
 	}
 
-    private static int nextMOId = 1;
-    public String[][] process(String phone, String inputText, String carrier) {
-    	log.reportRequestStart(phone);
-    	int moId = nextMOId++;
-        IncomingSMSDto mo = new IncomingSMSDto(moId, phone, inputText, ESMSInParserCarrier.valueOf(carrier), "1234");
+    public String[][] process(String phone, String inputText, String carrier) throws Throwable {
+
+        IncomingSMSDto mo = new IncomingSMSDto(-1, phone, inputText, ESMSInParserCarrier.valueOf(carrier), "1234");
         
-        try {
-            // insert into the MO database
-            PreparedProcedureInvocationDto invocation = new PreparedProcedureInvocationDto("InsertNewQueueElement");
-            invocation.addParameter("PHONE", phone);
-            invocation.addParameter("TEXT", inputText);
-            moDB.invokeScalarProcedure(invocation);
-            
-			smsP.process(mo);
-		} catch (Throwable t) {
-			log.reportThrowable(t, "Error processing simulated message");
-			t.printStackTrace();
-		}
+    	int moId = ivac.MOpcLink.reportConsumableEvent(new IndirectMethodInvocationInfo<EInstantVASEvents>(EInstantVASEvents.MO_ARRIVED, mo));
+    	reportMOQueueAddition(moId, mo);
+    	
+    	// only MOs with an moId may be processed (requirement by the chat module)
+    	mo = new IncomingSMSDto(moId, phone, inputText, ESMSInParserCarrier.valueOf(carrier), "1234");
+    	
+    	// process the MO -- code based on 'MOConsumer'
+		smsP.process(mo);
+        
 		OutgoingSMSDto[] observedResponses = responseReceiver.getLastOutgoingSMSes();
 		String[][] response = new String[observedResponses.length][3];
 		for (int i=0; i<response.length; i++) {
 			response[i][0] = observedResponses[i].getBillingType().toString();
 			response[i][1] = observedResponses[i].getPhone();
 			response[i][2] = observedResponses[i].getText().replaceAll("\n", "<br/>");
-			try {
-				// insert into the MT database
-				PreparedProcedureInvocationDto invocation = new PreparedProcedureInvocationDto("InsertNewQueueElement");
-	            invocation.addParameter("MO_ID", moId);
-	            invocation.addParameter("PHONE", observedResponses[i].getPhone());
-	            invocation.addParameter("TEXT", observedResponses[i].getText());
-	            mtDB.invokeScalarProcedure(invocation);
-			} catch (Throwable t) {
-				log.reportThrowable(t, "Error processing simulated message");
-				t.printStackTrace();
-			}
+			
+			OutgoingSMSDto mt = new OutgoingSMSDto(moId, observedResponses[i].getPhone(), observedResponses[i].getText(), null);
+			// add to the MT Queue -- code based on 'MTProducer'
+			ivac.MTpcLink.reportConsumableEvents(new IndirectMethodInvocationInfo<EInstantVASEvents>(EInstantVASEvents.INTERACTIVE_MT, mt));
+			
 		}
-		log.reportRequestFinish();
 		return response;
 	}
 

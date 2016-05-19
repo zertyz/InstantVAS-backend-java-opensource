@@ -14,11 +14,11 @@ import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHangman.CommandTri
 
 import java.lang.annotation.Annotation;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import instantvas.nativewebserver.InstantVASConfigurationLoader;
 import instantvas.smsengine.MOSMSesQueueDataBureau;
 import instantvas.smsengine.MTSMSesQueueDataBureau;
 import instantvas.smsengine.producersandconsumers.EInstantVASEvents;
@@ -32,12 +32,9 @@ import mutua.events.postgresql.QueuesPostgreSQLAdapter;
 import mutua.hangmansmsgame.smslogic.SMSProcessor;
 import mutua.icc.configuration.annotations.ConfigurableElement;
 import mutua.icc.instrumentation.InstrumentableEvent.ELogSeverity;
-import mutua.icc.instrumentation.InstrumentableEvent;
 import mutua.icc.instrumentation.Instrumentation;
-import mutua.icc.instrumentation.dto.InstrumentationEventDto;
 import mutua.icc.instrumentation.handlers.IInstrumentationHandler;
 import mutua.icc.instrumentation.handlers.InstrumentationHandlerLogConsole;
-import mutua.icc.instrumentation.handlers.InstrumentationHandlerRAM;
 import mutua.smsappmodule.config.InstantVASSMSAppModuleConfiguration;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationChat;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationHangman;
@@ -579,21 +576,6 @@ public class InstantVASInstanceConfiguration {
 //			return stringArrayNavigationStateTriggers;
 //		}
 //	};
-
-	// temporary log -- meant to record events before the configuration file tells what to do with them (mainly records parsing and application of the configuration file)
-	private static InstrumentationEventDto[]   temporaryLoggedEvents;
-	public static void setTemporaryLog() {
-		IInstrumentationHandler ramLogger = new InstrumentationHandlerRAM() {
-			public void analyzeRequest(ArrayList<InstrumentationEventDto> requestEvents) {
-				temporaryLoggedEvents = requestEvents.toArray(new InstrumentationEventDto[0]);
-			}
-			public void close() {
-				onRequestFinish(new InstrumentationEventDto(System.currentTimeMillis(), Thread.currentThread(),
-					new InstrumentableEvent("Reconfiguring Instrumentation", ELogSeverity.CRITICAL)));
-			}
-		};
-		Instrumentation.configureDefaultValuesForNewInstances(ramLogger, ramLogger, ramLogger);
-	}
 	
 	// INSTANCE VARIABLES
 	/////////////////////
@@ -666,14 +648,9 @@ public class InstantVASInstanceConfiguration {
 		profileHandler = new MOAndMTProfileInstrumentationHandler();
 		
 		Instrumentation.configureDefaultValuesForNewInstances(logHandler, reportHandler, profileHandler);
-		
-		// register any eventually recorded RAM events (that happened before we know how/where to log)
-		if (temporaryLoggedEvents != null) {
-			for (InstrumentationEventDto temporaryLoggedEvent : temporaryLoggedEvents) {
-				logHandler.onRequestStart(temporaryLoggedEvent);
-			}
-			temporaryLoggedEvents = null;
-		}
+
+		// log to the right destination any previously instrumented events (mainly consisting of the configuration loading process)
+		InstantVASConfigurationLoader.purgeTemporaryLog(logHandler);
 				
 		Instrumentation.reportDebug("### Configuring HTTPClientAdapter...");
 		HTTPClientAdapter.configureDefaultValuesForNewInstances(HTTP_CONNECTION_TIMEOUT_MILLIS, HTTP_READ_TIMEOUT_MILLIS, false, "User-Agent", "InstantVAS.com integration client");

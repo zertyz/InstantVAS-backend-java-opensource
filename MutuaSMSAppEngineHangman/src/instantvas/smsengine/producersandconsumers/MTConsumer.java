@@ -29,16 +29,15 @@ public class MTConsumer implements EventClient<EInstantVASEvents> {
 		this.mtSender = ivac.mtSender;
 	}
 	
+	// TODO 18/5/2016 -- corrigir a arquitetura de Instancias: Filas devem ter um IFDEF para incluir um campo equivalente a AUTHENTICATION_TOKEN, e
+	//      MO/MT Producers & Consumers devem consultar este campo para descobrir para onde as mensagens devem ser direcionadas. Este campo pode ser
+	//      IFDEFed com o fato de se ter definido como estático mais de um AUTHENTICATION_TOKEN
+	
 	@InstantVASEvent(EInstantVASEvents.INTERACTIVE_MT)
 	public void sendMT(OutgoingSMSDto mt) {
 		
 		startMTDeliveryRequest(mt);
 		
-//		// MO and MT instrumentation -- register a new milestone: MT just retrieved from the queue
-//		if (IFDEF_INSTRUMENT_MO_AND_MT_TIMES) {
-//			MOAndMTInstrumentation.reportMTDequeuing(mt);
-//		}
-
 		// deliver the MT
 		try {
 			mtSender.sendMessage(mt);
@@ -48,11 +47,6 @@ public class MTConsumer implements EventClient<EInstantVASEvents> {
 		
 		finishRequest();
 		
-//		// MO and MT instrumentation -- event finished: MT sent
-//		if (IFDEF_INSTRUMENT_MO_AND_MT_TIMES) {
-//			MOAndMTInstrumentation.notifyMTDelivery(mt);
-//		}
-
 	}
 	
 }

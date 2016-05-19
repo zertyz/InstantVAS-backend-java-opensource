@@ -75,6 +75,12 @@ public class NativeHTTPServer {
 	
 	public static void instantiate() throws IllegalArgumentException, SecurityException, SQLException, IllegalAccessException, NoSuchFieldException {
 		ivac       = new InstantVASInstanceConfiguration();
+		
+		// TODO 18/5/2016 -- corrigir a arquitetura de Instancias: o código abaixo é válido para somente 1 instância.
+		//      As instâncias devem ser carregadas (configuradas) via definição em Licenses, onde um campo
+		//      chamado "InstantiationStyle" poderia ter os valores "preload", "lazyload", ou "cacheable"
+		//      onde o preload incorporaria somente código otimizado e os outros, tanto faz.
+		
 		moParser   = ivac.moParser;
 		mtProducer = new MTProducer(ivac, new MTConsumer(ivac));
 		moConsumer = new MOConsumer(ivac, mtProducer);
@@ -90,7 +96,6 @@ public class NativeHTTPServer {
 	
 	public static void main(String[] args) {
 		try {
-			InstantVASInstanceConfiguration.setTemporaryLog();
 			InstantVASConfigurationLoader.applyConfigurationFromLicenseClass();
 			instantiate();
 		} catch (Throwable t) {
@@ -288,6 +293,10 @@ public class NativeHTTPServer {
 				try {
 					byte[] response;
 					String queryString = he.getRequestURI().getRawQuery();
+					
+					// TODO 18/5/2016 -- corrigir a arquitetura de Instancias: a instancia determina a criação dos pares AddToMOQueue / Process MT & MO mas
+					// a verificação do token só é feita dentro de AddToMOQueue#attemptToAuthenticateFromStrictGetParameters. Deve haver um método
+					// intermediário (que funciona aqui e por tomcat... talvez chamado MOReceiverRouter) que desempenhe tal função.
 
 					response = addToMOQueue.processRequest(queryString);
 
