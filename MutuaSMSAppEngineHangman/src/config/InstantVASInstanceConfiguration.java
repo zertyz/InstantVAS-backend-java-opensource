@@ -135,9 +135,10 @@ public class InstantVASInstanceConfiguration {
 	public enum ELogEventHandler    {CONSOLE, PLAIN_FILE, ROTATORY_PLAIN_FILE, ROTATORY_COMPRESSED_FILE};
 	public enum EReportEventHandler {CONSOLE, PLAIN_FILE, ROTATORY_PLAIN_FILE, ROTATORY_COMPRESSED_FILE, POSTGRESQL};
 
-	@ConfigurableElement("Where to store report data")
+	@ConfigurableElement({"Reports", "#######", "", "Where to store report data"})
 	public static EReportEventHandler REPORT_DATA_COLLECTOR_STRATEGY;
-	@ConfigurableElement("Where to store log data")
+	
+	@ConfigurableElement({"Logs", "####", "", "Where to store log data"})
 	public static ELogEventHandler LOG_STRATEGY;
 	@ConfigurableElement("What severity of log events should be persisted?")
 	public static ELogSeverity MINIMUM_LOG_SEVERITY;
@@ -146,11 +147,12 @@ public class InstantVASInstanceConfiguration {
 	public static String LOG_HANGMAN_FILE_PATH;
 	@ConfigurableElement("File name to log Hangman Web / Integration logs")
 	public static String LOG_WEBAPP_FILE_PATH;
-	@ConfigurableElement("The name of the Hangman Game, as shown in the logs")
+	
+	@ConfigurableElement({"Game Options", "############", "", "The name of the Hangman Game -- phrases can refer to this value using {{appName}}"})
 	public static String APP_NAME;
-//	@ConfigurableElement("The short code of the Hangman Game")
+//	@ConfigurableElement("The short code of the Hangman Game -- phrases can refer to this value using {{shortCode}}")
 //	public static String SHORT_CODE;
-	@ConfigurableElement("The subscription cost to the end user")
+	@ConfigurableElement("The subscription cost to the end user -- phrases can refer to this value using {{priceTag}}")
 	public static String PRICE_TAG;
 	@ConfigurableElement("Default prefix for invited & new users -- The suffix are the last 4 phone number digits")
 	public static String DEFAULT_NICKNAME_PREFIX;
@@ -172,7 +174,7 @@ public class InstantVASInstanceConfiguration {
 	// Integration with 'SMSOutCelltick' and 'SubscriptionEngineCelltick'
 	/////////////////////////////////////////////////////////////////////
 
-	@ConfigurableElement("Lifecycle Client service base URLs for Subscription & Unsubscription using 'CelltickLiveScreenSubscriptionAPI'")
+	@ConfigurableElement({"Integration Parameters", "######################", "", "Lifecycle Client service base URLs for Subscription & Unsubscription using 'CelltickLiveScreenSubscriptionAPI'"})
 	public static String LIFECYCLE_SERVICE_BASE_URL;
 //	@ConfigurableElement("The 'CelltickLiveScreenSubscriptionAPI's 'package name' for this service")
 //	public static String LIFECYCLE_CHANNEL_NAME;
@@ -186,7 +188,7 @@ public class InstantVASInstanceConfiguration {
 	// JDBCAdapter
 	//////////////
 	
-	@ConfigurableElement("The desired data access handler for all hangman databases")
+	@ConfigurableElement({"Database", "########", "", "The desired data access handler for all hangman databases"})
 	public static EInstantVASDAL  DATA_ACCESS_LAYER;
 	@ConfigurableElement("Hostname (or IP) of the PostgreSQL server. For localhost, try '::1' first")
 	public static String  POSTGRESQL_HOSTNAME;
@@ -207,7 +209,7 @@ public class InstantVASInstanceConfiguration {
 	@ConfigurableElement("Set to true to have all database queries logged")
 	public static boolean POSTGRESQL_SHOULD_DEBUG_QUERIES;
 		
-	@ConfigurableElement("Specifies which event processing strategy should be used on incoming SMSes (MOs) -- DIRECT means the messages will be processed directly, on the same request thread and without any buffer; RAM means the producers and consumers must be running on the same machine and on the same process; POSTGRESQL means a table will be used to keep those messages and serve as the queue at the same time")
+	@ConfigurableElement({"MO Processing", "#############", "", "Specifies which event processing strategy should be used on incoming SMSes (MOs) -- DIRECT means the messages will be processed directly, on the same request thread and without any buffer; RAM means the producers and consumers must be running on the same machine and on the same process; POSTGRESQL means a table will be used to keep those messages and serve as the queue at the same time"})
 	public static EEventProcessingStrategy MO_PROCESSING_STRATEGY;
 	@ConfigurableElement("The maximum number of entries when using 'RAM' for 'MO_PROCESSING_STRATEGY'")
 	public static int    MO_RAM_QUEUE_CAPACITY;
@@ -220,7 +222,7 @@ public class InstantVASInstanceConfiguration {
 	@ConfigurableElement("The number of consumer threads. Applyable to all queues (not applyable to the 'DIRECT' event processing strategy). This number should not be greater than 'NUMBER_OF_CONCURRENT_CONNECTIONS'. The value here should be determined through experiments which aim to achieve the greater number of MOs processed per second")
 	public static int    MO_QUEUE_NUMBER_OF_WORKER_THREADS;
 
-	@ConfigurableElement("The same as described on 'MO_PROCESSING_STRATEGY', but for MTs (outgoing SMSes)")
+	@ConfigurableElement({"MT Processing", "#############", "", "The same as described on 'MO_PROCESSING_STRATEGY', but for MTs (outgoing SMSes)"})
 	public static EEventProcessingStrategy MT_PROCESSING_STRATEGY;
 	@ConfigurableElement("The maximum number of entries when using 'RAM' for 'MT_PROCESSING_STRATEGY'")
 	public static int    MT_RAM_QUEUE_CAPACITY;
@@ -233,7 +235,7 @@ public class InstantVASInstanceConfiguration {
 	@ConfigurableElement("The number of consumer threads. Applyable to all queues (not applyable to the 'DIRECT' event processing strategy). This number may be greater than 'NUMBER_OF_CONCURRENT_CONNECTIONS' and should get bigger as the latency between the two involved servers increase, as the processing time on the MT server increase, as the number of MT retries increase and so on...")
 	public static int    MT_QUEUE_NUMBER_OF_WORKER_THREADS;
 	
-	@ConfigurableElement("The same as described on 'MO_PROCESSING_STRATEGY', but for 'Subscription Renewal' events, generated by the subscription lifecycle engine")
+	@ConfigurableElement({"Subscription Renewal Processing", "###############################", "", "The same as described on 'MO_PROCESSING_STRATEGY', but for 'Subscription Renewal' events, generated by the subscription lifecycle engine"})
 	public static EEventProcessingStrategy SUBSCRIPTION_RENEWAL_PROCESSING_STRATEGY;
 	@ConfigurableElement("The maximum number of entries when using 'RAM' for 'SUBSCRIPTION_RENEWAL_PROCESSING_STRATEGY'")
 	public static int    SR_RAM_QUEUE_CAPACITY;
@@ -246,7 +248,7 @@ public class InstantVASInstanceConfiguration {
 	@ConfigurableElement("The number of consumer threads. Applyable to all queues (not applyable to the 'DIRECT' event processing strategy). This number may be greater than 'NUMBER_OF_CONCURRENT_CONNECTIONS' and should get bigger as the latency between the two involved servers increase, as the processing time on the MT server increase, as the number of MT retries increase and so on...")
 	public static int    SR_QUEUE_NUMBER_OF_WORKER_THREADS;
 
-	@ConfigurableElement("The same as described on 'SUBSCRIPTION_RENEWAL_PROCESSING_STRATEGY', but for 'Subscription Cancellation' events")
+	@ConfigurableElement({"Subscription Cancellation Processing", "####################################", "", "The same as described on 'SUBSCRIPTION_RENEWAL_PROCESSING_STRATEGY', but for 'Subscription Cancellation' events"})
 	public static EEventProcessingStrategy SUBSCRIPTION_CANCELLATION_PROCESSING_STRATEGY;
 	@ConfigurableElement("The maximum number of entries when using 'RAM' for 'SUBSCRIPTION_CANCELLATION_PROCESSING_STRATEGY'")
 	public static int    SC_RAM_QUEUE_CAPACITY;
@@ -307,7 +309,7 @@ public class InstantVASInstanceConfiguration {
 	////////////
 	
 	// help
-	@ConfigurableElement("Phrase sent when a new user sends an unrecognized keyword, possibly instructing him/her on how to register. Variables: {{shortCode}}, {{appName}}")
+	@ConfigurableElement({"Phrases", "#######", "", "Phrase sent when a new user sends an unrecognized keyword, possibly instructing him/her on how to register. Variables: {{shortCode}}, {{appName}}"})
 	public static String HELPphrNewUsersFallback;
 	@ConfigurableElement("Phrase sent when an existing user attempts to send an unrecognized command, to give him/her a quick list of commands. Variables: {{shortCode}}, {{appName}}")
 	public static String HELPphrExistingUsersFallback;
@@ -453,7 +455,22 @@ public class InstantVASInstanceConfiguration {
 	/////////////////////////////////////////////////
 	
 	// help
-	@ConfigurableElement("If matched, shows a very long help message which -- requires pagination to show it's full contents -- and puts the user in the 'nstPresentingCompositeHelp' navigation state")
+	@ConfigurableElement({
+		"################",
+		"Command Triggers",
+		"################",
+		"The following definitions specifies commands and the regular expressions that activates them.",
+		"Command names should appear as the first element, and the possible values are, for each module:",
+		"HELP:         ShowStatelessHelp, ShowStatefulHelp, StartCompositeHelpDialog, ShowNextCompositeHelpMessage, ShowNewUsersFallbackHelp, ShowExistingUsersFallbackHelp",
+		"SUBSCRIPTION: StartDoubleOptinProcess, Subscribe, Unsubscribe, DoNotAgreeToSubscribe",
+		"PROFILE:      StartAskForNicknameDialog, AskForNicknameDialogCancelation, RegisterNickname, ShowUserProfile",
+		"CHAT:         SendPrivateReply, SendPrivateMessage",
+		"HANGMAN:      InviteNicknameOrPhoneNumber, StartHangmanMatchInvitationProcess, HoldOpponentPhoneNumber, HoldOpponentNickname, HoldMatchWord, AcceptMatchInvitation, RefuseMatchInvitation, SuggestLetterOrWordForHuman, SuggestLetterOrWordForBot",
+        "",
+		"HELP module",
+		"###########",
+		"",
+		"If matched, shows a very long help message which -- requires pagination to show it's full contents -- and puts the user in the 'nstPresentingCompositeHelp' navigation state"})
 	public static String[] HELPtrgGlobalStartCompositeHelpDialog;
 	@ConfigurableElement("For users in 'nstPresentingCompositeHelp', if matched, shows the next page of a very long help")
 	public static String[] HELPtrgLocalShowNextCompositeHelpMessage;
@@ -467,7 +484,7 @@ public class InstantVASInstanceConfiguration {
 	public static String[] HELPtrgGlobalShowStatefulHelpMessage;
 	
 	// subscription
-	@ConfigurableElement("For users in 'nstNewUser' or 'nstUnsubscribedUser', if matched, starts the double opt-in process")
+	@ConfigurableElement({"SUBSCRIPTION module", "###################", "", "For users in 'nstNewUser' or 'nstUnsubscribedUser', if matched, starts the double opt-in process"})
 	public static String[] SUBSCRIPTIONtrgLocalStartDoubleOptin;
 	@ConfigurableElement("For users in 'nstAnsweringDoubleOptin', if matched, considers the subscription as being accepted")
 	public static String[] SUBSCRIPTIONtrgLocalAcceptDoubleOptin;
@@ -477,7 +494,7 @@ public class InstantVASInstanceConfiguration {
 	public static String[] SUBSCRIPTIONtrgGlobalUnsubscribe;
 	
 	// profile
-	@ConfigurableElement("If matched, asks for a (new) nickname, starting the 'register a nickname' dialog and puts the user in 'nstRegisteringNickname' navigation state")
+	@ConfigurableElement({"PROFILE module", "##############", "", "If matched, asks for a (new) nickname, starting the 'register a nickname' dialog and puts the user in 'nstRegisteringNickname' navigation state"})
 	public static String[] PROFILEtrgGlobalStartAskForNicknameDialog;
 	@ConfigurableElement("For users in 'nstRegisteringNickname', if matched, cancels the 'register a nickname' dialog")
 	public static String[] PROFILEtrgLocalNicknameDialogCancelation;
@@ -485,17 +502,17 @@ public class InstantVASInstanceConfiguration {
 	public static String[] PROFILEtrgLocalRegisterNickname;
 	@ConfigurableElement("If matched, registers the user's new nickname. Should capture 1 parameter: the new nickname")
 	public static String[] PROFILEtrgGlobalRegisterNickname;
-	@ConfigurableElement("If matched, presents the desired user's profile. Should capture 1 parameter: the desired user's nickname")
+	@ConfigurableElement("If matched, presents the desired user's profile. May capture 1 parameter: the desired user's nickname. If matched with no parameters, the current user profile will be presented")
 	public static String[] PROFILEtrgGlobalShowUserProfile;
 	
 	// chat
-	@ConfigurableElement("If matched, sends a private message to a user. Should capture 2 parameters: the nickname and the message")
+	@ConfigurableElement({"CHAT module", "###########", "", "If matched, sends a private message to a user. Should capture 2 parameters: the nickname and the message"})
 	public static String[] CHATtrgGlobalSendPrivateMessage;
 	@ConfigurableElement("For users in 'nstChattingWithSomeone', if matched, sends a private reply to the active chat partner. Should match 1 parameter: the message")
 	public static String[] CHATtrgLocalSendPrivateReply;
 	
 	// hangman
-	@ConfigurableElement("If matched, starts the invitation for a hangman match process. Should capture 1 parameter: the phone number or nickname of the desired opponent")
+	@ConfigurableElement({"HANGMAN module", "##############", "", "If matched, starts the invitation for a hangman match process. Should capture 1 parameter: the phone number or nickname of the desired opponent"})
 	public static String[] HANGMANtrgGlobalInviteNicknameOrPhoneNumber;
 	@ConfigurableElement("When on 'nstEnteringMatchWord', if matched, advances on the 'invite for a hangman match' process by computing the desired word'. Should capture 1 parameter: the desired match word")
 	public static String[] HANGMANtrgLocalHoldMatchWord;
@@ -926,6 +943,13 @@ public class InstantVASInstanceConfiguration {
 		return combinedElements;
 	}
 	
+	private static String[] getConcatenationOf(String[] a1, String... a2) {
+		String[] combinedElements = new String[a1.length + a2.length];
+		System.arraycopy(a1, 0, combinedElements, 0, a1.length);
+		System.arraycopy(a2, 0, combinedElements, a1.length, a2.length);
+		return combinedElements;
+	}
+	
 	/** This one might be used for piracy control if APP_NAME, SHORT_CODE, etc becomes hardcoded, read from an encypted file, read from InstantVAS.com or something like that */
 	private void configureCelltickBRIntegration() {
 		moParser           = new SMSInCelltick(APP_NAME);
@@ -949,6 +973,7 @@ public class InstantVASInstanceConfiguration {
 
 
 	}
+	
 
 	/** Set the default configuration for the Hangman SMS Application.
 	 *  This function might be used to control piracy if it receives a parameter like "client" or "environment" --
@@ -1034,23 +1059,24 @@ public class InstantVASInstanceConfiguration {
 		///////
 		
 		// phrasing
-		HELPphrNewUsersFallback      = "{{appName}}: unknown command. Please send HELP to see the full command set. Some examples: LIST to see online users; P [NICK] [MSG] to send a private message; " +
-                                       "INVITE [NICK] to invite a listed player; INVITE [PHONE] to invite a friend of yours; PLAY to play with a random user. Choose an option and send it to {{shortCode}}";
-		HELPphrExistingUsersFallback = "{{appName}}: unknown command. Please send HELP to see the full command set. Some examples: LIST to see online users; P [NICK] [MSG] to send a private message; " +
-                                       "INVITE [NICK] to invite a listed player; INVITE [PHONE] to invite a friend of yours; PLAY to play with a random user. Choose an option and send it to {{shortCode}}";
+		HELPphrNewUsersFallback      = "### HELPphrNewUsersFallback ###";
+		HELPphrExistingUsersFallback = "{{appName}}: Invalid command. Text HELP to see all available commands! a tip: Send PLAY to start a match with a random player.";
 		HELPphrStateless             = "You can play the {{appName}} game in 2 ways: guessing someone's word or inviting someone to play with your word " +
-		                               "You'll get 1 lucky number each word you guess. Whenever you invite a friend or user to play, you win another lucky number " +
-		                               "Every week, 1 lucky number is selected to win the prize. Send an option to {{shortCode}}: (J)Play online; (C)Invite a friend or user; (R)anking; (A)Help";
-		HELPphrComposite             = new String[] {""};
+		                               "You'll get 1 lucky number each time your subscription is renewed. Whenever you invite a friend or user to play, you win another lucky number " +
+		                               "Every week, 1 lucky number is selected to win the prize. Send an option to {{shortCode}}: (P)lay online; (I)nvite a friend or user; (R)anking; (H)elp";
+		HELPphrComposite             = new String[] {"Guess the right words using the correct letters. The ones who don't, go straight to the gallows. Now, the commands: PLAY - start a match with the robot; LIST - find online palyers to chat or invite for a match; " +
+		                                               "INVITE <nickname> - invite someone to play; NICK <your name> - create your nick. M <nick> <message> to chat. There is More... text HELP again...",
+		                                             "This game is for subscribers of the {{appName}} game. {{priceTag}} every week. All messages are free. On every subscription renewal, you'll get a lucky number to compete for prizes! " +
+		                                               "See + http://www.canaispremiados.com.  Got tired of all of it? Send LEAVE. When you want to come back, just text HANGMAN to {{shortCode}}."};
 		// HELPphrStatefulHelpMessages  is defined at the end of all phrases
 		
 		// command patterns
-		HELPtrgGlobalStartCompositeHelpDialog      = getConcatenationOf(cmdStartCompositeHelpDialog,      trgGlobalStartCompositeHelpDialog);
-		HELPtrgLocalShowNextCompositeHelpMessage   = getConcatenationOf(cmdShowNextCompositeHelpMessage,  trgLocalShowNextCompositeHelpMessage);
-		HELPtrgGlobalShowNewUsersFallbackHelp      = getConcatenationOf(cmdShowNewUsersFallbackHelp,      ".*");
-		HELPtrgGlobalShowExistingUsersFallbackHelp = getConcatenationOf(cmdShowExistingUsersFallbackHelp, trgGlobalShowExistingUsersFallbackHelp);
-		HELPtrgGlobalShowStatelessHelpMessage      = getConcatenationOf(cmdShowStatelessHelp,             trgGlobalShowStatelessHelpMessage);
-		HELPtrgGlobalShowStatefulHelpMessage       = getConcatenationOf(cmdShowStatefulHelp,              ".*");
+		HELPtrgGlobalStartCompositeHelpDialog      = getConcatenationOf(cmdStartCompositeHelpDialog,      /*trgGlobalStartCompositeHelpDialog*/      "[^A-Z0-9]*HE?L?P?[^A-Z0-9]*");
+		HELPtrgLocalShowNextCompositeHelpMessage   = getConcatenationOf(cmdShowNextCompositeHelpMessage,  /*trgLocalShowNextCompositeHelpMessage*/   "[^A-Z0-9]*HE?L?P?[^A-Z0-9]*|[^A-Z0-9]*MO?R?E?[^A-Z0-9]*", "[^A-Z0-9]*\\+.*");
+		HELPtrgGlobalShowNewUsersFallbackHelp      = getConcatenationOf(cmdShowNewUsersFallbackHelp,                                                 ".*");
+		HELPtrgGlobalShowExistingUsersFallbackHelp = getConcatenationOf(cmdShowExistingUsersFallbackHelp, /*trgGlobalShowExistingUsersFallbackHelp*/ ".*");
+		HELPtrgGlobalShowStatelessHelpMessage      = getConcatenationOf(cmdShowStatelessHelp,             /*trgGlobalShowStatelessHelpMessage*/      "[^A-Z0-9]*TIP[^A-Z0-9]*");
+		HELPtrgGlobalShowStatefulHelpMessage       = getConcatenationOf(cmdShowStatefulHelp,                                                         ".*");
 		
 //		// stateful help messages
 //		setStatefulHelpMessages(new Object[][] {
@@ -1066,49 +1092,49 @@ public class InstantVASInstanceConfiguration {
 		///////////////
 		
 		// phrasing
-		SUBSCRIPTIONphrDoubleOptinStart            = "You are at the {{appName}} game. To continue, you must subscribe. Send {{appName}} now to {{shortCode}} and compete for prizes. You will be charged at {{priceTag}} every week."; 
-		SUBSCRIPTIONphrDisagreeToSubscribe         = "To fully use the {{appName}} game you need to subscribe. Please text {{appName}} to do so. In the mean time, you may consult the list of players. Text LIST to {{shortCode}}. Send RULES to learn how it worls.";
-		SUBSCRIPTIONphrSuccessfullySubscribed      = "{{appName}}: Registration succeeded. Send HELP to {{shortCode}} to know the rules and how to play, or simply send PLAY to {{shortCode}}";
-		SUBSCRIPTIONphrCouldNotSubscribe           = "";
-		SUBSCRIPTIONphrUserRequestedUnsubscription = "You are now unsubscribed from the {{appName}} GAME and will no longer receive invitations to play nor lucky numbers. To join again, send {{appName}} to {{shortCode}}";
-		SUBSCRIPTIONphrLifecycleUnsubscription     = "";
+		SUBSCRIPTIONphrDoubleOptinStart            = "Hi! You are at the {{appName}} game!! To play and meet new friends, you need to be a subscriber. Please answer to this message with the word HANGMAN to start. Only {{priceTag}} per week. Have fun!"; 
+		SUBSCRIPTIONphrDisagreeToSubscribe         = "{{appName}}: All right! You asked not to be subscribed. Whenever you change your mind, just text HANGMAN to {{shortCode}}. In the mean time, you may consult, completely free, the list of players - Text LIST to {{shortCode}}. Send HELP to learn how it works.";
+		SUBSCRIPTIONphrSuccessfullySubscribed      = "Hi! You are at the {{appName}} game!! To play with a random player, text PLAY; To register a nickname and be able to chat, text NICK <your name>; To play or chat with a specific member, text LIST to see the list of online players. You can always send HELP to see the rules and other commands.";
+		SUBSCRIPTIONphrCouldNotSubscribe           = "{{appName}}: Oops, we were not able to subscribe you at the moment. Please, try again later. In the mean time, you may text LIST to see the online players or HELP to learn about the game.";
+		SUBSCRIPTIONphrUserRequestedUnsubscription = "OK, you asked to leave, so you're out - you won't be able to play the {{appName}} anymore, nor receive chat or game messages, nor lucky numbers to win prizes... Changed your mind? Nice! Text HANGMAN to {{shortCode}} - {{priceTag}} a week.";
+		SUBSCRIPTIONphrLifecycleUnsubscription     = "### SUBSCRIPTIONphrLifecycleUnsubscription ###";
 		
 		// command patterns
-		SUBSCRIPTIONtrgLocalStartDoubleOptin   = getConcatenationOf(cmdStartDoubleOptinProcess, ".*");
-		SUBSCRIPTIONtrgLocalAcceptDoubleOptin  = getConcatenationOf(cmdSubscribe,               APP_NAME);
-		SUBSCRIPTIONtrgLocalRefuseDoubleOptin  = getConcatenationOf(cmdDoNotAgreeToSubscribe,   trgLocalRefuseDoubleOptin);
-		SUBSCRIPTIONtrgGlobalUnsubscribe       = getConcatenationOf(cmdUnsubscribe,             trgGlobalUnsubscribe);
+		SUBSCRIPTIONtrgLocalStartDoubleOptin   = getConcatenationOf(cmdStartDoubleOptinProcess,                               ".*");
+		SUBSCRIPTIONtrgLocalAcceptDoubleOptin  = getConcatenationOf(cmdSubscribe,                                             ".*HA[NM]GM?A?[NM]?.*");
+		SUBSCRIPTIONtrgLocalRefuseDoubleOptin  = getConcatenationOf(cmdDoNotAgreeToSubscribe,   /*trgLocalRefuseDoubleOptin*/ ".*N.*");
+		SUBSCRIPTIONtrgGlobalUnsubscribe       = getConcatenationOf(cmdUnsubscribe,             /*trgGlobalUnsubscribe*/      "[^A-Z0-9]*CANCEL[^A-Z0-9]*|[^A-Z0-9]*UNSUBSCRIBE[^A-Z0-9]*|[^A-Z0-9]*LEAVE[^A-Z0-9]*|[^A-Z0-9]*QUIT[^A-Z0-9]*|[^A-Z0-9]*EXIT[^A-Z0-9]*");
 		
 		// Profile
 		//////////
 		
 		// phrasing
-		PROFILEphrAskForFirstNickname              = "---";
-		PROFILEphrAskForNewNickname                = "---";
-		PROFILEphrAskForNicknameCancelation        = "---";
-		PROFILEphrNicknameRegistrationNotification = "{{appName}}: Name registered: {{registeredNickname}}. Send LIST to {{shortCode}} to see online players. NICK [NEW NICK] to change your name.";
-		PROFILEphrUserProfilePresentation          = "{{appName}}: {{nickname}}: Subscribed; Online; RJ. Text INVITE {{nickname}} to play a hangman match; P {{nickname}} [MSG] to chat; LIST to see online players; P to play with a random user.";
-		PROFILEphrNicknameNotFound                 = "{{appName}}: No player with nickname '{{nickname}}' was found. Maybe he/she changed it? Send LIST to {{shortCode}} to see online players";
+		PROFILEphrAskForFirstNickname              = "{{appName}}: Think of a nickname to play and chat with others!! Text now a name with up to 8 letters or numbers, but with no special characters.";
+		PROFILEphrAskForNewNickname                = "### PROFILEphrAskForNewNickname ###";
+		PROFILEphrAskForNicknameCancelation        = "### PROFILEphrAskForNicknameCancelation ###";
+		PROFILEphrNicknameRegistrationNotification = "{{appName}}: Your nickname: {{registeredNickname}}. Text LIST to see online players; NICK [NEW NICK] to change your name again.";
+		PROFILEphrUserProfilePresentation          = "{{appName}}: {{nickname}}: Subscribed; Online; {{state}}. Text INVITE {{nickname}} to play a hangman match; M {{nickname}} [MSG] to chat; LIST to see online players; P to play with a random user.";
+		PROFILEphrNicknameNotFound                 = "{{appName}}: No player with nickname '{{nickname}}' was found. Maybe he/she changed it? Text LIST to see online players";
 
 		
 		// command patterns
-		PROFILEtrgGlobalStartAskForNicknameDialog = getConcatenationOf(cmdStartAskForNicknameDialog,       "---");
-		PROFILEtrgLocalNicknameDialogCancelation  = getConcatenationOf(cmdAskForNicknameDialogCancelation, "---");
-		PROFILEtrgLocalRegisterNickname           = getConcatenationOf(cmdRegisterNickname,                "---");
-		PROFILEtrgGlobalRegisterNickname          = getConcatenationOf(cmdRegisterNickname, trgGlobalRegisterNickname);
-		PROFILEtrgGlobalShowUserProfile           = getConcatenationOf(cmdShowUserProfile,  trgGlobalShowUserProfile);
+		PROFILEtrgGlobalStartAskForNicknameDialog = getConcatenationOf(cmdStartAskForNicknameDialog/*,                    "[^A-Z0-9]*NIC?K?[^A-Z0-9]*"*/);
+		PROFILEtrgLocalNicknameDialogCancelation  = getConcatenationOf(cmdAskForNicknameDialogCancelation/*,              "---"*/);
+		PROFILEtrgLocalRegisterNickname           = getConcatenationOf(cmdRegisterNickname/*,                             "[^A-Z0-9]*([^ ]+)"*/);
+		PROFILEtrgGlobalRegisterNickname          = getConcatenationOf(cmdRegisterNickname, /*trgGlobalRegisterNickname*/ "[^A-Z0-9]*NIC?K?N?A?M?E?[^A-Z0-9]+([^ ]+)");
+		PROFILEtrgGlobalShowUserProfile           = getConcatenationOf(cmdShowUserProfile,  /*trgGlobalShowUserProfile*/  "[^A-Z0-9]*PRO?FILE?[^A-Z0-9]*|[^A-Z0-9]*PRO?FILE?[^A-Z0-9]+([^ ]+)");
 		
 		// Chat
 		///////
 		
 		// phrasing
-		CHATphrPrivateMessage                     = "{{senderNickname}}: {{senderMessage}} - To answer, text P {{senderNickname}} [MSG] to {{shortCode}}";
-		CHATphrPrivateMessageDeliveryNotification = "{{appName}}: your message has been delivered to {{targetNickname}}. What can be the command that I'll suggest now?";
-		CHATphrDoNotKnowWhoYouAreChattingTo       = "---";
+		CHATphrPrivateMessage                     = "{{senderNickname}}: {{senderMessage}} - Answer with M {{senderNickname}} [MSG]";
+		CHATphrPrivateMessageDeliveryNotification = "{{appName}}: your message has been delivered to {{targetNickname}}. While you wait for the answer, you may LIST online players";
+		CHATphrDoNotKnowWhoYouAreChattingTo       = "### CHATphrDoNotKnowWhoYouAreChattingTo ###";
 		
 		// command patterns
-		CHATtrgGlobalSendPrivateMessage = getConcatenationOf(cmdSendPrivateMessage, trgGlobalSendPrivateMessage);
-		CHATtrgLocalSendPrivateReply    = getConcatenationOf(cmdSendPrivateReply, "---");
+		CHATtrgGlobalSendPrivateMessage = getConcatenationOf(cmdSendPrivateMessage, /*trgGlobalSendPrivateMessage*/ "[^A-Z0-9]*[MP][^A-Z0-9]+([^ ]+)[^A-Z0-9]+(.*)");
+		CHATtrgLocalSendPrivateReply    = getConcatenationOf(cmdSendPrivateReply/*,                                 "---"*/);
 
 		// Hangman
 		//////////
@@ -1123,34 +1149,34 @@ public class InstantVASInstanceConfiguration {
 		HANGMANleftLegCharacter                                             = "/";
 		HANGMANrightLegCharacter                                            = "\\";
 		HANGMANphr_gallowsArt                                               = "+-+\n| {{head}}\n|{{leftArm}}{{chest}}{{rightArm}}\n|{{leftLeg}} {{rightLeg}}\n|\n====\n";
-		HANGMANphrAskOpponentNicknameOrPhone                                = "{{appName}}: Name registered: {{invitingPlayerNickname}}. Send your friend's phone to {{shortCode}} or LIST to see online players. NICK [NEW NICK] to change your name.";
-		HANGMANphrAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation = "{{appName}}: Inviting {{opponentNickname}}. Think of a word without special digits and send it now to {{shortCode}}. After the invitation, you'll get a lucky number";
-		HANGMANphrAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation    = "{{appName}}: Your friend's phone: {{opponentPhoneNumber}}. Think of a word without special digits and send it now to {{shortCode}}. After the invitation, you'll get a lucky number";
-		HANGMANphrInvitationResponseForInvitingPlayer                       = "{{invitedPlayerNickname}} was invited to play with you. while you wait, you can provoke {{invitedPlayerNickname}} by sending a message to {{shortCode}} (0.31+tax) or send SIGNUP to provoke for free how many times you want";
-		HANGMANphrInvitationNotificationForInvitedPlayer                    = "{{appName}}: {{invitingPlayerNickname}} is inviting you for a hangman match. Do you accept? Send YES or NO to {{shortCode}} or P {{invitingPlayerNickname}} [MSG] to send him/her a message";
-		HANGMANphrTimeoutNotificationForInvitingPlayer                      = "{{appName}}: {{invitedPlayerNickname}} is taking too long to answer. However, a new player, {{suggestedNewPlayersNickname}}, is available. Play with {{suggestedNewPlayersNickname}}? Send YES to {{shortCode}}";
-		HANGMANphrInvitationRefusalResponseForInvitedPlayer                 = "The invitation to play the Hangman Game made by {{invitingPlayerNickname}} was refused. Send LIST to {{shortCode}} to see online users";
-		HANGMANphrInvitationRefusalNotificationForInvitingPlayer            = "{{invitedPlayerNickname}} refused your invitation to play. Send LIST to {{shortCode}} and pick someone else";
-		HANGMANphrNotAGoodWord                                              = "You selected '{{word}}'. This is possily not a good word. Please think of one only with A-Z letters, without accents, digits, ponctuation or any other special characters and send it to {{shortCode}}";
-		HANGMANphrWordProvidingPlayerMatchStart                             = "Game started with {{wordGuessingPlayerNickname}}.\n{{gallowsArt}}Send P {{wordGuessingPlayerNickname}} [MSG] to give him/her clues";
-		HANGMANphrWordGuessingPlayerMatchStart                              = "{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nSend a letter, the complete word or END to cancel the game";
-		HANGMANphrWordProvidingPlayerStatus                                 = "{{wordGuessingPlayerNickname}} guessed letter {{guessedLetter}}\n{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nSend P {{wordGuessingPlayerNickname}} [MSG] to provoke him/her";
-		HANGMANphrWordGuessingPlayerStatus                                  = "{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nSend a letter, the complete word or END to cancel the game";
-		HANGMANphrWinningMessageForWordGuessingPlayer                       = "{{winningArt}}{{word}}! You got it! Here is your lucky number: xxx.xx.xx.xxx. Send: J to play or A for help";
-		HANGMANphrWinningMessageForWordProvidingPlayer                      = "{{wordGuessingPlayerNickname}} guessed your word! P {{wordGuessingPlayerNickname}} [MSG] to provoke him/her or INVITE {{wordGuessingPlayerNickname}} for a new match";
-		HANGMANphrLosingMessageForWordGuessingPlayer                        = "{{losingArt}}The word was {{word}}. Now challenge {{wordProvidingPlayerNickname}}: send INVITE {{wordProvidingPlayerNickname}} to {{shortCode}}";
-		HANGMANphrLosingMessageForWordProvidingPlayer                       = "Good one! {{wordGuessingPlayerNickname}} wasn't able to guessed your word! P {{wordGuessingPlayerNickname}} [MSG] to provoke him/her or INVITE {{wordGuessingPlayerNickname}} for a new match";
-		HANGMANphrMatchGiveupNotificationForWordGuessingPlayer              = "Your match with {{wordProvidingPlayerNickname}} has been canceled. Send P {{wordProvidingPlayerNickname}} [MSG] to talk to him/her or LIST to play with someone else";
-		HANGMANphrMatchGiveupNotificationForWordProvidingPlayer             = "{{wordGuessingPlayerNickname}} cancelled the match. To find other users to play with, sent LIST to {{shortCode}}";
-		HANGMANphrGuessingWordHelp                                          = "You are guessing a word on a {{appName}} match. Please text a letter or: END to quit the match; P [nick] [MSG] to ask for clues; LIST to see other online users";
+		HANGMANphrAskOpponentNicknameOrPhone                                = "### HANGMANphrAskOpponentNicknameOrPhone ###{{appName}}: Name registered: {{invitingPlayerNickname}}. Send your friend's phone to {{shortCode}} or LIST to see online players. NICK [NEW NICK] to change your name.";
+		HANGMANphrAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation = "{{appName}}: Inviting {{opponentNickname}}. Think of a word without special digits and send it now to {{shortCode}}. The most rare words work better for you to win!";
+		HANGMANphrAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation    = "### HANGMANphrAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation ###{{appName}}: Your friend's phone: {{opponentPhoneNumber}}. Think of a word without special digits and send it now to {{shortCode}}. After the invitation, you'll get a lucky number";
+		HANGMANphrInvitationResponseForInvitingPlayer                       = "{{invitedPlayerNickname}} was invited to play with you. Wait for the answer and good luck!";
+		HANGMANphrInvitationNotificationForInvitedPlayer                    = "{{appName}}: {{invitingPlayerNickname}} is inviting you for a match. Do you accept? Text YES or NO. You may also text M {{invitingPlayerNickname}} [MSG] to send him/her a message.";
+		HANGMANphrTimeoutNotificationForInvitingPlayer                      = "### HANGMANphrTimeoutNotificationForInvitingPlayer ###{{appName}}: {{invitedPlayerNickname}} is taking too long to answer. However, a new player, {{suggestedNewPlayersNickname}}, is available. Play with {{suggestedNewPlayersNickname}}? Send YES to {{shortCode}}";
+		HANGMANphrInvitationRefusalResponseForInvitedPlayer                 = "The invitation to play the Hangman Game made by {{invitingPlayerNickname}} was refused. Text LIST to {{shortCode}} to see online users or send him/her a message: text M {{invitingPlayerNickname}} [MSG]";
+		HANGMANphrInvitationRefusalNotificationForInvitingPlayer            = "{{invitedPlayerNickname}} refused your invitation to play. Send LIST to pick someone else or send him/her a message: text M {{invitedPlayerNickname}} [MSG]";
+		HANGMANphrNotAGoodWord                                              = "You choose '{{word}}'. Humm... this is possily not a good word. Please think of a single word using only A-Z letters, without accents, digits, ponctuation or any other special characters and send it again.";
+		HANGMANphrWordProvidingPlayerMatchStart                             = "Game started with {{wordGuessingPlayerNickname}}.\n{{gallowsArt}}Is your word really a hard one? We'll see... While you wait for {{wordGuessingPlayerNickname}} to make his/her first guess, you may text M {{wordGuessingPlayerNickname}} [MSG] to give him/her clues";
+		HANGMANphrWordGuessingPlayerMatchStart                              = "{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nAnswer with your first letter, the complete word or ask for clues with M {{wordProvidingPlayerNickname}} [MSG]";
+		HANGMANphrWordProvidingPlayerStatus                                 = "Match going on! {{wordGuessingPlayerNickname}} guessed letter {{guessedLetter}}\n{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nWant to chat with him/her? Text M {{wordGuessingPlayerNickname}} [MSG] to provoke him/her";
+		HANGMANphrWordGuessingPlayerStatus                                  = "{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nText a letter, the complete word or M {{wordGuessingPlayerNickname}} [MSG]";
+		HANGMANphrWinningMessageForWordGuessingPlayer                       = "{{winningArt}}{{word}}! You got it! Keep on playing! Text INVITE {{wordProvidingPlayerNickname}} for a new match with this player or text LIST to see other online players. You may also text P to play with a random user.";
+		HANGMANphrWinningMessageForWordProvidingPlayer                      = "{{wordGuessingPlayerNickname}} guessed your word! Want revenge? Text INVITE {{wordGuessingPlayerNickname}}; Want to tease him/her? Text M {{wordGuessingPlayerNickname}} [MSG]";
+		HANGMANphrLosingMessageForWordGuessingPlayer                        = "{{losingArt}}Oh, my... you were hanged! The word was {{word}}. Now challenge {{wordProvidingPlayerNickname}} for a revenge: text INVITE {{wordProvidingPlayerNickname}} or tease him/her with M {{wordGuessingPlayerNickname}} [MSG]";
+		HANGMANphrLosingMessageForWordProvidingPlayer                       = "Good one! {{wordGuessingPlayerNickname}} wasn't able to guess your word! Say something about it with M {{wordGuessingPlayerNickname}} [MSG] or INVITE {{wordGuessingPlayerNickname}} for a new match, and make it hard when you choose the word!";
+		HANGMANphrMatchGiveupNotificationForWordGuessingPlayer              = "Your match with {{wordProvidingPlayerNickname}} has been canceled. Send P {{wordProvidingPlayerNickname}} [MSG] to talk to him/her or LIST to pick another opponent. You may also text PLAY to play with a random user.";
+		HANGMANphrMatchGiveupNotificationForWordProvidingPlayer             = "{{wordGuessingPlayerNickname}} cancelled the match. To find other users to play with, text LIST; to play with a random user, text PLAY";
+		HANGMANphrGuessingWordHelp                                          = "### HANGMANphrGuessingWordHelp ###You are guessing a word on a {{appName}} match. Please text a letter or: END to quit the match; M [nick] [MSG] to ask for clues; LIST to quit this match and see other online players";
 		
 		// command patterns
-		HANGMANtrgGlobalInviteNicknameOrPhoneNumber      = getConcatenationOf(cmdInviteNicknameOrPhoneNumber, trgGlobalInviteNicknameOrPhoneNumber);
-		HANGMANtrgLocalHoldMatchWord                     = getConcatenationOf(cmdHoldMatchWord,               trgLocalHoldMatchWord);
-		HANGMANtrgLocalAcceptMatchInvitation             = getConcatenationOf(cmdAcceptMatchInvitation,       trgLocalAcceptMatchInvitation);
-		HANGMANtrgLocalRefuseMatchInvitation             = getConcatenationOf(cmdRefuseMatchInvitation,       trgLocalRefuseMatchInvitation);
-		HANGMANtrgLocalNewLetterOrWordSuggestionForHuman = getConcatenationOf(cmdSuggestLetterOrWordForHuman, trgLocalNewLetterOrWordSuggestion);
-		HANGMANtrgLocalNewLetterOrWordSuggestionForBot   = getConcatenationOf(cmdSuggestLetterOrWordForBot,   trgLocalNewLetterOrWordSuggestion);
+		HANGMANtrgGlobalInviteNicknameOrPhoneNumber      = getConcatenationOf(cmdInviteNicknameOrPhoneNumber, /*trgGlobalInviteNicknameOrPhoneNumber*/ "[^A-Z0-9]*[HR]A[NM]GM?A?N?[^A-Z0-9]+([^ ]+)|[^A-Z0-9]*I[NM]VITE?[^A-Z0-9]+([^ ]+)|[^A-Z0-9]*PL[AE][YI][^A-Z0-9]+([^ ]+)");
+		HANGMANtrgLocalHoldMatchWord                     = getConcatenationOf(cmdHoldMatchWord,               /*trgLocalHoldMatchWord*/                "[^A-Z0-9]*([^ ]+)");
+		HANGMANtrgLocalAcceptMatchInvitation             = getConcatenationOf(cmdAcceptMatchInvitation,       /*trgLocalAcceptMatchInvitation*/        "[^A-Z0-9]*Y[EA]?[SPA]?P?[^A-Z0-9]*|[^A-Z0-9]*SURE?[^A-Z0-9]*|[^A-Z0-9]*OK[^A-Z0-9]*|[^A-Z0-9]*FINE[^A-Z0-9]*|.*GO.*");
+		HANGMANtrgLocalRefuseMatchInvitation             = getConcatenationOf(cmdRefuseMatchInvitation,       /*trgLocalRefuseMatchInvitation*/        "[^A-Z0-9]*NO?P?E?[^A-Z0-9]*");
+		HANGMANtrgLocalNewLetterOrWordSuggestionForHuman = getConcatenationOf(cmdSuggestLetterOrWordForHuman, /*trgLocalNewLetterOrWordSuggestion*/    "[^A-Z0-9]*([A-Z]+)");
+		HANGMANtrgLocalNewLetterOrWordSuggestionForBot   = getConcatenationOf(cmdSuggestLetterOrWordForBot,   /*trgLocalNewLetterOrWordSuggestion*/    "[^A-Z0-9]*([A-Z]+)");
 		
 		// stateful help
 		////////////////
@@ -1240,6 +1266,140 @@ public class InstantVASInstanceConfiguration {
 //			EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
 //			EInstantVASCommandTriggers.HELPtrgGlobalShowExistingUsersFallbackHelp,
 //		};
+	}
+	
+	/** The same as {@link #setHangmanProductionDefaults()}, but reconfigure phrases and commands for the CLARO BR account */
+	public static void setHangmanProductionDefaultsCLARO_BR() {
+		
+		setHangmanProductionDefaults();
+
+		APP_NAME   = "FORCA PREMIADA";
+		PRICE_TAG  = "Rs1,99";
+		//SHORT_CODE = "993";
+		
+		// note on the command patterns bellow:
+		// the original english commands & patterns are used, having the pt-BR patters added to them.
+		
+		// Help
+		///////
+		
+		// phrasing
+		HELPphrNewUsersFallback      = "Ola! Voce esta no {{appName}}!! Eh preciso ser assinante para jogar. Responda essa msg com a palavra FORCA para comecar. Apenas {{priceTag}} por semana, divirta-se!";
+		HELPphrExistingUsersFallback = "{{appName}}: Comando invalido. Envie AJUDA para consultar todos os comandos disponiveis! Uma dica: Envie J para desafiar o robo e treinar bastante antes de entrar nos desafios.";
+		HELPphrStateless             = "### Este jogo não usa a ajuda sem estados (somente a com estados). Defina as mensagens em HELPphrComposite ###";
+		HELPphrComposite             = new String[] {"Adivinhe a palavra secreta usando as letras certas. Quem nao consegue eh enforcado. Veja aqui os COMANDOS UTEIS: J - jogar contra o robo; LISTA - encontrar jogadores; " +
+		                                               "CHAMAR <apelido>, convidar alguem da lista; NICK <seu nome>, criar seu apelido. P <nick>  <mensagem> conversar. Continua... envie AJUDA",
+		                                             "Jogo exclusivo para assinantes do {{appName}}. {{priceTag}} por semana, todas as mensagens e jogos sao gratis. A cada renovacao, um numero da sorte para muitos premios! " +
+		                                               "Veja + em http://www.canaispremiados.com.  Cansou de tudo e quer sair? Envie FORCAOUT. Se quiser voltar, envie FORCA para {{shortCode}}."};
+		// HELPphrStatefulHelpMessages  is defined at the end of all phrases
+		
+		// command patterns
+		HELPtrgGlobalStartCompositeHelpDialog      = getConcatenationOf(HELPtrgGlobalStartCompositeHelpDialog,      "[^A-Z0-9]*AJ?U?D?A?[^A-Z0-9]*");
+		HELPtrgLocalShowNextCompositeHelpMessage   = getConcatenationOf(HELPtrgLocalShowNextCompositeHelpMessage,   "[^A-Z0-9]*AJ?U?D?A?[^A-Z0-9]*|[^A-Z0-9]*MA?I?S?[^A-Z0-9]*");
+		HELPtrgGlobalShowNewUsersFallbackHelp      = getConcatenationOf(HELPtrgGlobalShowNewUsersFallbackHelp/*,      ".*"*/);
+		HELPtrgGlobalShowExistingUsersFallbackHelp = getConcatenationOf(HELPtrgGlobalShowExistingUsersFallbackHelp/*, ".*"*/);
+		HELPtrgGlobalShowStatelessHelpMessage      = getConcatenationOf(HELPtrgGlobalShowStatelessHelpMessage,      "[^A-Z0-9]*DICA[^A-Z0-9]*");
+		HELPtrgGlobalShowStatefulHelpMessage       = getConcatenationOf(HELPtrgGlobalShowStatefulHelpMessage/*,       ".*"*/);
+		
+//		// stateful help messages
+//		setStatefulHelpMessages(new Object[][] {
+//			{nstNewUser,                              "fallback help message for new users"},
+//			{nstExistingUser,                         "fallback help message for existing users"},
+//			{nstAnsweringDoubleOptin,                 "fallback help message when answering double opt-in"},
+//			{nstRegisteringNickname,                  "fallback help message when registering a nickname"},
+//			{nstChattingWithSomeone,                  "help message when statefully chatting with someone"},
+//			{nstGuessingWordFromHangmanHumanOpponent, SMSAppModulePhrasingsHangman.getGuessingWordHelp()},
+//		});
+				
+		// Subscription
+		///////////////
+		
+		// phrasing
+		SUBSCRIPTIONphrDoubleOptinStart            = "Ola! Voce esta no {{appName}}!! Eh preciso ser assinante para jogar. Responda essa msg com a palavra FORCA para comecar. Apenas {{priceTag}} por semana, divirta-se!"; 
+		SUBSCRIPTIONphrDisagreeToSubscribe         = "### A mensagem enviada quando o usuário se recusa a assinar não está definida. Defina-a através de SUBSCRIPTIONphrDisagreeToSubscribe ###";
+		SUBSCRIPTIONphrSuccessfullySubscribed      = "Ola! Voce esta no {{appName}}!! Pra desafiar o robo, envie J. Pra criar seu apelido, envie NICK e o apelido que deseja, com espaco. Exemplo: NICK PEDRO. Para ver todos os comandos, envie AJUDA.";
+		SUBSCRIPTIONphrCouldNotSubscribe           = "{{appName}}: Oops, nao conseguimos fazer seu registro. Tente novamente mais tarde. Enquanto isso, você pode enviar AJUDA para ver as regras do jogo ou LISTA para consultar os usuários online.";
+		SUBSCRIPTIONphrUserRequestedUnsubscription = "OK, voce pediu pra sair, entao esta fora - voce nao podera mais jogar FORCA, receber mensagens do jogo ou jogadores nem recebera numeros da sorte para os premios. Mudou de ideia? Oba!! Envie FORCA pra {{shortCode}}. {{priceTag}} por semana.";
+		SUBSCRIPTIONphrLifecycleUnsubscription     = "### A mensagem enviada ao usuário quando ele é desassinado por regras do ciclo de vida não está definida. Defina-a através de SUBSCRIPTIONphrLifecycleUnsubscription ###";
+		
+		// command patterns
+		SUBSCRIPTIONtrgLocalStartDoubleOptin   = getConcatenationOf(SUBSCRIPTIONtrgLocalStartDoubleOptin/*,  ".*"*/);
+		SUBSCRIPTIONtrgLocalAcceptDoubleOptin  = getConcatenationOf(SUBSCRIPTIONtrgLocalAcceptDoubleOptin, ".*FOR[CÇç]A.*");
+		SUBSCRIPTIONtrgLocalRefuseDoubleOptin  = getConcatenationOf(SUBSCRIPTIONtrgLocalRefuseDoubleOptin/*, ".*N.*"*/);
+		SUBSCRIPTIONtrgGlobalUnsubscribe       = getConcatenationOf(SUBSCRIPTIONtrgGlobalUnsubscribe,      "[^A-Z0-9]*SAIR?[^A-Z0-9]*|[^A-Z0-9]*CANCELAR?[^A-Z0-9]*|[^A-Z0-9]*FORCA ?OUT[^A-Z0-9]*");
+		
+		// Profile
+		//////////
+		
+		// phrasing
+		PROFILEphrAskForFirstNickname              = "{{appName}}: Crie um apelido pra jogar e papear com outras pessoas!! Envie agora um nome com ate oito letras, sem acento nem caracteres especiais.";
+		PROFILEphrAskForNewNickname                = "### PROFILEphrAskForNewNickname ###";
+		PROFILEphrAskForNicknameCancelation        = "### PROFILEphrAskForNicknameCancelation ###";
+		PROFILEphrNicknameRegistrationNotification = "{{appName}}: Seu apelido: {{registeredNickname}}. Envie LISTA para para ver os apelidos de outros. Se quiser mudar o seu, apenas envie NICK e seu novo apelido, com espaco entre ambos.";
+		PROFILEphrUserProfilePresentation          = "{{appName}}: {{nickname}}: Jogador {{state}}. Quer desafiar? Envie C {{nickname}} para comecar uma partida. P {{nickname}} [MSG] para mandar uma mensagem. Para ver todos os jogadores disponiveis, envie LISTA.";
+		PROFILEphrNicknameNotFound                 = "{{appName}}: Nao encontramos nenhum jogador com o apelido '{{nickname}}'. Sera que mudou, ou esta mal digitado? Envie LISTA e veja a lista completa dos jogadores ativos. Caso ainda tenha duvidas, envie AJUDA.";
+
+		
+		// command patterns
+		PROFILEtrgGlobalStartAskForNicknameDialog = getConcatenationOf(PROFILEtrgGlobalStartAskForNicknameDialog, "[^A-Z0-9]*AP?[EI]?L?I?D?[OU]?[^A-Z0-9]*|[^A-Z0-9]*NOME[^A-Z0-9]*");
+		PROFILEtrgLocalNicknameDialogCancelation  = getConcatenationOf(PROFILEtrgLocalNicknameDialogCancelation/*,  "---"*/);
+		PROFILEtrgLocalRegisterNickname           = getConcatenationOf(PROFILEtrgLocalRegisterNickname/*,           "[^A-Z0-9]*([^ ]+)"*/);
+		PROFILEtrgGlobalRegisterNickname          = getConcatenationOf(PROFILEtrgGlobalRegisterNickname,          "[^A-Z0-9]*AP?[EI]?L?I?D?[OU]?[^A-Z0-9]+([^ ]+)|[^A-Z0-9]*NOME[^A-Z0-9]+([^ ]+)");
+		PROFILEtrgGlobalShowUserProfile           = getConcatenationOf(PROFILEtrgGlobalShowUserProfile,           "[^A-Z0-9]*PER?FI[LU]?[^A-Z0-9]*|[^A-Z0-9]*PER?FI[LU]?[^A-Z0-9]+([^ ]+)");
+		
+		// Chat
+		///////
+		
+		// phrasing
+		CHATphrPrivateMessage                     = "{{senderNickname}}: {{senderMessage}} - Responda enviando P {{senderNickname}} e a sua mensagem, sempre com espaco no meio. Exemplo: P {{senderNickname}} tudo bem, e voce?";
+		CHATphrPrivateMessageDeliveryNotification = "Sua mensagem foi enviada para {{targetNickname}}. Aguarde a resposta ou envie LISTA e veja a lista completa dos jogadores ativos.";
+		CHATphrDoNotKnowWhoYouAreChattingTo       = "### CHATphrDoNotKnowWhoYouAreChattingTo ###";
+		
+		// command patterns
+		CHATtrgGlobalSendPrivateMessage = getConcatenationOf(cmdSendPrivateMessage, trgGlobalSendPrivateMessage);
+		CHATtrgLocalSendPrivateReply    = getConcatenationOf(cmdSendPrivateReply, "---");
+
+		// Hangman
+		//////////
+		
+		// phrasing
+		HANGMANwinningArt                                                   = "\\0/\n l\n/ \\\n";
+		HANGMANlosingArt                                                    = "+-+\nl x\nl/l\\\nl/ \\\n====\n";
+		HANGMANheadCharacter                                                = "O";
+		HANGMANleftArmCharacter                                             = "<";
+		HANGMANchestCharacter                                               = "l";
+		HANGMANrightArmCharacter                                            = ">";
+		HANGMANleftLegCharacter                                             = "/";
+		HANGMANrightLegCharacter                                            = "\\";
+		HANGMANphr_gallowsArt                                               = "+-+\nl {{head}}\nl{{leftArm}}{{chest}}{{rightArm}}\nl{{leftLeg}} {{rightLeg}}\nl\n====\n";
+		HANGMANphrAskOpponentNicknameOrPhone                                = "### HANGMANphrAskOpponentNicknameOrPhone ###{{appName}}: Name registered: {{invitingPlayerNickname}}. Send your friend's nick name or phone number; Or send LIST to see the available online players. NICK [NEW NICK] to change your name.";
+		HANGMANphrAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation = "{{appName}}: Chamando {{opponentNickname}} pro jogo! Envie uma palavra sem acentos ou simbolos. Quanto mais dificil, maiores as chances dele(a) nao conseguir! Capriche :)";
+		HANGMANphrAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation    = "### HANGMANphrAskForAWordToStartAMatchBasedOnOpponentPhoneInvitation ###{{appName}}: Your friend's phone: {{opponentPhoneNumber}}. Think of a word without special digits and send it now to {{shortCode}}. After the invitation, you'll get a lucky number";
+		HANGMANphrInvitationResponseForInvitingPlayer                       = "{{invitedPlayerNickname}} ja vai receber o convite. Aguarde pela resposta e boa sorte!";
+		HANGMANphrInvitationNotificationForInvitedPlayer                    = "{{appName}}: {{invitingPlayerNickname}} esta te desafiando pra uma partida. Vai encarar? Envie SIM caso queira aceitar ou NAO pra recusar. Vc tambem pode enviar M {{invitingPlayerNickname}} [MSG] para falar com ele(a).";
+		HANGMANphrTimeoutNotificationForInvitingPlayer                      = "### HANGMANphrTimeoutNotificationForInvitingPlayer ###{{appName}}: {{invitedPlayerNickname}} is taking too long to answer. However, a new player, {{suggestedNewPlayersNickname}}, is available. Play with {{suggestedNewPlayersNickname}}? Send YES to {{shortCode}}";
+		HANGMANphrInvitationRefusalResponseForInvitedPlayer                 = "O convite de jogo de {{invitingPlayerNickname}} foi recusado. Envie LISTA para ver outros jogadores ativos ou mande uma mensagem para ele(a). Envie P {{invitingPlayerNickname}} [MSG]";
+		HANGMANphrInvitationRefusalNotificationForInvitingPlayer            = "{{invitedPlayerNickname}} recusou o jogo. Envie LISTA para escolher outro adversario ou envie uma mensagem para ele(a). Envie P {{invitingPlayerNickname}} [MSG]";
+		HANGMANphrNotAGoodWord                                              = "Voce escolheu '{{word}}'. Hmmm... Esta palavra nao foi aceita. Escolha uma palavra apenas com letras de A a Z, sem acentos, numeros ou simbolos, e envie novamente!";
+		HANGMANphrWordProvidingPlayerMatchStart                             = "Pronto! O jogo contra {{wordGuessingPlayerNick}}.\n{{gallowsArt}}. Agora eh so esperar ele(a) enviar a primeira letra! Sera que sua palavra eh dificil mesmo? Veremos... Enquanto esperamos pelo primeiro palpite de {{wordGuessingPlayerNickname}}, vc pode dar uma dica enviando P {{invitingPlayerNickname}} [MSG]";
+		HANGMANphrWordGuessingPlayerMatchStart                              = "{{gallowsArt}}Palavra: {{guessedWordSoFar}}\nLetras: {{usedLetters}}\nVamos ver se a palavra vai ser desvendada! Qual é a sua primeira letra? Envie-a p/ {{shortCode}} ou peca dicas a {{wordProvidingPlayerNickname}} enviando P {{wordProvidingPlayerNickname}} [MSG]";
+		HANGMANphrWordProvidingPlayerStatus                                 = "Jogo rolando! {{wordGuessingPlayerNickname}} enviou uma letra! {{guessedLetter}}\n{{gallowsArt}}Palavra: {{guessedWordSoFar}}\nLetras: {{usedLetters}}\nQuer falar com ele(a)? Envie P {{wordGuessingPlayerNickname}} [MSG]";
+		HANGMANphrWordGuessingPlayerStatus                                  = "{{gallowsArt}}Palavra: {{guessedWordSoFar}}\nLetras: {{usedLetters}}\nEnvie uma letra para formar a palavra. Capriche para ganhar esse jogo!";
+		HANGMANphrWinningMessageForWordGuessingPlayer                       = "{{winningArt}}{{word}}! Parabens!! Voce completou a palavra! Continue jogando! Desafie esse mesmo jogador enviando CHAMAR {{wordProvidingPlayer}} com espaco no meio, ou escolha outro adversario enviando LISTA.";
+		HANGMANphrWinningMessageForWordProvidingPlayer                      = "{{wordGuessingPlayerNickname}} completou a palavra! Quer revanche? Envie CHAMAR {{wordGuessingPlayerNickname}} sempre com espaco entre as palavras, e boa sorte.";
+		HANGMANphrLosingMessageForWordGuessingPlayer                        = "{{losingArt}}Xi, enforcou... A palavra era {{word}}. Tente agora voce! Peca uma revanche! Envie CHAMAR {{wordProvidingPlayerNickname}}, sempre com espaco entre as palavras, e boa sorte!";
+		HANGMANphrLosingMessageForWordProvidingPlayer                       = "Boa!! {{wordGuessingPlayerNickname}} nao desvendou a palavra! Quer comentar o jogo com ele/a? Envie P {{wordGuessingPlayerNickname}} e sua mensagem, com espaco no meio. Quer comecar um novo duelo? Envie CHAMAR {{wordGuessingPlayerNickname}}, com espaco no meio, e caprich na escolha da palavra secreta!!";
+		HANGMANphrMatchGiveupNotificationForWordGuessingPlayer              = "Sua partida contra {{wordProvidingPlayerNickname}} foi cancelada. Envie P {{wordProvidingPlayerNickname}} [MSG] para falar com ele(a) ou LISTA para escolher outro adversario. Para treinar com o Robo, envie J.";
+		HANGMANphrMatchGiveupNotificationForWordProvidingPlayer             = "{{wordGuessingPlayerNickname}} cancelou a partida. Escolha outro adversario enviando LISTA, ou treine com o robo enviando J.";
+		HANGMANphrGuessingWordHelp                                          = "### HANGMANphrGuessingWordHelp ###You are guessing a word on a {{appName}} match. Please text a letter or: END to quit the match; P [nick] [MSG] to ask for clues; LIST to see other online users";
+		
+		// command patterns
+		HANGMANtrgGlobalInviteNicknameOrPhoneNumber      = getConcatenationOf(HANGMANtrgGlobalInviteNicknameOrPhoneNumber,      "[^A-Z0-9]*E?[NM]?FOR[CÇç]AR?[^A-Z0-9]+([^ ]+)|[^A-Z0-9]*CO?N?V?I?[DT]?[AEO]?R?[^A-Z0-9]+([^ ]+)|[^A-Z0-9]*CH?A?M?[AEO]?R?[^A-Z0-9]+([^ ]+)|[^A-Z0-9]*JO?G?[AO]?R?[^A-Z0-9]+([^ ]+)|[^A-Z0-9]*PARTIDA[^A-Z0-9]+([^ ]+)|[^A-Z0-9]*NOV[OU][^A-Z0-9]+([^ ]+)|[^A-Z0-9]*D[EI] ?NOV[OU][^A-Z0-9]+([^ ]+)|[^A-Z0-9]*OU?TR[OA][^A-Z0-9]+([^ ]+)");
+		HANGMANtrgLocalHoldMatchWord                     = getConcatenationOf(HANGMANtrgLocalHoldMatchWord/*,                     "[^A-Z0-9]*([^ ]+)"*/);
+		HANGMANtrgLocalAcceptMatchInvitation             = getConcatenationOf(HANGMANtrgLocalAcceptMatchInvitation,             "[^A-Z0-9]*SI?M?[^A-Z0-9]*|[^A-Z0-9]*TA[^A-Z0-9]*|[^A-Z0-9]*OK[^A-Z0-9]*|[^A-Z0-9]*VAI[^A-Z0-9]*|[^A-Z0-9]*ACEIT[OA]R?[^A-Z0-9]*|.*AGORA.*");
+		HANGMANtrgLocalRefuseMatchInvitation             = getConcatenationOf(HANGMANtrgLocalRefuseMatchInvitation,             "[^A-Z0-9]*N[ÃãA]?O?[^A-Z0-9]*|[^A-Z0-9]*NEI?[MN][^A-Z0-9]*");
+		HANGMANtrgLocalNewLetterOrWordSuggestionForHuman = getConcatenationOf(HANGMANtrgLocalNewLetterOrWordSuggestionForHuman/*, "[^A-Z0-9]*([A-Z]+)"*/);
+		HANGMANtrgLocalNewLetterOrWordSuggestionForBot   = getConcatenationOf(HANGMANtrgLocalNewLetterOrWordSuggestionForBot/*,   "[^A-Z0-9]*([A-Z]+)"*/);
 	}
 
 }

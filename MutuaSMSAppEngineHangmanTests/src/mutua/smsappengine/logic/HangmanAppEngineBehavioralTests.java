@@ -5,6 +5,9 @@ import static org.junit.Assert.*;
 import java.sql.SQLException;
 
 import mutua.icc.configuration.ConfigurationManager;
+import mutua.icc.instrumentation.DefaultInstrumentationEvents;
+import mutua.icc.instrumentation.InstrumentableEvent;
+import mutua.icc.instrumentation.Instrumentation;
 import mutua.imi.IndirectMethodInvocationInfo;
 import mutua.smsappmodule.SMSAppModuleTestCommons;
 import mutua.smsappmodule.dal.IChatDB;
@@ -54,12 +57,11 @@ public class HangmanAppEngineBehavioralTests {
 	
 	private static TestableSubscriptionAPI subscriptionEngine;
 	
-	
 	public HangmanAppEngineBehavioralTests() throws IllegalArgumentException, SecurityException, SQLException, IllegalAccessException, NoSuchFieldException {
 		
 		InstantVASInstanceConfiguration.setHangmanTestDefaults();
 		ivac = new InstantVASInstanceConfiguration();
-
+		
 		subscriptionEngine  = (TestableSubscriptionAPI)ivac.subscriptionEngine;
 		
 		userDB         = ivac.baseModuleDAL.getUserDB();
@@ -196,61 +198,69 @@ public class HangmanAppEngineBehavioralTests {
 	public void testDefaultPhrasings() throws SQLException {
 
 		// user's first message is an invalid command -- restart the double opt-in from scratch
-		checkResponse("21998019167", "help", "You are at the HANGMAN game. To continue, you must subscribe. Send HANGMAN now to 993 and compete for prizes. You will be charged at $0.99 every week.");
+		checkResponse("21998019167", "help", "Hi! You are at the HANGMAN game!! To play and meet new friends, you need to be a subscriber. Please answer to this message with the word HANGMAN to start. Only $0.99 per week. Have fun!");
 		assertFalse("User should not have been subscribed on the backend", subscriptionEngine._isUserSubscribed("21998019167"));
 		
 		// user's first message is the double opt-in agreement: register him/her (it is assumed a broadcast message was sent instructing him/her what to reply to subscribe)
-		checkResponse("21991234899", "Hangman", "HANGMAN: Registration succeeded. Send HELP to 993 to know the rules and how to play, or simply send PLAY to 993");
+		checkResponse("21991234899", "Hangman", "Hi! You are at the HANGMAN game!! To play with a random player, text PLAY; To register a nickname and be able to chat, text NICK <your name>; To play or chat with a specific member, text LIST to see the list of online players. You can always send HELP to see the rules and other commands.");
 		assertTrue("User was not subscribed on the backend", subscriptionEngine._isUserSubscribed("21991234899"));
 		
 		// user's first message is unsubscribe -- we must assure he/she is unsubscribed...
 		// ... for the user, for some reason, might be subscribed
 		subscriptionEngine.subscribeUser("21998019166");
-		checkResponse("21998019166", "unsubscribe", "You are now unsubscribed from the HANGMAN GAME and will no longer receive invitations to play nor lucky numbers. To join again, send HANGMAN to 993");
+		checkResponse("21998019166", "unsubscribe", "OK, you asked to leave, so you're out - you won't be able to play the HANGMAN anymore, nor receive chat or game messages, nor lucky numbers to win prizes... Changed your mind? Nice! Text HANGMAN to 993 - $0.99 a week.");
 		assertFalse("User should not be still subscribed on the backend", subscriptionEngine._isUserSubscribed("21998019166"));
 
 		// desperate help
 		checkResponse("21991234899", "how can I use this stuff??",
-		                             "HANGMAN: unknown command. Please send HELP to see the full command set. Some examples: LIST to see online users; P [NICK] [MSG] to send a private message; " +
-                                     "INVITE [NICK] to invite a listed player; INVITE [PHONE] to invite a friend of yours; PLAY to play with a random user. Choose an option and send it to 993");
+		                             "HANGMAN: Invalid command. Text HELP to see all available commands! a tip: Send PLAY to start a match with a random player.");
 
 		// desired help
 		checkResponse("21991234899", "help",
-			"You can play the HANGMAN game in 2 ways: guessing someone's word or inviting someone to play with your word " +
-			"You'll get 1 lucky number each word you guess. Whenever you invite a friend or user to play, you win another lucky number " +
-			"Every week, 1 lucky number is selected to win the prize. Send an option to 993: (J)Play online; (C)Invite a friend or user; (R)anking; (A)Help");
+			"Guess the right words using the correct letters. The ones who don't, go straight to the gallows. Now, the commands: PLAY - start " +
+			"a match with the robot; LIST - find online palyers to chat or invite for a match; INVITE <nickname> - invite someone to play; " +
+			"NICK <your name> - create your nick. M <nick> <message> to chat. There is More... text HELP again...");
+
+		// TODO 20160520 -- Adicionar a substituição das variáveis abaixo. Aliás, será que elas não ocorrem também para outras?
+		
+		// additional help
+		checkResponse("21991234899", "help",
+			"This game is for subscribers of the {{appName}} game. {{priceTag}} every week. All messages are free. On every subscription renewal, " +
+			"you'll get a lucky number to compete for prizes! See + http://www.canaispremiados.com.  Got tired of all of it? Send LEAVE. When you " +
+			"want to come back, just text HANGMAN to {{shortCode}}.");
 
 		// nickname registration
 		String expectedNickname = "HardCodedNick";
-		checkResponse("21991234899", "nick " + expectedNickname, "HANGMAN: Name registered: " + expectedNickname + ". Send LIST to 993 to see online players. NICK [NEW NICK] to change your name.");
+		checkResponse("21991234899", "nick " + expectedNickname, "HANGMAN: Your nickname: " + expectedNickname + ". Text LIST to see online players; NICK [NEW NICK] to change your name again.");
 		String observedNickname = profileDB.getProfileRecord(userDB.assureUserIsRegistered("21991234899")).getNickname();
 		assertEquals("Nickname registration failed", expectedNickname, observedNickname);
 		
 		// opponent registration
-		checkResponse("21998019167", "hangman", "HANGMAN: Registration succeeded. Send HELP to 993 to know the rules and how to play, or simply send PLAY to 993");
-		checkResponse("21998019167", "nick haole", "HANGMAN: Name registered: haole. Send LIST to 993 to see online players. NICK [NEW NICK] to change your name.");
-		checkResponse("21998019167", "nick pAtRiCiA", "HANGMAN: Name registered: pAtRiCiA. Send LIST to 993 to see online players. NICK [NEW NICK] to change your name.");
+		checkResponse("21998019167", "hangman",       "Hi! You are at the HANGMAN game!! To play with a random player, text PLAY; To register a nickname and be able to chat, text NICK <your name>; To play or chat with a specific member, text LIST to see the list of online players. You can always send HELP to see the rules and other commands.");
+		checkResponse("21998019167", "nick haole",    "HANGMAN: Your nickname: haole. Text LIST to see online players; NICK [NEW NICK] to change your name again.");
+		checkResponse("21998019167", "nick pAtRiCiA", "HANGMAN: Your nickname: pAtRiCiA. Text LIST to see online players; NICK [NEW NICK] to change your name again.");
 		
 		// user listing
 //		tc.checkResponse("21998019167", "list", "i want to see the list of users i can play with...");
 		
 		// invitation
-		checkResponse("21998019167", "invite HardCodedNick", "HANGMAN: Inviting HardCodedNick. Think of a word without special digits and send it now to 993. After the invitation, you'll get a lucky number");
+		checkResponse("21998019167", "invite HardCodedNick", "HANGMAN: Inviting HardCodedNick. Think of a word without special digits and send it now to 993. The most rare words work better for you to win!");
 		checkResponse("21998019167", "coconuts",
-			"HardCodedNick was invited to play with you. while you wait, you can provoke HardCodedNick by sending a message to 993 (0.31+tax) or send SIGNUP to provoke for free how many times you want",
-			"HANGMAN: pAtRiCiA is inviting you for a hangman match. Do you accept? Send YES or NO to 993 or P pAtRiCiA [MSG] to send him/her a message");
+			"HardCodedNick was invited to play with you. Wait for the answer and good luck!",
+			"HANGMAN: pAtRiCiA is inviting you for a match. Do you accept? Text YES or NO. You may also text M pAtRiCiA [MSG] to send him/her a message.");
 
 		// chat
 		String expectedChatMessage = "c'mon, man! Lets go for a match!!";
 		checkResponse("21998019167", "P HardCodedNick " + expectedChatMessage, 
-			"HANGMAN: your message has been delivered to HardCodedNick. What can be the command that I'll suggest now?",
-			"pAtRiCiA: " + expectedChatMessage + " - To answer, text P pAtRiCiA [MSG] to 993"
-		);
+			"HANGMAN: your message has been delivered to HardCodedNick. While you wait for the answer, you may LIST online players",
+			"pAtRiCiA: " + expectedChatMessage + " - Answer with M pAtRiCiA [MSG]");
+		
 		expectedChatMessage = "I don't know what is this yet. But, OK... lets try... For me it is easy because I'm already subscribed.";
-		checkResponse("21991234899", "P pAtRiCiA " + expectedChatMessage,
-			"HANGMAN: your message has been delivered to pAtRiCiA. What can be the command that I'll suggest now?",
-			"HardCodedNick: " + expectedChatMessage + " - To answer, text P HardCodedNick [MSG] to 993"
-		);
+		checkResponse("21991234899", "M pAtRiCiA " + expectedChatMessage,
+			"HANGMAN: your message has been delivered to pAtRiCiA. While you wait for the answer, you may LIST online players",
+			"HardCodedNick: " + expectedChatMessage + " - Answer with M HardCodedNick [MSG]");
+
+		// TODO 20160520 -- Fazer cumprir a substituição {{wordProvidingPlayerNickname}} abaixo
 		
 		// back to the invitation... lets play the match!
 		checkResponse("21991234899", "YES", "+-+\n" +
@@ -261,7 +271,7 @@ public class HangmanAppEngineBehavioralTests {
 		                                       "====\n" +
 		                                       "Word: C-C----S\n" +
 		                                       "Used: CS\n" +
-		                                       "Send a letter, the complete word or END to cancel the game",
+		                                       "Answer with your first letter, the complete word or ask for clues with M {{wordProvidingPlayerNickname}} [MSG]",
 		                                       "Game started with HardCodedNick.\n" +
 		                                       "+-+\n" +
 		                                       "| \n" +
@@ -269,7 +279,8 @@ public class HangmanAppEngineBehavioralTests {
 		                                       "|  \n" +
 		                                       "|\n" +
 		                                       "====\n" +
-		                                       "Send P HardCodedNick [MSG] to give him/her clues");
+		                                       "Is your word really a hard one? We'll see... While you wait for HardCodedNick to make his/her first guess, " +
+		                                       "you may text M HardCodedNick [MSG] to give him/her clues");
 		checkResponse("21991234899", "o", "+-+\n" +
 		                                     "| \n" +
 		                                     "|  \n" +
@@ -278,8 +289,8 @@ public class HangmanAppEngineBehavioralTests {
 		                                     "====\n" +
 		                                     "Word: COCO---S\n" +
 		                                     "Used: COS\n" +
-		                                     "Send a letter, the complete word or END to cancel the game",
-		                                     "HardCodedNick guessed letter o\n" +
+		                                     "Text a letter, the complete word or M {{wordGuessingPlayerNickname}} [MSG]",
+		                                     "Match going on! HardCodedNick guessed letter o\n" +
 		                                     "+-+\n" +
 		                                     "| \n" +
 		                                     "|  \n" +
@@ -288,7 +299,7 @@ public class HangmanAppEngineBehavioralTests {
 		                                     "====\n" +
 		                                     "Word: COCO---S\n" +
 		                                     "Used: COS\n" +
-		                                     "Send P HardCodedNick [MSG] to provoke him/her");
+		                                     "Want to chat with him/her? Text M HardCodedNick [MSG] to provoke him/her");
 		
 		// continue playing, with eventually some wrong letters, until HardCodedNick wins
 		checkResponse("21991234899", "a",
@@ -303,10 +314,11 @@ public class HangmanAppEngineBehavioralTests {
 		
 		// test the winning phrase
 		checkResponse("21991234899", "t", "\\0/\n" +
-                                             " |\n" +
-                                             "/ \\\n" +
-                                             "COCONUTS! You got it! Here is your lucky number: xxx.xx.xx.xxx. Send: J to play or A for help",
-                                             "HardCodedNick guessed your word! P HardCodedNick [MSG] to provoke him/her or INVITE HardCodedNick for a new match");
+                                            " |\n" +
+                                            "/ \\\n" +
+                                            "COCONUTS! You got it! Keep on playing! Text INVITE pAtRiCiA for a new match with this player or text LIST to see " +
+                                            "other online players. You may also text P to play with a random user.",
+                                          "HardCodedNick guessed your word! Want revenge? Text INVITE HardCodedNick; Want to tease him/her? Text M HardCodedNick [MSG]");
 		
 		// start a new game to test the losing phrase
 		invitePlayerByNick("21991234899", "pAtRiCiA");
@@ -315,16 +327,18 @@ public class HangmanAppEngineBehavioralTests {
 
 		// lose the game
 		checkResponse("21998019167", "muskratramblesong", "+-+\n" +
-                                                             "| x\n" +
-                                                             "|/|\\\n" +
-                                                             "|/ \\\n" +
-                                                             "====\n" +
-                                                             "The word was MUGGLES. Now challenge HardCodedNick: send INVITE HardCodedNick to 993",
-                                                             "Good one! pAtRiCiA wasn't able to guessed your word! P pAtRiCiA [MSG] to provoke him/her or INVITE pAtRiCiA for a new match");
+                                                            "| x\n" +
+                                                            "|/|\\\n" +
+                                                            "|/ \\\n" +
+                                                            "====\n" +
+                                                            "Oh, my... you were hanged! The word was MUGGLES. Now challenge HardCodedNick for a revenge: text INVITE HardCodedNick " +
+                                                            "or tease him/her with M {{wordGuessingPlayerNickname}} [MSG]",
+                                                          "Good one! pAtRiCiA wasn't able to guess your word! Say something about it with M pAtRiCiA [MSG] or INVITE pAtRiCiA " +
+                                                            "for a new match, and make it hard when you choose the word!");
 
 		// unsubscribe
-		checkResponse("21998019167", "unsubscribe", "You are now unsubscribed from the HANGMAN GAME and will no longer receive invitations to play nor lucky numbers. To join again, send HANGMAN to 993");
-		checkResponse("21991234899", "unsubscribe", "You are now unsubscribed from the HANGMAN GAME and will no longer receive invitations to play nor lucky numbers. To join again, send HANGMAN to 993");
+		checkResponse("21998019167", "unsubscribe", "OK, you asked to leave, so you're out - you won't be able to play the HANGMAN anymore, nor receive chat or game messages, nor lucky numbers to win prizes... Changed your mind? Nice! Text HANGMAN to 993 - $0.99 a week.");
+		checkResponse("21991234899", "unsubscribe", "OK, you asked to leave, so you're out - you won't be able to play the HANGMAN anymore, nor receive chat or game messages, nor lucky numbers to win prizes... Changed your mind? Nice! Text HANGMAN to 993 - $0.99 a week.");
 		assertFalse("User should not be still subscribed on the backend", subscriptionEngine._isUserSubscribed("21998019167"));
 		assertFalse("User should not be still subscribed on the backend", subscriptionEngine._isUserSubscribed("21991234899"));
 
@@ -360,7 +374,7 @@ public class HangmanAppEngineBehavioralTests {
 		invitePlayerForAMatch(invitingPlayerPhone, invitingPlayerNickname, "cacatua", invitedPlayerPhone, invitedPlayerNickname);
 		// send and receive a chat
 		sendPrivateMessage(invitedPlayerPhone, invitingPlayerNickname, "Why do you want to play with me?");
-		sendPrivateMessage(invitingPlayerPhone, invitedPlayerNickname, "'Cause you're the only one on my test list 8-)");
+		sendPrivateMessage(invitingPlayerPhone, invitedPlayerNickname, "Cause you're the only one on my test list 8-)");
 		// also, see the profile...
 		tc.checkResponse("21998019167", "profile DOM", ivac.profilePhrasings.getUserProfilePresentation("Dom"));
 		// the no
@@ -373,13 +387,18 @@ public class HangmanAppEngineBehavioralTests {
 	@Test
 	public void testProfileCommand() throws SQLException {
 		invitePlayerForAMatch("21991234899", "Dom", "cacatua", "21998019167", "pAtY");
-		
+
+		// TODO 20160520 -- Adicionar a funcionalidade de substituição por {{state}} da seguinte maneira:
+		//      1) Uma variável de configuração String[] PROFILE_STATES_MSISDN_PATTERNS no formato := {StateName1, PhonePattern1, ..., UnmatchedStateName}
+		//		2) Implementar esta funcionalidade no módulo Profile
+		//      3) A ocorrência de {{state}} eh Phrases deve provocar a execução de uma função. Esta funcionalidade deve ser adicionada a Phrases, permitindo sua extensibilidade
+		//      4) Substituir {{state}} por {{stateByMSISDN}}
 		// profile on the "playing" state
-		checkResponse("21998019167", "profile DOM", "HANGMAN: Dom: Subscribed; Online; RJ. Text INVITE Dom to play a hangman match; P Dom [MSG] to chat; LIST to see online players; P to play with a random user.");
+		checkResponse("21998019167", "profile DOM", "HANGMAN: Dom: Subscribed; Online; {{state}}. Text INVITE Dom to play a hangman match; M Dom [MSG] to chat; LIST to see online players; P to play with a random user.");
 		
 		checkResponse("21998019167", "no",
-			"The invitation to play the Hangman Game made by Dom was refused. Send LIST to 993 to see online users",
-			"pAtY refused your invitation to play. Send LIST to 993 and pick someone else");
+			"The invitation to play the Hangman Game made by Dom was refused. Text LIST to 993 to see online users or send him/her a message: text M Dom [MSG]",
+			"pAtY refused your invitation to play. Send LIST to pick someone else or send him/her a message: text M pAtY [MSG]");
 		
 		// profile on the "existing player" state
 		// also, profile on the "new user" state? what other commands there?
@@ -403,7 +422,7 @@ public class HangmanAppEngineBehavioralTests {
 		checkResponse("21991234899", "help",                 ivac.subscriptionPhrasings.getDoubleOptinStart());
 		checkResponse("21991234899", "no",                   ivac.subscriptionPhrasings.getDisagreeToSubscribe());
 		checkResponse("21991234899", "come again?",          ivac.subscriptionPhrasings.getDoubleOptinStart());
-		checkResponse("21991234899", "well, not yet...",     ivac.subscriptionPhrasings.getDoubleOptinStart());
+		checkResponse("21991234899", "well, not yet...",     ivac.subscriptionPhrasings.getDisagreeToSubscribe());
 		checkResponse("21991234899", "what is this, again?", ivac.subscriptionPhrasings.getDoubleOptinStart());
 		checkResponse("21991234899", "hangman",              ivac.subscriptionPhrasings.getSuccessfullySubscribed());
 		// struggle to find one's first steps after subscription
@@ -457,7 +476,7 @@ public class HangmanAppEngineBehavioralTests {
 			String hardWordSoFar = hardWord.replaceAll("[^"+usedLetters+"]", "-");
 			if (hardWordSoFar.equals(hardWord)) {
 				checkResponse("21998019167", sLetter,				                 
-		                      ivac.hangmanPhrasings.getWinningMessageForWordGuessingPlayer (hardWord, "xx.xx.xx.xx"),
+		                      ivac.hangmanPhrasings.getWinningMessageForWordGuessingPlayer (hardWord, "dom"),
 		                      ivac.hangmanPhrasings.getWinningMessageForWordProvidingPlayer("paty"));
 				break;
 			} else {

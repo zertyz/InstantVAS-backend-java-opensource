@@ -41,6 +41,8 @@ public class InstantVASConfigurationLoader {
 	
 	public static void applyConfigurationFromLicenseClass() throws IllegalArgumentException, IOException, IllegalAccessException {
 		
+		setTemporaryLog();
+		
 		/* debug */ if (IFDEF_CONFIG_DEBUG) {
 			Instrumentation.reportDebug("Applying Configuration from the License Class:");
 			Instrumentation.reportDebug("INSTANTVAS_INSTANCES_SOURCE_TYPE := " + (
@@ -68,7 +70,7 @@ public class InstantVASConfigurationLoader {
 	/** temporary log -- meant to record events before the configuration file tells what to do with them (mainly records parsing and application of the configuration file) */
 	private static ArrayList<InstrumentationEventDto> temporaryLoggedEvents = null;
 
-	/** automatically called to allow logging events before the configuration is loaded. Don't forget to call {@link #purgeTemporaryLog} */
+	/** called to allow logging events before the configuration is loaded. Don't forget to call {@link #purgeTemporaryLog} */
 	public static void setTemporaryLog() {
 		if (temporaryLoggedEvents == null) {
 			temporaryLoggedEvents = new ArrayList<InstrumentationEventDto>();
@@ -95,9 +97,4 @@ public class InstantVASConfigurationLoader {
 			temporaryLoggedEvents = null;
 		}
 	}
-	
-	static {
-		setTemporaryLog();
-	}
-
 }

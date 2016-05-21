@@ -161,7 +161,7 @@ public class InstantVASLicense {
 	public static final String MO_ACTIVE_HTTP_QUEUE_BATCH_SIZE        = "50";
 	public static final long   MO_ACTIVE_HTTP_QUEUE_POOLING_DELAY     = 1000;
 	
-	/** The short code of the Hangman Game */
+	/** The short code of the Hangman Game -- phrases can refer to this value using {{shortCode}} */
 	public static final String SHORT_CODE  = "993";
 	
 	/** 'SMSOutCelltick' parameter to allow sending MTs */
@@ -220,6 +220,9 @@ public class InstantVASLicense {
 	// navigation states
 	////////////////////
 	
+	// TODO 20160520 -- Adicionar chat, play, nick, etc em todos os estados. Consultar o NavigationStates do jogo anterior e, mais importante, criar os testes
+	//      que revelam esta falha, antes verificando se eles já não existem na versão antiga
+	
 	/** Navigation state used to initiate the first interaction with the application and, also, the state after users subscriptions cancellation */
 	public static final EInstantVASCommandTriggers[] BASEnstNewUser = {
 		EInstantVASCommandTriggers.SUBSCRIPTIONtrgLocalAcceptDoubleOptin,	// the double opt-in process starts with a broadcast message, outside the scope of this application
@@ -236,12 +239,15 @@ public class InstantVASLicense {
 		EInstantVASCommandTriggers.PROFILEtrgGlobalShowUserProfile,
 		EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
 		EInstantVASCommandTriggers.HANGMANtrgGlobalInviteNicknameOrPhoneNumber,
-		EInstantVASCommandTriggers.HELPtrgGlobalShowNewUsersFallbackHelp,
+		EInstantVASCommandTriggers.HELPtrgGlobalShowStatelessHelpMessage,
+		EInstantVASCommandTriggers.HELPtrgGlobalStartCompositeHelpDialog,
+		EInstantVASCommandTriggers.HELPtrgGlobalShowExistingUsersFallbackHelp,
 	};
 	/** Navigation state used to show the composite help messages, containing command triggers to navigate from here on */
 	public static final EInstantVASCommandTriggers[] HELPnstPresentingCompositeHelp = {
-		EInstantVASCommandTriggers.HELPtrgGlobalStartCompositeHelpDialog,
 		EInstantVASCommandTriggers.HELPtrgLocalShowNextCompositeHelpMessage,
+		EInstantVASCommandTriggers.PROFILEtrgGlobalRegisterNickname,
+		EInstantVASCommandTriggers.HELPtrgGlobalStartCompositeHelpDialog,
 		EInstantVASCommandTriggers.HELPtrgGlobalShowExistingUsersFallbackHelp,
 	};
 	/** Navigation state used to implement the double opt-in process */

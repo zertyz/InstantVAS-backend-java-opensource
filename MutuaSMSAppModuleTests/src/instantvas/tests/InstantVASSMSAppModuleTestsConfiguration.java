@@ -84,7 +84,7 @@ public class InstantVASSMSAppModuleTestsConfiguration {
 		
 		// Instrumentation
 		IInstrumentationHandler log = new InstrumentationHandlerLogConsole("SMSModuleTests", ELogSeverity.DEBUG);
-		Instrumentation.configureDefaultValuesForNewInstances(log, log, log);
+		Instrumentation.configureDefaultValuesForNewInstances(log, null, null);
 
 		try {
 			configureDefaultValuesForNewInstances(

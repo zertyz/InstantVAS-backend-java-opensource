@@ -1,7 +1,11 @@
 package config;
 
 import static org.junit.Assert.*;
+
+import java.io.IOException;
+
 import instantvas.nativewebserver.InstantVASConfigurationLoader;
+import mutua.icc.configuration.ConfigurationManager;
 import mutua.icc.instrumentation.InstrumentableEvent.ELogSeverity;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.icc.instrumentation.handlers.IInstrumentationHandler;
@@ -31,6 +35,15 @@ public class InstantVASInstanceConfigurationTests {
 		Instrumentation.configureDefaultValuesForNewInstances(logHandler, null, null);
 		InstantVASConfigurationLoader.purgeTemporaryLog(logHandler);
 		Instrumentation.reportDebug("This one shuld appear just after");
+	}
+	
+	@Test
+	public void outputCLARO_BRConfiguration() throws IllegalArgumentException, IOException, IllegalAccessException {
+		String outputFile = "/tmp/HangmanClaroBR.config";
+		InstantVASInstanceConfiguration.setHangmanProductionDefaultsCLARO_BR();
+		ConfigurationManager cm = new ConfigurationManager(InstantVASInstanceConfiguration.class);
+		cm.saveToFile(outputFile);
+		System.err.println("### CLARO BR production default configuration was saved to '"+"/tmp/HangmanClaroBR.config"+"'");
 	}
 
 }
