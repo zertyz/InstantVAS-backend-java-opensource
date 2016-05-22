@@ -416,41 +416,6 @@ public class InstantVASInstanceConfiguration {
 	@ConfigurableElement("Response sent to the word guessing player if he/she fails to send a valid command while on a hangman match. Variables: {{shortCode}}, {{appName}}")
 	public static String HANGMANphrGuessingWordHelp;
 
-	
-	// Command Triggers to Command Mappings
-	///////////////////////////////////////
-	
-	// help
-	// HELPtrgGlobalStartCompositeHelpDialog     +=StartCompositeHelpDialog
-	// HELPtrgLocalShowNextCompositeHelpMessage  +=ShowNextCompositeHelpMessage
-	// HELPtrgGlobalShowNewUsersFallbackHelp     +=ShowNewUsersFallbackHelp
-	// HELPtrgGlobalShowExistingUsersFallbackHelp+=ShowExistingUsersFallbackHelp
-	// HELPtrgGlobalShowStatelessHelpMessage     +=ShowStatelessHelp
-	
-	// subscription
-	// SUBSCRIPTIONtrgLocalStartDoubleOptin +=StartDoubleOptinProcess
-	// SUBSCRIPTIONtrgLocalAcceptDoubleOptin+=Subscribe
-	// SUBSCRIPTIONtrgLocalRefuseDoubleOptin+=DoNotAgreeToSubscribe
-	// SUBSCRIPTIONtrgGlobalUnsubscribe     +=Unsubscribe
-	
-	// profile
-	// PROFILEtrgGlobalRegisterNickname         +=RegisterNickname
-	// PROFILEtrgGlobalStartAskForNicknameDialog+=StartAskForNicknameDialog
-	// PROFILEtrgLocalNicknameDialogCancelation +=AskForNicknameDialogCancelation
-	// PROFILEtrgGlobalShowUserProfile          +=ShowUserProfile
-	// PROFILEtrgLocalRegisterNickname          +=RegisterNickname
-	// PROFILE
-	
-	// chat
-	// CHATtrgGlobalSendPrivateMessage+=SendPrivateMessage
-	// CHATtrgLocalSendPrivateReply   +=SendPrivateReply
-	
-	// hangman
-	// HANGMANtrgLocalHoldMatchWord+=cmdHoldMatchWord
-	// HANGMANtrgLocalHoldMatchWord+=cmdHoldMatchWord
-	// HANGMANtrgLocalNewLetterOrWordSuggestionForHuman+=cmdSuggestLetterOrWordForHuman
-	// HANGMANtrgLocalNewLetterOrWordSuggestionForBot+=cmdSuggestLetterOrWordForBot
-
 	// Command Triggers (Regular Expression Patterns)
 	/////////////////////////////////////////////////
 	
@@ -520,10 +485,14 @@ public class InstantVASInstanceConfiguration {
 	public static String[] HANGMANtrgLocalAcceptMatchInvitation;
 	@ConfigurableElement("Same as above, but refuses the match")
 	public static String[] HANGMANtrgLocalRefuseMatchInvitation;
-	@ConfigurableElement("When on 'nstGuessingWordFromHangmanHumanOpponent', if matched, should capture a letter or word to be used as a suggestion, in order to advance on the current hangman match")
-	public static String[] HANGMANtrgLocalNewLetterOrWordSuggestionForHuman;
-	@ConfigurableElement("Same as above, but for 'nstGuessingWordFromHangmanBotOpponent' navigation state")
-	public static String[] HANGMANtrgLocalNewLetterOrWordSuggestionForBot;
+	@ConfigurableElement("When on 'nstGuessingWordFromHangmanHumanOpponent', if matched, should capture a letter to be used as a suggestion, in order to advance on the current hangman match")
+	public static String[] HANGMANtrgLocalSingleLetterSuggestionForHuman;
+	@ConfigurableElement("The same as above, but must capture a word -- if that word wasn't matched by any other game command")
+	public static String[] HANGMANtrgLocalWordSuggestionFallbackForHuman;
+	@ConfigurableElement("The Same as the two above, but for 'nstGuessingWordFromHangmanBotOpponent' navigation state")
+	public static String[] HANGMANtrgLocalSingleLetterSuggestionForBot;
+	@ConfigurableElement("...")
+	public static String[] HANGMANtrgLocalWordSuggestionFallbackForBot;
 	
 
 //	// navigation states
@@ -577,7 +546,7 @@ public class InstantVASInstanceConfiguration {
 //		HANGMANtrgLocalHoldMatchWord,
 //		HANGMANtrgLocalAcceptMatchInvitation,
 //		HANGMANtrgLocalRefuseMatchInvitation,
-//		HANGMANtrgLocalNewLetterOrWordSuggestionForHuman,
+//		HANGMANtrgLocalNewLetterOrWordSuggestionForHuman***REFACTORED*PLEASE*COPY*THE*CODE*FROM*LICENSE*CLASS,
 //		HANGMANtrgLocalNewLetterOrWordSuggestionForBot;
 //		
 //		public String[] getCommandTriggerPatterns() throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
@@ -993,9 +962,9 @@ public class InstantVASInstanceConfiguration {
 		HTTP_CONNECTION_TIMEOUT_MILLIS = 30000;
 		HTTP_READ_TIMEOUT_MILLIS       = 30000;
 		
-		LIFECYCLE_SERVICE_BASE_URL          = "http://localhost:8082/celltick/wapAPI";
+		LIFECYCLE_SERVICE_BASE_URL          = "http://test.InstantVAS.com/CelltickSubscriptions.php"; //"http://localhost:8082/celltick/wapAPI";
 //		LIFECYCLE_CHANNEL_NAME              = "HangMan";
-		MT_SERVICE_URL                      = "http://localhost:15001/cgi-bin/sendsms";
+		MT_SERVICE_URL                      = "http://test.InstantVAS.com/CelltickMTs.php"; //"http://localhost:15001/cgi-bin/sendsms";
 		MT_SERVICE_NUMBER_OF_RETRY_ATTEMPTS = 5;
 		MT_SERVICE_DELAY_BETWEEN_ATTEMPTS   = 5000;
 
@@ -1076,7 +1045,7 @@ public class InstantVASInstanceConfiguration {
 		HELPtrgGlobalShowNewUsersFallbackHelp      = getConcatenationOf(cmdShowNewUsersFallbackHelp,                                                 ".*");
 		HELPtrgGlobalShowExistingUsersFallbackHelp = getConcatenationOf(cmdShowExistingUsersFallbackHelp, /*trgGlobalShowExistingUsersFallbackHelp*/ ".*");
 		HELPtrgGlobalShowStatelessHelpMessage      = getConcatenationOf(cmdShowStatelessHelp,             /*trgGlobalShowStatelessHelpMessage*/      "[^A-Z0-9]*TIP[^A-Z0-9]*");
-		HELPtrgGlobalShowStatefulHelpMessage       = getConcatenationOf(cmdShowStatefulHelp,                                                         ".*");
+		HELPtrgGlobalShowStatefulHelpMessage       = getConcatenationOf(cmdShowStatefulHelp,                                                         "[^A-Z0-9]*HE?L?P?[^A-Z0-9]*");
 		
 //		// stateful help messages
 //		setStatefulHelpMessages(new Object[][] {
@@ -1175,8 +1144,10 @@ public class InstantVASInstanceConfiguration {
 		HANGMANtrgLocalHoldMatchWord                     = getConcatenationOf(cmdHoldMatchWord,               /*trgLocalHoldMatchWord*/                "[^A-Z0-9]*([^ ]+)");
 		HANGMANtrgLocalAcceptMatchInvitation             = getConcatenationOf(cmdAcceptMatchInvitation,       /*trgLocalAcceptMatchInvitation*/        "[^A-Z0-9]*Y[EA]?[SPA]?P?[^A-Z0-9]*|[^A-Z0-9]*SURE?[^A-Z0-9]*|[^A-Z0-9]*OK[^A-Z0-9]*|[^A-Z0-9]*FINE[^A-Z0-9]*|.*GO.*");
 		HANGMANtrgLocalRefuseMatchInvitation             = getConcatenationOf(cmdRefuseMatchInvitation,       /*trgLocalRefuseMatchInvitation*/        "[^A-Z0-9]*NO?P?E?[^A-Z0-9]*");
-		HANGMANtrgLocalNewLetterOrWordSuggestionForHuman = getConcatenationOf(cmdSuggestLetterOrWordForHuman, /*trgLocalNewLetterOrWordSuggestion*/    "[^A-Z0-9]*([A-Z]+)");
-		HANGMANtrgLocalNewLetterOrWordSuggestionForBot   = getConcatenationOf(cmdSuggestLetterOrWordForBot,   /*trgLocalNewLetterOrWordSuggestion*/    "[^A-Z0-9]*([A-Z]+)");
+		HANGMANtrgLocalSingleLetterSuggestionForHuman    = getConcatenationOf(cmdSuggestLetterOrWordForHuman, /*trgLocalSingleLetterSuggestion*/       "[^A-Z0-9]*([A-Z])");
+		HANGMANtrgLocalWordSuggestionFallbackForHuman    = getConcatenationOf(cmdSuggestLetterOrWordForHuman, /*trgLocalWordSuggestionFallback*/       "[^A-Z0-9]*([A-Z]+)");
+		HANGMANtrgLocalSingleLetterSuggestionForBot      = getConcatenationOf(cmdSuggestLetterOrWordForBot,   /*trgLocalSingleLetterSuggestion*/       "[^A-Z0-9]*([A-Z])");
+		HANGMANtrgLocalWordSuggestionFallbackForBot      = getConcatenationOf(cmdSuggestLetterOrWordForBot,   /*trgLocalWordSuggestionFallback*/       "[^A-Z0-9]*([A-Z]+)");
 		
 		// stateful help
 		////////////////
@@ -1257,7 +1228,7 @@ public class InstantVASInstanceConfiguration {
 //			EInstantVASCommandTriggers.HELPtrgGlobalShowExistingUsersFallbackHelp,
 //		};
 //		HANGMANnstGuessingWordFromHangmanHumanOpponent = new EInstantVASCommandTriggers[] {
-//			EInstantVASCommandTriggers.HANGMANtrgLocalNewLetterOrWordSuggestionForHuman,
+//			EInstantVASCommandTriggers.HANGMANtrgLocalNewLetterOrWordSuggestionForHuman***REFACTORED*PLEASE*COPY*THE*CODE*FROM*LICENSE*CLASS,
 //			EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
 //			EInstantVASCommandTriggers.HELPtrgGlobalShowStatefulHelpMessage,
 //		};
@@ -1299,7 +1270,7 @@ public class InstantVASInstanceConfiguration {
 		HELPtrgGlobalShowNewUsersFallbackHelp      = getConcatenationOf(HELPtrgGlobalShowNewUsersFallbackHelp/*,      ".*"*/);
 		HELPtrgGlobalShowExistingUsersFallbackHelp = getConcatenationOf(HELPtrgGlobalShowExistingUsersFallbackHelp/*, ".*"*/);
 		HELPtrgGlobalShowStatelessHelpMessage      = getConcatenationOf(HELPtrgGlobalShowStatelessHelpMessage,      "[^A-Z0-9]*DICA[^A-Z0-9]*");
-		HELPtrgGlobalShowStatefulHelpMessage       = getConcatenationOf(HELPtrgGlobalShowStatefulHelpMessage/*,       ".*"*/);
+		HELPtrgGlobalShowStatefulHelpMessage       = getConcatenationOf(HELPtrgGlobalShowStatefulHelpMessage,       "[^A-Z0-9]*AJ?U?D?A?[^A-Z0-9]*");
 		
 //		// stateful help messages
 //		setStatefulHelpMessages(new Object[][] {
@@ -1398,8 +1369,10 @@ public class InstantVASInstanceConfiguration {
 		HANGMANtrgLocalHoldMatchWord                     = getConcatenationOf(HANGMANtrgLocalHoldMatchWord/*,                     "[^A-Z0-9]*([^ ]+)"*/);
 		HANGMANtrgLocalAcceptMatchInvitation             = getConcatenationOf(HANGMANtrgLocalAcceptMatchInvitation,             "[^A-Z0-9]*SI?M?[^A-Z0-9]*|[^A-Z0-9]*TA[^A-Z0-9]*|[^A-Z0-9]*OK[^A-Z0-9]*|[^A-Z0-9]*VAI[^A-Z0-9]*|[^A-Z0-9]*ACEIT[OA]R?[^A-Z0-9]*|.*AGORA.*");
 		HANGMANtrgLocalRefuseMatchInvitation             = getConcatenationOf(HANGMANtrgLocalRefuseMatchInvitation,             "[^A-Z0-9]*N[ÃãA]?O?[^A-Z0-9]*|[^A-Z0-9]*NEI?[MN][^A-Z0-9]*");
-		HANGMANtrgLocalNewLetterOrWordSuggestionForHuman = getConcatenationOf(HANGMANtrgLocalNewLetterOrWordSuggestionForHuman/*, "[^A-Z0-9]*([A-Z]+)"*/);
-		HANGMANtrgLocalNewLetterOrWordSuggestionForBot   = getConcatenationOf(HANGMANtrgLocalNewLetterOrWordSuggestionForBot/*,   "[^A-Z0-9]*([A-Z]+)"*/);
+		HANGMANtrgLocalSingleLetterSuggestionForHuman    = getConcatenationOf(cmdSuggestLetterOrWordForHuman/*,                   "[^A-Z0-9]*([A-Z])"*/);
+		HANGMANtrgLocalWordSuggestionFallbackForHuman    = getConcatenationOf(cmdSuggestLetterOrWordForHuman/*,                   "[^A-Z0-9]*([A-Z]+)"*/);
+		HANGMANtrgLocalSingleLetterSuggestionForBot      = getConcatenationOf(cmdSuggestLetterOrWordForBot/*,                     "[^A-Z0-9]*([A-Z])"*/);
+		HANGMANtrgLocalWordSuggestionFallbackForBot      = getConcatenationOf(cmdSuggestLetterOrWordForBot/*,                     "[^A-Z0-9]*([A-Z]+)"*/);
 	}
 
 }

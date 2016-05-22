@@ -284,14 +284,22 @@ public class InstantVASLicense {
 	};
 	/** Navigation state that indicates the user is playing a hangman match with a human (as the invited opponent), and his/her role is to guess the word */
 	public static final EInstantVASCommandTriggers[] HANGMANnstGuessingWordFromHangmanHumanOpponent = {
-		EInstantVASCommandTriggers.HANGMANtrgLocalNewLetterOrWordSuggestionForHuman,
+		EInstantVASCommandTriggers.HANGMANtrgLocalSingleLetterSuggestionForHuman,
+		EInstantVASCommandTriggers.SUBSCRIPTIONtrgGlobalUnsubscribe,
 		EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
 		EInstantVASCommandTriggers.HELPtrgGlobalShowStatefulHelpMessage,
+		EInstantVASCommandTriggers.HANGMANtrgGlobalInviteNicknameOrPhoneNumber,
+		EInstantVASCommandTriggers.HANGMANtrgLocalWordSuggestionFallbackForHuman,
+		EInstantVASCommandTriggers.HELPtrgGlobalShowExistingUsersFallbackHelp,
 	};
 	/** Navigation state that indicates the user is playing a hangman match with the robot, and his/her hole is to guess the word */
 	public static final EInstantVASCommandTriggers[] HANGMANnstGuessingWordFromHangmanBotOpponent = {
-		EInstantVASCommandTriggers.HANGMANtrgLocalNewLetterOrWordSuggestionForBot,
+		EInstantVASCommandTriggers.HANGMANtrgLocalSingleLetterSuggestionForBot,
+		EInstantVASCommandTriggers.SUBSCRIPTIONtrgGlobalUnsubscribe,
 		EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
+		EInstantVASCommandTriggers.HELPtrgGlobalShowStatefulHelpMessage,
+		EInstantVASCommandTriggers.HANGMANtrgGlobalInviteNicknameOrPhoneNumber,
+		EInstantVASCommandTriggers.HANGMANtrgLocalWordSuggestionFallbackForBot,
 		EInstantVASCommandTriggers.HELPtrgGlobalShowExistingUsersFallbackHelp,
 	};
 	
@@ -322,8 +330,10 @@ public class InstantVASLicense {
 		HANGMANtrgLocalHoldMatchWord,
 		HANGMANtrgLocalAcceptMatchInvitation,
 		HANGMANtrgLocalRefuseMatchInvitation,
-		HANGMANtrgLocalNewLetterOrWordSuggestionForHuman,
-		HANGMANtrgLocalNewLetterOrWordSuggestionForBot;
+		HANGMANtrgLocalSingleLetterSuggestionForHuman,
+		HANGMANtrgLocalWordSuggestionFallbackForHuman,
+		HANGMANtrgLocalSingleLetterSuggestionForBot,
+		HANGMANtrgLocalWordSuggestionFallbackForBot;
 		
 		public String[] getCommandTriggerPatterns() throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
 			return (String[])InstantVASInstanceConfiguration.class.getField(name()).get(null);

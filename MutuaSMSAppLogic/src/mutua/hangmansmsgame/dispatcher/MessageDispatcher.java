@@ -76,6 +76,11 @@ public class MessageDispatcher {
 		this.receiver = receiver;
 	}
 
+	// TODO 20160522 -- Esse método pode se valer do batch insert dos mts se passar o array de MTs ao invés de 1 de cada vez.
+	//      Para tanto, as seguintes classes também devem ser modificadas: 'IResponseReceiver' 'MTProducer'.
+	//      Para isso, vale a pena ver se o simples insert é mais rapido que um batch insert de um único elemento e, se for,
+	//      também atualizar o JDBCAdapter para esta verificação, se se mostrar comum à maioria das bases de dados.
+	
 	/** Dispatches messages generated in the system to a receiver able to forward it to their destination */
 	public void dispatchMessage(CommandMessageDto[] internalMessages, IncomingSMSDto incomingSms) throws SQLException {
 		OutgoingSMSDto externalMessage;

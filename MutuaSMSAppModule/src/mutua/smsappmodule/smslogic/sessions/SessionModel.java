@@ -164,12 +164,16 @@ public abstract class SessionModel {
 		return Arrays.copyOf(deletedProperties, deletedPropertiesIndex);
 	}
 
-	/** @see SessionDto#SessionDto(String[][], String[][], String[]) */
+	/** Returns a {@link SessionDto} if this SessionModel was modified or null otherwise */
 	public SessionDto getChangedSessionDto() {
 		String[][] newProperties     = getNewProperties();
 		String[][] updatedProperties = getUpdatedProperties();
 		String[]   deletedProperties = getDeletedProperties();
-		return new SessionDto(user, newProperties, updatedProperties, deletedProperties);
+		if ((newProperties.length != 0) || (updatedProperties.length != 0) || (deletedProperties.length == 0)) {
+			return new SessionDto(user, newProperties, updatedProperties, deletedProperties);
+		} else {
+			return null;
+		}
 	}
 	
 	@EfficientTextualSerializationMethod

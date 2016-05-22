@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import mutua.serialization.SerializationRepository.EfficientTextualSerializationMethod;
+import mutua.smsappmodule.smslogic.commands.CommandAnswerDto;
 import mutua.smsappmodule.smslogic.commands.CommandTriggersDto;
 import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
 
@@ -36,12 +37,20 @@ public class NavigationState {
 	/** see {@link #applyCommandTriggersData}*/
 	private Object[][] commandTriggersData;
 
+	private String onLeavingStateCommandName = null;
 
 	public NavigationState(String navigationStateName, Object[][] commandsTriggersData) {
 		this.navigationStateName  = navigationStateName;
 		this.commandTriggersData = commandsTriggersData;
 	}
-	
+
+	/** Creates a navigation state able to detect the 'leaving state' event, which will execute 'onLeavingStateCommandName' and heve it's
+	 *  MTs append to the previous command, as described by {@link #onLeavingState} */
+	public NavigationState(String navigationStateName, Object[][] commandsTriggersData, String onLeavingStateCommandName) {
+		this(navigationStateName, commandsTriggersData);
+		this.onLeavingStateCommandName = onLeavingStateCommandName;
+	}
+
 	/** Returns the human readable navigation state name.
 	 * Must be implemented as 'return this.name();' */
 	public String getNavigationStateName() {
@@ -54,7 +63,7 @@ public class NavigationState {
 				return cp;
 			}
 		}
-		throw new RuntimeException("Wanted command named '"+commandName+"' is not present on the availableCommands " + Arrays.toString(availableCommands));
+		throw new RuntimeException("Wanted command named '"+commandName+"' is not present on the 'availableCommands' " + Arrays.toString(availableCommands));
 	}
 
 	
@@ -121,6 +130,21 @@ public class NavigationState {
 	@EfficientTextualSerializationMethod
 	public void toString(StringBuffer buffer) {
 		buffer.append(navigationStateName);
+	}
+	
+	// events
+	
+	/** Happens (called) by the 'SMSProcessor' whenever a command changes the current (this) state -- the command that generated 'leavingStateCommandAnswer'.
+	 *  In other words, when the navigation state of 'leavingStateCommandAnswer's session is different from this one.
+	 *  The event handler has the opportunity to change the provided {@link CommandAnswerDto}, specially adding more MTs -- as used by the Hangman game,
+	 *  when leaving a match should generate a notification message for both players.
+	 *  The original {@link NavigationState} implementation concatenates the MTs of the 'leavingStateCommandAnswer' with the result of the execution of
+	 *  an optionally provided {@link ICommandProcessor}. This command processor, if provided, receives the 'leavingStateCommandAnswer's session
+	 *  and will have it's returning session (if != null) applyed at the end (specially with a possible new navigation state).
+	 *  This method/architecture was designed to replace the old "applySessionTransitionRules", unsed on Hangman 1.0.
+	 *  @returns the same 'leavingStateCommandAnswer' or a new 'CommandAnswerDto' to be used instead */
+	public String getOnLeavingStateEventHandlerCommandName() {
+		return onLeavingStateCommandName;
 	}
 
 }

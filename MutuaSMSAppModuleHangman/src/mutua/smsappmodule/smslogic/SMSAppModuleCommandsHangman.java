@@ -70,6 +70,10 @@ public class SMSAppModuleCommandsHangman {
 		public final static String cmdSuggestLetterOrWordForHuman        = "SuggestLetterOrWordForHuman";
 		/** @see SMSAppModuleCommandsHangman#cmdSuggestLetterOrWordForBot */
 		public final static String cmdSuggestLetterOrWordForBot          = "SuggestLetterOrWordForBot";
+		/** @see SMSAppModuleCommandsHangman#cmdGiveUpCurrentHumanMatch */
+		public final static String cmdGiveUpCurrentHumanMatch            = "GiveUpCurrentHumanMatch";
+		/** @see SMSAppModuleCommandsHangman#cmdGiveUpCurrentBotMatch */
+		public final static String cmdGiveUpCurrentBotMatch              = "GiveUpCurrentBotMatch";
 	}
 	
 	/** Class to be used as a reference when customizing the MO commands for this module */
@@ -90,11 +94,16 @@ public class SMSAppModuleCommandsHangman {
 		 *  Receives no parameters --
 		 *  {@link SMSAppModuleNavigationStatesHangman#nstAnsweringToHangmanMatchInvitation} triggers that activates {@link SMSAppModuleCommandsHangman#cmdRefuseMatchInvitation} */
 		public final static String[] trgLocalRefuseMatchInvitation          = {"NO"};
-		/** Local triggers (available only to the 'playing a hangman match to a bot or human' navigation state) that will recognize patterns to be interpreted as a letter or word for a hangman match turn.
-		 *  Receives 1 parameter: the suggested letter or word
+		/** Local triggers (available only to the 'playing a hangman match to a bot or human' navigation states) that will recognize patterns to be interpreted as a letter for a hangman match turn.
+		 *  Designed to be used together with {@link #trgLocalWordSuggestionFallback}. Receives 1 parameter: the suggested letter or word
 		 *  {@link SMSAppModuleNavigationStatesHangman#nstGuessingWordFromHangmanBotOpponent} and
 		 *  {@link SMSAppModuleNavigationStatesHangman#nstGuessingWordFromHangmanHumanOpponent} triggers that activates {@link SMSAppModuleCommandsHangman#cmdSuggestLetterOrWordForHuman} */
-		public final static String[] trgLocalNewLetterOrWordSuggestion      = {"([A-Z]+)"};
+		public final static String[] trgLocalSingleLetterSuggestion         = {"([A-Z])"};
+		/** Local triggers (available only to the 'playing a hangman match to a bot or human' navigation states) that will recognize patterns to be interpreted as a word for a hangman match turn.
+		 *  This trigger should be used as a fallback, after no other commands have been recognized. Receives 1 parameter: the suggested letter or word
+		 *  {@link SMSAppModuleNavigationStatesHangman#nstGuessingWordFromHangmanBotOpponent} and
+		 *  {@link SMSAppModuleNavigationStatesHangman#nstGuessingWordFromHangmanHumanOpponent} triggers that activates {@link SMSAppModuleCommandsHangman#cmdSuggestLetterOrWordForHuman} */
+		public final static String[] trgLocalWordSuggestionFallback         = {"([A-Z]+)"};
 	}
 	
 	// Instance Fields
@@ -284,7 +293,8 @@ public class SMSAppModuleCommandsHangman {
 		}
 	};
 	
-	/** Command triggered by messages matched by {@link CommandTriggersHangman#trgLocalNewLetterOrWordSuggestion}, issued by the user who is playing a hangman match against a human and is trying to guess the word.
+	/** Command triggered by messages matched by {@link CommandTriggersHangman#trgLocalSingleLetterSuggestion} and {@link CommandTriggersHangman#trgLocalWordSuggestionFallback}, 
+	 *  issued by the user who is playing a hangman match against a human and is trying to guess the word.
 	 *  Receives 1 parameter: the letter, set of characters or word attempted */
 	public final ICommandProcessor cmdSuggestLetterOrWordForHuman = new ICommandProcessor(CommandNamesHangman.cmdSuggestLetterOrWordForHuman) {
 		@Override
@@ -345,13 +355,71 @@ public class SMSAppModuleCommandsHangman {
 		}
 	};
 	
-	/** Command triggered by messages matched by {@link CommandTriggersHangman#trgLocalNewLetterOrWordSuggestion}, issued by the user who is playing a hangman match against a human and is trying to guess the word.
+	/** Command triggered by messages matched by {@link CommandTriggersHangman#trgLocalSingleLetterSuggestion} and {@link CommandTriggersHangman#trgLocalWordSuggestionFallback},
+	 *  issued by the user who is playing a hangman match against a human and is trying to guess the word.
 	 *  Receives 1 parameter: the letter, set of characters or word attempted */
 	public final ICommandProcessor cmdSuggestLetterOrWordForBot = new ICommandProcessor(CommandNamesHangman.cmdSuggestLetterOrWordForBot) {
 		@Override
 		public CommandAnswerDto processCommand(SessionModel session, ESMSInParserCarrier carrier, String[] parameters) throws SQLException {
 			// TODO Auto-generated method stub
 			return null;
+		}
+	};
+	
+	public final ICommandProcessor cmdGiveUpCurrentHumanMatch = new ICommandProcessor(CommandNamesHangman.cmdGiveUpCurrentHumanMatch) {
+		@Override
+		public CommandAnswerDto processCommand(SessionModel session, ESMSInParserCarrier carrier, String[] parameters) throws SQLException {
+			
+			int    matchId               = session.getIntProperty(sprHangmanMatchId);
+			MatchDto match               = matchDB.retrieveMatch(matchId);
+			
+			if (match == null) {
+				return null;
+			}
+
+			EMatchStatus status = match.getStatus();
+			if (status != EMatchStatus.ACTIVE) {
+				return null;
+			}
+			matchDB.updateMatchStatus(match, EMatchStatus.CLOSED_A_PLAYER_GAVE_UP, match.getSerializedGame());
+			
+			String  currentUserNickname         = assureUserHasANickname(session.getUser()).getNickname();
+			UserDto wordProvidingPlayer         = match.getWordProvidingPlayer();
+			String  wordProvidingPlayerNickname = assureUserHasANickname(wordProvidingPlayer).getNickname();
+
+			// since this method may also be called from the 'NavigationState.onLeavingState' event, we don't want to change the
+			// navigation state in that case (since this method would just be called because the navigation state already changed)
+			String navigationState = session.getNavigationStateName();
+			if (nstGuessingWordFromHangmanHumanOpponent.equals(navigationState)) {
+				return getNewStateReplyWithAnAdditionalMessageToAnotherUserCommandAnswer(session, nstExistingUser,
+					hangmanPhrases.getMatchGiveupNotificationForWordGuessingPlayer(wordProvidingPlayerNickname),
+					match.getWordProvidingPlayer(), hangmanPhrases.getMatchGiveupNotificationForWordProvidingPlayer(currentUserNickname));
+			} else {
+				return getSameStateReplyWithAnAdditionalMessageToAnotherUserCommandAnswer(
+					hangmanPhrases.getMatchGiveupNotificationForWordGuessingPlayer(wordProvidingPlayerNickname),
+					match.getWordProvidingPlayer(), hangmanPhrases.getMatchGiveupNotificationForWordProvidingPlayer(currentUserNickname));
+			}
+		}
+	};
+
+	public final ICommandProcessor cmdGiveUpCurrentBotMatch = new ICommandProcessor(CommandNamesHangman.cmdGiveUpCurrentBotMatch) {
+		@Override
+		public CommandAnswerDto processCommand(SessionModel session, ESMSInParserCarrier carrier, String[] parameters) throws SQLException {
+return getSameStateReplyCommandAnswer("end game with bots needs to be uncommented out");
+//			String botName               = session.getIntProperty(sprHangmanGuessingWordFromBotNamed);
+//
+//			if (botName == null) {
+//				return null;
+//			}
+//			
+//			// since this method may also be called from the 'NavigationState.onLeavingState' event, we don't want to change the
+//			// navigation state in that case (since this method would just be called because the navigation state already changed)
+//			String navigationState = session.getNavigationStateName();
+//			if (nstGuessingWordFromHangmanBotOpponent.equals(navigationState)) {
+//				return getNewStateReplyCommandAnswer(session, nstExistingUser, hangmanPhrases.getMatchGiveupNotificationForWordGuessingPlayer(botName));
+//			} else {
+//				return getSameStateReplyCommandAnswer(hangmanPhrases.getMatchGiveupNotificationForWordGuessingPlayer(botName));
+//			}
 		}
 	};
 
@@ -402,6 +470,8 @@ public class SMSAppModuleCommandsHangman {
 		cmdRefuseMatchInvitation,
 		cmdSuggestLetterOrWordForHuman,
 		cmdSuggestLetterOrWordForBot,
+		cmdGiveUpCurrentHumanMatch,
+		cmdGiveUpCurrentBotMatch,
 	};
 
 		

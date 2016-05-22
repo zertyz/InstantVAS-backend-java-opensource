@@ -1,7 +1,6 @@
 package mutua.hangmansmsgame.smslogic;
 
 import static mutua.hangmansmsgame.smslogic.SMSProcessorInstrumentationMethods.*;
-
 import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates.NavigationStatesNames.*;
 
 import java.sql.SQLException;
@@ -97,6 +96,20 @@ public class SMSProcessor {
 		this.navigationStates = tempNavStates.toArray(new NavigationState[tempNavStates.size()]);
 		
 	}
+	
+	/** Given a commandName, return the right command processor instance */
+	private ICommandProcessor getCommandProcessor(String commandName) {
+		for (ICommandProcessor commandProcessor : commandProcessors) {
+			if (commandProcessor.getCommandName().equals(commandName)) {
+				return commandProcessor;
+			}
+		}
+		return null;
+	}
+	
+	// TODO 20160522 -- Os patterns estão sendo compilados e gerando garbage a todo instante. A solução é simples:
+	//      o método 'NavigationState.setCommandTriggers' deve compilar as patterns que armazena, hoje, como string em 'CommandTriggersDto'.
+	//      para esta mudança, vale fazer um bom profiling da execução do sistema como um todo, com a máquina real -- load 0.
 	
 	/** from the available options (i.e., the commands that belongs to the current 'userState') determine which one of them
 	 *  should process the 'incomingText' and build the object needed to issue the call */
@@ -220,8 +233,9 @@ public class SMSProcessor {
 		String incomingPhone = MO.getPhone();
 		String incomingText = MO.getText();
 		
-		// get the user state
+		// get the user session & navigation state
 		SessionModel session = resolveUserSession(MO);
+		NavigationState originalNavigationState = session.getNavigationState();
 			
 		// determine which command (and arguments) to call
 		CommandInvocationDto invocationHandler = resolveInvocationHandler(session.getNavigationState(), incomingText);
@@ -231,10 +245,38 @@ public class SMSProcessor {
 			CommandAnswerDto commandResponse = invokeCommand(invocationHandler, session, MO.getPhone(), MO.getCarrier());
 			
 			if (commandResponse != null) {
+				
+				// apply state change event handlers
+				SessionDto newUserSession = session.getChangedSessionDto();
+				if (newUserSession != null) {
+					NavigationState newNavigationState = session.getNavigationState();
+					String eventHandlerCommandName = originalNavigationState.getOnLeavingStateEventHandlerCommandName();
+					if ((originalNavigationState != newNavigationState) && (eventHandlerCommandName != null)) try {
+						ICommandProcessor onLeavingStateCommand = getCommandProcessor(eventHandlerCommandName);
+						if (onLeavingStateCommand == null) {
+							throw new RuntimeException("Command '"+eventHandlerCommandName+"' not found while executing 'onLeavingState' event for state '"+originalNavigationState.getNavigationStateName()+"' for user '"+incomingPhone+"'");
+						}
+						CommandAnswerDto triggeredCommandAnswer = onLeavingStateCommand.processCommand(session, null, null);
+						if (triggeredCommandAnswer != null) {
+							// append MTs (the triggered MTs, named 'a1', will be delivered first)
+							CommandMessageDto[] a2 = commandResponse.getResponseMessages();
+							CommandMessageDto[] a1 = triggeredCommandAnswer.getResponseMessages();
+							CommandMessageDto[] combinedMessages = new CommandMessageDto[a1.length + a2.length];
+							System.arraycopy(a1, 0, combinedMessages, 0, a1.length);
+							System.arraycopy(a2, 0, combinedMessages, a1.length, a2.length);
+							// build and return the new 'CommandAnswerDto'
+							commandResponse = new CommandAnswerDto(combinedMessages, session);
+						}
+
+					} catch (SQLException e) {
+						throw new RuntimeException("Database communication problem while executing 'onLeavingState' event for state '"+originalNavigationState.getNavigationStateName()+"' for user '"+incomingPhone+"'", e);
+					}
+				}
+				
 				// route messages
 				routeMessages(commandResponse.getResponseMessages(), MO);
-				// set the user state
-				SessionDto newUserSession = session.getChangedSessionDto();
+				
+				// set the user session
 				if (newUserSession != null) {
 					Instrumentation.reportDebug("Setting new user session: " + newUserSession);
 					try {

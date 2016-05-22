@@ -29,6 +29,8 @@ public abstract class ICommandProcessor {
 	
 	private String commandName;
 	
+	private ICommandProcessor() {}
+	
 	public ICommandProcessor(String commandName) {
 		this.commandName = commandName;
 	}
@@ -39,7 +41,7 @@ public abstract class ICommandProcessor {
 	}
 	
 	/** Method to execute the command and get the response message(s) and persistent information.
-	 *  by convention when -- in the 'CommandAnswerInfo' -- the 'phone' is null, the MTs are
+	 *  By convention when -- in the 'CommandAnswerInfo' -- the 'phone' is null, the MTs are
 	 *  addressed to the same phone who sent the MO */
 	public abstract CommandAnswerDto processCommand(SessionModel session, ESMSInParserCarrier carrier, String[] parameters) throws SQLException;
 

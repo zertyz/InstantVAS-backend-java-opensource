@@ -57,28 +57,50 @@ public class SessionDB implements ISessionDB {
 		UserDto user = session.getUser();
 		
 		// delete
-		for (String toBeDeletedPropertyName : session.getDeletedProperties()) {
-			dba.invokeUpdateProcedure(DeleteProperty,
-				USER_ID,       user.getUserId(),
-				PROPERTY_NAME, toBeDeletedPropertyName);
+		String[] toBeDeletedPropertyNames = session.getDeletedProperties();
+		if (toBeDeletedPropertyNames != null) {
+			Object[][] parametersAndValuesPairsSet = new Object[toBeDeletedPropertyNames.length][4];
+			for (int i=0; i<toBeDeletedPropertyNames.length; i++) {
+				parametersAndValuesPairsSet[i][0] = USER_ID;
+				parametersAndValuesPairsSet[i][1] = user.getUserId();
+				parametersAndValuesPairsSet[i][2] = PROPERTY_NAME;
+				parametersAndValuesPairsSet[i][3] = toBeDeletedPropertyNames[i];
+			}
+			dba.invokeUpdateBatchProcedure(DeleteProperty, parametersAndValuesPairsSet);
 		}
+		
 		// update
-		for (String[] toBeUpdatedProperty : session.getUpdatedProperties()) {
-			String propertyName  = toBeUpdatedProperty[0];
-			String propertyValue = toBeUpdatedProperty[1];
-			dba.invokeUpdateProcedure(UpdateProperty,
-				USER_ID,        user.getUserId(),
-				PROPERTY_NAME,  propertyName,
-				PROPERTY_VALUE, propertyValue);
+		String[][] toBeUpdatedProperties = session.getUpdatedProperties();
+		if (toBeUpdatedProperties != null) {
+			Object[][] parametersAndValuesPairsSet = new Object[toBeUpdatedProperties.length][6];
+			for (int i=0; i<toBeUpdatedProperties.length; i++) {
+				String propertyName = toBeUpdatedProperties[i][0];
+				String propertyValue = toBeUpdatedProperties[i][1];
+				parametersAndValuesPairsSet[i][0] = USER_ID;
+				parametersAndValuesPairsSet[i][1] = user.getUserId();
+				parametersAndValuesPairsSet[i][2] = PROPERTY_NAME;
+				parametersAndValuesPairsSet[i][3] = propertyName;
+				parametersAndValuesPairsSet[i][4] = PROPERTY_VALUE;
+				parametersAndValuesPairsSet[i][5] = propertyValue;
+			}
+			dba.invokeUpdateBatchProcedure(UpdateProperty, parametersAndValuesPairsSet);
 		}
+
 		// insert
-		for (String[] toBeInsertedProperty : session.getNewProperties()) {
-			String propertyName  = toBeInsertedProperty[0];
-			String propertyValue = toBeInsertedProperty[1];
-			dba.invokeUpdateProcedure(InsertProperty,
-				USER_ID,        user.getUserId(),
-				PROPERTY_NAME,  propertyName,
-				PROPERTY_VALUE, propertyValue);
+		String[][] toBeInsertedProperties = session.getNewProperties();
+		if (toBeUpdatedProperties != null) {
+			Object[][] parametersAndValuesPairsSet = new Object[toBeInsertedProperties.length][6];
+			for (int i=0; i<toBeInsertedProperties.length; i++) {
+				String propertyName = toBeInsertedProperties[i][0];
+				String propertyValue = toBeInsertedProperties[i][1];
+				parametersAndValuesPairsSet[i][0] = USER_ID;
+				parametersAndValuesPairsSet[i][1] = user.getUserId();
+				parametersAndValuesPairsSet[i][2] = PROPERTY_NAME;
+				parametersAndValuesPairsSet[i][3] = propertyName;
+				parametersAndValuesPairsSet[i][4] = PROPERTY_VALUE;
+				parametersAndValuesPairsSet[i][5] = propertyValue;
+			}
+			dba.invokeUpdateBatchProcedure(InsertProperty, parametersAndValuesPairsSet);
 		}
 	}
 

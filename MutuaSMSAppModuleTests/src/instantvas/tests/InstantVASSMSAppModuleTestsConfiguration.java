@@ -7,6 +7,7 @@ import mutua.icc.instrumentation.Instrumentation;
 import mutua.icc.instrumentation.InstrumentableEvent.ELogSeverity;
 import mutua.icc.instrumentation.handlers.IInstrumentationHandler;
 import mutua.icc.instrumentation.handlers.InstrumentationHandlerLogConsole;
+import mutua.icc.instrumentation.handlers.InstrumentationHandlerNull;
 import mutua.smsappmodule.config.InstantVASSMSAppModuleConfiguration;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
 import mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapter;
@@ -84,7 +85,7 @@ public class InstantVASSMSAppModuleTestsConfiguration {
 		
 		// Instrumentation
 		IInstrumentationHandler log = new InstrumentationHandlerLogConsole("SMSModuleTests", ELogSeverity.DEBUG);
-		Instrumentation.configureDefaultValuesForNewInstances(log, null, null);
+		Instrumentation.configureDefaultValuesForNewInstances(log, InstrumentationHandlerNull.instance, InstrumentationHandlerNull.instance);
 
 		try {
 			configureDefaultValuesForNewInstances(

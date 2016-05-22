@@ -465,8 +465,10 @@ public class HangmanAppEngineBehavioralTests {
 		// test playing with a human letters recognition
 		startAPlayerMatch("21991234899", "dom", hardWord, "21998019167", "paty");
 		usedLetters = "AB";
-		// first, test sending an empty message
-		checkResponse("21998019167", "", ivac.hangmanPhrasings.getGuessingWordHelp());
+		// first, test sending an empty ...
+		checkResponse("21998019167", "", ivac.helpPhrasings.getExistingUsersFallbackHelp());
+		// ... and a help message
+		checkResponse("21998019167", "help", ivac.hangmanPhrasings.getGuessingWordHelp());
 		// now loop through all messages
 		for (char letter : attemptedLetters) {
 			String sLetter = Character.toString(letter);
@@ -489,8 +491,32 @@ public class HangmanAppEngineBehavioralTests {
 		// test playing with a bot letters recognition
 		// TODO do the same as for humans... should allow setting bot words on the fly
 	}
-
-
+	
+	@Test
+	public void testEndGameSubtleties() throws SQLException {
+		
+		// test ending a match with another player by issuing a state changing command
+		startAPlayerMatch("111111", "AllOne", "OneMotherFucker", "22222", "AllTwo");
+		tc.checkResponse("22222", "unsubscribe",
+			ivac.hangmanPhrasings.getMatchGiveupNotificationForWordGuessingPlayer("AllOne"),
+			ivac.hangmanPhrasings.getMatchGiveupNotificationForWordProvidingPlayer("AllTwo"),
+			ivac.subscriptionPhrasings.getUserRequestedUnsubscriptionNotification());
+		tc.checkResponse("22222", "x", ivac.subscriptionPhrasings.getDoubleOptinStart());
+		
+		// test ending a match with another player through the "END MATCH" command
+		startAPlayerMatch("111111", "AllOne", "OneMotherFucker", "22222", "AllTwo");
+		tc.checkResponse("22222", "end",
+			ivac.hangmanPhrasings.getMatchGiveupNotificationForWordGuessingPlayer("AllOne"),
+			ivac.hangmanPhrasings.getMatchGiveupNotificationForWordProvidingPlayer("AllTwo"));
+		// test fall back to 'EXISTING_USER' state, where unknown commands issues the specialized help
+		tc.checkResponse("22222", "x", ivac.helpPhrasings.getExistingUsersFallbackHelp());
+		
+		// test ending a match with a bot
+//		startABotMatch("21991234899", "DOM", "CHIMPANZEE");
+//		tc.checkResponse("21991234899", "end", testPhraseology.PLAYINGMatchGiveupNotificationForWordGuessingPlayer("DomBot"));
+//		// test the fall back to 'EXISTING_USER' state, where only known commands are answered
+//		tc.checkResponse("21991234899", "x", testPhraseology.INFOFallbackExistingUsersHelp());
+	}
 }
 
 /* test mappings:

@@ -65,9 +65,9 @@ public class SMSAppModuleNavigationStatesHangman {
 		     // nstAnsweringToHangmanMatchInvitationTriggers
 		     new Object[][] {{cmdHoldMatchWord,               trgLocalHoldMatchWord}},
 		     // nstGuessingWordFromHangmanHumanOpponentTriggers
-		     new Object[][] {{cmdSuggestLetterOrWordForHuman, trgLocalNewLetterOrWordSuggestion}},
+		     new Object[][] {{cmdSuggestLetterOrWordForHuman, trgLocalSingleLetterSuggestion, trgLocalWordSuggestionFallback}},
 		     // nstGuessingWordFromHangmanBotOpponentTriggers
-		     new Object[][] {{cmdSuggestLetterOrWordForBot,   trgLocalNewLetterOrWordSuggestion}});
+		     new Object[][] {{cmdSuggestLetterOrWordForBot,   trgLocalSingleLetterSuggestion, trgLocalWordSuggestionFallback}});
 	}
 
 	/** Provides the navigation states instance with custom triggers.
@@ -81,8 +81,8 @@ public class SMSAppModuleNavigationStatesHangman {
 	                                           Object[][] nstGuessingWordFromHangmanBotOpponentTriggers) {		
 		nstEnteringMatchWord = new NavigationState(NavigationStatesNamesHangman.nstEnteringMatchWord, nstEnteringMatchWordTriggers);
 		nstAnsweringToHangmanMatchInvitation = new NavigationState(NavigationStatesNamesHangman.nstAnsweringToHangmanMatchInvitation, nstAnsweringToHangmanMatchInvitationTriggers);
-		nstGuessingWordFromHangmanHumanOpponent = new NavigationState(NavigationStatesNamesHangman.nstGuessingWordFromHangmanHumanOpponent, nstGuessingWordFromHangmanHumanOpponentTriggers);
-		nstGuessingWordFromHangmanBotOpponent = new NavigationState(NavigationStatesNamesHangman.nstGuessingWordFromHangmanBotOpponent, nstGuessingWordFromHangmanBotOpponentTriggers);
+		nstGuessingWordFromHangmanHumanOpponent = new NavigationState(NavigationStatesNamesHangman.nstGuessingWordFromHangmanHumanOpponent, nstGuessingWordFromHangmanHumanOpponentTriggers, cmdGiveUpCurrentHumanMatch);
+		nstGuessingWordFromHangmanBotOpponent   = new NavigationState(NavigationStatesNamesHangman.nstGuessingWordFromHangmanBotOpponent,   nstGuessingWordFromHangmanBotOpponentTriggers,   cmdGiveUpCurrentBotMatch);
 		
 		// the list of values
 		values = new NavigationState[] {
