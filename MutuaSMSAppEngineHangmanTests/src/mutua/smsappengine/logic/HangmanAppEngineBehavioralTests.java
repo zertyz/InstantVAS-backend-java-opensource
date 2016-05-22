@@ -517,6 +517,102 @@ public class HangmanAppEngineBehavioralTests {
 //		// test the fall back to 'EXISTING_USER' state, where only known commands are answered
 //		tc.checkResponse("21991234899", "x", testPhraseology.INFOFallbackExistingUsersHelp());
 	}
+	
+	@Test
+	// assures we can reach the correct game commands on each of the states
+	public void testNavigationStates() {
+		// nstNewUser state command tests
+		
+		// nstExistingUser
+		// help? not the composite...
+		// start subscription
+		// unsubscribe, yes
+		// nicks, no
+		// chat, no
+		// list, yes
+		// profile, yes
+		// invite, no
+		// fallback for new users
+		
+		// nstExistingUser
+		// help
+		// unsubscribe
+		// nicks
+		// chat
+		// list
+		// profile
+		// invite
+		// fallback
+		
+		// nstPresentingCompositeHelp
+		// more
+		// unsubscribe
+		// nicks
+		// chat
+		// list
+		// profile
+		// invite
+		// fallback
+		
+		// nstAnsweringDoubleOptin
+		// accept
+		// refuse
+		// start subscription
+		// unsubscribe
+		// nicks, no
+		// chat, no
+		// list, yes
+		// profile, yes
+		// invite, no
+		// fallback
+		
+		// nstRegisteringNickname
+		// help
+		// unsubscribe
+		// nicks
+		// chat
+		// list
+		// profile
+		// invite
+		// nick fallback?
+		
+		// nstEnteringMatchWord
+		// holdWord
+		// help
+		// unsubscribe
+		// nicks
+		// chat
+		// list
+		// profile
+		// invite
+		// fallback
+		
+		// nstAnsweringToHangmanMatchInvitation
+		// accept & refuse
+		// help
+		// unsubscribe
+		// nicks
+		// chat
+		// list
+		// profile
+		// invite
+		// fallback
+
+		// nstGuessingWordFromHangmanHumanOpponent
+		// suggest single letter
+		// help
+		// unsubscribe
+		// nicks
+		// chat
+		// list
+		// profile
+		// invite
+		// suggest word
+		// fallback
+		
+		// nstGuessingWordFromHangmanBotOpponent, idem
+		
+	}
 }
 
 /* test mappings:

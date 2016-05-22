@@ -233,14 +233,13 @@ public class InstantVASLicense {
 	};
 	/** Navigation state used by registered users. Also the 'main loop' navigation state, to which all other states revert to when they finish their businesses */
 	public static final EInstantVASCommandTriggers[] BASEnstExistingUser = {
+		EInstantVASCommandTriggers.HELPtrgGlobalStartCompositeHelpDialog,
 		EInstantVASCommandTriggers.HELPtrgGlobalShowStatelessHelpMessage,
 		EInstantVASCommandTriggers.SUBSCRIPTIONtrgGlobalUnsubscribe,
 		EInstantVASCommandTriggers.PROFILEtrgGlobalRegisterNickname,
 		EInstantVASCommandTriggers.PROFILEtrgGlobalShowUserProfile,
 		EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
 		EInstantVASCommandTriggers.HANGMANtrgGlobalInviteNicknameOrPhoneNumber,
-		EInstantVASCommandTriggers.HELPtrgGlobalShowStatelessHelpMessage,
-		EInstantVASCommandTriggers.HELPtrgGlobalStartCompositeHelpDialog,
 		EInstantVASCommandTriggers.HELPtrgGlobalShowExistingUsersFallbackHelp,
 	};
 	/** Navigation state used to show the composite help messages, containing command triggers to navigate from here on */
