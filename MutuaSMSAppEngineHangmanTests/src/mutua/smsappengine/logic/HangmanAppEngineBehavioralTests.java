@@ -4,6 +4,13 @@ import static org.junit.Assert.*;
 
 import java.sql.SQLException;
 
+import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates.NavigationStatesNames.*;
+import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesHelp.NavigationStatesNamesHelp.*;
+import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesSubscription.NavigationStatesNamesSubscription.*;
+import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesProfile.NavigationStatesNamesProfile.*;
+import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesChat.NavigationStatesNamesChat.*;
+import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesHangman.NavigationStatesNamesHangman.*;
+
 import mutua.icc.configuration.ConfigurationManager;
 import mutua.icc.instrumentation.DefaultInstrumentationEvents;
 import mutua.icc.instrumentation.InstrumentableEvent;
@@ -75,11 +82,30 @@ public class HangmanAppEngineBehavioralTests {
 		tc = new SMSAppModuleTestCommons(ivac.baseModuleDAL, ivac.modulesNavigationStates, ivac.modulesCommandProcessors);
 	}
 
+	/** @see SMSAppModuleTestCommons#checkResponse(String, String, String...) */
 	private void checkResponse(String phone, String inputText, String... expectedResponsesText) throws SQLException {
 		IncomingSMSDto mo = new IncomingSMSDto(-1, phone, inputText, ESMSInParserCarrier.TEST_CARRIER, "1234");
 		int moId = ivac.MOpcLink.reportConsumableEvent(new IndirectMethodInvocationInfo<EInstantVASEvents>(EInstantVASEvents.MO_ARRIVED, mo));
 		tc.checkResponse(moId, phone, inputText, expectedResponsesText);
 	}
+	
+	private long navigationNewUserPhone = 21997559595L;
+	/** @see SMSAppModuleTestCommons#navigateNewUserTo(String, String, Object[][]) */
+	private String navigateNewUserTo(String targetNavigationState, String... moTexts) throws SQLException {
+		String phone = Long.toString(navigationNewUserPhone++);
+		// put the MOs on the queue
+		Object[][] moIdsAndTexts = new Object[moTexts.length][2];
+		for (int i=0; i<moTexts.length; i++) {
+			IncomingSMSDto mo = new IncomingSMSDto(-1, phone, moTexts[i], ESMSInParserCarrier.TEST_CARRIER, "1234");
+			moIdsAndTexts[i][0] = ivac.MOpcLink.reportConsumableEvent(new IndirectMethodInvocationInfo<EInstantVASEvents>(EInstantVASEvents.MO_ARRIVED, mo));
+			moIdsAndTexts[i][1] = moTexts[i];
+		}
+		// check
+		tc.navigateNewUserTo(phone, targetNavigationState, moIdsAndTexts);
+		return phone;
+	}
+	
+	
 		
 	@Before
 	public void resetStates() throws SQLException {
@@ -180,8 +206,7 @@ public class HangmanAppEngineBehavioralTests {
 //		registerUser(phone, nick);
 //		playWithBot(phone, expectedWord);
 //    }
-	
-	
+    
 	/*******************************
 	** EXPECTED USAGE PATHS TESTS **
 	*******************************/
@@ -520,95 +545,126 @@ public class HangmanAppEngineBehavioralTests {
 	
 	@Test
 	// assures we can reach the correct game commands on each of the states
-	public void testNavigationStates() {
+	public void testNavigationStates() throws SQLException {
 		// nstNewUser state command tests
+		String wordProvidingPhone;
+		String wordGuessingPhone;
 		
-		// nstExistingUser
-		// help? not the composite...
-		// start subscription
-		// unsubscribe, yes
-		// nicks, no
-		// chat, no
-		// list, yes
-		// profile, yes
-		// invite, no
-		// fallback for new users
+		// define the test environment
+		registerUser("21999999999", "SomeOne");
 		
-		// nstExistingUser
-		// help
-		// unsubscribe
-		// nicks
-		// chat
-		// list
-		// profile
-		// invite
-		// fallback
-		
-		// nstPresentingCompositeHelp
-		// more
-		// unsubscribe
-		// nicks
-		// chat
-		// list
-		// profile
-		// invite
-		// fallback
+		// nstNewUser
+		checkResponse(navigateNewUserTo(nstNewUser), "help",               ivac.subscriptionPhrasings.getDoubleOptinStart());
+		checkResponse(navigateNewUserTo(nstNewUser), "what??",             ivac.subscriptionPhrasings.getDoubleOptinStart());
+		checkResponse(navigateNewUserTo(nstNewUser), "unsubscribe",        ivac.subscriptionPhrasings.getUserRequestedUnsubscriptionNotification());
+		checkResponse(navigateNewUserTo(nstNewUser), "nick",               ivac.subscriptionPhrasings.getDoubleOptinStart());
+		checkResponse(navigateNewUserTo(nstNewUser), "nick WhoAmI",        ivac.subscriptionPhrasings.getDoubleOptinStart());
+		checkResponse(navigateNewUserTo(nstNewUser), "m SomeOne hi there", ivac.subscriptionPhrasings.getDoubleOptinStart());
+		//checkResponse(navigateNewUserTo(nstNewUser), "list",               ivac.profilePhrasings....);
+		checkResponse(navigateNewUserTo(nstNewUser), "profile SomeOne",    ivac.profilePhrasings.getUserProfilePresentation("SomeOne"));
+		checkResponse(navigateNewUserTo(nstNewUser), "invite SomeOne",     ivac.subscriptionPhrasings.getDoubleOptinStart());
 		
 		// nstAnsweringDoubleOptin
-		// accept
-		// refuse
-		// start subscription
-		// unsubscribe
-		// nicks, no
-		// chat, no
-		// list, yes
-		// profile, yes
-		// invite, no
-		// fallback
+		checkResponse(navigateNewUserTo(nstAnsweringDoubleOptin, "help"), "hangman",            ivac.subscriptionPhrasings.getSuccessfullySubscribed());
+		checkResponse(navigateNewUserTo(nstAnsweringDoubleOptin, "help"), "no",                 ivac.subscriptionPhrasings.getDisagreeToSubscribe());
+		checkResponse(navigateNewUserTo(nstAnsweringDoubleOptin, "help"), "help",               ivac.subscriptionPhrasings.getDoubleOptinStart());
+		checkResponse(navigateNewUserTo(nstAnsweringDoubleOptin, "help"), "unsubscribe",        ivac.subscriptionPhrasings.getUserRequestedUnsubscriptionNotification());
+		checkResponse(navigateNewUserTo(nstAnsweringDoubleOptin, "help"), "nick",               ivac.subscriptionPhrasings.getDoubleOptinStart());
+		checkResponse(navigateNewUserTo(nstAnsweringDoubleOptin, "help"), "nick WhoAmI",        ivac.subscriptionPhrasings.getDoubleOptinStart());
+		checkResponse(navigateNewUserTo(nstAnsweringDoubleOptin, "help"), "m SomeOne hi there", ivac.subscriptionPhrasings.getDoubleOptinStart());
+		//checkResponse(navigateNewUserTo(nstAnsweringDoubleOptin, "help"), "list",               ivac.profilePhrasings....);
+		checkResponse(navigateNewUserTo(nstAnsweringDoubleOptin, "help"), "profile SomeOne",    ivac.profilePhrasings.getUserProfilePresentation("SomeOne"));
+		checkResponse(navigateNewUserTo(nstAnsweringDoubleOptin, "help"), "invite SomeOne",     ivac.subscriptionPhrasings.getDoubleOptinStart());
+		checkResponse(navigateNewUserTo(nstAnsweringDoubleOptin, "help"), "wtf???",             ivac.subscriptionPhrasings.getDoubleOptinStart());
+
+		// nstExistingUser
+		//checkResponse(navigateNewUserTo(nstExistingUser, "hangman"), "hangman",            ivac.subscriptionPhrasings.getSuccessfullySubscribed());
+		checkResponse(navigateNewUserTo(nstExistingUser, "hangman"), "help",               ivac.helpPhrasings.getCompositeHelpMessage(0));
+		checkResponse(navigateNewUserTo(nstExistingUser, "hangman"), "unsubscribe",        ivac.subscriptionPhrasings.getUserRequestedUnsubscriptionNotification());
+		checkResponse(navigateNewUserTo(nstExistingUser, "hangman",
+		                                "nick WhoAmI877"),           "nick",               ivac.profilePhrasings.getAskForNewNickname("WhoAmI877"));
+		checkResponse(navigateNewUserTo(nstExistingUser, "hangman"), "nick FromExisting",  ivac.profilePhrasings.getNicknameRegistrationNotification("FromExisting"));
+		checkResponse(navigateNewUserTo(nstExistingUser, "hangman",
+		                                "nick FromExisting2"),       "m SomeOne hi there", ivac.chatPhrasings.getPrivateMessageDeliveryNotification("SomeOne"),
+		                                                                                   ivac.chatPhrasings.getPrivateMessage("FromExisting2", "hi there"));
+		//checkResponse(navigateNewUserTo(nstExistingUser, "hangman"), "list",               ivac.profilePhrasings....);
+		checkResponse(navigateNewUserTo(nstExistingUser, "hangman"), "profile SomeOne",    ivac.profilePhrasings.getUserProfilePresentation("SomeOne"));
+		checkResponse(navigateNewUserTo(nstExistingUser, "hangman"), "invite SomeOne",     ivac.hangmanPhrasings.getAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation("SomeOne"));
+		checkResponse(navigateNewUserTo(nstExistingUser, "hangman"), "wtf???",             ivac.helpPhrasings.getExistingUsersFallbackHelp());
+		
+		// nstPresentingCompositeHelp
+		//checkResponse(navigateNewUserTo(nstPresentingCompositeHelp, "hangman"), "hangman",            ivac.subscriptionPhrasings.getSuccessfullySubscribed());
+		checkResponse(navigateNewUserTo(nstPresentingCompositeHelp, "hangman", "help"), "help",               ivac.helpPhrasings.getCompositeHelpMessage(1));
+		checkResponse(navigateNewUserTo(nstPresentingCompositeHelp, "hangman", "help"), "unsubscribe",        ivac.subscriptionPhrasings.getUserRequestedUnsubscriptionNotification());
+		checkResponse(navigateNewUserTo(nstPresentingCompositeHelp, "hangman", "help",
+		                                "nick WhoAmI966"),                              "nick",               ivac.profilePhrasings.getAskForNewNickname("WhoAmI966"));
+		checkResponse(navigateNewUserTo(nstPresentingCompositeHelp, "hangman", "help"), "nick FromHelp",      ivac.profilePhrasings.getNicknameRegistrationNotification("FromHelp"));
+		checkResponse(navigateNewUserTo(nstPresentingCompositeHelp, "hangman", "help",
+		                                "nick FromHelp2"),                              "m SomeOne hi there", ivac.chatPhrasings.getPrivateMessageDeliveryNotification("SomeOne"),
+		                                                                                                      ivac.chatPhrasings.getPrivateMessage("FromHelp2", "hi there"));
+		//checkResponse(navigateNewUserTo(nstPresentingCompositeHelp, "hangman"), "list",               ivac.profilePhrasings....);
+		checkResponse(navigateNewUserTo(nstPresentingCompositeHelp, "hangman", "help"), "profile SomeOne",    ivac.profilePhrasings.getUserProfilePresentation("SomeOne"));
+		checkResponse(navigateNewUserTo(nstPresentingCompositeHelp, "hangman", "help"), "invite SomeOne",     ivac.hangmanPhrasings.getAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation("SomeOne"));
+		checkResponse(navigateNewUserTo(nstPresentingCompositeHelp, "hangman", "help"), "wtf???",             ivac.helpPhrasings.getExistingUsersFallbackHelp());
 		
 		// nstRegisteringNickname
-		// help
-		// unsubscribe
-		// nicks
-		// chat
-		// list
-		// profile
-		// invite
-		// nick fallback?
+		checkResponse(navigateNewUserTo(nstRegisteringNickname, "hangman", "nick"), "help",               ivac.helpPhrasings.getCompositeHelpMessage(0));
+		checkResponse(navigateNewUserTo(nstRegisteringNickname, "hangman", "nick"), "unsubscribe",        ivac.subscriptionPhrasings.getUserRequestedUnsubscriptionNotification());
+		checkResponse(navigateNewUserTo(nstRegisteringNickname, "hangman",
+		                                "nick WhoAmIS28", "nick"),                  "nick",               ivac.profilePhrasings.getAskForNewNickname("WhoAmIS28"));
+		checkResponse(navigateNewUserTo(nstRegisteringNickname, "hangman", "nick"), "nick FromNick",      ivac.profilePhrasings.getNicknameRegistrationNotification("FromNick"));
+		checkResponse(navigateNewUserTo(nstRegisteringNickname, "hangman",
+		                                "nick FromNick2", "nick"),                  "m SomeOne hi there", ivac.chatPhrasings.getPrivateMessageDeliveryNotification("SomeOne"),
+		                                                                                                  ivac.chatPhrasings.getPrivateMessage("FromNick2", "hi there"));
+		//checkResponse(navigateNewUserTo(nstPresentingCompositeHelp, "hangman"), "list",               ivac.profilePhrasings....);
+		checkResponse(navigateNewUserTo(nstRegisteringNickname, "hangman", "nick"), "profile SomeOne",    ivac.profilePhrasings.getUserProfilePresentation("SomeOne"));
+		checkResponse(navigateNewUserTo(nstRegisteringNickname, "hangman", "nick"), "invite SomeOne",     ivac.hangmanPhrasings.getAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation("SomeOne"));
+		checkResponse(navigateNewUserTo(nstRegisteringNickname, "hangman", "nick"), "wtf is this??",      ivac.helpPhrasings.getStatefulHelpMessage(nstRegisteringNickname));
+		checkResponse(navigateNewUserTo(nstRegisteringNickname, "hangman", "nick"), "FromNick3",          ivac.profilePhrasings.getNicknameRegistrationNotification("FromNick3"));
 		
 		// nstEnteringMatchWord
-		// holdWord
-		// help
-		// unsubscribe
-		// nicks
-		// chat
-		// list
-		// profile
-		// invite
-		// fallback
-		
-		// nstAnsweringToHangmanMatchInvitation
-		// accept & refuse
-		// help
-		// unsubscribe
-		// nicks
-		// chat
-		// list
-		// profile
-		// invite
-		// fallback
+		//checkResponse(navigateNewUserTo(nstExistingUser, "hangman"), "hangman",            ivac.subscriptionPhrasings.getSuccessfullySubscribed());
+		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman", "invite SomeOne"), "help",               ivac.helpPhrasings.getCompositeHelpMessage(0));
+		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman", "invite SomeOne"), "unsubscribe",        ivac.subscriptionPhrasings.getUserRequestedUnsubscriptionNotification());
+		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman", "invite SomeOne",
+		                                "nick WhoAmI485"),                                  "nick",               ivac.profilePhrasings.getAskForNewNickname("WhoAmI485"));
+		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman", "invite SomeOne"), "nick FromWord",      ivac.profilePhrasings.getNicknameRegistrationNotification("FromWord"));
+		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman", "invite SomeOne",
+		                                "nick FromWord2"),                                  "m SomeOne hi there", ivac.chatPhrasings.getPrivateMessageDeliveryNotification("SomeOne"),
+		                                                                                                          ivac.chatPhrasings.getPrivateMessage("FromWord2", "hi there"));
+		//checkResponse(navigateNewUserTo(nstExistingUser, "hangman"), "list",               ivac.profilePhrasings....);
+		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman", "invite SomeOne"), "profile SomeOne",    ivac.profilePhrasings.getUserProfilePresentation("SomeOne"));
+		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman", "invite SomeOne"), "invite SomeOne",     ivac.hangmanPhrasings.getAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation("SomeOne"));
+		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman", "invite SomeOne"), "wtf???",             ivac.hangmanPhrasings.getNotAGoodWord("WTF???"));
+		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman",
+		                                "nick FromWord3", "invite SomeOne"),                "MyWord",             ivac.hangmanPhrasings.getInvitationResponseForInvitingPlayer("SomeOne"),
+		                                                                                                          ivac.hangmanPhrasings.getInvitationNotificationForInvitedPlayer("FromWord3"));
 
+		// nstAnsweringToHangmanMatchInvitation
+		
 		// nstGuessingWordFromHangmanHumanOpponent
-		// suggest single letter
-		// help
-		// unsubscribe
-		// nicks
-		// chat
-		// list
-		// profile
-		// invite
-		// suggest word
-		// fallback
+		//checkResponse(navigateNewUserTo(nstExistingUser, "hangman"), "hangman",            ivac.subscriptionPhrasings.getSuccessfullySubscribed());
+		
+		wordGuessingPhone  = navigateNewUserTo(nstExistingUser, "hangman", "nick Guessing1");
+		wordProvidingPhone = navigateNewUserTo(nstExistingUser, "hangman", "nick Providing1", "invite Guessing1", "Shoes");
+		checkResponse(wordGuessingPhone, "yes", ivac.hangmanPhrasings.getWordGuessingPlayerMatchStart("S---S", "S"),
+		                                        ivac.hangmanPhrasings.getWordProvidingPlayerMatchStart("S--S", "Guessing1"));
+		checkResponse(wordGuessingPhone, "help", ivac.helpPhrasings.getCompositeHelpMessage(0));
+		
+		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman", "invite SomeOne", "Shoes"), "unsubscribe",        ivac.subscriptionPhrasings.getUserRequestedUnsubscriptionNotification());
+		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman", "invite SomeOne", "Shoes",
+		                                "nick WhoAmI111"),                                           "nick",               ivac.profilePhrasings.getAskForNewNickname("WhoAmI111"));
+		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman", "invite SomeOne", "Shoes"), "nick FromHuman",     ivac.profilePhrasings.getNicknameRegistrationNotification("FromHuman"));
+		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman", "invite SomeOne", "Shoes",
+		                                "nick FromHuman2"),                                          "m SomeOne hi there", ivac.chatPhrasings.getPrivateMessageDeliveryNotification("SomeOne"),
+		                                                                                                                   ivac.chatPhrasings.getPrivateMessage("FromHuman2", "hi there"));
+		//checkResponse(navigateNewUserTo(nstExistingUser, "hangman"), "list",               ivac.profilePhrasings....);
+		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman", "invite SomeOne", "Shoes"), "profile SomeOne",    ivac.profilePhrasings.getUserProfilePresentation("SomeOne"));
+		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman", "invite SomeOne", "Shoes"), "invite SomeOne",     ivac.hangmanPhrasings.getAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation("SomeOne"));
+		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman", "invite SomeOne", "Shoes"), "?",                  ivac.helpPhrasings.getStatefulHelpMessage(nstEnteringMatchWord));
+		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman",
+		                                "nick FromHuman3", "invite SomeOne", "Shoes"),               "a",                  ivac.hangmanPhrasings.getWordGuessingPlayerMatchStart("S---S", "AS"),
+		                                                                                                                   ivac.hangmanPhrasings.getWordProvidingPlayerStatus(true, false, false, false, false, false, "S---S", "A", "AS", "FromHuman3"));
 		
 		// nstGuessingWordFromHangmanBotOpponent, idem
 		

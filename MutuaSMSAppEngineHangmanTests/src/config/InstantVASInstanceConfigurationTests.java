@@ -43,7 +43,16 @@ public class InstantVASInstanceConfigurationTests {
 		InstantVASInstanceConfiguration.setHangmanProductionDefaultsCLARO_BR();
 		ConfigurationManager cm = new ConfigurationManager(InstantVASInstanceConfiguration.class);
 		cm.saveToFile(outputFile);
-		System.err.println("### CLARO BR production default configuration was saved to '"+"/tmp/HangmanClaroBR.config"+"'");
+		System.err.println("### CLARO BR production default configuration was saved to '"+outputFile+"'");
+	}
+	
+	@Test
+	public void outputDefaultConfiguration() throws IllegalArgumentException, IOException, IllegalAccessException {
+		String outputFile = "/tmp/HangmanDefault.config";
+		InstantVASInstanceConfiguration.setHangmanProductionDefaults();
+		ConfigurationManager cm = new ConfigurationManager(InstantVASInstanceConfiguration.class);
+		cm.saveToFile(outputFile);
+		System.err.println("### Default production configuration was saved to '"+outputFile+"'");
 	}
 
 }

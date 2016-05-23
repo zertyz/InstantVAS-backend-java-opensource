@@ -6,6 +6,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Random;
 
+import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates.NavigationStatesNames.*;
+
 import mutua.hangmansmsgame.dispatcher.IResponseReceiver;
 import mutua.hangmansmsgame.smslogic.SMSProcessor;
 import mutua.hangmansmsgame.smslogic.SMSProcessorException;
@@ -122,9 +124,14 @@ System.err.println("\n");
 	}
 
 	public void checkNavigationState(String phone, String navigationStateName) throws SQLException {
+		String navigationStatePropertyName = SessionModel.NAVIGATION_STATE_PROPERTY.getPropertyName();
 		UserDto user          = userDB.assureUserIsRegistered(phone);
 		SessionDto sessionDto = sessionDB.getSession(user);
-		String navigationStatePropertyName = SessionModel.NAVIGATION_STATE_PROPERTY.getPropertyName();
+		// new users belong to 'nstNewUser' state
+		if (sessionDto == null) {
+			// code based on 'SMSProcessor.resolveSession()'
+			sessionDto = new SessionDto(user, new String[][] {{navigationStatePropertyName, nstNewUser}});
+		}
 		String[][] storedProperties = sessionDto.getStoredProperties();
 		boolean found = false;
 		for (String[] storedPropertyNameAndValuePair : storedProperties) {
@@ -136,6 +143,26 @@ System.err.println("\n");
 			}
 		}
 		assertTrue("Navigation state information was not found on the stored session properties", found);
+	}
+	
+	/** delivers a set of MOs to the sms processor which should bring a new user from 'nstNewUser' to the 'targetNavigationState',
+	 *  checking it at the end of the transaction.
+	 *  @param moIdsAndTexts := { {mo1Id, mo1Text}, ... } */
+	public void navigateNewUserTo(String phone, String targetNavigationState, Object[][] moIdsAndTexts) throws SQLException {
+		// check that phone is in new user state
+		checkNavigationState(phone, nstNewUser);
+		// process MOs
+		for (int i=0; i<moIdsAndTexts.length; i++) try {
+			int    moId   = (Integer) moIdsAndTexts[i][0];
+			String moText = (String) moIdsAndTexts[i][1];
+			IncomingSMSDto mo = new IncomingSMSDto(moId, phone, moText, ESMSInParserCarrier.TEST_CARRIER, "1234");
+			smsP.process(mo);
+			responseReceiver.getLastOutgoingSMSes();	// consume MTs, even if we won't check them
+		} catch (SMSProcessorException e) {
+			fail("Exception while processing message: "+e.getMessage());
+		}
+		// check that phone is in 'targetNavigationState'
+		checkNavigationState(phone, targetNavigationState);
 	}
 
 }

@@ -223,19 +223,29 @@ public class InstantVASLicense {
 	// TODO 20160520 -- Adicionar chat, play, nick, etc em todos os estados. Consultar o NavigationStates do jogo anterior e, mais importante, criar os testes
 	//      que revelam esta falha, antes verificando se eles já não existem na versão antiga
 	
+	// global commands:
+	//                  help,
+	//                  unsubscribe,
+	//                  nick(PROFILEtrgGlobalStartAskForNicknameDialog, PROFILEtrgGlobalRegisterNickname),
+	//                  chat(CHATtrgGlobalSendPrivateMessage),
+	//                  list,
+	//                  profile(PROFILEtrgGlobalShowUserProfile),
+	//                  invite
+
+	
 	/** Navigation state used to initiate the first interaction with the application and, also, the state after users subscriptions cancellation */
 	public static final EInstantVASCommandTriggers[] BASEnstNewUser = {
-		EInstantVASCommandTriggers.SUBSCRIPTIONtrgLocalAcceptDoubleOptin,	// the double opt-in process starts with a broadcast message, outside the scope of this application
+		EInstantVASCommandTriggers.SUBSCRIPTIONtrgLocalAcceptDoubleOptin,	// the double opt-in process starts with an externally generated broadcast message -- so we may proceed from that point on
 		EInstantVASCommandTriggers.SUBSCRIPTIONtrgGlobalUnsubscribe,
+		EInstantVASCommandTriggers.PROFILEtrgGlobalShowUserProfile,
 		EInstantVASCommandTriggers.SUBSCRIPTIONtrgLocalStartDoubleOptin,
-		EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,			// let the user answer to chats
-		EInstantVASCommandTriggers.HELPtrgGlobalShowNewUsersFallbackHelp,	// fallback help
 	};
 	/** Navigation state used by registered users. Also the 'main loop' navigation state, to which all other states revert to when they finish their businesses */
 	public static final EInstantVASCommandTriggers[] BASEnstExistingUser = {
 		EInstantVASCommandTriggers.HELPtrgGlobalStartCompositeHelpDialog,
 		EInstantVASCommandTriggers.HELPtrgGlobalShowStatelessHelpMessage,
 		EInstantVASCommandTriggers.SUBSCRIPTIONtrgGlobalUnsubscribe,
+		EInstantVASCommandTriggers.PROFILEtrgGlobalStartAskForNicknameDialog,
 		EInstantVASCommandTriggers.PROFILEtrgGlobalRegisterNickname,
 		EInstantVASCommandTriggers.PROFILEtrgGlobalShowUserProfile,
 		EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
@@ -245,24 +255,36 @@ public class InstantVASLicense {
 	/** Navigation state used to show the composite help messages, containing command triggers to navigate from here on */
 	public static final EInstantVASCommandTriggers[] HELPnstPresentingCompositeHelp = {
 		EInstantVASCommandTriggers.HELPtrgLocalShowNextCompositeHelpMessage,
+		EInstantVASCommandTriggers.SUBSCRIPTIONtrgGlobalUnsubscribe,
+		EInstantVASCommandTriggers.PROFILEtrgGlobalStartAskForNicknameDialog,
 		EInstantVASCommandTriggers.PROFILEtrgGlobalRegisterNickname,
+		EInstantVASCommandTriggers.PROFILEtrgGlobalShowUserProfile,
+		EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
+		EInstantVASCommandTriggers.HANGMANtrgGlobalInviteNicknameOrPhoneNumber,
 		EInstantVASCommandTriggers.HELPtrgGlobalStartCompositeHelpDialog,
 		EInstantVASCommandTriggers.HELPtrgGlobalShowExistingUsersFallbackHelp,
 	};
 	/** Navigation state used to implement the double opt-in process */
 	public static final EInstantVASCommandTriggers[] SUBSCRIPTIONnstAnsweringDoubleOptin = {
 		EInstantVASCommandTriggers.SUBSCRIPTIONtrgLocalAcceptDoubleOptin,
-		EInstantVASCommandTriggers.SUBSCRIPTIONtrgLocalRefuseDoubleOptin,
 		EInstantVASCommandTriggers.SUBSCRIPTIONtrgGlobalUnsubscribe,
+		EInstantVASCommandTriggers.PROFILEtrgGlobalShowUserProfile,
+		EInstantVASCommandTriggers.SUBSCRIPTIONtrgLocalRefuseDoubleOptin,
 		EInstantVASCommandTriggers.SUBSCRIPTIONtrgLocalStartDoubleOptin,	// for some of known wrong commands, start the double opt-in process again
 	};
 	/** Navigation state used to interact with the user when asking for a nickname */
 	public static final EInstantVASCommandTriggers[] PROFILEnstRegisteringNickname = {
-		EInstantVASCommandTriggers.PROFILEtrgGlobalRegisterNickname,
+		EInstantVASCommandTriggers.HELPtrgGlobalStartCompositeHelpDialog,
+		EInstantVASCommandTriggers.HELPtrgGlobalShowStatelessHelpMessage,
+		EInstantVASCommandTriggers.SUBSCRIPTIONtrgGlobalUnsubscribe,
 		EInstantVASCommandTriggers.PROFILEtrgGlobalStartAskForNicknameDialog,
-		EInstantVASCommandTriggers.PROFILEtrgLocalNicknameDialogCancelation,
+		EInstantVASCommandTriggers.PROFILEtrgGlobalRegisterNickname,
 		EInstantVASCommandTriggers.PROFILEtrgGlobalShowUserProfile,
+		EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
+		EInstantVASCommandTriggers.HANGMANtrgGlobalInviteNicknameOrPhoneNumber,
+		EInstantVASCommandTriggers.PROFILEtrgLocalNicknameDialogCancelation,	// makes sense?
 		EInstantVASCommandTriggers.PROFILEtrgLocalRegisterNickname,
+		EInstantVASCommandTriggers.HELPtrgGlobalShowStatefulHelpMessageFallback,
 	};
 	/** Navigation state used when privately chatting with someone -- allows the user to simply type the message (no need to provide the nickname) */
 	public static final EInstantVASCommandTriggers[] CHATnstChattingWithSomeone = {
@@ -270,8 +292,16 @@ public class InstantVASLicense {
 	};
 	/** Navigation state part of the invitation process of a human to play a hangman match -- on this state, the user must enter the desired word to be guessed, which will be processed by 'cmdHoldMatchWord' */
 	public static final EInstantVASCommandTriggers[] HANGMANnstEnteringMatchWord = {
+		EInstantVASCommandTriggers.HELPtrgGlobalStartCompositeHelpDialog,
+		EInstantVASCommandTriggers.HELPtrgGlobalShowStatelessHelpMessage,
+		EInstantVASCommandTriggers.SUBSCRIPTIONtrgGlobalUnsubscribe,
+		EInstantVASCommandTriggers.PROFILEtrgGlobalStartAskForNicknameDialog,
+		EInstantVASCommandTriggers.PROFILEtrgGlobalRegisterNickname,
+		EInstantVASCommandTriggers.PROFILEtrgGlobalShowUserProfile,
+		EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
+		EInstantVASCommandTriggers.HANGMANtrgGlobalInviteNicknameOrPhoneNumber,
 		EInstantVASCommandTriggers.HANGMANtrgLocalHoldMatchWord,
-		EInstantVASCommandTriggers.HELPtrgGlobalShowExistingUsersFallbackHelp,
+		EInstantVASCommandTriggers.HELPtrgGlobalShowStatefulHelpMessageFallback,
 	};
 	/** State an invited user gets into after he/she is invited for a match, which is set by 'cmdHoldMatchWord'. The invited user answer will, then, be processed by 'cmdAnswerToInvitation' */
 	public static final EInstantVASCommandTriggers[] HANGMANnstAnsweringToHangmanMatchInvitation = {
@@ -286,7 +316,7 @@ public class InstantVASLicense {
 		EInstantVASCommandTriggers.HANGMANtrgLocalSingleLetterSuggestionForHuman,
 		EInstantVASCommandTriggers.SUBSCRIPTIONtrgGlobalUnsubscribe,
 		EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
-		EInstantVASCommandTriggers.HELPtrgGlobalShowStatefulHelpMessage,
+		EInstantVASCommandTriggers.HELPtrgGlobalShowStatelessHelpMessage,
 		EInstantVASCommandTriggers.HANGMANtrgGlobalInviteNicknameOrPhoneNumber,
 		EInstantVASCommandTriggers.HANGMANtrgLocalWordSuggestionFallbackForHuman,
 		EInstantVASCommandTriggers.HELPtrgGlobalShowExistingUsersFallbackHelp,
@@ -310,6 +340,7 @@ public class InstantVASLicense {
 		HELPtrgGlobalShowExistingUsersFallbackHelp,
 		HELPtrgGlobalShowStatelessHelpMessage,
 		HELPtrgGlobalShowStatefulHelpMessage,
+		HELPtrgGlobalShowStatefulHelpMessageFallback,
 		// subscription
 		SUBSCRIPTIONtrgLocalStartDoubleOptin,
 		SUBSCRIPTIONtrgLocalAcceptDoubleOptin,

@@ -114,8 +114,8 @@ public class SMSAppModulePhrasingsHelp {
 	}
 
 	/** Retrieve the navigation state specific help messages set on the configuration class */
-	public String getStatefulHelpMessage(NavigationState navigationState) {
-		Phrase phrase = phrStatefulHelpMessagesMap.get(navigationState.getNavigationStateName());
+	public String getStatefulHelpMessage(String navigationStateName) {
+		Phrase phrase = phrStatefulHelpMessagesMap.get(navigationStateName);
 		return phrase != null ? phrase.getPhrase() : null;
 	}
 }

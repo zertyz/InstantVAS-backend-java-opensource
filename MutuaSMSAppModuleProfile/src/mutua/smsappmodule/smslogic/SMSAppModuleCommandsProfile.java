@@ -128,7 +128,12 @@ public class SMSAppModuleCommandsProfile {
 			String desiredNickname = parameters[0];
 			ProfileDto registeredProfile = profileDB.setProfileRecord(new ProfileDto(session.getUser(), desiredNickname));
 			String registeredNickname = registeredProfile.getNickname();
-			return getNewStateReplyCommandAnswer(session, nstExistingUser, profilePhrases.getNicknameRegistrationNotification(registeredNickname));
+			// if we are setting the nick from 'nstRegisteringNickname', get out of it
+			if (nstRegisteringNickname.equals(session.getNavigationStateName())) {
+				return getNewStateReplyCommandAnswer(session, nstExistingUser, profilePhrases.getNicknameRegistrationNotification(registeredNickname));
+			} else {
+				return getSameStateReplyCommandAnswer(profilePhrases.getNicknameRegistrationNotification(registeredNickname));
+			}
 		}
 	};
 

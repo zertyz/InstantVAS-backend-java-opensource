@@ -93,7 +93,7 @@ public class SMSAppModuleCommandsHelp {
 	public final ICommandProcessor cmdShowStatefulHelp = new ICommandProcessor(CommandNamesHelp.cmdShowStatefulHelp) {
 		@Override
 		public CommandAnswerDto processCommand(SessionModel session, ESMSInParserCarrier carrier, String[] parameters) throws SQLException {
-			return getSameStateReplyCommandAnswer(helpPhrases.getStatefulHelpMessage(session.getNavigationState()));
+			return getSameStateReplyCommandAnswer(helpPhrases.getStatefulHelpMessage(session.getNavigationStateName()));
 		}
 	};
 	
