@@ -267,9 +267,10 @@ public class SMSAppModuleCommandsHangman {
 			MatchDto match = matchDB.retrieveMatch(session.getIntProperty(sprHangmanMatchId));
 			HangmanGame game = new HangmanGame(match.getSerializedGame());
 			UserDto wordProvidingPlayer = match.getWordProvidingPlayer();
-			String wordGuessingPlayerNickname = profileDB.getProfileRecord(session.getUser()).getNickname();
+			String wordGuessingPlayerNickname  = assureUserHasANickname(session.getUser()).getNickname();
+			String wordProvidingPlayerNickname = assureUserHasANickname(wordProvidingPlayer).getNickname();
 			return getNewStateReplyWithAnAdditionalMessageToAnotherUserCommandAnswer(session, nstGuessingWordFromHangmanHumanOpponent,
-			                                                                         hangmanPhrases.getWordGuessingPlayerMatchStart(game.getGuessedWordSoFar(), game.getAttemptedLettersSoFar()),
+			                                                                         hangmanPhrases.getWordGuessingPlayerMatchStart(game.getGuessedWordSoFar(), game.getAttemptedLettersSoFar(), wordProvidingPlayerNickname),
 			                                                                         wordProvidingPlayer,
 			                                                                         hangmanPhrases.getWordProvidingPlayerMatchStart(game.getGuessedWordSoFar(), wordGuessingPlayerNickname));
 		}
@@ -299,7 +300,7 @@ public class SMSAppModuleCommandsHangman {
 	public final ICommandProcessor cmdSuggestLetterOrWordForHuman = new ICommandProcessor(CommandNamesHangman.cmdSuggestLetterOrWordForHuman) {
 		@Override
 		public CommandAnswerDto processCommand(SessionModel session, ESMSInParserCarrier carrier, String[] parameters) throws SQLException {
-			String suggestedLetterOrWord = parameters[0];
+			String suggestedLetterOrWord = parameters[0].toUpperCase();
 			int    matchId               = session.getIntProperty(sprHangmanMatchId);
 			MatchDto match               = matchDB.retrieveMatch(matchId);
 			String serializedGameState   = match.getSerializedGame();
@@ -329,7 +330,7 @@ public class SMSAppModuleCommandsHangman {
 			switch (gameState) {
 				case PLAYING:
 					replyMT        = hangmanPhrases.getWordGuessingPlayerStatus(attemptsLeft<6, attemptsLeft<5, attemptsLeft<4, attemptsLeft<3, attemptsLeft<2, attemptsLeft<1,
-					                                                            game.getGuessedWordSoFar(), game.getAttemptedLettersSoFar());
+					                                                            game.getGuessedWordSoFar(), game.getAttemptedLettersSoFar(), wordProvidingNickname);
 					notificationMT = hangmanPhrases.getWordProvidingPlayerStatus(attemptsLeft<6, attemptsLeft<5, attemptsLeft<4, attemptsLeft<3, attemptsLeft<2, attemptsLeft<1,
                                                                                  game.getGuessedWordSoFar(), suggestedLetterOrWord, game.getAttemptedLettersSoFar(), wordGuessingNickname);
 					matchStatus    = EMatchStatus.ACTIVE;

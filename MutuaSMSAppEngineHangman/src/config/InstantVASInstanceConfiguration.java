@@ -833,9 +833,9 @@ public class InstantVASInstanceConfiguration {
 					{nstGuessingWordFromHangmanHumanOpponent, HANGMANphrGuessingWordHelp},
 				};
 				Object[] helpModuleInstances = SMSAppModuleConfigurationHelp.getHelpModuleInstances(
-					SHORT_CODE, APP_NAME,
-					HELPphrNewUsersFallback, HELPphrExistingUsersFallback, HELPphrStateless, HELPphrStatefulHelpMessages, HELPphrComposite,
-					EInstantVASCommandTriggers.get2DStringArrayFromEInstantVASCommandTriggersArray(HELPnstPresentingCompositeHelp));
+					SHORT_CODE, APP_NAME, PRICE_TAG,
+					HELPphrNewUsersFallback, HELPphrExistingUsersFallback, HELPphrStateless, HELPphrStatefulHelpMessages,
+					HELPphrComposite, EInstantVASCommandTriggers.get2DStringArrayFromEInstantVASCommandTriggersArray(HELPnstPresentingCompositeHelp));
 				helpStates    = (SMSAppModuleNavigationStatesHelp) helpModuleInstances[0];
 				helpCommands  = (SMSAppModuleCommandsHelp)         helpModuleInstances[1];
 				helpPhrasings = (SMSAppModulePhrasingsHelp)        helpModuleInstances[2];
@@ -882,7 +882,7 @@ public class InstantVASInstanceConfiguration {
 					HANGMANphrNotAGoodWord, HANGMANphrWordProvidingPlayerMatchStart, HANGMANphrWordGuessingPlayerMatchStart, HANGMANphrWordProvidingPlayerStatus,                                
 					HANGMANphrWordGuessingPlayerStatus, HANGMANphrWinningMessageForWordGuessingPlayer, HANGMANphrWinningMessageForWordProvidingPlayer,                     
 					HANGMANphrLosingMessageForWordGuessingPlayer, HANGMANphrLosingMessageForWordProvidingPlayer, HANGMANphrMatchGiveupNotificationForWordGuessingPlayer,             
-					HANGMANphrMatchGiveupNotificationForWordProvidingPlayer, HANGMANphrGuessingWordHelp,
+					HANGMANphrMatchGiveupNotificationForWordProvidingPlayer,
 					subscriptionEventsServer, baseModuleDAL, profileModuleDAL, hangmanModuleDAL, DEFAULT_NICKNAME_PREFIX,
 					EInstantVASCommandTriggers.get2DStringArrayFromEInstantVASCommandTriggersArray(HANGMANnstEnteringMatchWord),
 					EInstantVASCommandTriggers.get2DStringArrayFromEInstantVASCommandTriggersArray(HANGMANnstAnsweringToHangmanMatchInvitation),
@@ -1144,14 +1144,14 @@ public class InstantVASInstanceConfiguration {
 		HANGMANphrWordProvidingPlayerMatchStart                             = "Game started with {{wordGuessingPlayerNickname}}.\n{{gallowsArt}}Is your word really a hard one? We'll see... While you wait for {{wordGuessingPlayerNickname}} to make his/her first guess, you may text M {{wordGuessingPlayerNickname}} [MSG] to give him/her cues";
 		HANGMANphrWordGuessingPlayerMatchStart                              = "{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nAnswer with your first letter, the complete word or ask for cues with M {{wordProvidingPlayerNickname}} [MSG]";
 		HANGMANphrWordProvidingPlayerStatus                                 = "Match going on! {{wordGuessingPlayerNickname}} guessed letter {{guessedLetter}}\n{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nWant to chat with him/her? Text M {{wordGuessingPlayerNickname}} [MSG] to provoke him/her";
-		HANGMANphrWordGuessingPlayerStatus                                  = "{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nText a letter, the complete word or M {{wordGuessingPlayerNickname}} [MSG]";
+		HANGMANphrWordGuessingPlayerStatus                                  = "{{gallowsArt}}Word: {{guessedWordSoFar}}\nUsed: {{usedLetters}}\nText a letter, the complete word or M {{wordProvidingPlayerNickname}} [MSG]";
 		HANGMANphrWinningMessageForWordGuessingPlayer                       = "{{winningArt}}{{word}}! You got it! Keep on playing! Text INVITE {{wordProvidingPlayerNickname}} for a new match with this player or text LIST to see other online players. You may also text P to play with a random user.";
 		HANGMANphrWinningMessageForWordProvidingPlayer                      = "{{wordGuessingPlayerNickname}} guessed your word! Want revenge? Text INVITE {{wordGuessingPlayerNickname}}; Want to tease him/her? Text M {{wordGuessingPlayerNickname}} [MSG]";
 		HANGMANphrLosingMessageForWordGuessingPlayer                        = "{{losingArt}}Oh, my... you were hanged! The word was {{word}}. Now challenge {{wordProvidingPlayerNickname}} for a revenge: text INVITE {{wordProvidingPlayerNickname}} or tease him/her with M {{wordGuessingPlayerNickname}} [MSG]";
 		HANGMANphrLosingMessageForWordProvidingPlayer                       = "Good one! {{wordGuessingPlayerNickname}} wasn't able to guess your word! Say something about it with M {{wordGuessingPlayerNickname}} [MSG] or INVITE {{wordGuessingPlayerNickname}} for a new match, and make it hard when you choose the word!";
 		HANGMANphrMatchGiveupNotificationForWordGuessingPlayer              = "Your match with {{wordProvidingPlayerNickname}} has been canceled. Send P {{wordProvidingPlayerNickname}} [MSG] to talk to him/her or LIST to pick another opponent. You may also text PLAY to play with a random user.";
 		HANGMANphrMatchGiveupNotificationForWordProvidingPlayer             = "{{wordGuessingPlayerNickname}} cancelled the match. To find other users to play with, text LIST; to play with a random user, text PLAY";
-		HANGMANphrGuessingWordHelp                                          = "Ops!! This is not a letter! You are guessing a word on a {{appName}} and you texted {{MOText}}. Please text a letter or: END to quit the match; M [nick] [MSG] to ask for cues; LIST to quit this match and see other online players";
+		HANGMANphrGuessingWordHelp                                          = "Ops!! This is not a letter! You are guessing a word on a {{appName}} and you texted '{{MOText}}'. Please text a letter or: END to quit the match; M [nick] [MSG] to ask for cues; LIST to quit this match and see other online players";
 		
 		// command patterns
 		HANGMANtrgGlobalInviteNicknameOrPhoneNumber      = getConcatenationOf(cmdInviteNicknameOrPhoneNumber, /*trgGlobalInviteNicknameOrPhoneNumber*/ "[^A-Z0-9]*[HR]A[NM]GM?A?N?[^A-Z0-9]+([^ ]+)|[^A-Z0-9]*I[NM]VITE?[^A-Z0-9]+([^ ]+)|[^A-Z0-9]*PL[AE][YI][^A-Z0-9]+([^ ]+)");

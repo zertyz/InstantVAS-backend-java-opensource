@@ -2,8 +2,6 @@ package mutua.smsappmodule.i18n;
 
 import java.util.HashMap;
 
-import mutua.smsappmodule.smslogic.navigationstates.NavigationState;
-
 /** <pre>
  * SMSAppModulePhrasingsHelp.java
  * ==============================
@@ -34,36 +32,36 @@ public class SMSAppModulePhrasingsHelp {
 	
 	/** Fulfill the 'Phrase' objects with the default test values */
 	public SMSAppModulePhrasingsHelp(String shortCode, String appName, String[][] phrStatefulHelpMessages) {
-		this(shortCode, appName,
+		this(shortCode, appName, "$0.99",
 			"Welcome to {{appName}}, the service that can provide you whatever this service provides. Text {{appName}} to {{shortCode}} to subscribe",
 			"{{appName}}: unknown command. Please send HELP to see the full list. Short list: HELP for the list of commands; RULES for the regulation. ",
 			"This is the help you can access from anywhere, without changing the usage flow of the game or app -- it will not change the navigation state",
-			phrStatefulHelpMessages,
-			new String[] {"You can play the {{appName}} game in 2 ways: guessing someone's word or inviting someone to play with your word " +
-		                  "You'll get 1 lucky number each word you guess. Whenever you invite a friend or user to play, you win another lucky number " +
-		                  "Every week, 1 lucky number is selected to win the prize. Send an option to {{shortCode}}: (J)Play online; (C)Invite a friend or user; (R)anking; (A)Help",
-		                  "This is the extended help message... You can place as many as you want."});
+			phrStatefulHelpMessages, new String[] {"You can play the {{appName}} game in 2 ways: guessing someone's word or inviting someone to play with your word " +
+						              "You'll get 1 lucky number each word you guess. Whenever you invite a friend or user to play, you win another lucky number " +
+						              "Every week, 1 lucky number is selected to win the prize. Send an option to {{shortCode}}: (J)Play online; (C)Invite a friend or user; (R)anking; (A)Help",
+						              "This is the extended help message... You can place as many as you want."});
 	}
 
 	/** Fulfill the 'Phrase' objects with the given values.
-	 *  @param shortCode                    The application's short code to be used on phrases with {{shortCode}}
+	 *  @param shortCode                    The application short code to be used on phrases with {{shortCode}}
 	 *  @param appName                      The application name to be used on phrases with {{appName}}
+	 *  @param priceTag                     The application price to replace {{priceTag}} place holders
 	 *  @param phrNewUsersFallbackHelp      see {@link #phrNewUsersFallbackHelp} 
 	 *  @param phrExistingUsersFallbackHelp see {@link #phrExistingUsersFallbackHelp}
 	 *  @param phrStatelessHelp             see {@link #phrStatelessHelp}
 	 *  @param phrStatefulHelpMessages      := {{(String)navigationStateName, (String)text}, ...} -- also, see {@link #phrStatefulHelpMessagesMap}
 	 *  @param phrCompositeHelps            see {@link #phrCompositeHelps}*/
-	public SMSAppModulePhrasingsHelp(String shortCode, String appName,
+	public SMSAppModulePhrasingsHelp(String shortCode, String appName, String priceTag,
 		String phrNewUsersFallbackHelp,
 		String phrExistingUsersFallbackHelp,
 		String phrStatelessHelp,
-		String[][] phrStatefulHelpMessages,
-		String[] phrCompositeHelps) {
+		String[][] phrStatefulHelpMessages, String[] phrCompositeHelps) {
 		
 		// constant parameters -- defines the common phrase parameters -- {{shortCode}} and {{appName}}
 		String[] commonPhraseParameters = new String[] {
 			"shortCode", shortCode,
-			"appName",   appName};
+			"appName",   appName,
+			"priceTag",  priceTag};
 		
 		// phrases
 		this.phrNewUsersFallbackHelp      = new Phrase(commonPhraseParameters, phrNewUsersFallbackHelp);
@@ -77,7 +75,7 @@ public class SMSAppModulePhrasingsHelp {
 			this.phrStatefulHelpMessagesMap.put(navigationStateName, new Phrase(commonPhraseParameters, stateHelpMessage));
 		}
 		
-		this.phrCompositeHelps            = new Phrase(phrCompositeHelps);
+		this.phrCompositeHelps            = new Phrase(commonPhraseParameters, phrCompositeHelps);
 	}
 	
 	/*********************
@@ -113,9 +111,9 @@ public class SMSAppModulePhrasingsHelp {
 		}
 	}
 
-	/** Retrieve the navigation state specific help messages set on the configuration class */
-	public String getStatefulHelpMessage(String navigationStateName) {
+	/** Retrieve the navigation state specific help messages set on the configuration class. Variables: {{MOText}} */
+	public String getStatefulHelpMessage(String navigationStateName, String MOText) {
 		Phrase phrase = phrStatefulHelpMessagesMap.get(navigationStateName);
-		return phrase != null ? phrase.getPhrase() : null;
+		return phrase != null ? phrase.getPhrase("MOText", MOText) : null;
 	}
 }

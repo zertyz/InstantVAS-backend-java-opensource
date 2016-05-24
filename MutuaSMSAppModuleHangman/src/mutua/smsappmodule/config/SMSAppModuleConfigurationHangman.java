@@ -83,8 +83,7 @@ public class SMSAppModuleConfigurationHangman {
 	 *  @param phrLosingMessageForWordGuessingPlayer                        &
 	 *  @param phrLosingMessageForWordProvidingPlayer                       &
 	 *  @param phrMatchGiveupNotificationForWordGuessingPlayer              &
-	 *  @param phrMatchGiveupNotificationForWordProvidingPlayer             &
-	 *  @param phrGuessingWordHelp                                          see {@link SMSAppModulePhrasingsHangman#SMSAppModulePhrasingsHangman(String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String)}
+	 *  @param phrMatchGiveupNotificationForWordProvidingPlayer             see {@link SMSAppModulePhrasingsHangman#SMSAppModulePhrasingsHangman(String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String)}
 	 *  @param subscriptionEventsServer one of the values returned by {@link SMSAppModuleConfigurationSubscription#getSubscriptionModuleInstances}
 	 *  @param baseModuleDAL            &
 	 *  @param profileModuleDAL         &
@@ -124,7 +123,6 @@ public class SMSAppModuleConfigurationHangman {
 	                                                 String phrLosingMessageForWordProvidingPlayer,
 	                                                 String phrMatchGiveupNotificationForWordGuessingPlayer,
 	                                                 String phrMatchGiveupNotificationForWordProvidingPlayer,
-	                                                 String phrGuessingWordHelp,
 	                                                 SMSAppModuleEventsSubscription subscriptionEventsServer,
 	                                                 SMSAppModuleDALFactory         baseModuleDAL,
 	          	                                     SMSAppModuleDALFactoryProfile  profileModuleDAL,
@@ -143,7 +141,7 @@ public class SMSAppModuleConfigurationHangman {
 			phrNotAGoodWord, phrWordProvidingPlayerMatchStart, phrWordGuessingPlayerMatchStart, phrWordProvidingPlayerStatus,                                
 			phrWordGuessingPlayerStatus, phrWinningMessageForWordGuessingPlayer, phrWinningMessageForWordProvidingPlayer,                     
 			phrLosingMessageForWordGuessingPlayer, phrLosingMessageForWordProvidingPlayer, phrMatchGiveupNotificationForWordGuessingPlayer,             
-			phrMatchGiveupNotificationForWordProvidingPlayer, phrGuessingWordHelp);
+			phrMatchGiveupNotificationForWordProvidingPlayer);
 		SMSAppModuleCommandsHangman         commands         = new SMSAppModuleCommandsHangman(phrasings, subscriptionEventsServer, baseModuleDAL, profileModuleDAL, hangmanModuleDAL, defaultNicknamePrefix);
 		SMSAppModuleNavigationStatesHangman navigationStates = new SMSAppModuleNavigationStatesHangman(
 			nstEnteringMatchWordTriggers,nstAnsweringToHangmanMatchInvitationTriggers,
@@ -181,7 +179,6 @@ public class SMSAppModuleConfigurationHangman {
 			{"phrLosingMessageForWordProvidingPlayer",                       phrLosingMessageForWordProvidingPlayer},
 			{"phrMatchGiveupNotificationForWordGuessingPlayer",              phrMatchGiveupNotificationForWordGuessingPlayer},
 			{"phrMatchGiveupNotificationForWordProvidingPlayer",             phrMatchGiveupNotificationForWordProvidingPlayer},
-			{"phrGuessingWordHelp",                                          phrGuessingWordHelp},
 		};
 		Instrumentation.reportDebug(logPrefix + ": Phrasings        : " + Arrays.deepToString(logPhrasings));
 		Object[][] logCommands = {

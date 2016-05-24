@@ -69,8 +69,7 @@ public class SMSAppModulePhrasingsHangman {
 	private final Phrase phrMatchGiveupNotificationForWordGuessingPlayer;
 	/** @see #getMatchGiveupNotificationForWordProvidingPlayer */
 	private final Phrase phrMatchGiveupNotificationForWordProvidingPlayer;
-	/** @see #getGuessingWordHelp */
-	private final Phrase phrGuessingWordHelp;
+
 	
 	/** Fulfill the 'Phrase' objects with the default test values */
 	public SMSAppModulePhrasingsHangman(String shortCode, String appName) {
@@ -102,8 +101,8 @@ public class SMSAppModulePhrasingsHangman {
 			"{{losingArt}}The word was {{word}}. Now challenge {{wordProvidingPlayerNickname}}: send INVITE {{wordProvidingPlayerNickname}} to {{shortCode}}",
 			"Good one! {{wordGuessingPlayerNickname}} wasn't able to guessed your word! P {{wordGuessingPlayerNickname}} [MSG] to provoke him/her or INVITE {{wordGuessingPlayerNickname}} for a new match",
 			"Your match with {{wordProvidingPlayerNickname}} has been canceled. Send P {{wordProvidingPlayerNickname}} [MSG] to talk to him/her or LIST to play with someone else",
-			"{{wordGuessingPlayerNickname}} cancelled the match. To find other users to play with, sent LIST to {{shortCode}}",
-			"You are guessing a word on a {{appName}} match. Please text a letter or: END to quit the match; P [nick] [MSG] to ask for clues; LIST to see other online users");
+			"{{wordGuessingPlayerNickname}} cancelled the match. To find other users to play with, sent LIST to {{shortCode}}");
+			// guessing a word state help message "You are guessing a word on a {{appName}} match. Please text a letter or: END to quit the match; P [nick] [MSG] to ask for clues; LIST to see other online users"
 	}
 		
 	/** Fulfill the 'Phrase' objects with the given values.
@@ -136,8 +135,7 @@ public class SMSAppModulePhrasingsHangman {
 	 * @param phrLosingMessageForWordGuessingPlayer                        see {@link #phrLosingMessageForWordGuessingPlayer}
 	 * @param phrLosingMessageForWordProvidingPlayer                       see {@link #phrLosingMessageForWordProvidingPlayer}
 	 * @param phrMatchGiveupNotificationForWordGuessingPlayer              see {@link #phrMatchGiveupNotificationForWordGuessingPlayer}
-	 * @param phrMatchGiveupNotificationForWordProvidingPlayer             see {@link #phrMatchGiveupNotificationForWordProvidingPlayer}
-	 * @param phrGuessingWordHelp                                          see {@link #phrGuessingWordHelp} */
+	 * @param phrMatchGiveupNotificationForWordProvidingPlayer             see {@link #phrMatchGiveupNotificationForWordProvidingPlayer} */
 	public SMSAppModulePhrasingsHangman(String shortCode, String appName,
 		String winningArt,
 		String losingArt,
@@ -166,8 +164,7 @@ public class SMSAppModulePhrasingsHangman {
 		String phrLosingMessageForWordGuessingPlayer,
 		String phrLosingMessageForWordProvidingPlayer,
 		String phrMatchGiveupNotificationForWordGuessingPlayer,
-		String phrMatchGiveupNotificationForWordProvidingPlayer,
-		String phrGuessingWordHelp) {
+		String phrMatchGiveupNotificationForWordProvidingPlayer) {
 		
 		// constant parameters -- defines the common phrase parameters -- {{shortCode}}, {{appName}}, {{winningArt}} and {{losingArt}}
 		String[] commonPhraseParameters = new String[] {
@@ -202,7 +199,6 @@ public class SMSAppModulePhrasingsHangman {
 		this.phrLosingMessageForWordProvidingPlayer                       = new Phrase(commonPhraseParameters, phrLosingMessageForWordProvidingPlayer);
 		this.phrMatchGiveupNotificationForWordGuessingPlayer              = new Phrase(commonPhraseParameters, phrMatchGiveupNotificationForWordGuessingPlayer);
 		this.phrMatchGiveupNotificationForWordProvidingPlayer             = new Phrase(commonPhraseParameters, phrMatchGiveupNotificationForWordProvidingPlayer);
-		this.phrGuessingWordHelp                                          = new Phrase(commonPhraseParameters, phrGuessingWordHelp);
 	}
 
 	/*********************
@@ -284,11 +280,12 @@ public class SMSAppModulePhrasingsHangman {
 	}
 
 	/** Respose sent to the invited player when he/she accepts a match.
-	 *  Variables: {{shortCode}}, {{appName}}, {{gallowsArt}}, {{guessedWordSoFar}}, {{usedLetters}} */
-	public String getWordGuessingPlayerMatchStart(String guessedWordSoFar, String usedLetters) {
-		return phrWordGuessingPlayerMatchStart.getPhrase("gallowsArt",             getGallowsArt(false, false, false, false, false, false),
-		                                                 "guessedWordSoFar",       guessedWordSoFar,
-		                                                 "usedLetters",            usedLetters);
+	 *  Variables: {{shortCode}}, {{appName}}, {{gallowsArt}}, {{guessedWordSoFar}}, {{usedLetters}}, {{wordProvidingPlayerNickname}} */
+	public String getWordGuessingPlayerMatchStart(String guessedWordSoFar, String usedLetters, String wordProvidingPlayerNickname) {
+		return phrWordGuessingPlayerMatchStart.getPhrase("gallowsArt",                  getGallowsArt(false, false, false, false, false, false),
+		                                                 "guessedWordSoFar",            guessedWordSoFar,
+		                                                 "usedLetters",                 usedLetters,
+		                                                 "wordProvidingPlayerNickname", wordProvidingPlayerNickname);
 	}
 	
 	/** Notification sent to the word providing player when the opponent tries to guess his/her word.
@@ -304,13 +301,14 @@ public class SMSAppModulePhrasingsHangman {
 	}
 	
 	/** Response sent to the word guessing player when he/she guesses (sends) a letter or word.
-	 *  Variables: {{shortCode}}, {{appName}}, {{gallowsArt}}, {{guessedWordSoFar}}, {{usedLetters}} */
+	 *  Variables: {{shortCode}}, {{appName}}, {{gallowsArt}}, {{guessedWordSoFar}}, {{usedLetters}}, {{wordProvidingPlayerNickname}} */
 	public String getWordGuessingPlayerStatus(boolean drawHead, boolean drawLeftArm, boolean drawRightArm,
                                               boolean drawChest, boolean drawLeftLeg, boolean drawRightLeg,
-                                              String guessedWordSoFar, String usedLetters) {
-		return phrWordGuessingPlayerStatus.getPhrase("gallowsArt",       getGallowsArt(drawHead, drawLeftArm, drawRightArm, drawChest, drawLeftLeg, drawRightLeg),
-                                                     "guessedWordSoFar", guessedWordSoFar,
-                                                     "usedLetters",      usedLetters);
+                                              String guessedWordSoFar, String usedLetters, String wordProvidingPlayerNickname) {
+		return phrWordGuessingPlayerStatus.getPhrase("gallowsArt",                  getGallowsArt(drawHead, drawLeftArm, drawRightArm, drawChest, drawLeftLeg, drawRightLeg),
+                                                     "guessedWordSoFar",            guessedWordSoFar,
+                                                     "usedLetters",                 usedLetters,
+                                                     "wordProvidingPlayerNickname", wordProvidingPlayerNickname);
 		
 	}
 	
@@ -351,11 +349,4 @@ public class SMSAppModulePhrasingsHangman {
 	public String getMatchGiveupNotificationForWordProvidingPlayer(String wordGuessingPlayerNickname) {
 		return phrMatchGiveupNotificationForWordProvidingPlayer.getPhrase("wordGuessingPlayerNickname", wordGuessingPlayerNickname);
 	}
-	
-	/** Response sent to the word guessing player if he/she fails to send a valid command while on a hangman match.
-	 *  Variables: {{shortCode}}, {{appName}} */
-	public String getGuessingWordHelp() {
-		return phrGuessingWordHelp.getPhrase();
-	}
-
 }

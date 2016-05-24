@@ -156,12 +156,12 @@ public class HangmanAppEngineBehavioralTests {
     }
     
     /** for an ANSWERING_TO_INVITATION word guessing player, send YES to accept the match */
-    public void acceptInvitation(String wordGuessingPlayerPhone, String word, String wordGuessingPlayerNick) throws SQLException {
+    public void acceptInvitation(String wordGuessingPlayerPhone, String word, String wordGuessingPlayerNick, String wordProvidingPlayerNickname) throws SQLException {
     	HangmanGame game = new HangmanGame(word, 6);
     	String guessedWordSoFar = game.getGuessedWordSoFar();
     	String usedLetters = game.getAttemptedLettersSoFar();
 		checkResponse(wordGuessingPlayerPhone, "yes",
-			ivac.hangmanPhrasings.getWordGuessingPlayerMatchStart(guessedWordSoFar, usedLetters),
+			ivac.hangmanPhrasings.getWordGuessingPlayerMatchStart(guessedWordSoFar, usedLetters, wordProvidingPlayerNickname),
 			ivac.hangmanPhrasings.getWordProvidingPlayerMatchStart(guessedWordSoFar, wordGuessingPlayerNick));
     }
     
@@ -191,14 +191,14 @@ public class HangmanAppEngineBehavioralTests {
     }
     
     /** for NEW_USERS, start a match between them */
-    public void startAPlayerMatch(String wordProvidingPlayerPhone, String wordProvidingPlayerNick, String word,
-                                  String wordGuessingPlayerPhone, String wordGuessingPlayerNick) throws SQLException {
+    public void startAPlayerMatch(String wordProvidingPlayerPhone, String wordProvidingPlayerNickname, String word,
+                                  String wordGuessingPlayerPhone, String wordGuessingPlayerNickname) throws SQLException {
 		
     	// invite
-    	invitePlayerForAMatch(wordProvidingPlayerPhone, wordProvidingPlayerNick, word, wordGuessingPlayerPhone, wordGuessingPlayerNick);
+    	invitePlayerForAMatch(wordProvidingPlayerPhone, wordProvidingPlayerNickname, word, wordGuessingPlayerPhone, wordGuessingPlayerNickname);
 
     	// accept
-    	acceptInvitation(wordGuessingPlayerPhone, word, wordGuessingPlayerNick);		
+    	acceptInvitation(wordGuessingPlayerPhone, word, wordGuessingPlayerNickname, wordProvidingPlayerNickname);		
     }
     
 //    /** for a NEW_USER, start a match with a bot */
@@ -285,8 +285,6 @@ public class HangmanAppEngineBehavioralTests {
 			"HANGMAN: your message has been delivered to pAtRiCiA. While you wait for the answer, you may LIST online players",
 			"HardCodedNick: " + expectedChatMessage + " - Answer with M HardCodedNick [MSG]");
 
-		// TODO 20160520 -- Fazer cumprir a substituição {{wordProvidingPlayerNickname}} abaixo
-		
 		// back to the invitation... lets play the match!
 		checkResponse("21991234899", "YES", "+-+\n" +
 		                                       "| \n" +
@@ -315,7 +313,7 @@ public class HangmanAppEngineBehavioralTests {
 		                                     "Word: COCO---S\n" +
 		                                     "Used: COS\n" +
 		                                     "Text a letter, the complete word or M {{wordGuessingPlayerNickname}} [MSG]",
-		                                     "Match going on! HardCodedNick guessed letter o\n" +
+		                                     "Match going on! HardCodedNick guessed letter O\n" +
 		                                     "+-+\n" +
 		                                     "| \n" +
 		                                     "|  \n" +
@@ -328,14 +326,14 @@ public class HangmanAppEngineBehavioralTests {
 		
 		// continue playing, with eventually some wrong letters, until HardCodedNick wins
 		checkResponse("21991234899", "a",
-			ivac.hangmanPhrasings.getWordGuessingPlayerStatus (true, false, false, false, false, false, "COCO---S", "ACOS"),
-			ivac.hangmanPhrasings.getWordProvidingPlayerStatus(true, false, false, false, false, false, "COCO---S", "a", "ACOS", expectedNickname));
+			ivac.hangmanPhrasings.getWordGuessingPlayerStatus (true, false, false, false, false, false, "COCO---S", "ACOS", "pAtRiCiA"),
+			ivac.hangmanPhrasings.getWordProvidingPlayerStatus(true, false, false, false, false, false, "COCO---S", "A", "ACOS", expectedNickname));
 		checkResponse("21991234899", "nu",
-			ivac.hangmanPhrasings.getWordGuessingPlayerStatus (true, false, false, false, false, false, "COCONU-S", "ACNOSU"),
-			ivac.hangmanPhrasings.getWordProvidingPlayerStatus(true, false, false, false, false, false, "COCONU-S", "nu", "ACNOSU", expectedNickname));
+			ivac.hangmanPhrasings.getWordGuessingPlayerStatus (true, false, false, false, false, false, "COCONU-S", "ACNOSU", "pAtRiCiA"),
+			ivac.hangmanPhrasings.getWordProvidingPlayerStatus(true, false, false, false, false, false, "COCONU-S", "NU", "ACNOSU", expectedNickname));
 		checkResponse("21991234899", "xyz",
-			ivac.hangmanPhrasings.getWordGuessingPlayerStatus (true, true, true, true, false, false, "COCONU-S", "ACNOSUXYZ"),
-			ivac.hangmanPhrasings.getWordProvidingPlayerStatus(true, true, true, true, false, false, "COCONU-S", "xyz", "ACNOSUXYZ", expectedNickname));
+			ivac.hangmanPhrasings.getWordGuessingPlayerStatus (true, true, true, true, false, false, "COCONU-S", "ACNOSUXYZ", "pAtRiCiA"),
+			ivac.hangmanPhrasings.getWordProvidingPlayerStatus(true, true, true, true, false, false, "COCONU-S", "XYZ", "ACNOSUXYZ", expectedNickname));
 		
 		// test the winning phrase
 		checkResponse("21991234899", "t", "\\0/\n" +
@@ -348,7 +346,7 @@ public class HangmanAppEngineBehavioralTests {
 		// start a new game to test the losing phrase
 		invitePlayerByNick("21991234899", "pAtRiCiA");
 		sendWordToBeGuessed("21991234899", "HardCodedNick", "Muggles", "pAtRiCiA");
-		acceptInvitation("21998019167", "Muggles", "pAtRiCiA");
+		acceptInvitation("21998019167", "Muggles", "pAtRiCiA", "HardCodedNick");
 
 		// lose the game
 		checkResponse("21998019167", "muskratramblesong", "+-+\n" +
@@ -383,7 +381,7 @@ public class HangmanAppEngineBehavioralTests {
 		resetStates();
 		invitePlayerForAMatch(invitingPlayerPhone, invitingPlayerNickname, word, invitedPlayerPhone, invitedPlayerNickname);
 		checkResponse(invitedPlayerPhone, "yes",
-		              ivac.hangmanPhrasings.getWordGuessingPlayerMatchStart(guessedWordSoFar, usedLetters),
+		              ivac.hangmanPhrasings.getWordGuessingPlayerMatchStart(guessedWordSoFar, usedLetters, "Dom"),
 		              ivac.hangmanPhrasings.getWordProvidingPlayerMatchStart(guessedWordSoFar, invitedPlayerNickname));
 		
 		
@@ -414,6 +412,10 @@ public class HangmanAppEngineBehavioralTests {
 		invitePlayerForAMatch("21991234899", "Dom", "cacatua", "21998019167", "pAtY");
 
 		// TODO 20160520 -- Adicionar a funcionalidade de substituição por {{state}} da seguinte maneira:
+		//		- Módulo UserRegionResolver
+		//		- Frases passam a receber funções que retornam strings (além de apenas strings) como valores de place holders. A função é chamada com a seguinte asinatura: val = callback(String placeholderName, Object[] phraseParams)
+		//		- Módulo Profile passa a poder editar a lista de parâmetros dinâmicos pré-definidos pra cada frase -- ao menos para a frase de ver o profile
+		
 		//      1) Uma variável de configuração String[] PROFILE_STATES_MSISDN_PATTERNS no formato := {StateName1, PhonePattern1, ..., UnmatchedStateName}
 		//		2) Implementar esta funcionalidade no módulo Profile
 		//      3) A ocorrência de {{state}} eh Phrases deve provocar a execução de uma função. Esta funcionalidade deve ser adicionada a Phrases, permitindo sua extensibilidade
@@ -490,9 +492,9 @@ public class HangmanAppEngineBehavioralTests {
 		startAPlayerMatch("21991234899", "dom", hardWord, "21998019167", "paty");
 		usedLetters = "AB";
 		// first, test sending an empty ...
-		checkResponse("21998019167", "", ivac.helpPhrasings.getStatefulHelpMessage(nstGuessingWordFromHangmanHumanOpponent));
+		checkResponse("21998019167", "", ivac.helpPhrasings.getStatefulHelpMessage(nstGuessingWordFromHangmanHumanOpponent, ""));
 		// ... and an invalid message
-		checkResponse("21998019167", "???", ivac.helpPhrasings.getStatefulHelpMessage(nstGuessingWordFromHangmanHumanOpponent));
+		checkResponse("21998019167", "???", ivac.helpPhrasings.getStatefulHelpMessage(nstGuessingWordFromHangmanHumanOpponent, "???"));
 		// now loop through all messages
 		for (char letter : attemptedLetters) {
 			String sLetter = Character.toString(letter);
@@ -507,8 +509,8 @@ public class HangmanAppEngineBehavioralTests {
 				break;
 			} else {
 				checkResponse("21998019167", sLetter,
-				              ivac.hangmanPhrasings.getWordGuessingPlayerStatus (false, false, false, false, false, false, hardWordSoFar, usedLetters),
-				              ivac.hangmanPhrasings.getWordProvidingPlayerStatus(false, false, false, false, false, false, hardWordSoFar, sLetter, usedLetters, "paty"));
+				              ivac.hangmanPhrasings.getWordGuessingPlayerStatus (false, false, false, false, false, false, hardWordSoFar, usedLetters, "dom"),
+				              ivac.hangmanPhrasings.getWordProvidingPlayerStatus(false, false, false, false, false, false, hardWordSoFar, sLetter.toUpperCase(), usedLetters, "paty"));
 			}
 		}
 		
@@ -618,7 +620,7 @@ public class HangmanAppEngineBehavioralTests {
 		//checkResponse(navigateNewUserTo(nstPresentingCompositeHelp, "hangman"), "list",               ivac.profilePhrasings....);
 		checkResponse(navigateNewUserTo(nstRegisteringNickname, "hangman", "nick"), "profile SomeOne",    ivac.profilePhrasings.getUserProfilePresentation("SomeOne"));
 		checkResponse(navigateNewUserTo(nstRegisteringNickname, "hangman", "nick"), "invite SomeOne",     ivac.hangmanPhrasings.getAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation("SomeOne"));
-		checkResponse(navigateNewUserTo(nstRegisteringNickname, "hangman", "nick"), "wtf is this??",      ivac.helpPhrasings.getStatefulHelpMessage(nstRegisteringNickname));
+		checkResponse(navigateNewUserTo(nstRegisteringNickname, "hangman", "nick"), "wtf is this??",      ivac.helpPhrasings.getStatefulHelpMessage(nstRegisteringNickname, "wtf is this??"));
 		checkResponse(navigateNewUserTo(nstRegisteringNickname, "hangman", "nick"), "FromNick3",          ivac.profilePhrasings.getNicknameRegistrationNotification("FromNick3"));
 		
 		// nstEnteringMatchWord
@@ -646,26 +648,69 @@ public class HangmanAppEngineBehavioralTests {
 		
 		wordGuessingPhone  = navigateNewUserTo(nstExistingUser, "hangman", "nick Guessing1");
 		wordProvidingPhone = navigateNewUserTo(nstExistingUser, "hangman", "nick Providing1", "invite Guessing1", "Shoes");
-		checkResponse(wordGuessingPhone, "yes", ivac.hangmanPhrasings.getWordGuessingPlayerMatchStart("S---S", "S"),
+		checkResponse(wordGuessingPhone, "yes", ivac.hangmanPhrasings.getWordGuessingPlayerMatchStart("S---S", "S", "Providing1"),
 		                                        ivac.hangmanPhrasings.getWordProvidingPlayerMatchStart("S--S", "Guessing1"));
 		checkResponse(wordGuessingPhone, "help", ivac.hangmanPhrasings.getMatchGiveupNotificationForWordGuessingPlayer("Providing1"),
 		                                         ivac.hangmanPhrasings.getMatchGiveupNotificationForWordProvidingPlayer("Guessing1"),
 		                                         ivac.helpPhrasings.getCompositeHelpMessage(0));
 		
-		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman", "invite SomeOne", "Shoes"), "unsubscribe",        ivac.subscriptionPhrasings.getUserRequestedUnsubscriptionNotification());
-		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman", "invite SomeOne", "Shoes",
-		                                "nick WhoAmI111"),                                           "nick",               ivac.profilePhrasings.getAskForNewNickname("WhoAmI111"));
-		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman", "invite SomeOne", "Shoes"), "nick FromHuman",     ivac.profilePhrasings.getNicknameRegistrationNotification("FromHuman"));
-		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman", "invite SomeOne", "Shoes",
-		                                "nick FromHuman2"),                                          "m SomeOne hi there", ivac.chatPhrasings.getPrivateMessageDeliveryNotification("SomeOne"),
-		                                                                                                                   ivac.chatPhrasings.getPrivateMessage("FromHuman2", "hi there"));
+		wordGuessingPhone  = navigateNewUserTo(nstExistingUser, "hangman", "nick Guessing2");
+		wordProvidingPhone = navigateNewUserTo(nstExistingUser, "hangman", "nick Providing2", "invite Guessing2", "Shoes");
+		checkResponse(wordGuessingPhone, "yes", ivac.hangmanPhrasings.getWordGuessingPlayerMatchStart("S---S", "S", "Providing2"),
+		                                        ivac.hangmanPhrasings.getWordProvidingPlayerMatchStart("S--S", "Guessing2"));
+		checkResponse(wordGuessingPhone, "unsubscribe", ivac.hangmanPhrasings.getMatchGiveupNotificationForWordGuessingPlayer("Providing2"),
+		                                                ivac.hangmanPhrasings.getMatchGiveupNotificationForWordProvidingPlayer("Guessing2"),
+		                                                ivac.subscriptionPhrasings.getUserRequestedUnsubscriptionNotification());
+
+		wordGuessingPhone  = navigateNewUserTo(nstExistingUser, "hangman", "nick Guessing3");
+		wordProvidingPhone = navigateNewUserTo(nstExistingUser, "hangman", "nick Providing3", "invite Guessing3", "Shoes");
+		checkResponse(wordGuessingPhone, "yes", ivac.hangmanPhrasings.getWordGuessingPlayerMatchStart("S---S", "S", "Providing3"),
+		                                        ivac.hangmanPhrasings.getWordProvidingPlayerMatchStart("S--S", "Guessing3"));
+		checkResponse(wordGuessingPhone, "nick", ivac.hangmanPhrasings.getMatchGiveupNotificationForWordGuessingPlayer("Providing3"),
+		                                         ivac.hangmanPhrasings.getMatchGiveupNotificationForWordProvidingPlayer("Guessing3"),
+		                                         ivac.profilePhrasings.getAskForNewNickname("Guessing3"));
+
+		wordGuessingPhone  = navigateNewUserTo(nstExistingUser, "hangman", "nick Guessing4");
+		wordProvidingPhone = navigateNewUserTo(nstExistingUser, "hangman", "nick Providing4", "invite Guessing4", "Shoes");
+		checkResponse(wordGuessingPhone, "yes", ivac.hangmanPhrasings.getWordGuessingPlayerMatchStart("S---S", "S", "Providing4"),
+		                                        ivac.hangmanPhrasings.getWordProvidingPlayerMatchStart("S--S", "Guessing4"));
+		checkResponse(wordGuessingPhone, "nick FromHuman", ivac.profilePhrasings.getNicknameRegistrationNotification("FromHuman"));
+
+		wordGuessingPhone  = navigateNewUserTo(nstExistingUser, "hangman", "nick Guessing5");
+		wordProvidingPhone = navigateNewUserTo(nstExistingUser, "hangman", "nick Providing5", "invite Guessing5", "Shoes");
+		checkResponse(wordGuessingPhone, "yes", ivac.hangmanPhrasings.getWordGuessingPlayerMatchStart("S---S", "S", "Providing5"),
+		                                        ivac.hangmanPhrasings.getWordProvidingPlayerMatchStart("S--S", "Guessing5"));
+		checkResponse(wordGuessingPhone, "m Providing5 hi there", ivac.chatPhrasings.getPrivateMessageDeliveryNotification("Providing5"),
+                                                                  ivac.chatPhrasings.getPrivateMessage("Guessing5", "hi there"));
+
 		//checkResponse(navigateNewUserTo(nstExistingUser, "hangman"), "list",               ivac.profilePhrasings....);
-		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman", "invite SomeOne", "Shoes"), "profile SomeOne",    ivac.profilePhrasings.getUserProfilePresentation("SomeOne"));
-		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman", "invite SomeOne", "Shoes"), "invite SomeOne",     ivac.hangmanPhrasings.getAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation("SomeOne"));
-		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman", "invite SomeOne", "Shoes"), "?",                  ivac.helpPhrasings.getStatefulHelpMessage(nstEnteringMatchWord));
-		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman",
-		                                "nick FromHuman3", "invite SomeOne", "Shoes"),               "a",                  ivac.hangmanPhrasings.getWordGuessingPlayerMatchStart("S---S", "AS"),
-		                                                                                                                   ivac.hangmanPhrasings.getWordProvidingPlayerStatus(true, false, false, false, false, false, "S---S", "A", "AS", "FromHuman3"));
+		
+		wordGuessingPhone  = navigateNewUserTo(nstExistingUser, "hangman", "nick Guessing6");
+		wordProvidingPhone = navigateNewUserTo(nstExistingUser, "hangman", "nick Providing6", "invite Guessing6", "Shoes");
+		checkResponse(wordGuessingPhone, "yes", ivac.hangmanPhrasings.getWordGuessingPlayerMatchStart("S---S", "S", "Providing6"),
+		                                        ivac.hangmanPhrasings.getWordProvidingPlayerMatchStart("S--S", "Guessing6"));
+		checkResponse(wordGuessingPhone, "profile Guessing6", ivac.profilePhrasings.getUserProfilePresentation("Guessing6"));
+		
+		wordGuessingPhone  = navigateNewUserTo(nstExistingUser, "hangman", "nick Guessing7");
+		wordProvidingPhone = navigateNewUserTo(nstExistingUser, "hangman", "nick Providing7", "invite Guessing7", "Shoes");
+		checkResponse(wordGuessingPhone, "yes", ivac.hangmanPhrasings.getWordGuessingPlayerMatchStart("S---S", "S", "Providing7"),
+		                                        ivac.hangmanPhrasings.getWordProvidingPlayerMatchStart("S--S", "Guessing7"));
+		checkResponse(wordGuessingPhone, "invite SomeOne", ivac.hangmanPhrasings.getMatchGiveupNotificationForWordGuessingPlayer("Providing7"),
+                                                           ivac.hangmanPhrasings.getMatchGiveupNotificationForWordProvidingPlayer("Guessing7"),
+                                                           ivac.hangmanPhrasings.getAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation("SomeOne"));
+		
+		wordGuessingPhone  = navigateNewUserTo(nstExistingUser, "hangman", "nick Guessing8");
+		wordProvidingPhone = navigateNewUserTo(nstExistingUser, "hangman", "nick Providing8", "invite Guessing8", "Shoes");
+		checkResponse(wordGuessingPhone, "yes", ivac.hangmanPhrasings.getWordGuessingPlayerMatchStart("S---S", "S", "Providing8"),
+		                                        ivac.hangmanPhrasings.getWordProvidingPlayerMatchStart("S--S", "Guessing8"));
+		checkResponse(wordGuessingPhone, "?", ivac.helpPhrasings.getStatefulHelpMessage(nstGuessingWordFromHangmanHumanOpponent, "?"));
+
+		wordGuessingPhone  = navigateNewUserTo(nstExistingUser, "hangman", "nick Guessing9");
+		wordProvidingPhone = navigateNewUserTo(nstExistingUser, "hangman", "nick Providing9", "invite Guessing9", "Shoes");
+		checkResponse(wordGuessingPhone, "yes", ivac.hangmanPhrasings.getWordGuessingPlayerMatchStart("S---S", "S", "Providing9"),
+		                                        ivac.hangmanPhrasings.getWordProvidingPlayerMatchStart("S--S", "Guessing9"));
+		checkResponse(wordGuessingPhone, "a", ivac.hangmanPhrasings.getWordGuessingPlayerStatus(true, false, false, false, false, false, "S---S", "AS", "Providing9"),
+                                              ivac.hangmanPhrasings.getWordProvidingPlayerStatus(true, false, false, false, false, false, "S---S", "A", "AS", "Guessing9"));
 		
 		// nstGuessingWordFromHangmanBotOpponent, idem
 		

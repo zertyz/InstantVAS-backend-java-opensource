@@ -44,7 +44,8 @@ public class SMSAppModuleConfigurationHelp {
 	
 	/** Constructs the full version of this SMS Module, with all options set programmatically.<pre>
 	 *  @param shortCode                                 &
-	 *  @param appName                                   see {@link SMSAppModulePhrasingsHelp#SMSAppModulePhrasingsHelp(String, String, String, String, String, String[][], String[])}
+	 *  @param appName                                   &
+	 *  @param priceTag                                  see {@link SMSAppModulePhrasingsHelp#SMSAppModulePhrasingsHelp(String, String, String, String, String, String, String[][], String[])}
 	 *  @param phrNewUsersFallbackHelp                   see {@link SMSAppModulePhrasingsHelp#getNewUsersFallbackHelp()}
 	 *  @param phrExistingUsersFallbackHelp              see {@link SMSAppModulePhrasingsHelp#getExistingUsersFallbackHelp()}
 	 *  @param phrStatelessHelp                          see {@link SMSAppModulePhrasingsHelp#getStatelessHelpMessage()}
@@ -52,15 +53,14 @@ public class SMSAppModuleConfigurationHelp {
 	 *  @param phrCompositeHelps                         see {@link SMSAppModulePhrasingsHelp#getCompositeHelpMessage(int)}
 	 *  @param nstPresentingCompositeHelpCommandTriggers see {@link SMSAppModuleNavigationStatesHelp#SMSAppModuleNavigationStatesHelp(SMSAppModuleCommandsHelp, Object[][])}
 	 *  @returns {(SMSAppModuleNavigationStatesHelp)navigationStates, (SMSAppModuleCommandsHelp)commands, (SMSAppModulePhrasingsHelp)phrasings} */
-	public static Object[] getHelpModuleInstances(String shortCode, String appName,
+	public static Object[] getHelpModuleInstances(String shortCode, String appName, String priceTag,
 		                                          String phrNewUsersFallbackHelp,
 		                                          String phrExistingUsersFallbackHelp,
 		                                          String phrStatelessHelp,
 		                                          String[][] phrStatefulHelpMessages,
-		                                          String[] phrCompositeHelps,
-		                                          Object[][] nstPresentingCompositeHelpCommandTriggers) {
+		                                          String[] phrCompositeHelps, Object[][] nstPresentingCompositeHelpCommandTriggers) {
 
-		SMSAppModulePhrasingsHelp        phrasings        = new SMSAppModulePhrasingsHelp(shortCode, appName, 
+		SMSAppModulePhrasingsHelp        phrasings        = new SMSAppModulePhrasingsHelp(shortCode, appName, priceTag, 
 			phrNewUsersFallbackHelp, phrExistingUsersFallbackHelp, phrStatelessHelp, phrStatefulHelpMessages, phrCompositeHelps);
 		SMSAppModuleCommandsHelp         commands         = new SMSAppModuleCommandsHelp(phrasings);
 		SMSAppModuleNavigationStatesHelp navigationStates = new SMSAppModuleNavigationStatesHelp(nstPresentingCompositeHelpCommandTriggers);

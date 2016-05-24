@@ -220,9 +220,6 @@ public class InstantVASLicense {
 	// navigation states
 	////////////////////
 	
-	// TODO 20160520 -- Adicionar chat, play, nick, etc em todos os estados. Consultar o NavigationStates do jogo anterior e, mais importante, criar os testes
-	//      que revelam esta falha, antes verificando se eles já não existem na versão antiga
-	
 	// global commands:
 	//                  help,
 	//                  unsubscribe,
