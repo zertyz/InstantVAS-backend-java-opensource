@@ -314,12 +314,17 @@ public class InstantVASLicense {
 	/** Navigation state that indicates the user is playing a hangman match with a human (as the invited opponent), and his/her role is to guess the word */
 	public static final EInstantVASCommandTriggers[] HANGMANnstGuessingWordFromHangmanHumanOpponent = {
 		EInstantVASCommandTriggers.HANGMANtrgLocalSingleLetterSuggestionForHuman,
-		EInstantVASCommandTriggers.SUBSCRIPTIONtrgGlobalUnsubscribe,
-		EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
+		
+		EInstantVASCommandTriggers.HELPtrgGlobalStartCompositeHelpDialog,
 		EInstantVASCommandTriggers.HELPtrgGlobalShowStatelessHelpMessage,
+		EInstantVASCommandTriggers.SUBSCRIPTIONtrgGlobalUnsubscribe,
+		EInstantVASCommandTriggers.PROFILEtrgGlobalStartAskForNicknameDialog,
+		EInstantVASCommandTriggers.PROFILEtrgGlobalRegisterNickname,
+		EInstantVASCommandTriggers.PROFILEtrgGlobalShowUserProfile,
+		EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
 		EInstantVASCommandTriggers.HANGMANtrgGlobalInviteNicknameOrPhoneNumber,
 		EInstantVASCommandTriggers.HANGMANtrgLocalWordSuggestionFallbackForHuman,
-		EInstantVASCommandTriggers.HELPtrgGlobalShowExistingUsersFallbackHelp,
+		EInstantVASCommandTriggers.HELPtrgGlobalShowStatefulHelpMessageFallback,
 	};
 	/** Navigation state that indicates the user is playing a hangman match with the robot, and his/her hole is to guess the word */
 	public static final EInstantVASCommandTriggers[] HANGMANnstGuessingWordFromHangmanBotOpponent = {

@@ -296,7 +296,7 @@ public class HangmanAppEngineBehavioralTests {
 		                                       "====\n" +
 		                                       "Word: C-C----S\n" +
 		                                       "Used: CS\n" +
-		                                       "Answer with your first letter, the complete word or ask for clues with M {{wordProvidingPlayerNickname}} [MSG]",
+		                                       "Answer with your first letter, the complete word or ask for cues with M {{wordProvidingPlayerNickname}} [MSG]",
 		                                       "Game started with HardCodedNick.\n" +
 		                                       "+-+\n" +
 		                                       "| \n" +
@@ -305,7 +305,7 @@ public class HangmanAppEngineBehavioralTests {
 		                                       "|\n" +
 		                                       "====\n" +
 		                                       "Is your word really a hard one? We'll see... While you wait for HardCodedNick to make his/her first guess, " +
-		                                       "you may text M HardCodedNick [MSG] to give him/her clues");
+		                                       "you may text M HardCodedNick [MSG] to give him/her cues");
 		checkResponse("21991234899", "o", "+-+\n" +
 		                                     "| \n" +
 		                                     "|  \n" +
@@ -447,7 +447,6 @@ public class HangmanAppEngineBehavioralTests {
 		checkResponse("21991234899", "help",                 ivac.subscriptionPhrasings.getDoubleOptinStart());
 		checkResponse("21991234899", "no",                   ivac.subscriptionPhrasings.getDisagreeToSubscribe());
 		checkResponse("21991234899", "come again?",          ivac.subscriptionPhrasings.getDoubleOptinStart());
-		checkResponse("21991234899", "well, not yet...",     ivac.subscriptionPhrasings.getDisagreeToSubscribe());
 		checkResponse("21991234899", "what is this, again?", ivac.subscriptionPhrasings.getDoubleOptinStart());
 		checkResponse("21991234899", "hangman",              ivac.subscriptionPhrasings.getSuccessfullySubscribed());
 		// struggle to find one's first steps after subscription
@@ -491,9 +490,9 @@ public class HangmanAppEngineBehavioralTests {
 		startAPlayerMatch("21991234899", "dom", hardWord, "21998019167", "paty");
 		usedLetters = "AB";
 		// first, test sending an empty ...
-		checkResponse("21998019167", "", ivac.helpPhrasings.getExistingUsersFallbackHelp());
-		// ... and a help message
-		checkResponse("21998019167", "help", ivac.hangmanPhrasings.getGuessingWordHelp());
+		checkResponse("21998019167", "", ivac.helpPhrasings.getStatefulHelpMessage(nstGuessingWordFromHangmanHumanOpponent));
+		// ... and an invalid message
+		checkResponse("21998019167", "???", ivac.helpPhrasings.getStatefulHelpMessage(nstGuessingWordFromHangmanHumanOpponent));
 		// now loop through all messages
 		for (char letter : attemptedLetters) {
 			String sLetter = Character.toString(letter);
@@ -649,7 +648,9 @@ public class HangmanAppEngineBehavioralTests {
 		wordProvidingPhone = navigateNewUserTo(nstExistingUser, "hangman", "nick Providing1", "invite Guessing1", "Shoes");
 		checkResponse(wordGuessingPhone, "yes", ivac.hangmanPhrasings.getWordGuessingPlayerMatchStart("S---S", "S"),
 		                                        ivac.hangmanPhrasings.getWordProvidingPlayerMatchStart("S--S", "Guessing1"));
-		checkResponse(wordGuessingPhone, "help", ivac.helpPhrasings.getCompositeHelpMessage(0));
+		checkResponse(wordGuessingPhone, "help", ivac.hangmanPhrasings.getMatchGiveupNotificationForWordGuessingPlayer("Providing1"),
+		                                         ivac.hangmanPhrasings.getMatchGiveupNotificationForWordProvidingPlayer("Guessing1"),
+		                                         ivac.helpPhrasings.getCompositeHelpMessage(0));
 		
 		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman", "invite SomeOne", "Shoes"), "unsubscribe",        ivac.subscriptionPhrasings.getUserRequestedUnsubscriptionNotification());
 		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman", "invite SomeOne", "Shoes",
