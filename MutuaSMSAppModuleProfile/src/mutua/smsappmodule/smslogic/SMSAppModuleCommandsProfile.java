@@ -151,7 +151,7 @@ public class SMSAppModuleCommandsProfile {
 			}
 			
 			String registeredNickname = desiredProfile.getNickname();
-			return getSameStateReplyCommandAnswer(profilePhrases.getUserProfilePresentation(registeredNickname));
+			return getSameStateReplyCommandAnswer(profilePhrases.getUserProfilePresentation(registeredNickname, desiredProfile.getUser().getPhoneNumber()));
 		}
 	};
 	

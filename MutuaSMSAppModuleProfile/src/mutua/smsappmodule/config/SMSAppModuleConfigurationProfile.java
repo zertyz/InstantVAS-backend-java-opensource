@@ -5,6 +5,7 @@ import java.util.Arrays;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactoryProfile;
 import mutua.smsappmodule.i18n.SMSAppModulePhrasingsProfile;
+import mutua.smsappmodule.i18n.plugins.IDynamicPlaceHolder;
 import mutua.smsappmodule.smslogic.SMSAppModuleCommandsProfile;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesProfile;
 
@@ -28,7 +29,7 @@ public class SMSAppModuleConfigurationProfile {
 
 	/** Constructs the simple version of this SMS Module, with default values, for testing purposes.<pre>
 	 *  @param shortCode         &
-	 *  @param appName           see {@link SMSAppModulePhrasingsProfile#SMSAppModulePhrasingsProfile(String, String, String, String, String, String, String, String)}
+	 *  @param appName           see {@link SMSAppModulePhrasingsProfile#SMSAppModulePhrasingsProfile(String, String, String, String, String, String, String, String, IDynamicPlaceHolder)}
 	 *  @param profileModuleDAL  see {@link SMSAppModuleCommandsProfile#SMSAppModuleCommandsProfile}
 	 *  @returns {(SMSAppModuleNavigationStatesProfile)navigationStates, (SMSAppModuleCommandsProfile)commands, (SMSAppModulePhrasingsProfile)phrasings} */
 	public static Object[] getProfileModuleInstances(String shortCode, String appName,
@@ -50,7 +51,8 @@ public class SMSAppModuleConfigurationProfile {
 	 *  @param phrAskForNicknameCancelation         & 
 	 *  @param phrNicknameRegistrationNotification  &
 	 *  @param phrUserProfilePresentation           &
-	 *  @param phrNicknameNotFound                  see {@link SMSAppModulePhrasingsProfile#SMSAppModulePhrasingsProfile(String, String, String, String, String, String, String, String)}
+	 *  @param phrNicknameNotFound                  &
+	 *  @param userGeoLocatorPlugin                 see {@link SMSAppModulePhrasingsProfile#SMSAppModulePhrasingsProfile(String, String, String, String, String, String, String, String, IDynamicPlaceHolder)}
 	 *  @param profileModuleDAL                     see {@link SMSAppModuleCommandsProfile#SMSAppModuleCommandsProfile}
 	 *  @param nstRegisteringNicknameTriggers       see {@link SMSAppModuleNavigationStatesProfile#SMSAppModuleNavigationStatesProfile(SMSAppModuleCommandsProfile, Object[][])}
 	 *  @returns {(SMSAppModuleNavigationStatesProfile)navigationStates, (SMSAppModuleCommandsProfile)commands, (SMSAppModulePhrasingsProfile)phrasings} */
@@ -61,12 +63,12 @@ public class SMSAppModuleConfigurationProfile {
 		                                             String phrNicknameRegistrationNotification,
 		                                             String phrUserProfilePresentation,
 		                                             String phrNicknameNotFound,
-		                                             SMSAppModuleDALFactoryProfile profileModuleDAL,
-		                                             Object[][] nstRegisteringNicknameTriggers) {
+		                                             IDynamicPlaceHolder userGeoLocatorPlugin,
+		                                             SMSAppModuleDALFactoryProfile profileModuleDAL, Object[][] nstRegisteringNicknameTriggers) {
 		
 		SMSAppModulePhrasingsProfile        phrasings        = new SMSAppModulePhrasingsProfile(shortCode, appName,
 			phrAskForFirstNickname, phrAskForNewNickname, phrAskForNicknameCancelation, phrNicknameRegistrationNotification,
-			phrUserProfilePresentation, phrNicknameNotFound);
+			phrUserProfilePresentation, phrNicknameNotFound, userGeoLocatorPlugin);
 		SMSAppModuleCommandsProfile         commands         = new SMSAppModuleCommandsProfile(phrasings, profileModuleDAL);
 		SMSAppModuleNavigationStatesProfile navigationStates = new SMSAppModuleNavigationStatesProfile(nstRegisteringNicknameTriggers);
 		
@@ -80,6 +82,7 @@ public class SMSAppModuleConfigurationProfile {
 			{"phrNicknameRegistrationNotification", phrNicknameRegistrationNotification},
 			{"phrUserProfilePresentation",          phrUserProfilePresentation},
 			{"phrNicknameNotFound",                 phrNicknameNotFound},
+			{"userGeoLocatorPlugin",                userGeoLocatorPlugin.getClass().getCanonicalName()},
 		};
 		Instrumentation.reportDebug(logPrefix + ": Phrasings        : " + Arrays.deepToString(logPhrasings));
 		Object[][] logCommands = {

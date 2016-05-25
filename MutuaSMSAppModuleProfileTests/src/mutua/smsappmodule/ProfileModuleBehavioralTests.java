@@ -111,7 +111,7 @@ public class ProfileModuleBehavioralTests {
 		UserDto      aUser           = userDB.assureUserIsRegistered("21991234899");
 		SessionModel aSession        = new TestSessionModel(aUser);
 		String       aUserNickname   = "aUser";
-		String       expectedMessage = config.profileModulePhrasings.getUserProfilePresentation(aUserNickname);
+		String       expectedMessage = config.profileModulePhrasings.getUserProfilePresentation(aUserNickname, "21991234899");
 		
 		profileDB.setProfileRecord(new ProfileDto(aUser, aUserNickname));
 		String parameterizedObservedMessage   = config.profileModuleCommands.cmdShowUserProfile.processCommand(aSession, null, new String[] {aUserNickname}).getResponseMessages()[0].getText();

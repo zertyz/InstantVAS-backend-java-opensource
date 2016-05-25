@@ -246,13 +246,11 @@ public class HangmanAppEngineBehavioralTests {
 			"a match with the robot; LIST - find online palyers to chat or invite for a match; INVITE <nickname> - invite someone to play; " +
 			"NICK <your name> - create your nick. M <nick> <message> to chat. There is More... text HELP again...");
 
-		// TODO 20160520 -- Adicionar a substituição das variáveis abaixo. Aliás, será que elas não ocorrem também para outras?
-		
 		// additional help
 		checkResponse("21991234899", "help",
-			"This game is for subscribers of the {{appName}} game. {{priceTag}} every week. All messages are free. On every subscription renewal, " +
-			"you'll get a lucky number to compete for prizes! See + http://www.canaispremiados.com.  Got tired of all of it? Send LEAVE. When you " +
-			"want to come back, just text HANGMAN to {{shortCode}}.");
+			"This game is for subscribers of the HANGMAN game. $0.99 every week. All messages are free. On every subscription renewal, you'll get a lucky " +
+			"number to compete for prizes! See + http://www.canaispremiados.com.  Got tired of all of it? Send LEAVE. When you want to come back, just " +
+			"text HANGMAN to 993.");
 
 		// nickname registration
 		String expectedNickname = "HardCodedNick";
@@ -294,7 +292,7 @@ public class HangmanAppEngineBehavioralTests {
 		                                       "====\n" +
 		                                       "Word: C-C----S\n" +
 		                                       "Used: CS\n" +
-		                                       "Answer with your first letter, the complete word or ask for cues with M {{wordProvidingPlayerNickname}} [MSG]",
+		                                       "Answer with your first letter, the complete word or ask for cues with M pAtRiCiA [MSG]",
 		                                       "Game started with HardCodedNick.\n" +
 		                                       "+-+\n" +
 		                                       "| \n" +
@@ -312,7 +310,7 @@ public class HangmanAppEngineBehavioralTests {
 		                                     "====\n" +
 		                                     "Word: COCO---S\n" +
 		                                     "Used: COS\n" +
-		                                     "Text a letter, the complete word or M {{wordGuessingPlayerNickname}} [MSG]",
+		                                     "Text a letter, the complete word or M pAtRiCiA [MSG]",
 		                                     "Match going on! HardCodedNick guessed letter O\n" +
 		                                     "+-+\n" +
 		                                     "| \n" +
@@ -337,10 +335,10 @@ public class HangmanAppEngineBehavioralTests {
 		
 		// test the winning phrase
 		checkResponse("21991234899", "t", "\\0/\n" +
-                                            " |\n" +
-                                            "/ \\\n" +
-                                            "COCONUTS! You got it! Keep on playing! Text INVITE pAtRiCiA for a new match with this player or text LIST to see " +
-                                            "other online players. You may also text P to play with a random user.",
+                                          " |\n" +
+                                          "/ \\\n" +
+                                          "COCONUTS! You got it! Keep on playing! Text INVITE pAtRiCiA for a new match with this player or text LIST to see " +
+                                          "other online players. You may also text P to play with a random user.",
                                           "HardCodedNick guessed your word! Want revenge? Text INVITE HardCodedNick; Want to tease him/her? Text M HardCodedNick [MSG]");
 		
 		// start a new game to test the losing phrase
@@ -356,7 +354,7 @@ public class HangmanAppEngineBehavioralTests {
                                                             "====\n" +
                                                             "Oh, my... you were hanged! The word was MUGGLES. Now challenge HardCodedNick for a revenge: text INVITE HardCodedNick " +
                                                             "or tease him/her with M {{wordGuessingPlayerNickname}} [MSG]",
-                                                          "Good one! pAtRiCiA wasn't able to guess your word! Say something about it with M pAtRiCiA [MSG] or INVITE pAtRiCiA " +
+                                                            "Good one! pAtRiCiA wasn't able to guess your word! Say something about it with M pAtRiCiA [MSG] or INVITE pAtRiCiA " +
                                                             "for a new match, and make it hard when you choose the word!");
 
 		// unsubscribe
@@ -399,7 +397,7 @@ public class HangmanAppEngineBehavioralTests {
 		sendPrivateMessage(invitedPlayerPhone, invitingPlayerNickname, "Why do you want to play with me?");
 		sendPrivateMessage(invitingPlayerPhone, invitedPlayerNickname, "Cause you're the only one on my test list 8-)");
 		// also, see the profile...
-		tc.checkResponse("21998019167", "profile DOM", ivac.profilePhrasings.getUserProfilePresentation("Dom"));
+		tc.checkResponse("21998019167", "profile DOM", ivac.profilePhrasings.getUserProfilePresentation("Dom", "21991234899"));
 		// the no
 		checkResponse(invitedPlayerPhone, "no",
 		              ivac.hangmanPhrasings.getInvitationRefusalResponseForInvitedPlayer(invitingPlayerNickname),
@@ -409,19 +407,9 @@ public class HangmanAppEngineBehavioralTests {
 	
 	@Test
 	public void testProfileCommand() throws SQLException {
-		invitePlayerForAMatch("21991234899", "Dom", "cacatua", "21998019167", "pAtY");
+		invitePlayerForAMatch("+1907991234899", "Dom", "cacatua", "21998019167", "pAtY");
 
-		// TODO 20160520 -- Adicionar a funcionalidade de substituição por {{state}} da seguinte maneira:
-		//		- Módulo UserRegionResolver
-		//		- Frases passam a receber funções que retornam strings (além de apenas strings) como valores de place holders. A função é chamada com a seguinte asinatura: val = callback(String placeholderName, Object[] phraseParams)
-		//		- Módulo Profile passa a poder editar a lista de parâmetros dinâmicos pré-definidos pra cada frase -- ao menos para a frase de ver o profile
-		
-		//      1) Uma variável de configuração String[] PROFILE_STATES_MSISDN_PATTERNS no formato := {StateName1, PhonePattern1, ..., UnmatchedStateName}
-		//		2) Implementar esta funcionalidade no módulo Profile
-		//      3) A ocorrência de {{state}} eh Phrases deve provocar a execução de uma função. Esta funcionalidade deve ser adicionada a Phrases, permitindo sua extensibilidade
-		//      4) Substituir {{state}} por {{stateByMSISDN}}
-		// profile on the "playing" state
-		checkResponse("21998019167", "profile DOM", "HANGMAN: Dom: Subscribed; Online; {{state}}. Text INVITE Dom to play a hangman match; M Dom [MSG] to chat; LIST to see online players; P to play with a random user.");
+		checkResponse("21998019167", "profile DOM", "HANGMAN: Dom: Subscribed; Online; Alaska. Text INVITE Dom to play a hangman match; M Dom [MSG] to chat; LIST to see online players; P to play with a random user.");
 		
 		checkResponse("21998019167", "no",
 			"The invitation to play the Hangman Game made by Dom was refused. Text LIST to 993 to see online users or send him/her a message: text M Dom [MSG]",
@@ -466,7 +454,7 @@ public class HangmanAppEngineBehavioralTests {
 		
 		// test the default nick for newly registered users
 		checkResponse("21991234900", "hangman", ivac.subscriptionPhrasings.getSuccessfullySubscribed());
-		checkResponse("21991234900", "profile", ivac.profilePhrasings.getUserProfilePresentation("Guest4900"));
+		checkResponse("21991234900", "profile", ivac.profilePhrasings.getUserProfilePresentation("Guest4900", "21991234899"));
 	}
 	
 	@Test
@@ -562,7 +550,7 @@ public class HangmanAppEngineBehavioralTests {
 		checkResponse(navigateNewUserTo(nstNewUser), "nick WhoAmI",        ivac.subscriptionPhrasings.getDoubleOptinStart());
 		checkResponse(navigateNewUserTo(nstNewUser), "m SomeOne hi there", ivac.subscriptionPhrasings.getDoubleOptinStart());
 		//checkResponse(navigateNewUserTo(nstNewUser), "list",               ivac.profilePhrasings....);
-		checkResponse(navigateNewUserTo(nstNewUser), "profile SomeOne",    ivac.profilePhrasings.getUserProfilePresentation("SomeOne"));
+		checkResponse(navigateNewUserTo(nstNewUser), "profile SomeOne",    ivac.profilePhrasings.getUserProfilePresentation("SomeOne", "21999999999"));
 		checkResponse(navigateNewUserTo(nstNewUser), "invite SomeOne",     ivac.subscriptionPhrasings.getDoubleOptinStart());
 		
 		// nstAnsweringDoubleOptin
@@ -574,7 +562,7 @@ public class HangmanAppEngineBehavioralTests {
 		checkResponse(navigateNewUserTo(nstAnsweringDoubleOptin, "help"), "nick WhoAmI",        ivac.subscriptionPhrasings.getDoubleOptinStart());
 		checkResponse(navigateNewUserTo(nstAnsweringDoubleOptin, "help"), "m SomeOne hi there", ivac.subscriptionPhrasings.getDoubleOptinStart());
 		//checkResponse(navigateNewUserTo(nstAnsweringDoubleOptin, "help"), "list",               ivac.profilePhrasings....);
-		checkResponse(navigateNewUserTo(nstAnsweringDoubleOptin, "help"), "profile SomeOne",    ivac.profilePhrasings.getUserProfilePresentation("SomeOne"));
+		checkResponse(navigateNewUserTo(nstAnsweringDoubleOptin, "help"), "profile SomeOne",    ivac.profilePhrasings.getUserProfilePresentation("SomeOne", "21999999999"));
 		checkResponse(navigateNewUserTo(nstAnsweringDoubleOptin, "help"), "invite SomeOne",     ivac.subscriptionPhrasings.getDoubleOptinStart());
 		checkResponse(navigateNewUserTo(nstAnsweringDoubleOptin, "help"), "wtf???",             ivac.subscriptionPhrasings.getDoubleOptinStart());
 
@@ -589,7 +577,7 @@ public class HangmanAppEngineBehavioralTests {
 		                                "nick FromExisting2"),       "m SomeOne hi there", ivac.chatPhrasings.getPrivateMessageDeliveryNotification("SomeOne"),
 		                                                                                   ivac.chatPhrasings.getPrivateMessage("FromExisting2", "hi there"));
 		//checkResponse(navigateNewUserTo(nstExistingUser, "hangman"), "list",               ivac.profilePhrasings....);
-		checkResponse(navigateNewUserTo(nstExistingUser, "hangman"), "profile SomeOne",    ivac.profilePhrasings.getUserProfilePresentation("SomeOne"));
+		checkResponse(navigateNewUserTo(nstExistingUser, "hangman"), "profile SomeOne",    ivac.profilePhrasings.getUserProfilePresentation("SomeOne", "21999999999"));
 		checkResponse(navigateNewUserTo(nstExistingUser, "hangman"), "invite SomeOne",     ivac.hangmanPhrasings.getAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation("SomeOne"));
 		checkResponse(navigateNewUserTo(nstExistingUser, "hangman"), "wtf???",             ivac.helpPhrasings.getExistingUsersFallbackHelp());
 		
@@ -604,7 +592,7 @@ public class HangmanAppEngineBehavioralTests {
 		                                "nick FromHelp2"),                              "m SomeOne hi there", ivac.chatPhrasings.getPrivateMessageDeliveryNotification("SomeOne"),
 		                                                                                                      ivac.chatPhrasings.getPrivateMessage("FromHelp2", "hi there"));
 		//checkResponse(navigateNewUserTo(nstPresentingCompositeHelp, "hangman"), "list",               ivac.profilePhrasings....);
-		checkResponse(navigateNewUserTo(nstPresentingCompositeHelp, "hangman", "help"), "profile SomeOne",    ivac.profilePhrasings.getUserProfilePresentation("SomeOne"));
+		checkResponse(navigateNewUserTo(nstPresentingCompositeHelp, "hangman", "help"), "profile SomeOne",    ivac.profilePhrasings.getUserProfilePresentation("SomeOne", "21999999999"));
 		checkResponse(navigateNewUserTo(nstPresentingCompositeHelp, "hangman", "help"), "invite SomeOne",     ivac.hangmanPhrasings.getAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation("SomeOne"));
 		checkResponse(navigateNewUserTo(nstPresentingCompositeHelp, "hangman", "help"), "wtf???",             ivac.helpPhrasings.getExistingUsersFallbackHelp());
 		
@@ -618,7 +606,7 @@ public class HangmanAppEngineBehavioralTests {
 		                                "nick FromNick2", "nick"),                  "m SomeOne hi there", ivac.chatPhrasings.getPrivateMessageDeliveryNotification("SomeOne"),
 		                                                                                                  ivac.chatPhrasings.getPrivateMessage("FromNick2", "hi there"));
 		//checkResponse(navigateNewUserTo(nstPresentingCompositeHelp, "hangman"), "list",               ivac.profilePhrasings....);
-		checkResponse(navigateNewUserTo(nstRegisteringNickname, "hangman", "nick"), "profile SomeOne",    ivac.profilePhrasings.getUserProfilePresentation("SomeOne"));
+		checkResponse(navigateNewUserTo(nstRegisteringNickname, "hangman", "nick"), "profile SomeOne",    ivac.profilePhrasings.getUserProfilePresentation("SomeOne", "21999999999"));
 		checkResponse(navigateNewUserTo(nstRegisteringNickname, "hangman", "nick"), "invite SomeOne",     ivac.hangmanPhrasings.getAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation("SomeOne"));
 		checkResponse(navigateNewUserTo(nstRegisteringNickname, "hangman", "nick"), "wtf is this??",      ivac.helpPhrasings.getStatefulHelpMessage(nstRegisteringNickname, "wtf is this??"));
 		checkResponse(navigateNewUserTo(nstRegisteringNickname, "hangman", "nick"), "FromNick3",          ivac.profilePhrasings.getNicknameRegistrationNotification("FromNick3"));
@@ -634,7 +622,7 @@ public class HangmanAppEngineBehavioralTests {
 		                                "nick FromWord2"),                                  "m SomeOne hi there", ivac.chatPhrasings.getPrivateMessageDeliveryNotification("SomeOne"),
 		                                                                                                          ivac.chatPhrasings.getPrivateMessage("FromWord2", "hi there"));
 		//checkResponse(navigateNewUserTo(nstExistingUser, "hangman"), "list",               ivac.profilePhrasings....);
-		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman", "invite SomeOne"), "profile SomeOne",    ivac.profilePhrasings.getUserProfilePresentation("SomeOne"));
+		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman", "invite SomeOne"), "profile SomeOne",    ivac.profilePhrasings.getUserProfilePresentation("SomeOne", "21999999999"));
 		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman", "invite SomeOne"), "invite SomeOne",     ivac.hangmanPhrasings.getAskForAWordToStartAMatchBasedOnOpponentNicknameInvitation("SomeOne"));
 		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman", "invite SomeOne"), "wtf???",             ivac.hangmanPhrasings.getNotAGoodWord("WTF???"));
 		checkResponse(navigateNewUserTo(nstEnteringMatchWord, "hangman",
@@ -689,7 +677,7 @@ public class HangmanAppEngineBehavioralTests {
 		wordProvidingPhone = navigateNewUserTo(nstExistingUser, "hangman", "nick Providing6", "invite Guessing6", "Shoes");
 		checkResponse(wordGuessingPhone, "yes", ivac.hangmanPhrasings.getWordGuessingPlayerMatchStart("S---S", "S", "Providing6"),
 		                                        ivac.hangmanPhrasings.getWordProvidingPlayerMatchStart("S--S", "Guessing6"));
-		checkResponse(wordGuessingPhone, "profile Guessing6", ivac.profilePhrasings.getUserProfilePresentation("Guessing6"));
+		checkResponse(wordGuessingPhone, "profile Guessing6", ivac.profilePhrasings.getUserProfilePresentation("Guessing6", wordGuessingPhone));
 		
 		wordGuessingPhone  = navigateNewUserTo(nstExistingUser, "hangman", "nick Guessing7");
 		wordProvidingPhone = navigateNewUserTo(nstExistingUser, "hangman", "nick Providing7", "invite Guessing7", "Shoes");

@@ -62,6 +62,8 @@ import mutua.smsappmodule.i18n.SMSAppModulePhrasingsHangman;
 import mutua.smsappmodule.i18n.SMSAppModulePhrasingsHelp;
 import mutua.smsappmodule.i18n.SMSAppModulePhrasingsProfile;
 import mutua.smsappmodule.i18n.SMSAppModulePhrasingsSubscription;
+import mutua.smsappmodule.i18n.plugins.IDynamicPlaceHolder;
+import mutua.smsappmodule.i18n.plugins.UserGeoLocator;
 import mutua.smsappmodule.smslogic.SMSAppModuleCommandsChat;
 import mutua.smsappmodule.smslogic.SMSAppModuleCommandsHangman;
 import mutua.smsappmodule.smslogic.SMSAppModuleCommandsHelp;
@@ -349,7 +351,7 @@ public class InstantVASInstanceConfiguration {
 	public static String PROFILEphrAskForNicknameCancelation;
 	@ConfigurableElement("Phrase sent in response to the request of changing the nickname -- the text should confirm the nickname registered on the system. Variables: {{shortCode}}, {{appName}}, {{registeredNickname}}")
 	public static String PROFILEphrNicknameRegistrationNotification;
-	@ConfigurableElement("Text sent to present the details of a user profile. Variables: {{shortCode}}, {{appName}}, {{nickname}} and others, from extensions, such as {{subscriptionState}}, {{geoUserLocation}} and {{numberOfLuckyNumbers}}")
+	@ConfigurableElement("Text sent to present the details of a user profile. Variables: {{shortCode}}, {{appName}}, {{nickname}} and others, from extensions, such as {{countryStateByMSISDN}} -- see 'PROFILEGeoLocatorMSISDNCountryStatePatterns' bellow")
 	public static String PROFILEphrUserProfilePresentation;
 	@ConfigurableElement("Phrase sent to the sender user, who referenced a user by it's nickname, to inform that the command wasn't executed for the informed nickname was not found. Variables: {{shortCode}}, {{appName}}, {{targetNickname}}")
 	public static String PROFILEphrNicknameNotFound;
@@ -503,6 +505,16 @@ public class InstantVASInstanceConfiguration {
 	public static String[] HANGMANtrgLocalSingleLetterSuggestionForBot;
 	@ConfigurableElement("...")
 	public static String[] HANGMANtrgLocalWordSuggestionFallbackForBot;
+	
+	@ConfigurableElement({"Country State MSISDN Patterns", "#############################",
+	                      "Those patterns are used to replace {{countryStateByMSISDN}} when building 'PROFILEphrUserProfilePresentation' --",
+	                      "Based on the MSISDN, the state or region within the country will be presented for that user, so the profile may present a",
+	                      "location information without presenting the MSISDN. The format for these patterns is:",
+	                      "PROFILEGeoLocatorMSISDNCountryStatePatterns+=StateName1",
+	                      "PROFILEGeoLocatorMSISDNCountryStatePatterns+=MSISDNPattern1",
+	                      "PROFILEGeoLocatorMSISDNCountryStatePatterns+=...",
+	                      "PROFILEGeoLocatorMSISDNCountryStatePatterns+=UnmatchedMSISDNStateName",})
+	public static String[] PROFILEGeoLocatorMSISDNCountryStatePatterns;
 	
 
 //	// navigation states
@@ -852,11 +864,12 @@ public class InstantVASInstanceConfiguration {
 				subscriptionEventsServer = (SMSAppModuleEventsSubscription)           subscriptionModuleInstances[3];
 				break;
 			case PROFILE:
+				IDynamicPlaceHolder userGeoLocatorPlugin = new UserGeoLocator.CountryStateByMSISDNResolver(PROFILEGeoLocatorMSISDNCountryStatePatterns);
 				Object[] profileModuleInstances = SMSAppModuleConfigurationProfile.getProfileModuleInstances(SHORT_CODE, APP_NAME,
 					PROFILEphrAskForFirstNickname, PROFILEphrAskForNewNickname, PROFILEphrAskForNicknameCancelation,
 					PROFILEphrNicknameRegistrationNotification, PROFILEphrUserProfilePresentation, PROFILEphrNicknameNotFound,
-					profileModuleDAL,
-					EInstantVASCommandTriggers.get2DStringArrayFromEInstantVASCommandTriggersArray(PROFILEnstRegisteringNickname));
+					userGeoLocatorPlugin,
+					profileModuleDAL, EInstantVASCommandTriggers.get2DStringArrayFromEInstantVASCommandTriggersArray(PROFILEnstRegisteringNickname));
 				profileStates    = (SMSAppModuleNavigationStatesProfile) profileModuleInstances[0]; 
 				profilecommands  = (SMSAppModuleCommandsProfile)         profileModuleInstances[1];
 				profilePhrasings = (SMSAppModulePhrasingsProfile)        profileModuleInstances[2];
@@ -1095,7 +1108,7 @@ public class InstantVASInstanceConfiguration {
 		PROFILEphrAskForNewNickname                = "### PROFILEphrAskForNewNickname ###";
 		PROFILEphrAskForNicknameCancelation        = "### PROFILEphrAskForNicknameCancelation ###";
 		PROFILEphrNicknameRegistrationNotification = "{{appName}}: Your nickname: {{registeredNickname}}. Text LIST to see online players; NICK [NEW NICK] to change your name again.";
-		PROFILEphrUserProfilePresentation          = "{{appName}}: {{nickname}}: Subscribed; Online; {{state}}. Text INVITE {{nickname}} to play a hangman match; M {{nickname}} [MSG] to chat; LIST to see online players; P to play with a random user.";
+		PROFILEphrUserProfilePresentation          = "{{appName}}: {{nickname}}: Subscribed; Online; {{countryStateByMSISDN}}. Text INVITE {{nickname}} to play a hangman match; M {{nickname}} [MSG] to chat; LIST to see online players; P to play with a random user.";
 		PROFILEphrNicknameNotFound                 = "{{appName}}: No player with nickname '{{nickname}}' was found. Maybe he/she changed it? Text LIST to see online players";
 		PROFILENicknameRegistrationFallbackHelp    = "Ops! That is not a good nickname. You texted '{{MOText}}'. Please, text now your desired nickname with up to 8 letters or numbers, but with no special characters or space -- or text HELP";
 
@@ -1162,6 +1175,15 @@ public class InstantVASInstanceConfiguration {
 		HANGMANtrgLocalWordSuggestionFallbackForHuman    = getConcatenationOf(cmdSuggestLetterOrWordForHuman, /*trgLocalWordSuggestionFallback*/       "[^A-Z0-9]*([A-Z]+)");
 		HANGMANtrgLocalSingleLetterSuggestionForBot      = getConcatenationOf(cmdSuggestLetterOrWordForBot,   /*trgLocalSingleLetterSuggestion*/       "[^A-Z0-9]*([A-Z])");
 		HANGMANtrgLocalWordSuggestionFallbackForBot      = getConcatenationOf(cmdSuggestLetterOrWordForBot,   /*trgLocalWordSuggestionFallback*/       "[^A-Z0-9]*([A-Z]+)");
+		
+		// other settings
+		// according to 'UserGeoLocator.CountryStateByMSISDNResolver(...)'
+		PROFILEGeoLocatorMSISDNCountryStatePatterns = new String[] {
+			"Alabama", "\\+1205.*|\\+125[16].*|\\+1334.*",
+			"Alaska",  "\\+1907.*",
+			"Arizona", "\\+1480.*|\\+1520.*|\\+6021.*|\\+1623.*|\\+1928.*",
+			"(unknown state)",
+		};
 		
 		// stateful help
 		////////////////
@@ -1322,7 +1344,7 @@ public class InstantVASInstanceConfiguration {
 		PROFILEphrAskForNewNickname                = "### PROFILEphrAskForNewNickname ###";
 		PROFILEphrAskForNicknameCancelation        = "### PROFILEphrAskForNicknameCancelation ###";
 		PROFILEphrNicknameRegistrationNotification = "{{appName}}: Seu apelido: {{registeredNickname}}. Envie LISTA para para ver os apelidos de outros. Se quiser mudar o seu, apenas envie NICK e seu novo apelido, com espaco entre ambos.";
-		PROFILEphrUserProfilePresentation          = "{{appName}}: {{nickname}}: Jogador {{state}}. Quer desafiar? Envie C {{nickname}} para comecar uma partida. P {{nickname}} [MSG] para mandar uma mensagem. Para ver todos os jogadores disponiveis, envie LISTA.";
+		PROFILEphrUserProfilePresentation          = "{{appName}}: {{nickname}}: Jogador de {{countryStateByMSISDN}}. Quer desafiar? Envie C {{nickname}} para comecar uma partida. P {{nickname}} [MSG] para mandar uma mensagem. Para ver todos os jogadores disponiveis, envie LISTA.";
 		PROFILEphrNicknameNotFound                 = "{{appName}}: Nao encontramos nenhum jogador com o apelido '{{nickname}}'. Sera que mudou, ou esta mal digitado? Envie LISTA e veja a lista completa dos jogadores ativos. Caso ainda tenha duvidas, envie AJUDA.";
 		PROFILENicknameRegistrationFallbackHelp    = "###traduzir###";
 
@@ -1389,6 +1411,40 @@ public class InstantVASInstanceConfiguration {
 		HANGMANtrgLocalWordSuggestionFallbackForHuman    = getConcatenationOf(cmdSuggestLetterOrWordForHuman/*,                   "[^A-Z0-9]*([A-Z]+)"*/);
 		HANGMANtrgLocalSingleLetterSuggestionForBot      = getConcatenationOf(cmdSuggestLetterOrWordForBot/*,                     "[^A-Z0-9]*([A-Z])"*/);
 		HANGMANtrgLocalWordSuggestionFallbackForBot      = getConcatenationOf(cmdSuggestLetterOrWordForBot/*,                     "[^A-Z0-9]*([A-Z]+)"*/);
+		
+		// other settings
+		// according to 'UserGeoLocator.CountryStateByMSISDNResolver(...)'
+		PROFILEGeoLocatorMSISDNCountryStatePatterns = new String[] {
+			"SP", "551[123456789].*",
+			"RJ", "552[124].*",
+			"ES", "552[78].*",
+			"MG", "553[1234578].*",
+			"PR", "554[123456].*",
+			"SC", "554[789].*",
+			"RS", "555[1345].*",
+			"DF", "5561.*",
+			"GO", "556[24].*",
+			"TO", "5563.*",
+			"MT", "556[56].*",
+			"MS", "5567.*",
+			"AC", "5568.*",
+			"RO", "5569.*",
+			"BA", "557[13457].*",
+			"SE", "5579.*",
+			"PE", "5581.*",
+			"AL", "5582.*",
+			"PB", "5583.*",
+			"RN", "5584.*",
+			"CE", "558[58].*",
+			"PI", "5589.*",
+			"PA", "559[134].*",
+			"AM", "559[27].*",
+			"RR", "5595.*",
+			"AP", "5596.*",
+			"MA", "559[89].*",
+			"--",
+		};
+
 	}
 
 }

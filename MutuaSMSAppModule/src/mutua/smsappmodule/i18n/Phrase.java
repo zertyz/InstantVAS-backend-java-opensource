@@ -23,6 +23,8 @@ import java.util.regex.Matcher;
  * @author luiz
  */
 
+// TODO 20160525 -- aplicar o novo algoritmo de substituições demonstrado em 'PhrasesTests'
+
 public class Phrase {
 	
 	

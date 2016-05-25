@@ -80,8 +80,8 @@ public class ProfileModuleSMSProcessorTests {
 		tc.checkResponse("991234899", "nick donadom", config.profileModulePhrasings.getNicknameRegistrationNotification("donadom"));
 		
 		// profile inquiry
-		tc.checkResponse("991234899", "profile donadom", config.profileModulePhrasings.getUserProfilePresentation("donadom"));
-		tc.checkResponse("991234899", "profile",         config.profileModulePhrasings.getUserProfilePresentation("donadom"));
+		tc.checkResponse("991234899", "profile donadom", config.profileModulePhrasings.getUserProfilePresentation("donadom", "21991234899"));
+		tc.checkResponse("991234899", "profile",         config.profileModulePhrasings.getUserProfilePresentation("donadom", "21991234899"));
 	}
 	
 }
