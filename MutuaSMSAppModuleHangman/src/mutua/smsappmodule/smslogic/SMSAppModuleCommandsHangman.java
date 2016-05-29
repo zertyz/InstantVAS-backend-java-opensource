@@ -6,6 +6,7 @@ import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigatio
 import static mutua.smsappmodule.smslogic.sessions.SMSAppModuleSessionsHangman.*;
 
 import java.sql.SQLException;
+import java.util.Random;
 
 import mutua.smsappmodule.config.SMSAppModuleConfigurationSubscription;
 import mutua.smsappmodule.dal.IMatchDB;
@@ -52,6 +53,8 @@ public class SMSAppModuleCommandsHangman {
 	
 	/** Class to be statically imported by the Configurators to refer to commands when defining the {@link CommandTriggersDto} */
 	public static class CommandNamesHangman {
+		/** @see SMSAppModuleCommandsHangman#cmdPlayWithRandomUserOrBot */
+		public final static String cmdPlayWithRandomUserOrBot            = "PlayWithRandomUserOrBot";
 		/** @see SMSAppModuleCommandsHangman#cmdInviteNicknameOrPhoneNumber */
 		public final static String cmdInviteNicknameOrPhoneNumber        = "InviteNicknameOrPhoneNumber";
 		/** @see SMSAppModuleCommandsHangman#cmdStartHangmanMatchInvitationProcess */
@@ -78,6 +81,10 @@ public class SMSAppModuleCommandsHangman {
 	
 	/** Class to be used as a reference when customizing the MO commands for this module */
 	public static class CommandTriggersHangman {
+		/** Global triggers (to be used on several navigation states) to start guess word match with a bot or with a random user.
+		 *  Receives no parameters --
+		 *  activates {@link SMSAppModuleCommandsHangman#cmdPlayWithRandomUserOrBot} */
+		public final static String[] trgPlayWithRandomUserOrBot             = {"PLAY"};
 		/** Global triggers (to be used on several navigation states) to invite a human player for a hangman match.
 		 *  Receives 1 parameters: the user identification string (phone number or nickname) --
 		 *  activates {@link SMSAppModuleCommandsHangman#cmdInviteNicknameOrPhoneNumber} */
@@ -104,6 +111,10 @@ public class SMSAppModuleCommandsHangman {
 		 *  {@link SMSAppModuleNavigationStatesHangman#nstGuessingWordFromHangmanBotOpponent} and
 		 *  {@link SMSAppModuleNavigationStatesHangman#nstGuessingWordFromHangmanHumanOpponent} triggers that activates {@link SMSAppModuleCommandsHangman#cmdSuggestLetterOrWordForHuman} */
 		public final static String[] trgLocalWordSuggestionFallback         = {"([A-Z]+)"};
+		/** Local triggers (available only to the 'playing a hangman match to a bot or human' navigation states) that will recognize "cancel this match" intend by the user.
+		 *  {@link SMSAppModuleNavigationStatesHangman#nstGuessingWordFromHangmanBotOpponent} and
+		 *  {@link SMSAppModuleNavigationStatesHangman#nstGuessingWordFromHangmanHumanOpponent} triggers that activates {@link SMSAppModuleCommandsHangman#cmdGiveUpCurrentHumanMatch} and {@link SMSAppModuleCommandsHangman#cmdGiveUpCurrentBotMatch}*/
+		public final static String[] trgLocalEndCurrentMatch                = {"END"};
 	}
 	
 	// Instance Fields
@@ -123,6 +134,12 @@ public class SMSAppModuleCommandsHangman {
 	 *  last 4 digits of their phone number -- a sequence number will further added whenever their is a nickname collision */
 	private final String defaultNicknamePrefix;
 	
+	/** the list of real or fake phone numbers that should be assigned automated playing functionalities */
+	private final String[] botPhoneNumbers;
+	
+	/** the list of words to use for matches were bots are responsible for providing the words */
+	private final String[] botWords;
+	
 	
 	/** Constructs an instance of this module's command processors.<pre>
 	 *  @param hangmanPhrases           an instance of the phrasings to be used
@@ -130,13 +147,17 @@ public class SMSAppModuleCommandsHangman {
 	 *  @param baseModuleDAL            one of the members of {@link SMSAppModuleDALFactory}
 	 *  @param profileModuleDAL         equivalent as the above
 	 *  @param hangmanModuleDAL         equivalent as the above
-	 *  @param defaultNicknamePrefix    @see {@link #defaultNicknamePrefix}*/
+	 *  @param defaultNicknamePrefix    @see {@link #defaultNicknamePrefix}
+	 *  @param botPhoneNumbers          @see {@link #botPhoneNumbers}
+	 *  @param botWords					@see {@link #botWords} */
 	public SMSAppModuleCommandsHangman(SMSAppModulePhrasingsHangman   hangmanPhrases,
 	                                   SMSAppModuleEventsSubscription subscriptionEventsServer,
 	                                   SMSAppModuleDALFactory         baseModuleDAL,
 	                                   SMSAppModuleDALFactoryProfile  profileModuleDAL,
 	                                   SMSAppModuleDALFactoryHangman  hangmanModuleDAL,
-	                                   String defaultNicknamePrefix) {
+	                                   String defaultNicknamePrefix,
+	                                   String[] botPhoneNumbers,
+	                                   String[] botWords) {
 		this.hangmanPhrases        = hangmanPhrases;
 		this.userDB                = baseModuleDAL.getUserDB();
 		this.sessionDB             = baseModuleDAL.getSessionDB();
@@ -144,6 +165,8 @@ public class SMSAppModuleCommandsHangman {
 		this.matchDB               = hangmanModuleDAL.getMatchDB();
 		this.nextBotWordsDB        = hangmanModuleDAL.getNextBotWordsDB();
 		this.defaultNicknamePrefix = defaultNicknamePrefix;
+		this.botPhoneNumbers       = botPhoneNumbers;
+		this.botWords              = botWords;
 
 		// register event listeners
 		if (subscriptionEventsServer != null) try {
@@ -154,6 +177,33 @@ public class SMSAppModuleCommandsHangman {
 			eventListeners = null;
 		}
 	}
+	
+	/** Triggered by messages matched by {@link CommandTriggersHangman#trgPlayWithRandomUserOrBot}, starts a guess the word match against a bot
+	 *  or a "timed out waiting for invited user answer" word providing player. 
+	 *  Receives no parameters */
+	public final ICommandProcessor cmdPlayWithRandomUserOrBot = new ICommandProcessor(CommandNamesHangman.cmdPlayWithRandomUserOrBot) {
+		private int nextBotUserId = 0;
+		@Override
+		public CommandAnswerDto processCommand(SessionModel session, ESMSInParserCarrier carrier, String[] parameters) throws SQLException {
+			
+			// get the word providing user or bot (by now, just the bot)
+			String     wordProvidingMSISDN          = botPhoneNumbers[(nextBotUserId++) % botPhoneNumbers.length];
+			ProfileDto wordProvidingUserProfile     = assurePhoneNumberHasAnUserAndNickname(wordProvidingMSISDN);
+			UserDto    wordProvidingUser            = wordProvidingUserProfile.getUser();
+			String     wordProvidingPlayerNickname  = wordProvidingUserProfile.getNickname();
+			
+			// start a new match
+			int botWordId  = nextBotWordsDB.getAndIncNextBotWord(wordProvidingUser) % botWords.length;
+			String botWord = botWords[botWordId];
+			HangmanGame game = new HangmanGame(botWord, 6);
+			MatchDto match = new MatchDto(wordProvidingUser, session.getUser(), game.serializeGameState(), System.currentTimeMillis(), EMatchStatus.ACTIVE);
+			matchDB.storeNewMatch(match);
+			session.setProperty(sprHangmanMatchId, match.getMatchId());
+			return getNewStateReplyCommandAnswer(session, nstGuessingWordFromHangmanBotOpponent,
+				hangmanPhrases.getWordGuessingPlayerMatchStart(game.getGuessedWordSoFar(), game.getAttemptedLettersSoFar(), wordProvidingPlayerNickname));
+
+		}
+	};
 
 	/** Triggered by messages matched by {@link CommandTriggersHangman#trgGlobalInviteNicknameOrPhoneNumber}, starts the invitation process for a human opponent to play a hangman match providing his/her nickname or phone number.
 	 *  Receives 1 parameter: the opponent identifier (a nickname or phone number) */
@@ -341,12 +391,14 @@ public class SMSAppModuleCommandsHangman {
 					notificationMT = hangmanPhrases.getWinningMessageForWordProvidingPlayer(wordGuessingNickname);
 					matchStatus    = EMatchStatus.CLOSED_WORD_GUESSED;
 					commandAnswer  = getNewStateReplyWithAnAdditionalMessageToAnotherUserCommandAnswer(session, nstExistingUser, replyMT, wordProvidingUser, notificationMT);
+					session.deleteProperty(sprHangmanMatchId);
 					break;
 				case LOST:
 					replyMT        = hangmanPhrases.getLosingMessageForWordGuessingPlayer(game.getWord(), wordProvidingNickname);
 					notificationMT = hangmanPhrases.getLosingMessageForWordProvidingPlayer(wordGuessingNickname);
 					matchStatus    = EMatchStatus.CLOSED_ATTEMPTS_EXCEEDED;
 					commandAnswer  = getNewStateReplyWithAnAdditionalMessageToAnotherUserCommandAnswer(session, nstExistingUser, replyMT, wordProvidingUser, notificationMT);
+					session.deleteProperty(sprHangmanMatchId);
 					break;
 				default:
 					throw new RuntimeException("Don't know nothing about EHangmanGameState." + gameState);
@@ -357,13 +409,61 @@ public class SMSAppModuleCommandsHangman {
 	};
 	
 	/** Command triggered by messages matched by {@link CommandTriggersHangman#trgLocalSingleLetterSuggestion} and {@link CommandTriggersHangman#trgLocalWordSuggestionFallback},
-	 *  issued by the user who is playing a hangman match against a human and is trying to guess the word.
+	 *  issued by the user who is playing a hangman match against a bot and is trying to guess the word.
 	 *  Receives 1 parameter: the letter, set of characters or word attempted */
 	public final ICommandProcessor cmdSuggestLetterOrWordForBot = new ICommandProcessor(CommandNamesHangman.cmdSuggestLetterOrWordForBot) {
 		@Override
 		public CommandAnswerDto processCommand(SessionModel session, ESMSInParserCarrier carrier, String[] parameters) throws SQLException {
-			// TODO Auto-generated method stub
-			return null;
+			String suggestedLetterOrWord = parameters[0].toUpperCase();
+			int    matchId               = session.getIntProperty(sprHangmanMatchId);
+			MatchDto match               = matchDB.retrieveMatch(matchId);
+			String serializedGameState   = match.getSerializedGame();
+			
+			UserDto wordProvidingUser     = match.getWordProvidingPlayer();
+			String  wordProvidingPhone    = wordProvidingUser.getPhoneNumber();
+			String  wordProvidingNickname = assureUserHasANickname(wordProvidingUser).getNickname();
+			String  wordGuessingPhone     = session.getUser().getPhoneNumber();
+			String  wordGuessingNickname  = assureUserHasANickname(match.getWordGuessingPlayer()).getNickname();
+			
+			//MatchPlayersInfo matchPlayersInfo = getMatchPlayersInfo(matchData);
+			HangmanGame game  = new HangmanGame(serializedGameState);
+			char[] suggestLetters = suggestedLetterOrWord.toCharArray();
+			for (char c : suggestLetters) {
+				if (game.getGameState() != EHangmanGameStates.PLAYING) {
+					break;
+				}
+				game.suggestLetter(c);
+			}
+			int attemptsLeft = game.getNumberOfWrongTriesLeft();
+			
+			EHangmanGameStates gameState = game.getGameState();
+			String replyMT                 = null;
+			EMatchStatus matchStatus       = null;
+			CommandAnswerDto commandAnswer = null;
+			switch (gameState) {
+				case PLAYING:
+					replyMT        = hangmanPhrases.getWordGuessingPlayerStatus(attemptsLeft<6, attemptsLeft<5, attemptsLeft<4, attemptsLeft<3, attemptsLeft<2, attemptsLeft<1,
+					                                                            game.getGuessedWordSoFar(), game.getAttemptedLettersSoFar(), wordProvidingNickname);
+					matchStatus    = EMatchStatus.ACTIVE;
+					commandAnswer  = getSameStateReplyCommandAnswer(replyMT);
+					break;
+				case WON:
+					replyMT        = hangmanPhrases.getWinningMessageForWordGuessingPlayer(game.getWord(), wordProvidingNickname);
+					matchStatus    = EMatchStatus.CLOSED_WORD_GUESSED;
+					commandAnswer  = getNewStateReplyCommandAnswer(session, nstExistingUser, replyMT);
+					session.deleteProperty(sprHangmanMatchId);
+					break;
+				case LOST:
+					replyMT        = hangmanPhrases.getLosingMessageForWordGuessingPlayer(game.getWord(), wordProvidingNickname);
+					matchStatus    = EMatchStatus.CLOSED_ATTEMPTS_EXCEEDED;
+					commandAnswer  = getNewStateReplyCommandAnswer(session, nstExistingUser, replyMT);
+					session.deleteProperty(sprHangmanMatchId);
+					break;
+				default:
+					throw new RuntimeException("Don't know nothing about EHangmanGameState." + gameState);
+			}
+			matchDB.updateMatchStatus(match, matchStatus, game.serializeGameState());
+			return commandAnswer;
 		}
 	};
 	
@@ -388,7 +488,10 @@ public class SMSAppModuleCommandsHangman {
 			UserDto wordProvidingPlayer         = match.getWordProvidingPlayer();
 			String  wordProvidingPlayerNickname = assureUserHasANickname(wordProvidingPlayer).getNickname();
 
-			// since this method may also be called from the 'NavigationState.onLeavingState' event, we don't want to change the
+			// remove the session variable
+			session.deleteProperty(sprHangmanMatchId);
+
+			// since this method may also be called from the 'nstGuessingWordFromHangmanHumanOpponent.onLeavingState' event, we don't want to change the
 			// navigation state in that case (since this method would just be called because the navigation state already changed)
 			String navigationState = session.getNavigationStateName();
 			if (nstGuessingWordFromHangmanHumanOpponent.equals(navigationState)) {
@@ -406,21 +509,36 @@ public class SMSAppModuleCommandsHangman {
 	public final ICommandProcessor cmdGiveUpCurrentBotMatch = new ICommandProcessor(CommandNamesHangman.cmdGiveUpCurrentBotMatch) {
 		@Override
 		public CommandAnswerDto processCommand(SessionModel session, ESMSInParserCarrier carrier, String[] parameters) throws SQLException {
-return getSameStateReplyCommandAnswer("end game with bots needs to be uncommented out");
-//			String botName               = session.getIntProperty(sprHangmanGuessingWordFromBotNamed);
-//
-//			if (botName == null) {
-//				return null;
-//			}
-//			
-//			// since this method may also be called from the 'NavigationState.onLeavingState' event, we don't want to change the
-//			// navigation state in that case (since this method would just be called because the navigation state already changed)
-//			String navigationState = session.getNavigationStateName();
-//			if (nstGuessingWordFromHangmanBotOpponent.equals(navigationState)) {
-//				return getNewStateReplyCommandAnswer(session, nstExistingUser, hangmanPhrases.getMatchGiveupNotificationForWordGuessingPlayer(botName));
-//			} else {
-//				return getSameStateReplyCommandAnswer(hangmanPhrases.getMatchGiveupNotificationForWordGuessingPlayer(botName));
-//			}
+			
+			int    matchId               = session.getIntProperty(sprHangmanMatchId);
+			MatchDto match               = matchDB.retrieveMatch(matchId);
+			
+			if (match == null) {
+				return null;
+			}
+
+			EMatchStatus status = match.getStatus();
+			if (status != EMatchStatus.ACTIVE) {
+				return null;
+			}
+			matchDB.updateMatchStatus(match, EMatchStatus.CLOSED_A_PLAYER_GAVE_UP, match.getSerializedGame());
+			
+			String  currentUserNickname         = assureUserHasANickname(session.getUser()).getNickname();
+			UserDto wordProvidingPlayer         = match.getWordProvidingPlayer();
+			String  wordProvidingPlayerNickname = assureUserHasANickname(wordProvidingPlayer).getNickname();
+
+			// remove the session variable
+			session.deleteProperty(sprHangmanMatchId);
+
+			// since this method may also be called from the 'nstGuessingWordFromHangmanBotOpponent.onLeavingState' event, we don't want to change the
+			// navigation state in that case (since this method would just be called because the navigation state already changed)
+			String navigationState = session.getNavigationStateName();
+			if (nstGuessingWordFromHangmanBotOpponent.equals(navigationState)) {
+				return getNewStateReplyCommandAnswer(session, nstExistingUser,
+					hangmanPhrases.getMatchGiveupNotificationForWordGuessingPlayer(wordProvidingPlayerNickname));
+			} else {
+				return getSameStateReplyCommandAnswer(hangmanPhrases.getMatchGiveupNotificationForWordGuessingPlayer(wordProvidingPlayerNickname));
+			}
 		}
 	};
 
@@ -462,6 +580,7 @@ return getSameStateReplyCommandAnswer("end game with bots needs to be uncommente
 	
 	/** The list of all commands -- to allow deserialization by {@link CommandTriggersDto} */
 	public final ICommandProcessor[] values = {
+		cmdPlayWithRandomUserOrBot,
 		cmdInviteNicknameOrPhoneNumber,
 		cmdStartHangmanMatchInvitationProcess,
 		cmdHoldOpponentPhoneNumber,

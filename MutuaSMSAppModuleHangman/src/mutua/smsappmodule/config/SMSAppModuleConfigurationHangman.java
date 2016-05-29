@@ -36,16 +36,20 @@ public class SMSAppModuleConfigurationHangman {
 	 *  @param baseModuleDAL            &
 	 *  @param profileModuleDAL         &
 	 *  @param hangmanModuleDAL         &
-	 *  @param defaultNicknamePrefix    see {@link SMSAppModuleCommandsHangman#SMSAppModuleCommandsHangman(SMSAppModulePhrasingsHangman, SMSAppModuleDALFactory, SMSAppModuleDALFactoryProfile, SMSAppModuleDALFactoryHangman, String)}
+	 *  @param defaultNicknamePrefix    &
+	 *  @param botPhoneNumbers          &
+	 *  @param botWords                 see {@link SMSAppModuleCommandsHangman#SMSAppModuleCommandsHangman(SMSAppModulePhrasingsHangman, SMSAppModuleEventsSubscription, SMSAppModuleDALFactory, SMSAppModuleDALFactoryProfile, SMSAppModuleDALFactoryHangman, String, String[], String[])}
 	 *  @returns {(SMSAppModuleNavigationStatesHangman)navigationStates, (SMSAppModuleCommandsHangman)commands, (SMSAppModulePhrasingsHangman)phrasings} */
 	public static Object[] getHangmanModuleInstances(String shortCode, String appName,
 	                                                 SMSAppModuleEventsSubscription subscriptionEventsServer,
 	                                                 SMSAppModuleDALFactory         baseModuleDAL,
 	          	                                     SMSAppModuleDALFactoryProfile  profileModuleDAL,
 	        	                                     SMSAppModuleDALFactoryHangman  hangmanModuleDAL,
-	        	                                     String defaultNicknamePrefix) {
+	        	                                     String defaultNicknamePrefix,
+	        	                                     String[] botPhoneNumbers,
+	        		                                 String[] botWords) {
 		SMSAppModulePhrasingsHangman        phrasings        = new SMSAppModulePhrasingsHangman(shortCode, appName);
-		SMSAppModuleCommandsHangman         commands         = new SMSAppModuleCommandsHangman(phrasings, subscriptionEventsServer, baseModuleDAL, profileModuleDAL, hangmanModuleDAL, defaultNicknamePrefix);
+		SMSAppModuleCommandsHangman         commands         = new SMSAppModuleCommandsHangman(phrasings, subscriptionEventsServer, baseModuleDAL, profileModuleDAL, hangmanModuleDAL, defaultNicknamePrefix, botPhoneNumbers, botWords);
 		SMSAppModuleNavigationStatesHangman navigationStates = new SMSAppModuleNavigationStatesHangman();
 		
 		System.err.println(SMSAppModuleConfigurationHangman.class.getCanonicalName() + ": test configuration loaded.");
@@ -88,7 +92,9 @@ public class SMSAppModuleConfigurationHangman {
 	 *  @param baseModuleDAL            &
 	 *  @param profileModuleDAL         &
 	 *  @param hangmanModuleDAL         &
-	 *  @param defaultNicknamePrefix    see {@link SMSAppModuleCommandsHangman#SMSAppModuleCommandsHangman(SMSAppModulePhrasingsHangman, SMSAppModuleDALFactory, SMSAppModuleDALFactoryProfile, SMSAppModuleDALFactoryHangman, String)}
+	 *  @param defaultNicknamePrefix    &
+	 *  @param botPhoneNumbers          &
+	 *  @param botWords                 see {@link SMSAppModuleCommandsHangman#SMSAppModuleCommandsHangman(SMSAppModulePhrasingsHangman, SMSAppModuleEventsSubscription, SMSAppModuleDALFactory, SMSAppModuleDALFactoryProfile, SMSAppModuleDALFactoryHangman, String, String[], String[])}
 	 *  @param nstEnteringMatchWordTriggers                    &
 	 *  @param nstAnsweringToHangmanMatchInvitationTriggers    &
 	 *  @param nstGuessingWordFromHangmanHumanOpponentTriggers &
@@ -128,6 +134,8 @@ public class SMSAppModuleConfigurationHangman {
 	          	                                     SMSAppModuleDALFactoryProfile  profileModuleDAL,
 	        	                                     SMSAppModuleDALFactoryHangman  hangmanModuleDAL,
 	        	                                     String defaultNicknamePrefix,
+	        	                                     String[] botPhoneNumbers,
+	        		                                 String[] botWords,
 	        	                                     Object[][] nstEnteringMatchWordTriggers,
 	        	                                     Object[][] nstAnsweringToHangmanMatchInvitationTriggers,
 	        	                                     Object[][] nstGuessingWordFromHangmanHumanOpponentTriggers,
@@ -142,7 +150,7 @@ public class SMSAppModuleConfigurationHangman {
 			phrWordGuessingPlayerStatus, phrWinningMessageForWordGuessingPlayer, phrWinningMessageForWordProvidingPlayer,                     
 			phrLosingMessageForWordGuessingPlayer, phrLosingMessageForWordProvidingPlayer, phrMatchGiveupNotificationForWordGuessingPlayer,             
 			phrMatchGiveupNotificationForWordProvidingPlayer);
-		SMSAppModuleCommandsHangman         commands         = new SMSAppModuleCommandsHangman(phrasings, subscriptionEventsServer, baseModuleDAL, profileModuleDAL, hangmanModuleDAL, defaultNicknamePrefix);
+		SMSAppModuleCommandsHangman         commands         = new SMSAppModuleCommandsHangman(phrasings, subscriptionEventsServer, baseModuleDAL, profileModuleDAL, hangmanModuleDAL, defaultNicknamePrefix, botPhoneNumbers, botWords);
 		SMSAppModuleNavigationStatesHangman navigationStates = new SMSAppModuleNavigationStatesHangman(
 			nstEnteringMatchWordTriggers,nstAnsweringToHangmanMatchInvitationTriggers,
 			nstGuessingWordFromHangmanHumanOpponentTriggers, nstGuessingWordFromHangmanBotOpponentTriggers);
@@ -187,6 +195,8 @@ public class SMSAppModuleConfigurationHangman {
 			{"profileModuleDAL",         profileModuleDAL},
 			{"hangmanModuleDAL",         hangmanModuleDAL},
 			{"defaultNicknamePrefix",    defaultNicknamePrefix},
+			{"botPhoneNumbers",          botPhoneNumbers},
+			{"botWords",                 botWords},
 		};
 		Instrumentation.reportDebug(logPrefix + ": Commands         : " + Arrays.deepToString(logCommands));
 		Object[][] logCommandTriggers = {

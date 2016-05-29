@@ -227,6 +227,7 @@ public class InstantVASLicense {
 	//                  chat(CHATtrgGlobalSendPrivateMessage),
 	//                  list,
 	//                  profile(PROFILEtrgGlobalShowUserProfile),
+	//					play
 	//                  invite
 
 	
@@ -246,6 +247,7 @@ public class InstantVASLicense {
 		EInstantVASCommandTriggers.PROFILEtrgGlobalRegisterNickname,
 		EInstantVASCommandTriggers.PROFILEtrgGlobalShowUserProfile,
 		EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
+		EInstantVASCommandTriggers.HANGMANtrgPlayWithRandomUserOrBot,
 		EInstantVASCommandTriggers.HANGMANtrgGlobalInviteNicknameOrPhoneNumber,
 		EInstantVASCommandTriggers.HELPtrgGlobalShowExistingUsersFallbackHelp,
 	};
@@ -257,6 +259,7 @@ public class InstantVASLicense {
 		EInstantVASCommandTriggers.PROFILEtrgGlobalRegisterNickname,
 		EInstantVASCommandTriggers.PROFILEtrgGlobalShowUserProfile,
 		EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
+		EInstantVASCommandTriggers.HANGMANtrgPlayWithRandomUserOrBot,
 		EInstantVASCommandTriggers.HANGMANtrgGlobalInviteNicknameOrPhoneNumber,
 		EInstantVASCommandTriggers.HELPtrgGlobalStartCompositeHelpDialog,
 		EInstantVASCommandTriggers.HELPtrgGlobalShowExistingUsersFallbackHelp,
@@ -278,6 +281,7 @@ public class InstantVASLicense {
 		EInstantVASCommandTriggers.PROFILEtrgGlobalRegisterNickname,
 		EInstantVASCommandTriggers.PROFILEtrgGlobalShowUserProfile,
 		EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
+		EInstantVASCommandTriggers.HANGMANtrgPlayWithRandomUserOrBot,
 		EInstantVASCommandTriggers.HANGMANtrgGlobalInviteNicknameOrPhoneNumber,
 		EInstantVASCommandTriggers.PROFILEtrgLocalNicknameDialogCancelation,	// makes sense?
 		EInstantVASCommandTriggers.PROFILEtrgLocalRegisterNickname,
@@ -296,6 +300,7 @@ public class InstantVASLicense {
 		EInstantVASCommandTriggers.PROFILEtrgGlobalRegisterNickname,
 		EInstantVASCommandTriggers.PROFILEtrgGlobalShowUserProfile,
 		EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
+		EInstantVASCommandTriggers.HANGMANtrgPlayWithRandomUserOrBot,
 		EInstantVASCommandTriggers.HANGMANtrgGlobalInviteNicknameOrPhoneNumber,
 		EInstantVASCommandTriggers.HANGMANtrgLocalHoldMatchWord,
 		EInstantVASCommandTriggers.HELPtrgGlobalShowStatefulHelpMessageFallback,
@@ -311,7 +316,6 @@ public class InstantVASLicense {
 	/** Navigation state that indicates the user is playing a hangman match with a human (as the invited opponent), and his/her role is to guess the word */
 	public static final EInstantVASCommandTriggers[] HANGMANnstGuessingWordFromHangmanHumanOpponent = {
 		EInstantVASCommandTriggers.HANGMANtrgLocalSingleLetterSuggestionForHuman,
-		
 		EInstantVASCommandTriggers.HELPtrgGlobalStartCompositeHelpDialog,
 		EInstantVASCommandTriggers.HELPtrgGlobalShowStatelessHelpMessage,
 		EInstantVASCommandTriggers.SUBSCRIPTIONtrgGlobalUnsubscribe,
@@ -319,19 +323,27 @@ public class InstantVASLicense {
 		EInstantVASCommandTriggers.PROFILEtrgGlobalRegisterNickname,
 		EInstantVASCommandTriggers.PROFILEtrgGlobalShowUserProfile,
 		EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
+		EInstantVASCommandTriggers.HANGMANtrgPlayWithRandomUserOrBot,
 		EInstantVASCommandTriggers.HANGMANtrgGlobalInviteNicknameOrPhoneNumber,
+		EInstantVASCommandTriggers.HANGMANtrgLocalEndCurrentHumanMatch,
 		EInstantVASCommandTriggers.HANGMANtrgLocalWordSuggestionFallbackForHuman,
 		EInstantVASCommandTriggers.HELPtrgGlobalShowStatefulHelpMessageFallback,
 	};
 	/** Navigation state that indicates the user is playing a hangman match with the robot, and his/her hole is to guess the word */
 	public static final EInstantVASCommandTriggers[] HANGMANnstGuessingWordFromHangmanBotOpponent = {
 		EInstantVASCommandTriggers.HANGMANtrgLocalSingleLetterSuggestionForBot,
+		EInstantVASCommandTriggers.HELPtrgGlobalStartCompositeHelpDialog,
+		EInstantVASCommandTriggers.HELPtrgGlobalShowStatelessHelpMessage,
 		EInstantVASCommandTriggers.SUBSCRIPTIONtrgGlobalUnsubscribe,
+		EInstantVASCommandTriggers.PROFILEtrgGlobalStartAskForNicknameDialog,
+		EInstantVASCommandTriggers.PROFILEtrgGlobalRegisterNickname,
+		EInstantVASCommandTriggers.PROFILEtrgGlobalShowUserProfile,
 		EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
-		EInstantVASCommandTriggers.HELPtrgGlobalShowStatefulHelpMessage,
+		EInstantVASCommandTriggers.HANGMANtrgPlayWithRandomUserOrBot,
 		EInstantVASCommandTriggers.HANGMANtrgGlobalInviteNicknameOrPhoneNumber,
+		EInstantVASCommandTriggers.HANGMANtrgLocalEndCurrentBotMatch,
 		EInstantVASCommandTriggers.HANGMANtrgLocalWordSuggestionFallbackForBot,
-		EInstantVASCommandTriggers.HELPtrgGlobalShowExistingUsersFallbackHelp,
+		EInstantVASCommandTriggers.HELPtrgGlobalShowStatefulHelpMessageFallback,
 	};
 	
 	public enum EInstantVASCommandTriggers {
@@ -358,6 +370,7 @@ public class InstantVASLicense {
 		CHATtrgGlobalSendPrivateMessage,
 		CHATtrgLocalSendPrivateReply,
 		// hangman
+		HANGMANtrgPlayWithRandomUserOrBot,
 		HANGMANtrgGlobalInviteNicknameOrPhoneNumber,
 		HANGMANtrgLocalHoldMatchWord,
 		HANGMANtrgLocalAcceptMatchInvitation,
@@ -365,7 +378,9 @@ public class InstantVASLicense {
 		HANGMANtrgLocalSingleLetterSuggestionForHuman,
 		HANGMANtrgLocalWordSuggestionFallbackForHuman,
 		HANGMANtrgLocalSingleLetterSuggestionForBot,
-		HANGMANtrgLocalWordSuggestionFallbackForBot;
+		HANGMANtrgLocalWordSuggestionFallbackForBot,
+		HANGMANtrgLocalEndCurrentHumanMatch,
+		HANGMANtrgLocalEndCurrentBotMatch;
 		
 		public String[] getCommandTriggerPatterns() throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
 			return (String[])InstantVASInstanceConfiguration.class.getField(name()).get(null);

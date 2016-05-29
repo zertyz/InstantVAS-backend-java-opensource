@@ -131,7 +131,8 @@ public class InstantVASSMSAppModuleHangmanTestsConfiguration {
 	
 	private InstantVASSMSAppModuleHangmanTestsConfiguration() throws SQLException {
 		
-		Object[] hangmanModule = SMSAppModuleConfigurationHangman.getHangmanModuleInstances(shortCode, appName, null, BASE_MODULE_DAL, PROFILE_MODULE_DAL, HANGMAN_MODULE_DAL, "Guest");
+		Object[] hangmanModule = SMSAppModuleConfigurationHangman.getHangmanModuleInstances(shortCode, appName, null, BASE_MODULE_DAL, PROFILE_MODULE_DAL, HANGMAN_MODULE_DAL,
+		                                                                                    "Guest", new String[] {"21991234899"}, new String[] {"CHIMPANZEE", "AGREGATE", "TWEEZERS"});
 		
 		hangmanModuleNavigationStates = (SMSAppModuleNavigationStatesHangman) hangmanModule[0];
 		hangmanModuleCommands         = (SMSAppModuleCommandsHangman)         hangmanModule[1];

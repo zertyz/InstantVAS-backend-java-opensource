@@ -62,7 +62,7 @@ import mutua.smsappmodule.i18n.SMSAppModulePhrasingsHangman;
 import mutua.smsappmodule.i18n.SMSAppModulePhrasingsHelp;
 import mutua.smsappmodule.i18n.SMSAppModulePhrasingsProfile;
 import mutua.smsappmodule.i18n.SMSAppModulePhrasingsSubscription;
-import mutua.smsappmodule.i18n.plugins.IDynamicPlaceHolder;
+import mutua.smsappmodule.i18n.plugins.IGeoLocatorPlaceHolder;
 import mutua.smsappmodule.i18n.plugins.UserGeoLocator;
 import mutua.smsappmodule.smslogic.SMSAppModuleCommandsChat;
 import mutua.smsappmodule.smslogic.SMSAppModuleCommandsHangman;
@@ -163,7 +163,18 @@ public class InstantVASInstanceConfiguration {
 	@ConfigurableElement("The subscription cost to the end user -- phrases can refer to this value using {{priceTag}}")
 	public static String PRICE_TAG;
 	@ConfigurableElement("Default prefix for invited & new users -- The suffix are the last 4 phone number digits")
-	public static String DEFAULT_NICKNAME_PREFIX;
+	public static String DEFAULT_NICKNAME_PREFIX;	
+
+	@ConfigurableElement({"Bot users should be specifyed via real phone numbers if bots are to be handled transparently, being able to participate in chats, etc.",
+	                      "Anyway, the bot user nicknames must be set via normal SMS interaction with NICK <new nickname> command or via direct database intervention on the table 'PROFILE'.",
+	                      "You may set as many bots as you want, but must set at least one. Matches will be shared among them via a round-robin algorithm.",
+	                      "By the way, bot words must be defined directly on the database by appending them to the 'NextBotWords' table."})
+	public static String[] BOT_PHONE_NUMBERS = {
+		"5521991234899",
+	};
+	@ConfigurableElement("Words to cycle through when playing with the computer")
+	public static String[] BOT_WORDS;
+
 	
 	// MO QUEUE (but also SubscribeUser & UnsubscribeUser queues)
 	/////////////////////////////////////////////////////////////
@@ -489,7 +500,9 @@ public class InstantVASInstanceConfiguration {
 	public static String[] CHATtrgLocalSendPrivateReply;
 	
 	// hangman
-	@ConfigurableElement({"HANGMAN module", "##############", "", "If matched, starts the invitation for a hangman match process. Should capture 1 parameter: the phone number or nickname of the desired opponent"})
+	@ConfigurableElement({"HANGMAN module", "##############", "", "If matched, immediatly start playing with a bot or with a human who timed out waiting for a response to play with another human opponent"})
+	public static String[] HANGMANtrgPlayWithRandomUserOrBot;
+	@ConfigurableElement("If matched, starts the invitation for a hangman match process. Should capture 1 parameter: the phone number or nickname of the desired opponent")
 	public static String[] HANGMANtrgGlobalInviteNicknameOrPhoneNumber;
 	@ConfigurableElement("When on 'nstEnteringMatchWord', if matched, advances on the 'invite for a hangman match' process by computing the desired word'. Should capture 1 parameter: the desired match word")
 	public static String[] HANGMANtrgLocalHoldMatchWord;
@@ -505,16 +518,39 @@ public class InstantVASInstanceConfiguration {
 	public static String[] HANGMANtrgLocalSingleLetterSuggestionForBot;
 	@ConfigurableElement("...")
 	public static String[] HANGMANtrgLocalWordSuggestionFallbackForBot;
+	@ConfigurableElement("Recognized patterns, when playing, to end a match with another HUMAN user")
+	public static String[] HANGMANtrgLocalEndCurrentHumanMatch;
+	@ConfigurableElement("Recognized patterns, when playing, to end a match with a BOT")
+	public static String[] HANGMANtrgLocalEndCurrentBotMatch;
+
+	
+	// profile geo locator
+	
+	public enum EGeoLocators {FIXED, MSISDNRegex, LBSPassiveAPI, LBSActiveAPI};
+	
+	@ConfigurableElement({
+		"############",
+		"GEO Locators",
+		"############",
+		"The following fields are used to determine user locations when presenting their profile.",
+		"",
+		"Specifies which geo location algorithm to use:",
+		"  FIXED         -- same as none. No place holder will be added and any location must be hard coded on the phrases by hand;",
+		"  MSISDNRegex   -- adds the {{countryStateByMSISDN}} place holder to PROFILE phrases and requires specifying 'PROFILEGeoLocatorCountryStateByMSISDNPatterns';",
+		"  LBSPassiveAPI -- adds the {{LBSLocation}} place holder to PROFILE phrases and instructs the system to serve LBS informative notifications from the network;",
+		"  LBSActiveAPI  -- adds the {{LBSLocation}} place holder to PROFILE phrases and instructs the system to query, when needed, the LBS information from the network.",
+		""})
+	public static EGeoLocators PROFILEGeoLocator;
 	
 	@ConfigurableElement({"Country State MSISDN Patterns", "#############################",
 	                      "Those patterns are used to replace {{countryStateByMSISDN}} when building 'PROFILEphrUserProfilePresentation' --",
 	                      "Based on the MSISDN, the state or region within the country will be presented for that user, so the profile may present a",
-	                      "location information without presenting the MSISDN. The format for these patterns is:",
-	                      "PROFILEGeoLocatorMSISDNCountryStatePatterns+=StateName1",
-	                      "PROFILEGeoLocatorMSISDNCountryStatePatterns+=MSISDNPattern1",
-	                      "PROFILEGeoLocatorMSISDNCountryStatePatterns+=...",
-	                      "PROFILEGeoLocatorMSISDNCountryStatePatterns+=UnmatchedMSISDNStateName",})
-	public static String[] PROFILEGeoLocatorMSISDNCountryStatePatterns;
+	                      "location information without showing the MSISDN. The format for these patterns is:",
+	                      "PROFILEGeoLocatorCountryStateByMSISDNPatterns+=StateName1",
+	                      "PROFILEGeoLocatorCountryStateByMSISDNPatterns+=MSISDNPattern1",
+	                      "PROFILEGeoLocatorCountryStateByMSISDNPatterns+=...",
+	                      "PROFILEGeoLocatorCountryStateByMSISDNPatterns+=UnmatchedMSISDNStateName",})
+	public static String[] PROFILEGeoLocatorCountryStateByMSISDNPatterns;
 	
 
 //	// navigation states
@@ -864,7 +900,18 @@ public class InstantVASInstanceConfiguration {
 				subscriptionEventsServer = (SMSAppModuleEventsSubscription)           subscriptionModuleInstances[3];
 				break;
 			case PROFILE:
-				IDynamicPlaceHolder userGeoLocatorPlugin = new UserGeoLocator.CountryStateByMSISDNResolver(PROFILEGeoLocatorMSISDNCountryStatePatterns);
+				// determines which geo locator to use
+				IGeoLocatorPlaceHolder userGeoLocatorPlugin;
+				switch (PROFILEGeoLocator) {
+				case MSISDNRegex:
+					if ((PROFILEGeoLocatorCountryStateByMSISDNPatterns == null) || (PROFILEGeoLocatorCountryStateByMSISDNPatterns.length == 0)) {
+						Instrumentation.reportDebug("WARNING: when setting 'PROFILEGeoLocator' to 'MSISDNRegex', 'PROFILEGeoLocatorCountryStateByMSISDNPatterns' must also be defined");
+					}
+					userGeoLocatorPlugin = new UserGeoLocator.CountryStateByMSISDNResolver(PROFILEGeoLocatorCountryStateByMSISDNPatterns);
+					break;
+				default:
+					throw new RuntimeException("GeoLocator '"+PROFILEGeoLocator+"' isn't implemented yet");
+				}
 				Object[] profileModuleInstances = SMSAppModuleConfigurationProfile.getProfileModuleInstances(SHORT_CODE, APP_NAME,
 					PROFILEphrAskForFirstNickname, PROFILEphrAskForNewNickname, PROFILEphrAskForNicknameCancelation,
 					PROFILEphrNicknameRegistrationNotification, PROFILEphrUserProfilePresentation, PROFILEphrNicknameNotFound,
@@ -896,7 +943,8 @@ public class InstantVASInstanceConfiguration {
 					HANGMANphrWordGuessingPlayerStatus, HANGMANphrWinningMessageForWordGuessingPlayer, HANGMANphrWinningMessageForWordProvidingPlayer,                     
 					HANGMANphrLosingMessageForWordGuessingPlayer, HANGMANphrLosingMessageForWordProvidingPlayer, HANGMANphrMatchGiveupNotificationForWordGuessingPlayer,             
 					HANGMANphrMatchGiveupNotificationForWordProvidingPlayer,
-					subscriptionEventsServer, baseModuleDAL, profileModuleDAL, hangmanModuleDAL, DEFAULT_NICKNAME_PREFIX,
+					subscriptionEventsServer, baseModuleDAL, profileModuleDAL, hangmanModuleDAL,
+					DEFAULT_NICKNAME_PREFIX, BOT_PHONE_NUMBERS, BOT_WORDS,
 					EInstantVASCommandTriggers.get2DStringArrayFromEInstantVASCommandTriggersArray(HANGMANnstEnteringMatchWord),
 					EInstantVASCommandTriggers.get2DStringArrayFromEInstantVASCommandTriggersArray(HANGMANnstAnsweringToHangmanMatchInvitation),
 					EInstantVASCommandTriggers.get2DStringArrayFromEInstantVASCommandTriggersArray(HANGMANnstGuessingWordFromHangmanHumanOpponent),
@@ -983,6 +1031,7 @@ public class InstantVASInstanceConfiguration {
 //		SHORT_CODE                     = "993";
 		PRICE_TAG                      = "$0.99";
 		DEFAULT_NICKNAME_PREFIX        = "Guest";
+		BOT_WORDS                      = new String[] {"CHIMPANZEE", "AGREGATE", "TWEEZERS"};
 		
 		HTTP_CONNECTION_TIMEOUT_MILLIS = 30000;
 		HTTP_READ_TIMEOUT_MILLIS       = 30000;
@@ -1167,6 +1216,7 @@ public class InstantVASInstanceConfiguration {
 		HANGMANphrGuessingWordHelp                                          = "Ops!! This is not a letter! You are guessing a word on a {{appName}} and you texted '{{MOText}}'. Please text a letter or: END to quit the match; M [nick] [MSG] to ask for cues; LIST to quit this match and see other online players";
 		
 		// command patterns
+		HANGMANtrgPlayWithRandomUserOrBot                = getConcatenationOf(cmdPlayWithRandomUserOrBot,     /*trgPlayWithRandomUserOrBot*/           "[^A-Z0-9]*[HR]A[NM]GM?A?N?[^A-Z0-9]*|[^A-Z0-9]*I[NM]VITE?[^A-Z0-9]*|[^A-Z0-9]*PL[AE][YI][^A-Z0-9]*");
 		HANGMANtrgGlobalInviteNicknameOrPhoneNumber      = getConcatenationOf(cmdInviteNicknameOrPhoneNumber, /*trgGlobalInviteNicknameOrPhoneNumber*/ "[^A-Z0-9]*[HR]A[NM]GM?A?N?[^A-Z0-9]+([^ ]+)|[^A-Z0-9]*I[NM]VITE?[^A-Z0-9]+([^ ]+)|[^A-Z0-9]*PL[AE][YI][^A-Z0-9]+([^ ]+)");
 		HANGMANtrgLocalHoldMatchWord                     = getConcatenationOf(cmdHoldMatchWord,               /*trgLocalHoldMatchWord*/                "[^A-Z0-9]*([^ ]+)");
 		HANGMANtrgLocalAcceptMatchInvitation             = getConcatenationOf(cmdAcceptMatchInvitation,       /*trgLocalAcceptMatchInvitation*/        "[^A-Z0-9]*Y[EA]?[SPA]?P?[^A-Z0-9]*|[^A-Z0-9]*SURE?[^A-Z0-9]*|[^A-Z0-9]*OK[^A-Z0-9]*|[^A-Z0-9]*FINE[^A-Z0-9]*|.*GO.*");
@@ -1175,10 +1225,15 @@ public class InstantVASInstanceConfiguration {
 		HANGMANtrgLocalWordSuggestionFallbackForHuman    = getConcatenationOf(cmdSuggestLetterOrWordForHuman, /*trgLocalWordSuggestionFallback*/       "[^A-Z0-9]*([A-Z]+)");
 		HANGMANtrgLocalSingleLetterSuggestionForBot      = getConcatenationOf(cmdSuggestLetterOrWordForBot,   /*trgLocalSingleLetterSuggestion*/       "[^A-Z0-9]*([A-Z])");
 		HANGMANtrgLocalWordSuggestionFallbackForBot      = getConcatenationOf(cmdSuggestLetterOrWordForBot,   /*trgLocalWordSuggestionFallback*/       "[^A-Z0-9]*([A-Z]+)");
+		HANGMANtrgLocalEndCurrentHumanMatch              = getConcatenationOf(cmdGiveUpCurrentHumanMatch,     /*trgLocalEndCurrentHumanMatch*/         "[^A-Z0-9]*END[^A-Z0-9]*|[^A-Z0-9]*CANCEL[^A-Z0-9]*|[^A-Z0-9]*QUIT[^A-Z0-9]*");
+		HANGMANtrgLocalEndCurrentBotMatch                = getConcatenationOf(cmdGiveUpCurrentBotMatch,       /*trgLocalEndCurrentBotMatch*/           "[^A-Z0-9]*END[^A-Z0-9]*|[^A-Z0-9]*CANCEL[^A-Z0-9]*|[^A-Z0-9]*QUIT[^A-Z0-9]*");
+
 		
-		// other settings
+		// geo locator
+		
+		PROFILEGeoLocator = EGeoLocators.MSISDNRegex;		
 		// according to 'UserGeoLocator.CountryStateByMSISDNResolver(...)'
-		PROFILEGeoLocatorMSISDNCountryStatePatterns = new String[] {
+		PROFILEGeoLocatorCountryStateByMSISDNPatterns = new String[] {
 			"Alabama", "\\+1205.*|\\+125[16].*|\\+1334.*",
 			"Alaska",  "\\+1907.*",
 			"Arizona", "\\+1480.*|\\+1520.*|\\+6021.*|\\+1623.*|\\+1928.*",
@@ -1280,9 +1335,18 @@ public class InstantVASInstanceConfiguration {
 		
 		setHangmanProductionDefaults();
 
-		APP_NAME   = "FORCA PREMIADA";
-		PRICE_TAG  = "Rs1,99";
-		//SHORT_CODE = "993";
+		APP_NAME                = "FORCA PREMIADA";
+		PRICE_TAG               = "Rs1,99";
+		//SHORT_CODE            = "993";
+		DEFAULT_NICKNAME_PREFIX = "JOGADOR";
+		BOT_WORDS               = new String[] {
+			"JARDIM",		"MANTEIGA",		"RELATO",	"GANSO",	"PERRENGUE",	"MANEIRA",	"DRIBLAR",		"JOGATINA", 
+			"FORNO", 		"FONTE",		"GRUDE",	"BISCOITO",	"PERFUME",		"GORRO",	"ANDAIME",		"VUVUZELA", 
+			"PESQUISA", 	"PARAFUSO",		"ILHOTA",	"CHAVE",	"VIDA",			"TELEFONE",	"MANGA",		"MARGARINA", 
+			"EXTREMISTA", 	"SENTIMENTO",	"NORMAL",	"PALAVRA",	"CELULAR",		"FRANGO",	"PASSAPORTE",	"GRAMPO", 
+			"PANQUECA", 	"TOMADA",		"PIPOCA",	"PASSE",	"TITUBEAR",		"MORANGO",	"CHACOTA",		"XALE", 
+			
+		};
 		
 		// note on the command patterns bellow:
 		// the original english commands & patterns are used, having the pt-BR patters added to them.
@@ -1301,13 +1365,13 @@ public class InstantVASInstanceConfiguration {
 		// HELPphrStatefulHelpMessages  is defined at the end of all phrases
 		
 		// command patterns
-		HELPtrgGlobalStartCompositeHelpDialog        = getConcatenationOf(HELPtrgGlobalStartCompositeHelpDialog,      "[^A-Z0-9]*AJ?U?D?A?[^A-Z0-9]*");
-		HELPtrgLocalShowNextCompositeHelpMessage     = getConcatenationOf(HELPtrgLocalShowNextCompositeHelpMessage,   "[^A-Z0-9]*AJ?U?D?A?[^A-Z0-9]*|[^A-Z0-9]*MA?I?S?[^A-Z0-9]*");
-		HELPtrgGlobalShowNewUsersFallbackHelp        = getConcatenationOf(HELPtrgGlobalShowNewUsersFallbackHelp/*,      ".*"*/);
-		HELPtrgGlobalShowExistingUsersFallbackHelp   = getConcatenationOf(HELPtrgGlobalShowExistingUsersFallbackHelp/*, ".*"*/);
-		HELPtrgGlobalShowStatelessHelpMessage        = getConcatenationOf(HELPtrgGlobalShowStatelessHelpMessage,      "[^A-Z0-9]*DICA[^A-Z0-9]*");
-		HELPtrgGlobalShowStatefulHelpMessage         = getConcatenationOf(HELPtrgGlobalShowStatefulHelpMessage,       "[^A-Z0-9]*AJ?U?D?A?[^A-Z0-9]*");
-		HELPtrgGlobalShowStatefulHelpMessageFallback = getConcatenationOf(cmdShowStatefulHelp/*,                        ".*"*/);
+		HELPtrgGlobalStartCompositeHelpDialog        = getConcatenationOf(HELPtrgGlobalStartCompositeHelpDialog,         "[^A-Z0-9]*AJ?U?D?A?[^A-Z0-9]*");
+		HELPtrgLocalShowNextCompositeHelpMessage     = getConcatenationOf(HELPtrgLocalShowNextCompositeHelpMessage,      "[^A-Z0-9]*AJ?U?D?A?[^A-Z0-9]*|[^A-Z0-9]*MA?I?S?[^A-Z0-9]*");
+		HELPtrgGlobalShowNewUsersFallbackHelp        = getConcatenationOf(HELPtrgGlobalShowNewUsersFallbackHelp/*,          ".*"*/);
+		HELPtrgGlobalShowExistingUsersFallbackHelp   = getConcatenationOf(HELPtrgGlobalShowExistingUsersFallbackHelp/*,     ".*"*/);
+		HELPtrgGlobalShowStatelessHelpMessage        = getConcatenationOf(HELPtrgGlobalShowStatelessHelpMessage,         "[^A-Z0-9]*DICA[^A-Z0-9]*");
+		HELPtrgGlobalShowStatefulHelpMessage         = getConcatenationOf(HELPtrgGlobalShowStatefulHelpMessage,          "[^A-Z0-9]*AJ?U?D?A?[^A-Z0-9]*");
+		HELPtrgGlobalShowStatefulHelpMessageFallback = getConcatenationOf(HELPtrgGlobalShowStatefulHelpMessageFallback/*,   ".*"*/);
 		
 //		// stateful help messages
 //		setStatefulHelpMessages(new Object[][] {
@@ -1365,8 +1429,8 @@ public class InstantVASInstanceConfiguration {
 		CHATphrDoNotKnowWhoYouAreChattingTo       = "### CHATphrDoNotKnowWhoYouAreChattingTo ###";
 		
 		// command patterns
-		CHATtrgGlobalSendPrivateMessage = getConcatenationOf(cmdSendPrivateMessage, trgGlobalSendPrivateMessage);
-		CHATtrgLocalSendPrivateReply    = getConcatenationOf(cmdSendPrivateReply, "---");
+		CHATtrgGlobalSendPrivateMessage = getConcatenationOf(CHATtrgGlobalSendPrivateMessage/*, "[^A-Z0-9]*[MP][^A-Z0-9]+([^ ]+)[^A-Z0-9]+(.*)"*/);
+		CHATtrgLocalSendPrivateReply    = getConcatenationOf(CHATtrgLocalSendPrivateReply/*, "---"*/);
 
 		// Hangman
 		//////////
@@ -1403,18 +1467,21 @@ public class InstantVASInstanceConfiguration {
 		HANGMANphrGuessingWordHelp                                          = "### HANGMANphrGuessingWordHelp ###You are guessing a word on a {{appName}} match. Please text a letter or: END to quit the match; P [nick] [MSG] to ask for cues; LIST to see other online users";
 		
 		// command patterns
+		HANGMANtrgPlayWithRandomUserOrBot                = getConcatenationOf(HANGMANtrgPlayWithRandomUserOrBot,                "[^A-Z0-9]*E?[NM]?FOR[CÇç]AR?[^A-Z0-9]*|[^A-Z0-9]*CO?N?V?I?[DT]?[AEO]?R?[^A-Z0-9]*|[^A-Z0-9]*CH?A?M?[AEO]?R?[^A-Z0-9]*|[^A-Z0-9]*JO?G?[AO]?R?[^A-Z0-9]*|[^A-Z0-9]*PARTIDA[^A-Z0-9]*|[^A-Z0-9]*NOV[OU][^A-Z0-9]*|[^A-Z0-9]*D[EI] ?NOV[OU][^A-Z0-9]*|[^A-Z0-9]*OU?TR[OA][^A-Z0-9]*");
 		HANGMANtrgGlobalInviteNicknameOrPhoneNumber      = getConcatenationOf(HANGMANtrgGlobalInviteNicknameOrPhoneNumber,      "[^A-Z0-9]*E?[NM]?FOR[CÇç]AR?[^A-Z0-9]+([^ ]+)|[^A-Z0-9]*CO?N?V?I?[DT]?[AEO]?R?[^A-Z0-9]+([^ ]+)|[^A-Z0-9]*CH?A?M?[AEO]?R?[^A-Z0-9]+([^ ]+)|[^A-Z0-9]*JO?G?[AO]?R?[^A-Z0-9]+([^ ]+)|[^A-Z0-9]*PARTIDA[^A-Z0-9]+([^ ]+)|[^A-Z0-9]*NOV[OU][^A-Z0-9]+([^ ]+)|[^A-Z0-9]*D[EI] ?NOV[OU][^A-Z0-9]+([^ ]+)|[^A-Z0-9]*OU?TR[OA][^A-Z0-9]+([^ ]+)");
 		HANGMANtrgLocalHoldMatchWord                     = getConcatenationOf(HANGMANtrgLocalHoldMatchWord/*,                     "[^A-Z0-9]*([^ ]+)"*/);
 		HANGMANtrgLocalAcceptMatchInvitation             = getConcatenationOf(HANGMANtrgLocalAcceptMatchInvitation,             "[^A-Z0-9]*SI?M?[^A-Z0-9]*|[^A-Z0-9]*TA[^A-Z0-9]*|[^A-Z0-9]*OK[^A-Z0-9]*|[^A-Z0-9]*VAI[^A-Z0-9]*|[^A-Z0-9]*ACEIT[OA]R?[^A-Z0-9]*|.*AGORA.*");
 		HANGMANtrgLocalRefuseMatchInvitation             = getConcatenationOf(HANGMANtrgLocalRefuseMatchInvitation,             "[^A-Z0-9]*N[ÃãA]?O?[^A-Z0-9]*|[^A-Z0-9]*NEI?[MN][^A-Z0-9]*");
-		HANGMANtrgLocalSingleLetterSuggestionForHuman    = getConcatenationOf(cmdSuggestLetterOrWordForHuman/*,                   "[^A-Z0-9]*([A-Z])"*/);
-		HANGMANtrgLocalWordSuggestionFallbackForHuman    = getConcatenationOf(cmdSuggestLetterOrWordForHuman/*,                   "[^A-Z0-9]*([A-Z]+)"*/);
-		HANGMANtrgLocalSingleLetterSuggestionForBot      = getConcatenationOf(cmdSuggestLetterOrWordForBot/*,                     "[^A-Z0-9]*([A-Z])"*/);
-		HANGMANtrgLocalWordSuggestionFallbackForBot      = getConcatenationOf(cmdSuggestLetterOrWordForBot/*,                     "[^A-Z0-9]*([A-Z]+)"*/);
+		HANGMANtrgLocalSingleLetterSuggestionForHuman    = getConcatenationOf(HANGMANtrgLocalSingleLetterSuggestionForHuman/*,    "[^A-Z0-9]*([A-Z])"*/);
+		HANGMANtrgLocalWordSuggestionFallbackForHuman    = getConcatenationOf(HANGMANtrgLocalWordSuggestionFallbackForHuman/*,    "[^A-Z0-9]*([A-Z]+)"*/);
+		HANGMANtrgLocalSingleLetterSuggestionForBot      = getConcatenationOf(HANGMANtrgLocalSingleLetterSuggestionForBot/*,      "[^A-Z0-9]*([A-Z])"*/);
+		HANGMANtrgLocalWordSuggestionFallbackForBot      = getConcatenationOf(HANGMANtrgLocalWordSuggestionFallbackForBot/*,      "[^A-Z0-9]*([A-Z]+)"*/);
+		HANGMANtrgLocalEndCurrentHumanMatch              = getConcatenationOf(HANGMANtrgLocalEndCurrentHumanMatch,              "[^A-Z0-9]*SAIR?[^A-Z0-9]*|[^A-Z0-9]*CANCELA?R?[^A-Z0-9]*|[^A-Z0-9]*FI[MN][^A-Z0-9]*");
+		HANGMANtrgLocalEndCurrentBotMatch                = getConcatenationOf(HANGMANtrgLocalEndCurrentBotMatch,                "[^A-Z0-9]*SAIR?[^A-Z0-9]*|[^A-Z0-9]*CANCELA?R?[^A-Z0-9]*|[^A-Z0-9]*FI[MN][^A-Z0-9]*");
 		
 		// other settings
 		// according to 'UserGeoLocator.CountryStateByMSISDNResolver(...)'
-		PROFILEGeoLocatorMSISDNCountryStatePatterns = new String[] {
+		PROFILEGeoLocatorCountryStateByMSISDNPatterns = new String[] {
 			"SP", "551[123456789].*",
 			"RJ", "552[124].*",
 			"ES", "552[78].*",

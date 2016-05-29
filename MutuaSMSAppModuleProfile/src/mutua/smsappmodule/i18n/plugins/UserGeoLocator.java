@@ -3,25 +3,26 @@ package mutua.smsappmodule.i18n.plugins;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import mutua.smsappmodule.i18n.SMSAppModulePhrasingsProfile;
-
 /** <pre>
  * UserGeoLocator.java
  * ===================
  * (created by luiz, May 25, 2016)
  *
- * A plug-in for {@link SMSAppModulePhrasingsProfile} adding the functionality of 
- * telling where a user is from, based on several methods
+ * A collection of Phrase plug-ins for telling where a user is from, based on several methods.
+ * 
+ * These plugins are not generic Phrase plugins like {@link IDynamicPlaceHolder} implementations. Instead, they are specific to the
+ * profile module, adding a specific functionality (geo location), even though several methods of such funcionality may be implemented.
  *
- * @see IDynamicPlaceHolder
+ * @see IGeoLocatorPlaceHolder
  * @version $Id$
  * @author luiz
  */
 
 public class UserGeoLocator {
 
-	/** Based on a set of regular expressions to be matched against the user MSISDN, determine form which country state he/she is from */
-	public static class CountryStateByMSISDNResolver implements IDynamicPlaceHolder {
+	/** Based on a set of regular expressions to be matched against the user MSISDN, determine form which country state he/she is from.
+	 *  Provides the {{countryStateByMSISDN}} place holder to Profile module phrases. */
+	public static class CountryStateByMSISDNResolver implements IGeoLocatorPlaceHolder {
 		
 		private String[]  stateNames;
 		private Pattern[] msisdnPatterns;
@@ -38,20 +39,14 @@ public class UserGeoLocator {
 				msisdnPatterns[i] = Pattern.compile(regexResolverList[i*2+1]);
 			}
 		}
+		
+		@Override
+		public String getPlaceHolderName() {
+			return "countryStateByMSISDN";
+		}
 
 		@Override
-		// TODO 20160525 -- MSISDN should not be passed on a phrase parameter. It should be accessible to plugins in the same way sessions,
-		//      databases, etc, would be -- making this a really uncoupled plug-in architecture. A solution for this is not yet tought.
-		public String getPlaceHolderValue(String placeHolderName, String[] phraseParameters) {
-			String msisdn = null; 
-			for (int i=0; i<phraseParameters.length; i+=2) {
-				if ("MSISDN".equals(phraseParameters[i])) {
-					msisdn = phraseParameters[i+1];
-				}
-			}
-			if (msisdn == null) {
-				throw new RuntimeException("'CountryStateByMSISDNResolver' currently requires phrases to provide a parameter named 'MSISDN'");
-			}
+		public String getPlaceHolderValue(String msisdn) {
 			for (int i=0; i<msisdnPatterns.length; i++) {
 				Matcher m = msisdnPatterns[i].matcher(msisdn);
 				if (m.matches()) {

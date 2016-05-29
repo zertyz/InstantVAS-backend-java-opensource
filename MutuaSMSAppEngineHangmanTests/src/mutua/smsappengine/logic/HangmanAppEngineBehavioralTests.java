@@ -130,11 +130,12 @@ public class HangmanAppEngineBehavioralTests {
 		checkResponse(phone, "nick " + nickname, ivac.profilePhrasings.getNicknameRegistrationNotification(nickname));
     }
     
-//    /** for EXISTING_USERs, send 'play' to start playing with a bot */
-//    public void playWithBot(String phone, String expectedWord) {
-//    	HangmanGame game = new HangmanGame(expectedWord, 6);
-//    	checkResponse(phone, "play", testPhraseology.PLAYINGWordGuessingPlayerStart(game.getGuessedWordSoFar(), game.getAttemptedLettersSoFar()));
-//    }
+    /** for EXISTING_USERs, send 'play' to start playing with a bot */
+    public void playWithBot(String phone, String expectedWord) throws SQLException {
+    	registerUser(ivac.BOT_PHONE_NUMBERS[0], "DomBot");		// bots don't have a default nickname, so we now set it
+    	HangmanGame game = new HangmanGame(expectedWord, 6);
+    	checkResponse(phone, "play", ivac.hangmanPhrasings.getWordGuessingPlayerMatchStart(game.getGuessedWordSoFar(), game.getAttemptedLettersSoFar(), "DomBot"));
+    }
     
     /** for EXISTING_USERs, send the 'invite' by nickname command from the word providing to the word guessing already registered players */
     public void invitePlayerByNick(String wordProvidingPlayerPhone, String wordGuessingPlayerNickname) throws SQLException {
@@ -201,11 +202,11 @@ public class HangmanAppEngineBehavioralTests {
     	acceptInvitation(wordGuessingPlayerPhone, word, wordGuessingPlayerNickname, wordProvidingPlayerNickname);		
     }
     
-//    /** for a NEW_USER, start a match with a bot */
-//    public void startABotMatch(String phone, String nick, String expectedWord) {
-//		registerUser(phone, nick);
-//		playWithBot(phone, expectedWord);
-//    }
+    /** for a NEW_USER, start a match with a bot */
+    public void startABotMatch(String phone, String nick, String expectedWord) throws SQLException {
+		registerUser(phone, nick);
+		playWithBot(phone, expectedWord);
+    }
     
 	/*******************************
 	** EXPECTED USAGE PATHS TESTS **
@@ -262,6 +263,8 @@ public class HangmanAppEngineBehavioralTests {
 		checkResponse("21998019167", "hangman",       "Hi! You are at the HANGMAN game!! To play with a random player, text PLAY; To register a nickname and be able to chat, text NICK <your name>; To play or chat with a specific member, text LIST to see the list of online players. You can always send HELP to see the rules and other commands.");
 		checkResponse("21998019167", "nick haole",    "HANGMAN: Your nickname: haole. Text LIST to see online players; NICK [NEW NICK] to change your name again.");
 		checkResponse("21998019167", "nick pAtRiCiA", "HANGMAN: Your nickname: pAtRiCiA. Text LIST to see online players; NICK [NEW NICK] to change your name again.");
+		
+		checkResponse("21991234899", "play",          "+-+\n| \n|  \n|  \n|\n====\nWord: C-------EE\nUsed: CE\nAnswer with your first letter, the complete word or ask for cues with M Guest4899 [MSG]");
 		
 		// user listing
 //		tc.checkResponse("21998019167", "list", "i want to see the list of users i can play with...");
@@ -415,8 +418,9 @@ public class HangmanAppEngineBehavioralTests {
 			"The invitation to play the Hangman Game made by Dom was refused. Text LIST to 993 to see online users or send him/her a message: text M Dom [MSG]",
 			"pAtY refused your invitation to play. Send LIST to pick someone else or send him/her a message: text M pAtY [MSG]");
 		
-		// profile on the "existing player" state
-		// also, profile on the "new user" state? what other commands there?
+		// new user
+		checkResponse("2199999999", "profile dom", "HANGMAN: Dom: Subscribed; Online; Alaska. Text INVITE Dom to play a hangman match; M Dom [MSG] to chat; LIST to see online players; P to play with a random user.");
+		
 	}
 
 	
@@ -510,7 +514,7 @@ public class HangmanAppEngineBehavioralTests {
 	public void testEndGameSubtleties() throws SQLException {
 		
 		// test ending a match with another player by issuing a state changing command
-		startAPlayerMatch("111111", "AllOne", "OneMotherFucker", "22222", "AllTwo");
+		startAPlayerMatch("11111", "AllOne", "OneMotherFucker", "22222", "AllTwo");
 		tc.checkResponse("22222", "unsubscribe",
 			ivac.hangmanPhrasings.getMatchGiveupNotificationForWordGuessingPlayer("AllOne"),
 			ivac.hangmanPhrasings.getMatchGiveupNotificationForWordProvidingPlayer("AllTwo"),
@@ -518,18 +522,18 @@ public class HangmanAppEngineBehavioralTests {
 		tc.checkResponse("22222", "x", ivac.subscriptionPhrasings.getDoubleOptinStart());
 		
 		// test ending a match with another player through the "END MATCH" command
-		startAPlayerMatch("111111", "AllOne", "OneMotherFucker", "22222", "AllTwo");
-		tc.checkResponse("22222", "end",
-			ivac.hangmanPhrasings.getMatchGiveupNotificationForWordGuessingPlayer("AllOne"),
-			ivac.hangmanPhrasings.getMatchGiveupNotificationForWordProvidingPlayer("AllTwo"));
+		startAPlayerMatch("111111", "AllOnePlus1", "TwoMotherFucker", "222222", "AllTwoPlus2");
+		tc.checkResponse("222222", "end",
+			ivac.hangmanPhrasings.getMatchGiveupNotificationForWordGuessingPlayer("AllOnePlus1"),
+			ivac.hangmanPhrasings.getMatchGiveupNotificationForWordProvidingPlayer("AllTwoPlus2"));
 		// test fall back to 'EXISTING_USER' state, where unknown commands issues the specialized help
-		tc.checkResponse("22222", "x", ivac.helpPhrasings.getExistingUsersFallbackHelp());
+		tc.checkResponse("222222", "x", ivac.helpPhrasings.getExistingUsersFallbackHelp());
 		
 		// test ending a match with a bot
-//		startABotMatch("21991234899", "DOM", "CHIMPANZEE");
-//		tc.checkResponse("21991234899", "end", testPhraseology.PLAYINGMatchGiveupNotificationForWordGuessingPlayer("DomBot"));
-//		// test the fall back to 'EXISTING_USER' state, where only known commands are answered
-//		tc.checkResponse("21991234899", "x", testPhraseology.INFOFallbackExistingUsersHelp());
+		startABotMatch("21991234898", "DOM", "CHIMPANZEE");
+		tc.checkResponse("21991234898", "end", ivac.hangmanPhrasings.getMatchGiveupNotificationForWordGuessingPlayer("DomBot"));
+		// test the fall back to 'EXISTING_USER' state, where only known commands are answered
+		tc.checkResponse("21991234898", "x", ivac.helpPhrasings.getExistingUsersFallbackHelp());
 	}
 	
 	@Test

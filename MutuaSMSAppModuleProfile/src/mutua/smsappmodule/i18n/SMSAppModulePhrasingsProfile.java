@@ -1,8 +1,6 @@
 package mutua.smsappmodule.i18n;
 
-import com.sun.org.apache.xerces.internal.impl.dv.dtd.IDDatatypeValidator;
-
-import mutua.smsappmodule.i18n.plugins.IDynamicPlaceHolder;
+import mutua.smsappmodule.i18n.plugins.IGeoLocatorPlaceHolder;
 import mutua.smsappmodule.i18n.plugins.UserGeoLocator;
 
 /** <pre>
@@ -35,7 +33,7 @@ public class SMSAppModulePhrasingsProfile {
 	/** @see #getNicknameNotFound() */
 	private final Phrase phrNicknameNotFound;
 	
-	private final IDynamicPlaceHolder userGeoLocatorPlugin;
+	private final IGeoLocatorPlaceHolder userGeoLocatorPlugin;
 	
 	/** Fulfill the 'Phrase' objects with the default test values */
 	public SMSAppModulePhrasingsProfile(String shortCode, String appName) {
@@ -47,10 +45,9 @@ public class SMSAppModulePhrasingsProfile {
 			"{{appName}}: {{nickname}}: {{subscriptionState}}, from {{geoUserLocation}}, {{numberOfLuckyNumbers}} lucky numbers. Whatever more you want to show through customizations: {{whatever}} -- these new variables may be set as function calls on the phrasing facility, this way we can plug & play new features on all modules, for instance, lucky numbers, which might introduce {{numberOfLuckyNumbers}} and {{generateAndGetNewLuckyNumber}}",
 			// TODO geoUserLocation should be implemented as a new module, as described on the phrase above
 			"{{appName}}: There is no one like '{{nickname}}'. Maybe he/she changed nickname? Send LIST to {{shortCode}} to see who is online",
-			new IDynamicPlaceHolder() {
-				public String getPlaceHolderValue(String placeHolderName, String[] phraseParameters) {
-					return "__RJ__";
-				}
+			new IGeoLocatorPlaceHolder() {
+				public String getPlaceHolderName() { return "nothing"; }
+				public String getPlaceHolderValue(String msisdn) { return "__RJ__"; }
 			});
 	}
 	
@@ -63,7 +60,7 @@ public class SMSAppModulePhrasingsProfile {
 	 * @param phrNicknameRegistrationNotification  see {@link #phrNicknameRegistrationNotification}
 	 * @param phrUserProfilePresentation           see {@link #phrUserProfilePresentation}
 	 * @param phrNicknameNotFound                  see {@link #phrNicknameNotFound} 
-	 * @param userGeoLocatorPlugin                 one of the instances from {@link UserGeoLocator} TODO 20160525 passing this parameter is a workarround that a real plugin archtecture should fix */
+	 * @param userGeoLocatorPlugin                 one of the instances from {@link UserGeoLocator} */
 	public SMSAppModulePhrasingsProfile(String shortCode, String appName,
 		String phrAskForFirstNickname,
 		String phrAskForNewNickname,
@@ -71,7 +68,7 @@ public class SMSAppModulePhrasingsProfile {
 		String phrNicknameRegistrationNotification,
 		String phrUserProfilePresentation,
 		String phrNicknameNotFound,
-		IDynamicPlaceHolder userGeoLocatorPlugin) {
+		IGeoLocatorPlaceHolder userGeoLocatorPlugin) {
 		
 		// constant parameters -- defines the common phrase parameters -- {{shortCode}} and {{appName}}
 		String[] commonPhraseParameters = new String[] {
@@ -114,9 +111,8 @@ public class SMSAppModulePhrasingsProfile {
 	
 	/** Text sent to present the details of a user profile. Variables: {{shortCode}}, {{appName}}, {{nickname}} and others, from extensions, such as {{subscriptionState}}, {{geoUserLocation}} and {{numberOfLuckyNumbers}} */
 	public String getUserProfilePresentation(String nickname, String msisdn) {
-		// TODO 20160525 Calling the plugin this way is a fix the real plugin archtecture should fix -- this method must no of no plugin placeholder names
-		return phrUserProfilePresentation.getPhrase("nickname",             nickname,
-		                                            "countryStateByMSISDN", userGeoLocatorPlugin.getPlaceHolderValue("countryStateByMSISDN", new String[] {"MSISDN", msisdn}));
+		return phrUserProfilePresentation.getPhrase("nickname",                                nickname,
+		                                            userGeoLocatorPlugin.getPlaceHolderName(), userGeoLocatorPlugin.getPlaceHolderValue(msisdn));
 	}
 
 	/** Phrase sent to the sender user, who referenced a user by it's nickname, to inform that the command wasn't executed for the informed nickname was not found. Variables: {{shortCode}}, {{appName}}, {{targetNickname}} */

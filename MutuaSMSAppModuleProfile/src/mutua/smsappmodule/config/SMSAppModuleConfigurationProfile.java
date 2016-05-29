@@ -6,6 +6,7 @@ import mutua.icc.instrumentation.Instrumentation;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactoryProfile;
 import mutua.smsappmodule.i18n.SMSAppModulePhrasingsProfile;
 import mutua.smsappmodule.i18n.plugins.IDynamicPlaceHolder;
+import mutua.smsappmodule.i18n.plugins.IGeoLocatorPlaceHolder;
 import mutua.smsappmodule.smslogic.SMSAppModuleCommandsProfile;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesProfile;
 
@@ -52,7 +53,7 @@ public class SMSAppModuleConfigurationProfile {
 	 *  @param phrNicknameRegistrationNotification  &
 	 *  @param phrUserProfilePresentation           &
 	 *  @param phrNicknameNotFound                  &
-	 *  @param userGeoLocatorPlugin                 see {@link SMSAppModulePhrasingsProfile#SMSAppModulePhrasingsProfile(String, String, String, String, String, String, String, String, IDynamicPlaceHolder)}
+	 *  @param userGeoLocatorPlugin                 see {@link SMSAppModulePhrasingsProfile#SMSAppModulePhrasingsProfile(String, String, String, String, String, String, String, String, IGeoLocatorPlaceHolder)}
 	 *  @param profileModuleDAL                     see {@link SMSAppModuleCommandsProfile#SMSAppModuleCommandsProfile}
 	 *  @param nstRegisteringNicknameTriggers       see {@link SMSAppModuleNavigationStatesProfile#SMSAppModuleNavigationStatesProfile(SMSAppModuleCommandsProfile, Object[][])}
 	 *  @returns {(SMSAppModuleNavigationStatesProfile)navigationStates, (SMSAppModuleCommandsProfile)commands, (SMSAppModulePhrasingsProfile)phrasings} */
@@ -63,7 +64,7 @@ public class SMSAppModuleConfigurationProfile {
 		                                             String phrNicknameRegistrationNotification,
 		                                             String phrUserProfilePresentation,
 		                                             String phrNicknameNotFound,
-		                                             IDynamicPlaceHolder userGeoLocatorPlugin,
+		                                             IGeoLocatorPlaceHolder userGeoLocatorPlugin,
 		                                             SMSAppModuleDALFactoryProfile profileModuleDAL, Object[][] nstRegisteringNicknameTriggers) {
 		
 		SMSAppModulePhrasingsProfile        phrasings        = new SMSAppModulePhrasingsProfile(shortCode, appName,
