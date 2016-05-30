@@ -76,7 +76,7 @@ public class InstantVASSMSAppModuleProfileTestsConfiguration {
 				SMSAppModulePostgreSQLAdapter.configureDefaultValuesForNewInstances(postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
 					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
 				SMSAppModulePostgreSQLAdapterProfile.configureDefaultValuesForNewInstances(postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
-					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
+					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword, "MOSMSes", "eventId", "phone");
 				// other databases
 				BASE_MODULE_DAL = SMSAppModuleDALFactory.POSTGRESQL;
 				break;
@@ -115,7 +115,7 @@ public class InstantVASSMSAppModuleProfileTestsConfiguration {
 				null,	// connection properties
 				-1,		// connection pool size
 				true,	// assert structures
-				false,	// debug queries
+				true,	// debug queries
 				"venus", 5432, "hangman", "hangman", "hangman");
 		} catch (SQLException e) {
 			throw new ExceptionInInitializerError(e);

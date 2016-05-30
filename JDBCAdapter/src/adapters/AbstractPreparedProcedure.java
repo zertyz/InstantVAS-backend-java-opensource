@@ -138,14 +138,14 @@ public class AbstractPreparedProcedure {
 						int[] intArray = (int[])value;
 						Object[] genericArray = new Object[intArray.length];
 						System.arraycopy(intArray, 0, genericArray, 0, intArray.length);
-						ps.setArray(paramsIndex, ps.getConnection().createArrayOf("int", genericArray));
+						ps.setArray(paramsIndex+1, ps.getConnection().createArrayOf("int", genericArray));
 					} else if (value instanceof String[]) {
 						String[] stringArray = (String[])value;
 						Object[] genericArray = new Object[stringArray.length];
 						System.arraycopy(stringArray, 0, genericArray, 0, stringArray.length);
-						ps.setArray(paramsIndex, ps.getConnection().createArrayOf("text", genericArray));
+						ps.setArray(paramsIndex+1, ps.getConnection().createArrayOf("text", genericArray));
 					} else if (value instanceof Serializable) {
-						ps.setObject(paramsIndex, value);
+						ps.setObject(paramsIndex+1, value);
 					} else {
 						throw new PreparedProcedureException("buildPreparedStatement: Don't know how to handle the type for the parameter named '" + 
 						                                     parameterFromPairs.getParameterName() + "' in query '" + preparedProcedureSQL + "'");

@@ -541,11 +541,6 @@ public class SMSAppModuleCommandsHangman {
 			}
 		}
 	};
-
-	// TODO the list command must sort among the last users that have sent an MO and should be implemented by the profile module
-	//      -- maybe this is an event catch after every MO processing, if we don't want to consult the MOQueue table (but I guess we do, since it is the best performance) 
-	//      -- ... or we could have an option... ??
-	
 	
 	// SMSAppModuleCommandCommons candidates
 	////////////////////////////////////////

@@ -76,7 +76,7 @@ public class InstantVASSMSAppModuleHangmanTestsConfiguration {
 				SMSAppModulePostgreSQLAdapter.configureDefaultValuesForNewInstances(postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
 					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
 				SMSAppModulePostgreSQLAdapterProfile.configureDefaultValuesForNewInstances(postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
-					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
+					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword, "#MOSMSes", "#eventId", "#phone");
 				SMSAppModulePostgreSQLAdapterHangman.configureDefaultValuesForNewInstances(postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
 					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
 				// other databases
@@ -132,7 +132,7 @@ public class InstantVASSMSAppModuleHangmanTestsConfiguration {
 	private InstantVASSMSAppModuleHangmanTestsConfiguration() throws SQLException {
 		
 		Object[] hangmanModule = SMSAppModuleConfigurationHangman.getHangmanModuleInstances(shortCode, appName, null, BASE_MODULE_DAL, PROFILE_MODULE_DAL, HANGMAN_MODULE_DAL,
-		                                                                                    "Guest", new String[] {"21991234899"}, new String[] {"CHIMPANZEE", "AGREGATE", "TWEEZERS"});
+		                                                                                    "Guest", new String[] {"5521991234899"}, new String[] {"CHIMPANZEE", "AGREGATE", "TWEEZERS"});
 		
 		hangmanModuleNavigationStates = (SMSAppModuleNavigationStatesHangman) hangmanModule[0];
 		hangmanModuleCommands         = (SMSAppModuleCommandsHangman)         hangmanModule[1];

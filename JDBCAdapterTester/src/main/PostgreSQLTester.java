@@ -55,6 +55,8 @@ public class PostgreSQLTester {
                               PHONE, "2192820997");
 		System.out.println("Result: NULL");
 		
+		System.out.println(Arrays.deepToString(db.invokeArrayProcedure(ArrayQuery, VALUE_LIST, new String[] {"one"})));
+		
 		// Batch INSERT (40 elements at a time)
 		int c = 0;
 		for (int batchCount=0; batchCount<100; batchCount++) {

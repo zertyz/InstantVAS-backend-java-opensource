@@ -731,12 +731,18 @@ public class InstantVASInstanceConfiguration {
 					break;
 				case PROFILE:
 					profileModuleDAL = SMSAppModuleDALFactoryProfile.POSTGRESQL;
-					SMSAppModulePostgreSQLAdapterProfile.configureDefaultValuesForNewInstances(POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD);
+					SMSAppModulePostgreSQLAdapterProfile.configureDefaultValuesForNewInstances(POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD,
+					                                                                           MOSMSesQueueDataBureau.MO_TABLE_NAME,
+					                                                                           MOSMSesQueueDataBureau.MO_ID_FIELD_NAME,
+					                                                                           /*MOSMSesQueueDataBureau.MO_PHONE_FIELD_NAME*/ "phone");
 					profileModuleDAL.checkDataAccessLayers();
 					break;
 				case CHAT:
 					chatModuleDAL = SMSAppModuleDALFactoryChat.POSTGRESQL;
-					SMSAppModulePostgreSQLAdapterChat.configureDefaultValuesForNewInstances(POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD, MOSMSesQueueDataBureau.MO_TABLE_NAME, MOSMSesQueueDataBureau.MO_ID_FIELD_NAME, MOSMSesQueueDataBureau.MO_TEXT_FIELD_NAME);
+					SMSAppModulePostgreSQLAdapterChat.configureDefaultValuesForNewInstances(POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD,
+					                                                                        MOSMSesQueueDataBureau.MO_TABLE_NAME,
+					                                                                        MOSMSesQueueDataBureau.MO_ID_FIELD_NAME,
+					                                                                        MOSMSesQueueDataBureau.MO_TEXT_FIELD_NAME);
 					chatModuleDAL.checkDataAccessLayers();
 					break;
 				case HANGMAN:
@@ -1256,8 +1262,6 @@ public class InstantVASInstanceConfiguration {
 //		 * o comando cmdSendEmail (que recebe dois parâmetros) pode ser usado, mesmo que se esteja enviando sempre email para uma única pessoa,
 //		 * situação na qual a regular expression deve ser trocada de algo como "M (%w+) (.*)" para "M (.*)" e a chamada do comando seria trocada de
 //		 * cmdSendEmail("$1", "$2") para cmdSendEmail("luiz@InstantVAS.com", "$1") -- esta forma de chamar ainda tem que ser implementada, na verdade. */
-//		
-//		// TODO aqui é preciso ter um array compartilhado com todos os global triggers pra gente não ter que ficar repetindo em cada estado -- pelo visto isso caducou...
 //		
 //		// base
 //		BASEnstNewUser = new EInstantVASCommandTriggers[] {

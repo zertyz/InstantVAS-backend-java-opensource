@@ -1,13 +1,12 @@
 package mutua.smsappmodule.dal.postgresql;
 
+import java.security.Policy.Parameters;
 import java.sql.SQLException;
 
 import mutua.smsappmodule.dal.IProfileDB;
 import mutua.smsappmodule.dto.ProfileDto;
 import mutua.smsappmodule.dto.UserDto;
 import adapters.JDBCAdapter;
-
-import static mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterProfile.ProfileDBStatements.*;
 import static mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterProfile.Parameters.*;
 
 /** <pre>
@@ -24,7 +23,7 @@ import static mutua.smsappmodule.dal.postgresql.SMSAppModulePostgreSQLAdapterPro
 
 public class ProfileDB implements IProfileDB {
 	
-	private JDBCAdapter dba;
+	private SMSAppModulePostgreSQLAdapterProfile dba;
 
 	
 	public ProfileDB() throws SQLException {
@@ -33,12 +32,12 @@ public class ProfileDB implements IProfileDB {
 	
 	@Override
 	public void reset() throws SQLException {
-		dba.invokeUpdateProcedure(ResetTable);
+		dba.invokeUpdateProcedure(dba.ResetTable);
 	}
 
 	@Override
 	public ProfileDto getProfileRecord(UserDto user) throws SQLException {
-		Object[] row = dba.invokeRowProcedure(SelectProfileByUser, USER_ID, user.getUserId());
+		Object[] row = dba.invokeRowProcedure(dba.SelectProfileByUser, USER_ID, user.getUserId());
 		if (row == null) {
 			return null;
 		}
@@ -49,7 +48,7 @@ public class ProfileDB implements IProfileDB {
 
 	@Override
 	public ProfileDto getProfileRecord(String nickname) throws SQLException {
-		Object[] row = dba.invokeRowProcedure(SelectProfileByNickname, NICKNAME, nickname);
+		Object[] row = dba.invokeRowProcedure(dba.SelectProfileByNickname, NICKNAME, nickname);
 		if (row == null) {
 			return null;
 		}
@@ -61,7 +60,7 @@ public class ProfileDB implements IProfileDB {
 
 	@Override
 	public ProfileDto setProfileRecord(ProfileDto profile) throws SQLException {
-		Object[] row = dba.invokeRowProcedure(AssertProfile,
+		Object[] row = dba.invokeRowProcedure(dba.AssertProfile,
 			USER_ID,  profile.getUser().getUserId(),
 			NICKNAME, profile.getNickname());
 		int    storedUserId   = (Integer) row[0];
@@ -71,6 +70,23 @@ public class ProfileDB implements IProfileDB {
 		} else {
 			return new ProfileDto(profile.getUser(), storedNickname);
 		}
+	}
+
+	@Override
+	public ProfileDto[] getRecentProfilesByLastMOTimeNotInSessionValues(int limit, String sessionPropertyName, String[] notInSessionPropertyValues) throws SQLException {
+		Object[][] results = dba.invokeArrayProcedure(dba.SelectRecentProfilesByLastMOTimeNotInSessionValues,
+			MAX_PROFILES,            limit,
+			SESSION_PROPERTY_NAME,   sessionPropertyName,
+			SESSION_PROPERTY_VALUES, notInSessionPropertyValues);
+		ProfileDto[] profiles = new ProfileDto[results.length];
+		for (int i=0; i<profiles.length; i++) {
+			int userId         = (Integer) results[i][0];
+			String phoneNumber = (String)  results[i][1];
+			String nickname    = (String)  results[i][2];
+			UserDto user = new UserDto(userId, phoneNumber);
+			profiles[i]  = new ProfileDto(user, nickname);
+		}
+		return profiles;
 	}
 
 }

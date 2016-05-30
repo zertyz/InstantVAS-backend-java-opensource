@@ -71,6 +71,7 @@ public class PostgreSQLAdapterConfiguration extends PostgreSQLAdapter {
 	public enum PostgreSQLParameters implements IJDBCAdapterParameterDefinition {
 		ID   (Integer.class),
 		PHONE(String.class),
+		VALUE_LIST(String[].class),
 		
 		;
 		
@@ -105,6 +106,9 @@ public class PostgreSQLAdapterConfiguration extends PostgreSQLAdapter {
 		/** Calls a stored procedure with parameters */
 		public static final AbstractPreparedProcedure ParamStoredProcedure = new AbstractPreparedProcedure(connectionPool,
 			"SELECT * FROM UpdateOrInsertNotSoSimple(",PostgreSQLParameters.PHONE,", ",PostgreSQLParameters.ID,")");
+		/** Array prepared statements generation */
+		public static final AbstractPreparedProcedure ArrayQuery = new AbstractPreparedProcedure(connectionPool,
+			"SELECT * FROM (VALUES ('one'), ('two'), ('three')) AS t (phone) WHERE NOT phone = ANY(",PostgreSQLParameters.VALUE_LIST,")");
 	}
 
 	// public access methods

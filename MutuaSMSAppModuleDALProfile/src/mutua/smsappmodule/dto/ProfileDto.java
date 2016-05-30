@@ -38,5 +38,9 @@ public class ProfileDto {
 		ProfileDto other = (ProfileDto)obj;
 		return this.user.equals(other.user) && this.nickname.equals(other.nickname);
 	}
+	
+	public String toString() {
+		return "{user="+user.toString()+", nickname='"+nickname+"'}";
+	}
 
 }

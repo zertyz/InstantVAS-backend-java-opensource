@@ -4,6 +4,7 @@ import static instantvas.tests.InstantVASSMSAppModuleProfileTestsConfiguration.*
 import static org.junit.Assert.*;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 
 import mutua.smsappmodule.SMSAppModuleTestCommons;
 import mutua.smsappmodule.dto.ProfileDto;
@@ -27,6 +28,7 @@ import org.junit.Test;
 public class IProfileDBBehavioralTests {
 	
 	private IUserDB    userDB    = BASE_MODULE_DAL.getUserDB();
+	private ISessionDB sessionDB = BASE_MODULE_DAL.getSessionDB();
 	private IProfileDB profileDB = PROFILE_MODULE_DAL.getProfileDB();	
 
 	/*******************
@@ -124,8 +126,32 @@ public class IProfileDBBehavioralTests {
 		UserDto    oneMoreToTheSequenceUser    = userDB.assureUserIsRegistered("21999999");
 		ProfileDto oneMoreToTheSequenceProfile = profileDB.setProfileRecord(new ProfileDto(oneMoreToTheSequenceUser, "Dom"));
 		assertEquals("Nickname sequence algorithm could be break by a specially crafted nickname", "Dom100", oneMoreToTheSequenceProfile.getNickname());
+	}
+	
+	@Test
+	public void testListingShits() throws SQLException {
+		ProfileDto[] profiles;
+
+		profiles = profileDB.getRecentProfilesByLastMOTimeNotInSessionValues(10, "withinnity", "out");
+		assertEquals("There must be nothing to be listed on an empty database", 0, profiles.length);
+
+		UserDto outUser = userDB.assureUserIsRegistered("21998919167");
+		profileDB.setProfileRecord(new ProfileDto(outUser, "Paty"));
+		sessionDB.assureProperty(outUser, "withinnity", "out");
+		profiles = profileDB.getRecentProfilesByLastMOTimeNotInSessionValues(10, "withinnity", "out");
+		assertEquals("I have an user, true; but she is not THE ONE", 0, profiles.length);
+
+		UserDto inUser = userDB.assureUserIsRegistered("21991234899");
+		profileDB.setProfileRecord(new ProfileDto(inUser, "Dom"));
 		
-		
+		profiles = profileDB.getRecentProfilesByLastMOTimeNotInSessionValues(10, "withinnity", "out");
+		assertEquals("Still nothing... I didn't set the session yet!", 0, profiles.length);
+
+		sessionDB.assureProperty(inUser, "withinnity", "in");
+
+		profiles = profileDB.getRecentProfilesByLastMOTimeNotInSessionValues(10, "withinnity", "out");
+		assertEquals("There must be only one!", 1, profiles.length);
+		assertEquals("... and it must be The Dom", "Dom", profiles[0].getNickname());
 	}
 
 }

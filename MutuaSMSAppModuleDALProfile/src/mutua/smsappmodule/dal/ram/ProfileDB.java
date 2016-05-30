@@ -3,6 +3,7 @@ package mutua.smsappmodule.dal.ram;
 import java.sql.SQLException;
 import java.util.Hashtable;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import mutua.smsappmodule.dal.IProfileDB;
 import mutua.smsappmodule.dto.ProfileDto;
 import mutua.smsappmodule.dto.UserDto;
@@ -87,6 +88,12 @@ public class ProfileDB implements IProfileDB {
 		profilesByUser.put(user, profile);
 		profilesByNick.put(profile.getNickname().toLowerCase(), profile);
 		return profile;
+	}
+
+
+	@Override
+	public ProfileDto[] getRecentProfilesByLastMOTimeNotInSessionValues(int limit, String sessionPropertyName, String... notInSessionPropertyValues) throws SQLException {
+		throw new NotImplementedException();
 	}
 
 }

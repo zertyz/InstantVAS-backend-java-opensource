@@ -32,10 +32,6 @@ public class SMSAppModulePostgreSQLAdapterChat extends PostgreSQLAdapter {
 	/** this class' singleton instance */
 	private static SMSAppModulePostgreSQLAdapterChat instance = null;
 	
-	private static String MO_TABLE_NAME;
-	private static String MO_ID_FIELD_NAME;
-	private static String MO_TEXT_FIELD_NAME;
-	
 	// JDBCAdapter default values
 	/** @see JDBCAdapter#hostname */
 	private static String HOSTNAME;
@@ -51,6 +47,13 @@ public class SMSAppModulePostgreSQLAdapterChat extends PostgreSQLAdapter {
 	private static boolean ALLOW_DATA_STRUCTURES_ASSERTION;
 	/** @see JDBCAdapter#shouldDebugQueries */
 	private static boolean SHOULD_DEBUG_QUERIES;	
+
+	/** The table used to register MOs */
+	private static String MO_TABLE_NAME;
+	/** The index id field name, within the MO table */
+	private static String MO_ID_FIELD_NAME;
+	/** The text field name, within the MO table */
+	private static String MO_TEXT_FIELD_NAME;
 	
 	/** method to be called when attempting to configure the singleton for new instances of 'PostgreSQLAdapter'.
 	 *  @param allowDataStructuresAssertion see {@link #ALLOW_DATA_STRUCTURES_ASSERTION}
@@ -59,7 +62,10 @@ public class SMSAppModulePostgreSQLAdapterChat extends PostgreSQLAdapter {
 	 *  @param port                         see {@link #PORT}
 	 *  @param database                     see {@link #DATABASE}
 	 *  @param user                         see {@link #USER}
-	 *  @param password                     see {@link #PASSWORD} */
+	 *  @param password                     see {@link #PASSWORD}
+	 *  @param moTableName                  see {@link #MO_TABLE_NAME}
+	 *  @param moIdFieldName                see {@link #MO_ID_FIELD_NAME}
+	 *  @param moTextFieldName              see {@link #MO_Text_FIELD_NAME} */
 	public static void configureDefaultValuesForNewInstances(
 		boolean allowDataStructuresAssertion, boolean shouldDebugQueries,
 	    String hostname, int port, String database, String user, String password,

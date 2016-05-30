@@ -32,5 +32,8 @@ public interface IProfileDB {
 	/** Makes the best effort to store the 'profile' record, returning the same object if successful, or a new object
 	 *  if any values needed to be changed -- e.g. a new nickname is assigned in case of nickname collision */
 	ProfileDto setProfileRecord(ProfileDto profile) throws SQLException;
+	
+	/** Retrieve the most recently used user Profiles which session variables are not in the list, up to 'limit' entries */
+	ProfileDto[] getRecentProfilesByLastMOTimeNotInSessionValues(int limit, String sessionPropertyName, String... notInSessionPropertyValues) throws SQLException;
 
 }

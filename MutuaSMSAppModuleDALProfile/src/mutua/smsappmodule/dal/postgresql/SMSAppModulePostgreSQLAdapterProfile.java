@@ -45,8 +45,15 @@ public class SMSAppModulePostgreSQLAdapterProfile extends PostgreSQLAdapter {
 	/** @see JDBCAdapter#allowDataStructuresAssertion */
 	private static boolean ALLOW_DATA_STRUCTURES_ASSERTION;
 	/** @see JDBCAdapter#shouldDebugQueries */
-	private static boolean SHOULD_DEBUG_QUERIES;	
+	private static boolean SHOULD_DEBUG_QUERIES;
 	
+	/** The table used to register MOs */
+	private static String MO_TABLE_NAME;
+	/** The index id field name, within the MO table */
+	private static String MO_ID_FIELD_NAME;
+	/** The phone field name, within the MO table */
+	private static String MO_PHONE_FIELD_NAME;
+
 	/** method to be called when attempting to configure the singleton for new instances of 'PostgreSQLAdapter'.
 	 *  @param allowDataStructuresAssertion see {@link #ALLOW_DATA_STRUCTURES_ASSERTION}
 	 *  @param shouldDebugQueries           see {@link #SHOULD_DEBUG_QUERIES}
@@ -54,10 +61,14 @@ public class SMSAppModulePostgreSQLAdapterProfile extends PostgreSQLAdapter {
 	 *  @param port                         see {@link #PORT}
 	 *  @param database                     see {@link #DATABASE}
 	 *  @param user                         see {@link #USER}
-	 *  @param password                     see {@link #PASSWORD} */
+	 *  @param password                     see {@link #PASSWORD}
+	 *  @param moTableName                  see {@link #MO_TABLE_NAME}
+	 *  @param moIdFieldName                see {@link #MO_ID_FIELD_NAME}
+	 *  @param moPhoneFieldName             see {@link #MO_PHONE_FIELD_NAME} */
 	public static void configureDefaultValuesForNewInstances(
 		boolean allowDataStructuresAssertion, boolean shouldDebugQueries,
-	    String hostname, int port, String database, String user, String password) throws SQLException {
+	    String hostname, int port, String database, String user, String password,
+	    String moTableName, String moIdFieldName, String moPhoneFieldName) throws SQLException {
 
 		ALLOW_DATA_STRUCTURES_ASSERTION = allowDataStructuresAssertion;
 		SHOULD_DEBUG_QUERIES            = shouldDebugQueries;
@@ -66,6 +77,10 @@ public class SMSAppModulePostgreSQLAdapterProfile extends PostgreSQLAdapter {
 		DATABASE = database;
 		USER     = user;
 		PASSWORD = password;
+		
+		MO_TABLE_NAME       = moTableName;
+		MO_ID_FIELD_NAME    = moIdFieldName;
+		MO_PHONE_FIELD_NAME = moPhoneFieldName;
 
 		instance = null;
 	}
@@ -147,6 +162,9 @@ public class SMSAppModulePostgreSQLAdapterProfile extends PostgreSQLAdapter {
 
 		USER_ID,
 		NICKNAME,
+		MAX_PROFILES,
+		SESSION_PROPERTY_NAME,
+		SESSION_PROPERTY_VALUES,
 		
 		;
 		
@@ -160,36 +178,37 @@ public class SMSAppModulePostgreSQLAdapterProfile extends PostgreSQLAdapter {
 	** STATEMENTS **
 	***************/
 
-	public static final class ProfileDBStatements {
-		/** Zero the table contents -- for testing purposes only */
-		public final static AbstractPreparedProcedure ResetTable = new AbstractPreparedProcedure(connectionPool,
-			"TRUNCATE Profiles CASCADE");
-		/** Returns the nickname associated with 'USER_ID' */
-		public final static AbstractPreparedProcedure SelectProfileByUser = new AbstractPreparedProcedure(connectionPool,
-			"SELECT userId, nickname FROM Profiles WHERE userId=",Parameters.USER_ID);
-		/** Assures 'USER_ID' has the 'NICKNAME' or a derivative of it, in case it is already taken by another user. The attributed nickname is returned. */
-		public final static AbstractPreparedProcedure AssertProfile = new AbstractPreparedProcedure(connectionPool,
-			"SELECT userId, nickname FROM AssertProfile(",Parameters.USER_ID,", ",Parameters.NICKNAME,")");
-		/** Returns the full user information (id, phone, correctly cased nickname) associated with the given case insensitive 'NICKNAME' */
-		public final static AbstractPreparedProcedure SelectProfileByNickname = new AbstractPreparedProcedure(connectionPool,
-			"SELECT Users.userId, Users.phoneNumber, Profiles.nickname FROM Users, Profiles WHERE lower(nickname)=lower(",Parameters.NICKNAME,") AND Users.userId = Profiles.userId");
-	}
-	
+	/** Zero the table contents -- for testing purposes only */
+	public final AbstractPreparedProcedure ResetTable = new AbstractPreparedProcedure(connectionPool,
+		"TRUNCATE Profiles CASCADE");
+	/** Returns the nickname associated with 'USER_ID' */
+	public final AbstractPreparedProcedure SelectProfileByUser = new AbstractPreparedProcedure(connectionPool,
+		"SELECT userId, nickname FROM Profiles WHERE userId=",Parameters.USER_ID);
+	/** Assures 'USER_ID' has the 'NICKNAME' or a derivative of it, in case it is already taken by another user. The attributed nickname is returned. */
+	public final AbstractPreparedProcedure AssertProfile = new AbstractPreparedProcedure(connectionPool,
+		"SELECT userId, nickname FROM AssertProfile(",Parameters.USER_ID,", ",Parameters.NICKNAME,")");
+	/** Returns the full user information (id, phone, correctly cased nickname) associated with the given case insensitive 'NICKNAME' */
+	public final AbstractPreparedProcedure SelectProfileByNickname = new AbstractPreparedProcedure(connectionPool,
+		"SELECT Users.userId, Users.phoneNumber, Profiles.nickname FROM Users, Profiles WHERE lower(nickname)=lower(",Parameters.NICKNAME,") AND Users.userId = Profiles.userId");
+	/** List Users who sent MOs whose provided session variable isn't one of the provided values */
+	public final AbstractPreparedProcedure SelectRecentProfilesByLastMOTimeNotInSessionValues = new AbstractPreparedProcedure(connectionPool,
+		"SELECT Users.userId, Users.phoneNumber, Profiles.nickname, Sessions.propertyValue FROM Users, Sessions, Profiles WHERE phoneNumber IN ",
+		"(SELECT DISTINCT ON (phone) phone FROM (SELECT ",MO_PHONE_FIELD_NAME," FROM ",MO_TABLE_NAME," ORDER BY ",MO_ID_FIELD_NAME,
+		" DESC LIMIT ",Parameters.MAX_PROFILES,"*2) as bruteMO ORDER BY phone LIMIT ",Parameters.MAX_PROFILES,
+		") AND (Users.userId = Sessions.userId) AND (Users.userId = Profiles.userId) AND ((Sessions.propertyName = ",
+		Parameters.SESSION_PROPERTY_NAME,") AND (NOT Sessions.propertyValue = ANY (",Parameters.SESSION_PROPERTY_VALUES,")))");
 	
 	// public methods
 	/////////////////
 	
-	public static JDBCAdapter getInstance() throws SQLException {
+	public static SMSAppModulePostgreSQLAdapterProfile getInstance() throws SQLException {
 		if (instance == null) {
 			instance = new SMSAppModulePostgreSQLAdapterProfile();
-//			throw new RuntimeException("Class '" + SMSAppModulePostgreSQLAdapterProfile.class.getCanonicalName() + "' was not configured according to the " +
-//			                           "'Mutua Configurable Class' pattern -- a preliminar call to 'configureDefaultValuesForNewInstances' " +
-//			                           "was not made.");
 		}
 		return instance;
 	}
 	
-	public static JDBCAdapter getProfileDBAdapter() throws SQLException {
+	public static SMSAppModulePostgreSQLAdapterProfile getProfileDBAdapter() throws SQLException {
 		return getInstance();
 	}
 }
