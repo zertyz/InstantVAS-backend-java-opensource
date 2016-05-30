@@ -6,12 +6,16 @@ import static org.junit.Assert.*;
 import java.sql.SQLException;
 import java.util.Arrays;
 
+import mutua.events.SpecializedMOQueueDataBureau;
+import mutua.events.SpecializedMOQueueDataBureau.SpecializedMOParameters;
 import mutua.smsappmodule.SMSAppModuleTestCommons;
 import mutua.smsappmodule.dto.ProfileDto;
 import mutua.smsappmodule.dto.UserDto;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import instantvas.tests.InstantVASSMSAppModuleProfileTestsConfiguration;
 
 /** <pre>
  * IProfileDBBehavioralTests.java
@@ -27,9 +31,15 @@ import org.junit.Test;
 
 public class IProfileDBBehavioralTests {
 	
-	private IUserDB    userDB    = BASE_MODULE_DAL.getUserDB();
-	private ISessionDB sessionDB = BASE_MODULE_DAL.getSessionDB();
-	private IProfileDB profileDB = PROFILE_MODULE_DAL.getProfileDB();	
+	/******************
+	** CONFIGURATION **
+	******************/
+	
+	private InstantVASSMSAppModuleProfileTestsConfiguration config = InstantVASSMSAppModuleProfileTestsConfiguration.getInstance();
+	
+	private IUserDB    userDB    = config.BASE_MODULE_DAL.getUserDB();
+	private ISessionDB sessionDB = config.BASE_MODULE_DAL.getSessionDB();
+	private IProfileDB profileDB = config.PROFILE_MODULE_DAL.getProfileDB();	
 
 	/*******************
 	** COMMON METHODS **
@@ -37,6 +47,7 @@ public class IProfileDBBehavioralTests {
 	
 	@Before
 	public void resetTables() throws SQLException {
+		config.moDB.resetQueues();
 		profileDB.reset();
 		SMSAppModuleTestCommons.resetBaseTables(BASE_MODULE_DAL);
 	}
@@ -129,12 +140,18 @@ public class IProfileDBBehavioralTests {
 	}
 	
 	@Test
-	public void testListingShits() throws SQLException {
+	public void testListingSheets() throws SQLException {
 		ProfileDto[] profiles;
 
 		profiles = profileDB.getRecentProfilesByLastMOTimeNotInSessionValues(10, "withinnity", "out");
 		assertEquals("There must be nothing to be listed on an empty database", 0, profiles.length);
 
+		// simulate MO inclusion (BUGs when we're usimg the RAM DAL)
+		config.moDB.invokeUpdateBatchProcedure(config.moDB.BatchInsertNewQueueElement, new Object[][] {
+			{SpecializedMOParameters.PHONE, "21998919167", SpecializedMOParameters.TEXT, "this is an MO from Paty!"},
+			{SpecializedMOParameters.PHONE, "21991234899", SpecializedMOParameters.TEXT, "this is the MO from Dom!"},
+		});
+		
 		UserDto outUser = userDB.assureUserIsRegistered("21998919167");
 		profileDB.setProfileRecord(new ProfileDto(outUser, "Paty"));
 		sessionDB.assureProperty(outUser, "withinnity", "out");

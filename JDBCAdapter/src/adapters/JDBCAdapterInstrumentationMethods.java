@@ -2,6 +2,8 @@ package adapters;
 
 import static mutua.icc.instrumentation.DefaultInstrumentationEvents.*;
 
+import java.sql.SQLException;
+
 import mutua.icc.instrumentation.InstrumentableEvent;
 import mutua.icc.instrumentation.InstrumentableProperty;
 import mutua.icc.instrumentation.InstrumentableEvent.ELogSeverity;
@@ -38,18 +40,30 @@ public class JDBCAdapterInstrumentationMethods {
 		// code based on 'AbstractPreparedProcedure#buildPreparedStatement'
 		@EfficientTextualSerializationMethod
 		public static void toString(Object _this, StringBuffer buffer) {
-			Object[] parametersAndValuesPairs = (Object[])(Object)_this;
-			for (int i=0; i<parametersAndValuesPairs.length; i+=2) {
-				if (i>0) {
-					buffer.append(',');
+			if (_this instanceof Object[][]) {
+				Object[][] batchParametersAndValuesPairs = (Object[][])(Object)_this;
+				for (int i=0; i<batchParametersAndValuesPairs.length; i++) {
+					if (i>0) {
+						buffer.append(',');
+					}
+					buffer.append('{');
+					toString(batchParametersAndValuesPairs[i], buffer);
+					buffer.append('}');
 				}
-				String parameterName  = ((IJDBCAdapterParameterDefinition)parametersAndValuesPairs[i]).getParameterName();
-				buffer.append(parameterName).append('=');
-				Object parameterValue = parametersAndValuesPairs[i+1];
-				if (parameterValue instanceof String) {
-					SerializationRepository.serialize(buffer.append('\''), (String)parameterValue).append('\'');
-				} else {
-					buffer.append(parameterValue);
+			} else if (_this instanceof Object[]) {
+				Object[] parametersAndValuesPairs = (Object[])(Object)_this;
+				for (int i=0; i<parametersAndValuesPairs.length; i+=2) {
+					if (i>0) {
+						buffer.append(',');
+					}
+					String parameterName  = ((IJDBCAdapterParameterDefinition)parametersAndValuesPairs[i]).getParameterName();
+					buffer.append(parameterName).append('=');
+					Object parameterValue = parametersAndValuesPairs[i+1];
+					if (parameterValue instanceof String) {
+						SerializationRepository.serialize(buffer.append('\''), (String)parameterValue).append('\'');
+					} else {
+						buffer.append(parameterValue);
+					}
 				}
 			}
 		}
@@ -72,6 +86,14 @@ public class JDBCAdapterInstrumentationMethods {
 	
 	public static void reportRetryingQueryDueToException(Throwable t, AbstractPreparedProcedure absPP, Object... pvp) {
 		Instrumentation.logAndCompute(databaseRetryQueryEvent, preparedSQLProperty, absPP.getPreparedProcedureSQL(), parametersAndValuesPairsProperty, pvp, THROWABLE_PROPERTY, t);
+		if (t instanceof SQLException) {
+			int c = 2;
+			SQLException nextSQLException = ((SQLException)t).getNextException();
+			while (nextSQLException != null) {
+				Instrumentation.reportThrowable(nextSQLException, "neasted exception #"+(c++));
+				nextSQLException = nextSQLException.getNextException();
+			}
+		}
 	}
 	
 	public static void reportDatabaseSQL(AbstractPreparedProcedure absPP, Object... pvp) {

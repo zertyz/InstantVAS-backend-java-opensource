@@ -1,5 +1,7 @@
 package instantvas.tests;
 
+import mutua.events.SpecializedMOQueueDataBureau;
+import mutua.events.postgresql.QueuesPostgreSQLAdapter;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.icc.instrumentation.InstrumentableEvent.ELogSeverity;
 import mutua.icc.instrumentation.handlers.IInstrumentationHandler;
@@ -52,6 +54,7 @@ public class InstantVASSMSAppModuleProfileTestsConfiguration {
 	public SMSAppModulePhrasingsProfile        profileModulePhrasings;
 	public SMSAppModuleCommandsProfile         profileModuleCommands;
 	public SMSAppModuleNavigationStatesProfile profileModuleNavigationStates;
+	public QueuesPostgreSQLAdapter             moDB;
 	
 	/**************************
 	** CONFIGURATION METHODS **
@@ -77,6 +80,7 @@ public class InstantVASSMSAppModuleProfileTestsConfiguration {
 					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
 				SMSAppModulePostgreSQLAdapterProfile.configureDefaultValuesForNewInstances(postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
 					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword, "MOSMSes", "eventId", "phone");
+				QueuesPostgreSQLAdapter.configureDefaultValuesForNewInstances(postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries, postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
 				// other databases
 				BASE_MODULE_DAL = SMSAppModuleDALFactory.POSTGRESQL;
 				break;
@@ -133,6 +137,11 @@ public class InstantVASSMSAppModuleProfileTestsConfiguration {
 		profileModuleNavigationStates = (SMSAppModuleNavigationStatesProfile) profileModule[0];
 		profileModuleCommands         = (SMSAppModuleCommandsProfile)         profileModule[1];
 		profileModulePhrasings        = (SMSAppModulePhrasingsProfile)        profileModule[2];
+		
+		SpecializedMOQueueDataBureau dataBureau = new SpecializedMOQueueDataBureau();
+		moDB = QueuesPostgreSQLAdapter.getQueuesDBAdapter("MOSMSes", dataBureau.getFieldsCreationLine(), dataBureau.getQueueElementFieldList(),
+                dataBureau.getParametersListForInsertNewQueueElementQuery(), 10);
+
 		
 		// base module -- configured to interact with the Profile Module commands 
 		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(BASE_MODULE_DAL,

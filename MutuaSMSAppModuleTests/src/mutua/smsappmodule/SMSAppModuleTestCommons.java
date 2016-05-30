@@ -90,6 +90,12 @@ public class SMSAppModuleTestCommons {
 		SplitRun.runAndWaitForAll();
 	}
 
+	// TODO 20160530 -- addMO method should be moved from 'SMSAppModuleChatTestCommons' to here, since Chat and Profile proves that having an MO table
+	//      is central to the Private Messaging & User Listing respective functionalities. This means an important refactoring: MO registration must be
+	//      known to the base module. Anyway, we still want that MutuaAdditionalEvents use the database as both a queue and an MO registration mechanism.
+	//      Does it mean the eventLink for the MO Queue must be instantiated by the base module? Probably this and more: why not have a fully implemented
+	//      DAL factory which uses, instead of JDBCAdapter, the JDBCQueue? This may be the best approach.
+
 	
 	/********************************
 	** DIALOG VERIFICATION METHODS **
