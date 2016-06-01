@@ -1,6 +1,8 @@
 package mutua.smsappmodule.smslogic;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import static mutua.smsappmodule.smslogic.CommandCommons.*;
 import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates.NavigationStatesNames.*;
@@ -10,6 +12,7 @@ import mutua.smsappmodule.dal.IProfileDB;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactoryProfile;
 import mutua.smsappmodule.dto.ProfileDto;
+import mutua.smsappmodule.dto.UserDto;
 import mutua.smsappmodule.i18n.SMSAppModulePhrasingsProfile;
 import mutua.smsappmodule.smslogic.commands.CommandAnswerDto;
 import mutua.smsappmodule.smslogic.commands.CommandTriggersDto;
@@ -154,6 +157,65 @@ public class SMSAppModuleCommandsProfile {
 			return getSameStateReplyCommandAnswer(profilePhrases.getUserProfilePresentation(registeredNickname, desiredProfile.getUser().getPhoneNumber()));
 		}
 	};
+
+	/** Having in consideration the last Profiles who interacted with the service and which are not listed in the 'outcludeNavigationStatesFromProfileListings',
+	 *  returns a 'listProfilesInfo' structure to be used to list available profiles, respecting the given message's 'maxChars', where:
+	 *  'listProfilesInfo' is null if there is nothing (or nothing else) to show.
+	 *  'listProfilesInfo' := {(ProfileDto[])yetUnpresentedProfiles, (String)yetUnpresentedProfilesListMTText, (int[])newPresentedUserIds} */
+	public Object[] getListProfilesInfoWithLimitedPhraseLength(int maxChars, int[] presentedUserIds) throws SQLException {
+		int lookAhead = 10;
+		ProfileDto[] latestPlayerProfiles = profileDB.getRecentProfilesByLastMOTimeNotInSessionValues(presentedUserIds.length+lookAhead, SessionModel.NAVIGATION_STATE_PROPERTY.getPropertyName(), nstNewUser);
+		ArrayList<ProfileDto> unpresentedProfiles = new ArrayList<ProfileDto>(lookAhead);
+		// build 'unpresentedProfiles' not including the ones represented by 'presentedPhoneNumbers'
+		NEXT_PROFILE: for (int i=0; i<latestPlayerProfiles.length; i++) {
+			for (int j=0; j<presentedUserIds.length; j++) {
+				if (latestPlayerProfiles[i].getUser().getPhoneNumber().equals(presentedUserIds[j])) {
+					continue NEXT_PROFILE;
+				}
+			}
+			unpresentedProfiles.add(latestPlayerProfiles[i]);
+		}
+		
+		// if there are not 'unpresentedProfiles', indicate that returning null
+		if (unpresentedProfiles.size() == 0) {
+			return null;
+		}
+		
+		// presentation checks
+		ProfileDto[] fullProfilesList = unpresentedProfiles.toArray(new ProfileDto[unpresentedProfiles.size()]);
+		ProfileDto[] lastProfiles          = null;
+		String       lastProfileListPhrase = null;
+		for (int i=0; i<unpresentedProfiles.size(); i++) {
+			
+			// test if we've reached the 'maxChars' limit
+			ProfileDto[] profilesCandidate = Arrays.copyOf(fullProfilesList, i+1);
+			String profileListPhraseCandidate = profilePhrases.getProfileList(profilesCandidate);
+			int phraseLength = profileListPhraseCandidate.length();
+			if (phraseLength <= maxChars) {
+				lastProfiles          = profilesCandidate;
+				lastProfileListPhrase = profileListPhraseCandidate;
+			} else {
+				break;
+			}
+		}
+		if ((lastProfiles == null) || (lastProfileListPhrase == null)) {
+			throw new RuntimeException("Exception while listing profiles: phraseTemplate '" +
+			                           profilePhrases.getProfileList(new ProfileDto[] {new ProfileDto(new UserDto("{{phoneNumber}}"), "{{nickname}}")}) +
+			                           "' is too big for 'maxChars' of "+maxChars);
+		}
+		
+		// build the new list of 'presentedPhoneNumbers', effective after showing 'lastProfileListPhrase'
+		int[] unpresentedUserIds = new int[lastProfiles.length];
+		for (int i=0; i<unpresentedUserIds.length; i++) {
+			unpresentedUserIds[i] = lastProfiles[i].getUser().getUserId();
+		}
+		int[] newPresentedUserIds = new int[presentedUserIds.length + unpresentedUserIds.length];
+		System.arraycopy(presentedUserIds, 0, newPresentedUserIds, 0, presentedUserIds.length);
+		System.arraycopy(unpresentedUserIds, 0, newPresentedUserIds, presentedUserIds.length, unpresentedUserIds.length);
+		
+		// return what we call 'userProfilesInfo'
+		return new Object[] {lastProfiles, lastProfileListPhrase, newPresentedUserIds};
+	}
 	
 
 	// SMSAppModuleCommandCommons candidates

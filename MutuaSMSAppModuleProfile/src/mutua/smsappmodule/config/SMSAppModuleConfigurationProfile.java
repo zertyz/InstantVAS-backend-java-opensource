@@ -53,7 +53,10 @@ public class SMSAppModuleConfigurationProfile {
 	 *  @param phrNicknameRegistrationNotification  &
 	 *  @param phrUserProfilePresentation           &
 	 *  @param phrNicknameNotFound                  &
-	 *  @param userGeoLocatorPlugin                 see {@link SMSAppModulePhrasingsProfile#SMSAppModulePhrasingsProfile(String, String, String, String, String, String, String, String, IGeoLocatorPlaceHolder)}
+	 *  @param phrShortProfilePresentation          &
+	 *  @param phrProfileList                       &
+	 *  @param phrNoMoreProfiles                    &
+	 *  @param userGeoLocatorPlugin                 see {@link SMSAppModulePhrasingsProfile#SMSAppModulePhrasingsProfile(String, String, String, String, String, String, String, String, String, String, String, IGeoLocatorPlaceHolder)}
 	 *  @param profileModuleDAL                     see {@link SMSAppModuleCommandsProfile#SMSAppModuleCommandsProfile}
 	 *  @param nstRegisteringNicknameTriggers       see {@link SMSAppModuleNavigationStatesProfile#SMSAppModuleNavigationStatesProfile(SMSAppModuleCommandsProfile, Object[][])}
 	 *  @returns {(SMSAppModuleNavigationStatesProfile)navigationStates, (SMSAppModuleCommandsProfile)commands, (SMSAppModulePhrasingsProfile)phrasings} */
@@ -64,12 +67,17 @@ public class SMSAppModuleConfigurationProfile {
 		                                             String phrNicknameRegistrationNotification,
 		                                             String phrUserProfilePresentation,
 		                                             String phrNicknameNotFound,
+	                                                 String phrShortProfilePresentation,
+	                                                 String phrProfileList,
+	                                                 String phrNoMoreProfiles,
 		                                             IGeoLocatorPlaceHolder userGeoLocatorPlugin,
 		                                             SMSAppModuleDALFactoryProfile profileModuleDAL, Object[][] nstRegisteringNicknameTriggers) {
 		
 		SMSAppModulePhrasingsProfile        phrasings        = new SMSAppModulePhrasingsProfile(shortCode, appName,
 			phrAskForFirstNickname, phrAskForNewNickname, phrAskForNicknameCancelation, phrNicknameRegistrationNotification,
-			phrUserProfilePresentation, phrNicknameNotFound, userGeoLocatorPlugin);
+			phrUserProfilePresentation, phrNicknameNotFound,
+			phrShortProfilePresentation, phrProfileList, phrNoMoreProfiles,
+			userGeoLocatorPlugin);
 		SMSAppModuleCommandsProfile         commands         = new SMSAppModuleCommandsProfile(phrasings, profileModuleDAL);
 		SMSAppModuleNavigationStatesProfile navigationStates = new SMSAppModuleNavigationStatesProfile(nstRegisteringNicknameTriggers);
 		
@@ -83,6 +91,9 @@ public class SMSAppModuleConfigurationProfile {
 			{"phrNicknameRegistrationNotification", phrNicknameRegistrationNotification},
 			{"phrUserProfilePresentation",          phrUserProfilePresentation},
 			{"phrNicknameNotFound",                 phrNicknameNotFound},
+			{"phrShortProfilePresentation",         phrShortProfilePresentation},
+			{"phrProfileList",                      phrProfileList},
+			{"phrNoMoreProfiles",                   phrNoMoreProfiles},
 			{"userGeoLocatorPlugin",                userGeoLocatorPlugin.getClass().getCanonicalName()},
 		};
 		Instrumentation.reportDebug(logPrefix + ": Phrasings        : " + Arrays.deepToString(logPhrasings));

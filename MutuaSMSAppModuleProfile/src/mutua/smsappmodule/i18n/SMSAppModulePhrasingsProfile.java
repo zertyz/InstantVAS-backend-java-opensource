@@ -1,5 +1,6 @@
 package mutua.smsappmodule.i18n;
 
+import mutua.smsappmodule.dto.ProfileDto;
 import mutua.smsappmodule.i18n.plugins.IGeoLocatorPlaceHolder;
 import mutua.smsappmodule.i18n.plugins.UserGeoLocator;
 
@@ -32,6 +33,12 @@ public class SMSAppModulePhrasingsProfile {
 	private final Phrase phrUserProfilePresentation;
 	/** @see #getNicknameNotFound() */
 	private final Phrase phrNicknameNotFound;
+	/** @see #getShortProfilePresentation */
+	private final Phrase phrShortProfilePresentation;
+	/** @see #getProfileList() */
+	private final Phrase phrProfileList;
+	/** @see #getNoMoreProfiles() */
+	private final Phrase phrNoMoreProfiles;
 	
 	private final IGeoLocatorPlaceHolder userGeoLocatorPlugin;
 	
@@ -43,24 +50,29 @@ public class SMSAppModulePhrasingsProfile {
 			"{{appName}}: Nickname changing canceled. Your nickname is still {{currentNickname}}. Now edit this phrase to present the user some command options.",
 			"{{appName}}: Nickname registered: {{registeredNickname}}. Thanks. Now, who is going to tell you what commands may go next? Someone must customize this message.",
 			"{{appName}}: {{nickname}}: {{subscriptionState}}, from {{geoUserLocation}}, {{numberOfLuckyNumbers}} lucky numbers. Whatever more you want to show through customizations: {{whatever}} -- these new variables may be set as function calls on the phrasing facility, this way we can plug & play new features on all modules, for instance, lucky numbers, which might introduce {{numberOfLuckyNumbers}} and {{generateAndGetNewLuckyNumber}}",
-			// TODO geoUserLocation should be implemented as a new module, as described on the phrase above
 			"{{appName}}: There is no one like '{{nickname}}'. Maybe he/she changed nickname? Send LIST to {{shortCode}} to see who is online",
+			"{{nickname}}-{{CountryStateByMSISDNResolver}} ",
+			"{{profilesList}}. To play, send INVITE [NICK] to {{shortCode}}; MORE for more players or PROFILE [NICK]",
+			"There are no more online players to show. Send P [NICK] [MSG] to provoke or INVITE [PHONE] to invite a friend of yours to play the Hangman Game.",
 			new IGeoLocatorPlaceHolder() {
-				public String getPlaceHolderName() { return "nothing"; }
-				public String getPlaceHolderValue(String msisdn) { return "__RJ__"; }
+				public String getPlaceHolderName() { return "CountryStateByMSISDNResolver"; }
+				public String getPlaceHolderValue(String msisdn) { return "JR"; }
 			});
 	}
 	
 	/** Fulfill the 'Phrase' objects with the given values.
 	 *  @param shortCode                            The application's short code to be used on phrases with {{shortCode}}
-	 * @param appName                              The application name to be used on phrases with {{appName}}
-	 * @param phrAskForFirstNickname               see {@link #phrAskForFirstNickname}
-	 * @param phrAskForNewNickname                 see {@link #phrAskForNewNickname}
-	 * @param phrAskForNicknameCancelation         see {@link #phrAskForNicknameCancelation} 
-	 * @param phrNicknameRegistrationNotification  see {@link #phrNicknameRegistrationNotification}
-	 * @param phrUserProfilePresentation           see {@link #phrUserProfilePresentation}
-	 * @param phrNicknameNotFound                  see {@link #phrNicknameNotFound} 
-	 * @param userGeoLocatorPlugin                 one of the instances from {@link UserGeoLocator} */
+	 *  @param appName                              The application name to be used on phrases with {{appName}}
+	 *  @param phrAskForFirstNickname               see {@link #phrAskForFirstNickname}
+	 *  @param phrAskForNewNickname                 see {@link #phrAskForNewNickname}
+	 *  @param phrAskForNicknameCancelation         see {@link #phrAskForNicknameCancelation} 
+	 *  @param phrNicknameRegistrationNotification  see {@link #phrNicknameRegistrationNotification}
+	 *  @param phrUserProfilePresentation           see {@link #phrUserProfilePresentation}
+	 *  @param phrNicknameNotFound                  see {@link #phrNicknameNotFound}
+	 *  @param phrShortProfilePresentation          see {@link #phrShortProfilePresentation}
+	 *  @param phrProfileList                       see {@link #phrProfileList}
+	 *  @param phrNoMoreProfiles                    see {@link #phrNoMoreProfiles}
+	 *  @param userGeoLocatorPlugin                 one of the instances from {@link UserGeoLocator} */
 	public SMSAppModulePhrasingsProfile(String shortCode, String appName,
 		String phrAskForFirstNickname,
 		String phrAskForNewNickname,
@@ -68,6 +80,9 @@ public class SMSAppModulePhrasingsProfile {
 		String phrNicknameRegistrationNotification,
 		String phrUserProfilePresentation,
 		String phrNicknameNotFound,
+		String phrShortProfilePresentation,
+		String phrProfileList,
+		String phrNoMoreProfiles,
 		IGeoLocatorPlaceHolder userGeoLocatorPlugin) {
 		
 		// constant parameters -- defines the common phrase parameters -- {{shortCode}} and {{appName}}
@@ -81,6 +96,9 @@ public class SMSAppModulePhrasingsProfile {
 		this.phrNicknameRegistrationNotification = new Phrase(commonPhraseParameters, phrNicknameRegistrationNotification);
 		this.phrUserProfilePresentation          = new Phrase(commonPhraseParameters, phrUserProfilePresentation);
 		this.phrNicknameNotFound                 = new Phrase(commonPhraseParameters, phrNicknameNotFound);
+		this.phrShortProfilePresentation         = new Phrase(commonPhraseParameters, phrShortProfilePresentation);
+		this.phrProfileList                      = new Phrase(commonPhraseParameters, phrProfileList);
+		this.phrNoMoreProfiles                   = new Phrase(commonPhraseParameters, phrNoMoreProfiles);
 		
 		this.userGeoLocatorPlugin = userGeoLocatorPlugin;
 	}
@@ -109,7 +127,7 @@ public class SMSAppModulePhrasingsProfile {
 		return phrNicknameRegistrationNotification.getPhrase("registeredNickname", registeredNickname);
 	}
 	
-	/** Text sent to present the details of a user profile. Variables: {{shortCode}}, {{appName}}, {{nickname}} and others, from extensions, such as {{subscriptionState}}, {{geoUserLocation}} and {{numberOfLuckyNumbers}} */
+	/** Text sent to present the details of a user profile. Variables: {{shortCode}}, {{appName}}, {{nickname}} and others, from extensions, such as {{subscriptionState}}, {{countryStateByMSISDN}} and {{numberOfLuckyNumbers}} */
 	public String getUserProfilePresentation(String nickname, String msisdn) {
 		return phrUserProfilePresentation.getPhrase("nickname",                                nickname,
 		                                            userGeoLocatorPlugin.getPlaceHolderName(), userGeoLocatorPlugin.getPlaceHolderValue(msisdn));
@@ -118,5 +136,26 @@ public class SMSAppModulePhrasingsProfile {
 	/** Phrase sent to the sender user, who referenced a user by it's nickname, to inform that the command wasn't executed for the informed nickname was not found. Variables: {{shortCode}}, {{appName}}, {{targetNickname}} */
 	public String getNicknameNotFound(String targetNickname) {
 		return phrNicknameNotFound.getPhrase("targetNickname", targetNickname);
+	}
+	
+	/** Phrase excerpt used when composing each of the profiles in the profiles list of {@link #getProfileList()}. Variables: {{shortCode}}, {{appName}}, {{nickname}} and others, from extensions, such as {{subscriptionState}}, {{countryStateByMSISDN}} and {{numberOfLuckyNumbers}} */
+	private String getShortProfilePresentation(String nickname, String msisdn) {
+		return phrShortProfilePresentation.getPhrase("nickname",                                nickname,
+		                                             userGeoLocatorPlugin.getPlaceHolderName(), userGeoLocatorPlugin.getPlaceHolderValue(msisdn));
+		
+	}
+	
+	/** Builds a profiles list from 'profiles' using the phrase {@link #getShortProfilePresentation()} for each element, which will be placed in substitution for {{profilesList}}. Variables: {{shortCode}}, {{appName}} and, of course, {{profilesList}} */
+	public String getProfileList(ProfileDto[] profiles) {
+		StringBuffer profilesList = new StringBuffer(profiles.length*phrShortProfilePresentation.getPhrase().length());
+		for (int i=0; i<profiles.length; i++) {
+			profilesList.append(getShortProfilePresentation(profiles[i].getNickname(), profiles[i].getUser().getPhoneNumber()));
+		}
+		return phrProfileList.getPhrase("profilesList", profilesList.toString());
+	}
+
+	/** Phrase to show when, in the attempt to list available profiles, there are none left to show. Variables: {{shortCode}}, {{appName}} */
+	public String getNoMoreProfiles() {
+		return phrNoMoreProfiles.getPhrase();
 	}
 }

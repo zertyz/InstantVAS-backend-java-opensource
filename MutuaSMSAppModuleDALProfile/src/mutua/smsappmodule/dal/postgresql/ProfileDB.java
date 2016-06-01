@@ -73,7 +73,7 @@ public class ProfileDB implements IProfileDB {
 	}
 
 	@Override
-	public ProfileDto[] getRecentProfilesByLastMOTimeNotInSessionValues(int limit, String sessionPropertyName, String[] notInSessionPropertyValues) throws SQLException {
+	public ProfileDto[] getRecentProfilesByLastMOTimeNotInSessionValues(int limit, String sessionPropertyName, String... notInSessionPropertyValues) throws SQLException {
 		Object[][] results = dba.invokeArrayProcedure(dba.SelectRecentProfilesByLastMOTimeNotInSessionValues,
 			MAX_PROFILES,            limit,
 			SESSION_PROPERTY_NAME,   sessionPropertyName,

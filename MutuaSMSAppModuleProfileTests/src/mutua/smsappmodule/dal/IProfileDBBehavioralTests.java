@@ -15,6 +15,8 @@ import mutua.smsappmodule.dto.UserDto;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.sun.corba.se.spi.activation._LocatorImplBase;
+
 import instantvas.tests.InstantVASSMSAppModuleProfileTestsConfiguration;
 
 /** <pre>
@@ -169,6 +171,76 @@ public class IProfileDBBehavioralTests {
 		profiles = profileDB.getRecentProfilesByLastMOTimeNotInSessionValues(10, "withinnity", "out");
 		assertEquals("There must be only one!", 1, profiles.length);
 		assertEquals("... and it must be The Dom", "Dom", profiles[0].getNickname());
+		
+		// now test a huge number of listing profiles
+		/////////////////////////////////////////////
+		
+		resetTables();
+		
+		// insert the MOs -- one by one this time, since the order now counts
+		Object[][] hugeMOset = new Object[1000][4];
+		for (int i=0; i<hugeMOset.length; i++) {
+			hugeMOset[i][0] = SpecializedMOParameters.PHONE;
+			hugeMOset[i][1] = Long.toString(21991234900L+i);
+			hugeMOset[i][2] = SpecializedMOParameters.TEXT;
+			hugeMOset[i][3] = "this is an MO from Lady or Gentlemen #"+i;
+			config.moDB.invokeScalarProcedure(config.moDB.InsertNewQueueElement, hugeMOset[i]);
+		}
+		//config.moDB.invokeUpdateBatchProcedure(config.moDB.BatchInsertNewQueueElement, hugeMOset);
+		
+		// set the desired state for even and odd phones -- evens are in, odds are out
+		for (int i=0; i<hugeMOset.length; i++) {
+			String phone = (String)hugeMOset[i][1];
+			UserDto user = userDB.assureUserIsRegistered(phone);
+			profileDB.setProfileRecord(new ProfileDto(user, "LadyOrGentlemen#"+i));
+			sessionDB.assureProperty(user, "withinnity", i % 2 == 0 ? "in" : "out");
+		}
+		
+		// checks
+		/////////
+		
+		// do we have the integer half of them? The even ones...
+		profiles = profileDB.getRecentProfilesByLastMOTimeNotInSessionValues(hugeMOset.length, "withinnity", "out");
+		assertEquals("There must be the integer half of all of them", hugeMOset.length/2, profiles.length);
+		
+		// warning: complicated loop ahead -- meaning the following loop must return the exact same 'profiles' array
+		// if we were really building the 'profiles' array, we'd execute now: profiles = new ProfileDto[profiles.length];
+		for (int i=0; i<profiles.length; i++) {
+			ProfileDto[] limitedProfiles = profileDB.getRecentProfilesByLastMOTimeNotInSessionValues(i+1, "withinnity", "out");
+			assertEquals("For this query, there is an exact number of returned rows that should be returned", i+1, limitedProfiles.length);
+			// add to 'profiles'
+			int notFoundJIndex = (limitedProfiles.length == 1) ? 0 : -1;
+			for (int j=0; j<limitedProfiles.length; j++) {
+				// search for the limited profile 'j' in all profiles up to the 'i'th element
+				boolean found = false;
+				for (int k=0; k<i; k++) {
+					if (profiles[k].getUser().equals(limitedProfiles[j].getUser())) {
+						found = true;
+					}
+				}
+				if (!found) {
+					notFoundJIndex = j;
+				}
+			}
+			if (notFoundJIndex < 0) {
+				fail("Every new 'limitedProfiles' query should return one (and only) new element to put in the 'profiles' 'i'th position. Failed for i="+i);
+			}
+			// "add the new (and unique) 'limitedProfiles' element" --
+			// if we were really going to add, the code would be: profiles[i] = limitedProfiles[notFoundJIndex];
+			// but we'll only check, since this complicated code's 'profiles' array should be the same as
+			// the one returned by the one-liner before
+			
+			assertEquals("'profiles' array (the one returned by the one-liner and the complicated loop) didn't match, meaning the query sorting is not stable", profiles[i], limitedProfiles[notFoundJIndex]);
+		}
+		
+		// check the 'profiles' array, on the correct order of elements (most recent first)
+		for (int i=0; i<hugeMOset.length; i+=2) {
+			String expectedPhone = (String)hugeMOset[i][1];
+			String observedPhone = profiles[profiles.length-1-(i/2)].getUser().getPhoneNumber();
+//			System.err.println("#"+(profiles.length-1-(i/2))+": phone='"+observedPhone+"'; nick='"+profiles[profiles.length-1-(i/2)].getNickname()+"'");
+			assertEquals("Oops at element #"+(profiles.length-1-(i/2))+": wrong phones", expectedPhone, observedPhone);
+		}
+		
 	}
 
 }

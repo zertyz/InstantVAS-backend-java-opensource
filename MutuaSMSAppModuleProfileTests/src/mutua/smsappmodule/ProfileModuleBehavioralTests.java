@@ -7,8 +7,11 @@ import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigatio
 import static org.junit.Assert.*;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 
+import mutua.events.SpecializedMOQueueDataBureau.SpecializedMOParameters;
 import mutua.smsappmodule.dal.IProfileDB;
+import mutua.smsappmodule.dal.ISessionDB;
 import mutua.smsappmodule.dal.IUserDB;
 import mutua.smsappmodule.dto.ProfileDto;
 import mutua.smsappmodule.dto.UserDto;
@@ -39,6 +42,7 @@ public class ProfileModuleBehavioralTests {
 	InstantVASSMSAppModuleProfileTestsConfiguration config = InstantVASSMSAppModuleProfileTestsConfiguration.getInstance();
 
 	private IUserDB    userDB    = BASE_MODULE_DAL.getUserDB();
+	private ISessionDB sessionDB = BASE_MODULE_DAL.getSessionDB();
 	private IProfileDB profileDB = PROFILE_MODULE_DAL.getProfileDB();
 	
 	/** Test replacement of SMSProcessor's {@link SessionModel} */
@@ -133,5 +137,36 @@ public class ProfileModuleBehavioralTests {
 		
 		assertEquals("Non existing nickname was not correctly reported when referenced in the PROFILE command", expectedMessage, observedMessage);
 
+	}
+	
+	@Test
+	public void testListProfilesInfo() throws SQLException {
+		
+		// fill in listable profiles (simulates the MO, session & nickname setting)
+		///////////////////////////////////////////////////////////////////////////
+
+		// simulate MO inclusion (BUGs when we're usimg the RAM DAL)
+		config.moDB.invokeUpdateBatchProcedure(config.moDB.BatchInsertNewQueueElement, new Object[][] {
+			{SpecializedMOParameters.PHONE, "21998919167", SpecializedMOParameters.TEXT, "this is an MO from Paty!"},
+			{SpecializedMOParameters.PHONE, "21991234899", SpecializedMOParameters.TEXT, "this is the MO from Dom!"},
+		});
+		
+		UserDto user = userDB.assureUserIsRegistered("21998919167");
+		ProfileDto profile = new ProfileDto(user, "Paty");
+		profileDB.setProfileRecord(profile);
+		sessionDB.assureProperty(user, SessionModel.NAVIGATION_STATE_PROPERTY.getPropertyName(), nstExistingUser);
+		user = userDB.assureUserIsRegistered("21991234899");
+		profile = new ProfileDto(user, "Dom");
+		profileDB.setProfileRecord(profile);
+		sessionDB.assureProperty(user, SessionModel.NAVIGATION_STATE_PROPERTY.getPropertyName(), nstExistingUser);
+
+		// check listing just one of the profiles (the limit is via the MT message length
+		Object[] listProfilesInfo = config.profileModuleCommands.getListProfilesInfoWithLimitedPhraseLength(
+			config.profileModulePhrasings.getProfileList(new ProfileDto[] {profile}).length()+200, new int[0]);
+		ProfileDto[] profiles         = (ProfileDto[]) listProfilesInfo[0];
+		String       MTPhrase         = (String)       listProfilesInfo[1];
+		int[]        presentedUserIds = (int[])        listProfilesInfo[2];
+		
+		System.err.println("profiles='"+Arrays.toString(profiles)+"'); MTPhrase='"+MTPhrase+"'; presentedUserIds="+Arrays.toString(presentedUserIds));
 	}
 }

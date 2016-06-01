@@ -192,11 +192,12 @@ public class SMSAppModulePostgreSQLAdapterProfile extends PostgreSQLAdapter {
 		"SELECT Users.userId, Users.phoneNumber, Profiles.nickname FROM Users, Profiles WHERE lower(nickname)=lower(",Parameters.NICKNAME,") AND Users.userId = Profiles.userId");
 	/** List Users who sent MOs whose provided session variable isn't one of the provided values */
 	public final AbstractPreparedProcedure SelectRecentProfilesByLastMOTimeNotInSessionValues = new AbstractPreparedProcedure(connectionPool,
-		"SELECT Users.userId, Users.phoneNumber, Profiles.nickname, Sessions.propertyValue FROM Users, Sessions, Profiles WHERE phoneNumber IN ",
-		"(SELECT DISTINCT ON (phone) phone FROM (SELECT ",MO_PHONE_FIELD_NAME," FROM ",MO_TABLE_NAME," ORDER BY ",MO_ID_FIELD_NAME,
-		" DESC LIMIT ",Parameters.MAX_PROFILES,"*2) as bruteMO ORDER BY phone LIMIT ",Parameters.MAX_PROFILES,
-		") AND (Users.userId = Sessions.userId) AND (Users.userId = Profiles.userId) AND ((Sessions.propertyName = ",
-		Parameters.SESSION_PROPERTY_NAME,") AND (NOT Sessions.propertyValue = ANY (",Parameters.SESSION_PROPERTY_VALUES,")))");
+	    "SELECT userId, phoneNumber, nickname, propertyValue FROM (",
+			"SELECT Users.userId, Users.phoneNumber, Profiles.nickname, Sessions.propertyValue FROM ",MO_TABLE_NAME,", Users, Sessions, Profiles WHERE ",
+			"(Users.phoneNumber = ",MO_TABLE_NAME,".",MO_PHONE_FIELD_NAME,") AND (Users.userId = Sessions.userId) AND (Users.userId = Profiles.userId) ",
+			"AND ((Sessions.propertyName = ",Parameters.SESSION_PROPERTY_NAME,") AND (NOT Sessions.propertyValue = ANY (",Parameters.SESSION_PROPERTY_VALUES,
+			"))) ORDER BY ",MO_ID_FIELD_NAME," DESC LIMIT 10*",Parameters.MAX_PROFILES,
+		") as mainQuery GROUP BY userId, phoneNumber, nickname, propertyValue LIMIT ",Parameters.MAX_PROFILES);
 	
 	// public methods
 	/////////////////
