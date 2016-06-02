@@ -109,4 +109,20 @@ public class HangmanGameTests {
 		assertEquals("Wrong guessed word so far", word.replaceAll("[^01Xx]", "-"), game.getGuessedWordSoFar());
 	}
 
+	@Test
+	public void testUnicode() {
+		String word = "fªçª§e";
+		int totalNumberOfWrongTries = 6;
+		HangmanGame game = new HangmanGame(word, totalNumberOfWrongTries);
+		System.out.println(game.getGuessedWordSoFar());
+		suggestLetter(game, 'ª');
+		suggestLetter(game, 'ç');
+		suggestLetter(game, '§');
+		assertEquals("Game did not report as being on the WON state", EHangmanGameStates.WON, game.getGameState());
+		try {
+			suggestLetter(game, 'x');
+			fail("Game didn't throw an exception after attempting to play a finished game");
+		} catch (RuntimeException e) {}
+	}
+
 }

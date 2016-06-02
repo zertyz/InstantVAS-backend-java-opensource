@@ -3,8 +3,6 @@
 	<name>HangmanSMSGameServices</name>
 	<comment></comment>
 	<projects>
-		<project>HangmanSMSGame</project>
-		<project>HangmanSMSGameDAL</project>
 		<project>HTTPClientAdapter</project>
 		<project>JDBCAdapter</project>
 		<project>MutuaEvents</project>
@@ -14,12 +12,26 @@
 		<project>MutuaICCInstrumentation</project>
 		<project>MutuaIMILib</project>
 		<project>MutuaSerializationLib</project>
+		<project>MutuaSMSAppEngineHangman</project>
+		<project>MutuaSMSAppLogic</project>
+		<project>MutuaSMSAppModule</project>
+		<project>MutuaSMSAppModuleChat</project>
+		<project>MutuaSMSAppModuleDAL</project>
+		<project>MutuaSMSAppModuleDALChat</project>
+		<project>MutuaSMSAppModuleDALHangman</project>
+		<project>MutuaSMSAppModuleDALProfile</project>
+		<project>MutuaSMSAppModuleDALSubscription</project>
+		<project>MutuaSMSAppModuleHangman</project>
+		<project>MutuaSMSAppModuleHelp</project>
+		<project>MutuaSMSAppModuleProfile</project>
+		<project>MutuaSMSAppModuleSubscription</project>
 		<project>SMSInCelltick</project>
 		<project>SMSInParser</project>
 		<project>SMSOutCelltick</project>
 		<project>SMSOutSender</project>
 		<project>SubscriptionEngine</project>
 		<project>SubscriptionEngineCelltick</project>
+		<project>xz</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

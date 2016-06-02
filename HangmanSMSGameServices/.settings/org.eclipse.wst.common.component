@@ -53,6 +53,54 @@
         <dependent-module archiveName="MutuaEventsAdditionalEventLinks.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/MutuaEventsAdditionalEventLinks/MutuaEventsAdditionalEventLinks">
             <dependency-type>uses</dependency-type>
         </dependent-module>
+        <dependent-module archiveName="MutuaSMSAppModuleHangman.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/MutuaSMSAppModuleHangman/MutuaSMSAppModuleHangman">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="derby.jar" deploy-path="/WEB-INF/lib" handle="module:/classpath/lib/JDBCAdapter/lib/derby.jar">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="MutuaSMSAppModuleDAL.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/MutuaSMSAppModuleDAL/MutuaSMSAppModuleDAL">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="MutuaSMSAppEngineHangman.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/MutuaSMSAppEngineHangman/MutuaSMSAppEngineHangman">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="MutuaSMSAppModuleChat.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/MutuaSMSAppModuleChat/MutuaSMSAppModuleChat">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="HangmanSMSGame.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/MutuaSMSAppLogic/MutuaSMSAppLogic">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="MutuaSMSAppModuleHelp.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/MutuaSMSAppModuleHelp/MutuaSMSAppModuleHelp">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="xz.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/xz/xz">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="mysql-connector-java-5.1.7-bin.jar" deploy-path="/WEB-INF/lib" handle="module:/classpath/lib/JDBCAdapter/lib/mysql-connector-java-5.1.7-bin.jar">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="MutuaSMSAppModuleDALProfile.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/MutuaSMSAppModuleDALProfile/MutuaSMSAppModuleDALProfile">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="MutuaSMSAppModule.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/MutuaSMSAppModule/MutuaSMSAppModule">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="MutuaSMSAppModuleSubscription.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/MutuaSMSAppModuleSubscription/MutuaSMSAppModuleSubscription">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="MutuaSMSAppModuleDALSubscription.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/MutuaSMSAppModuleDALSubscription/MutuaSMSAppModuleDALSubscription">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="MutuaSMSAppModuleProfile.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/MutuaSMSAppModuleProfile/MutuaSMSAppModuleProfile">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="MutuaSMSAppModuleDALHangman.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/MutuaSMSAppModuleDALHangman/MutuaSMSAppModuleDALHangman">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="MutuaSMSAppModuleDALChat.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/MutuaSMSAppModuleDALChat/MutuaSMSAppModuleDALChat">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <property name="context-root" value="HangmanSMSGameServices"/>
         <property name="java-output-path" value="/HangmanSMSGameServices/build/classes"/>
         <property name="context-root" value="QuizTacaBandSMSQueueService"/>

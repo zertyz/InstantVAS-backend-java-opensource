@@ -1,30 +1,20 @@
 package mutua.hangmansmsgame.servlet;
 
+import static config.InstantVASLicense.*;
+import static config.MutuaHardCodedConfiguration.IFDEF_WEB_DEBUG;
+import instantvas.nativewebserver.NativeHTTPServer;
+
 import java.io.IOException;
+import java.util.Arrays;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import config.WebAppConfiguration;
-import mutua.events.EventClient;
-import mutua.events.EventServer;
-import mutua.events.IEventLink;
-import mutua.events.annotations.EventConsumer;
-import mutua.hangmansmsgame.config.Configuration;
-import mutua.hangmansmsgame.dispatcher.IResponseReceiver;
-import mutua.hangmansmsgame.smslogic.HangmanSMSGameProcessor;
-import mutua.hangmansmsgame.smslogic.HangmanSMSGameProcessor.EHangmanSMSGameEvents;
-import mutua.imi.IndirectMethodNotFoundException;
+import config.Instantiator;
+import mutua.icc.instrumentation.Instrumentation;
 import mutua.smsin.dto.IncomingSMSDto;
-import mutua.smsin.parsers.SMSInParser.ESMSInParserSMSAcceptionStatus;
-import mutua.smsout.dto.OutgoingSMSDto;
-import mutua.smsout.senders.SMSOutCelltick;
-import mutua.smsout.senders.SMSOutSender;
-import static config.WebAppConfiguration.*;
-import static mutua.hangmansmsgame.HangmanSMSGameServicesInstrumentationProperties.*;
-import static mutua.hangmansmsgame.HangmanSMSGameServicesInstrumentationEvents.*;
 
 
 public class AddToMOQueue extends HttpServlet {
@@ -44,37 +34,40 @@ public class AddToMOQueue extends HttpServlet {
 	*******************************************************************************************************************************************/
 	
 	static {
-		new WebAppConfiguration();
+		Instantiator.preloadConfiguration();
 	}
-
-	// SMS APP
-	//////////
 	
-	private static EventClient<EHangmanSMSGameEvents> gameMTConsumer    = new MTConsumer();
-	private static MTProducer                         gameMTProducer    = new MTProducer(gameMTProducerAndConsumerLink, gameMTConsumer);
-
-	protected static EventClient<EHangmanSMSGameEvents> gameMOConsumer    = new HangmanSMSGameProcessor(gameMTProducer);
-	protected static MOProducer                         gameMOProducer    = new MOProducer(gameMOProducerAndConsumerLink, gameMOConsumer);
-	
-
+	private static String[] parameterNames = NativeHTTPServer.moParser.getRequestParameterNames("AUTHENTICATION_TOKEN");
 	private void process(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		log.reportRequestStart(request.getQueryString());
-		IncomingSMSDto mo = smsParser.parseIncomingSMS(request.getParameterMap());
-		byte[] contents;
-		if (mo == null) {
-			contents = smsParser.getReply(ESMSInParserSMSAcceptionStatus.REJECTED);
-			log.reportEvent(IE_MESSAGE_REJECTED);
-		} else {
-			try {
-				gameMOProducer.addToMOQueue(mo);
-				log.reportEvent(IE_MESSAGE_ACCEPTED, IP_MO_MESSAGE, mo);
-				contents = smsParser.getReply(ESMSInParserSMSAcceptionStatus.ACCEPTED);
-			} catch (Throwable t) {
-				contents = smsParser.getReply(ESMSInParserSMSAcceptionStatus.POSTPONED);
-				log.reportThrowable(t, "Error detected while attempting to add an MO to the queue");
-			}
+		
+		// get parameter names
+		String[] parameterValues = new String[parameterNames.length];
+		for (int i=0; i<parameterNames.length; i++) {
+			parameterValues[i] = request.getParameter(parameterNames[i]);
 		}
-		log.reportRequestFinish();
+		
+		byte[] contents;
+		
+		// Authenticate
+		// TODO 20160601 Refactor with 'AddToMOQueue.processRequest(String queryString)'
+		/* debug */ if (IFDEF_WEB_DEBUG) {Instrumentation.reportDebug("/AddToMOQueue: " + Arrays.deepToString(parameterValues));}
+		if (parameterValues == null) {
+			/* debug */ if (IFDEF_WEB_DEBUG) {Instrumentation.reportDebug("/AddToMOQueue BAD_REQUEST: " + request.getQueryString());}
+			contents = "BAD_REQUEST".getBytes();
+		} else if (!NativeHTTPServer.addToMOQueue.attemptToAuthenticateFromStrictGetParameters(parameterValues)) {
+			/* debug */ if (IFDEF_WEB_DEBUG) {
+				Instrumentation.reportDebug("/AddToMOQueue BAD_AUTHENTICATION: " + Arrays.toString(parameterValues));
+				Instrumentation.reportDebug("IFDEF_HARDCODE_CHECK_METHOD_OF_ADDITIONAL_MO_PARAMETER_VALUES=" + IFDEF_HARDCODE_CHECK_METHOD_OF_ADDITIONAL_MO_PARAMETER_VALUES);
+				Instrumentation.reportDebug("MO_ADDITIONAL_RULEn_LENGTH=" + MO_ADDITIONAL_RULEn_LENGTH);
+				Instrumentation.reportDebug("parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]=" + parameterValues[1+MO_ADDITIONAL_RULE0_FIELD_INDEX]);
+				Instrumentation.reportDebug("MO_ADDITIONAL_RULE0_REGEX.matcher(parameterValues[PRECEDING_REQUEST_PARAMETERS_LENGTH+MO_ADDITIONAL_RULE0_FIELD_INDEX]).matches(): " + MO_ADDITIONAL_RULE0_REGEX.matcher(parameterValues[1+MO_ADDITIONAL_RULE0_FIELD_INDEX]).matches());
+			}
+			contents = "BAD_AUTHENTICATION".getBytes();
+		}
+		
+		// the request is allowed. Proceed.
+		IncomingSMSDto mo = NativeHTTPServer.moParser.parseIncomingSMS(parameterValues);
+		contents = NativeHTTPServer.addToMOQueue.processRequest(mo, request.getQueryString());
 		response.setContentType("text/plain");
 		response.setContentLength(contents.length);
 		response.getOutputStream().write(contents);
@@ -82,80 +75,10 @@ public class AddToMOQueue extends HttpServlet {
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		process(request, response);
-
-		// uncomment to write a brand new configuration file
-//		try {
-//			ConfigurationManager cm = new ConfigurationManager(configurationLog, WebAppConfiguration.class, Configuration.class);
-//			cm.saveToFile("/tmp/hangman.config");
-//		} catch (Throwable t) {
-//			t.printStackTrace();
-//		}
 	}
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		process(request, response);
 	}
 
-}
-
-
-/******************************
-** IResponseReceiver CLASSES **
-******************************/
-
-class MTProducer extends EventServer<EHangmanSMSGameEvents> implements IResponseReceiver {
-
-	protected MTProducer(IEventLink<EHangmanSMSGameEvents> link, EventClient<EHangmanSMSGameEvents> mtConsumer) {
-		super(link);
-		try {
-			addListener(mtConsumer);
-		} catch (IndirectMethodNotFoundException e) {
-			log.reportThrowable(e, "Error while adding mtConsumer");
-		}
-	}
-
-	@Override
-	public void onMessage(OutgoingSMSDto outgoingMessage, IncomingSMSDto incomingMessage) {
-		dispatchConsumableEvent(EHangmanSMSGameEvents.INTERACTIVE_REQUEST, outgoingMessage);
-	}
-	
-}
-
-class MTConsumer implements EventClient<EHangmanSMSGameEvents> {
-	
-	private static SMSOutSender smsSender = new SMSOutCelltick(
-			Configuration.log, Configuration.APPID + " interaction", Configuration.SHORT_CODE, Configuration.MT_SERVICE_URL,
-			Configuration.MT_SERVICE_NUMBER_OF_RETRY_ATTEMPTS, Configuration.MT_SERVICE_DELAY_BETWEEN_ATTEMPTS);
-	
-	@EventConsumer("INTERACTIVE_REQUEST")
-	public void sendMT(OutgoingSMSDto mt) {
-		log.reportDebug("sending interactive SMS -- " + mt);
-		try {
-			smsSender.sendMessage(mt);
-		} catch (Throwable t) {
-			log.reportThrowable(t, "Error while sending mt -- " + mt);
-		}
-	}
-	
-}
-
-
-class MOProducer extends EventServer<EHangmanSMSGameEvents> {
-
-	public MOProducer(IEventLink<EHangmanSMSGameEvents> link, EventClient<EHangmanSMSGameEvents> moConsumer) {
-		super(link);
-		try {
-			addListener(moConsumer);
-		} catch (IndirectMethodNotFoundException e) {
-			log.reportThrowable(e, "Error while adding moConsumer");
-		}
-	}
-	
-	public boolean addToMOQueue(IncomingSMSDto mo) {
-		return dispatchNeedToBeConsumedEvent(EHangmanSMSGameEvents.INTERACTIVE_REQUEST, mo);
-	}
-	
-	public boolean addToSubscribeUserQueue(String phone) {
-		return dispatchNeedToBeConsumedEvent(EHangmanSMSGameEvents.SUBSCRIBE_USER, phone);
-	}
 }

@@ -160,13 +160,43 @@ public class ProfileModuleBehavioralTests {
 		profileDB.setProfileRecord(profile);
 		sessionDB.assureProperty(user, SessionModel.NAVIGATION_STATE_PROPERTY.getPropertyName(), nstExistingUser);
 
+		// check not listing anyone because of a too low 'maxChars'
+		try {
+			config.profileModuleCommands.getListProfilesInfoWithLimitedPhraseLength(
+				config.profileModulePhrasings.getProfileList(new ProfileDto[] {profile}).length()-1, new int[0]);
+			fail("An exception should have been raised");
+		} catch (RuntimeException e) {}
+		
 		// check listing just one of the profiles (the limit is via the MT message length
 		Object[] listProfilesInfo = config.profileModuleCommands.getListProfilesInfoWithLimitedPhraseLength(
-			config.profileModulePhrasings.getProfileList(new ProfileDto[] {profile}).length()+200, new int[0]);
+			config.profileModulePhrasings.getProfileList(new ProfileDto[] {profile}).length(), new int[0]);
 		ProfileDto[] profiles         = (ProfileDto[]) listProfilesInfo[0];
 		String       MTPhrase         = (String)       listProfilesInfo[1];
 		int[]        presentedUserIds = (int[])        listProfilesInfo[2];
+		assertEquals("Only one profile should be returned at this point", 1, profiles.length);
+		assertEquals("Wrong profile listed as the first one", "Dom", profiles[0].getNickname());
 		
-		System.err.println("profiles='"+Arrays.toString(profiles)+"'); MTPhrase='"+MTPhrase+"'; presentedUserIds="+Arrays.toString(presentedUserIds));
+		// test listing the next profile
+		listProfilesInfo = config.profileModuleCommands.getListProfilesInfoWithLimitedPhraseLength(800, presentedUserIds);
+		profiles         = (ProfileDto[]) listProfilesInfo[0];
+		MTPhrase         = (String)       listProfilesInfo[1];
+		presentedUserIds = (int[])        listProfilesInfo[2];
+		assertEquals("Only one profile should be returned at this point", 1, profiles.length);
+		assertEquals("Wrong profile listed as the first one", "Paty", profiles[0].getNickname());
+		assertEquals("Wrong number of 'presentedUserIds'", 2, presentedUserIds.length);
+		
+		// test listing the two profiles
+		listProfilesInfo = config.profileModuleCommands.getListProfilesInfoWithLimitedPhraseLength(800, new int[0]);
+		profiles         = (ProfileDto[]) listProfilesInfo[0];
+		MTPhrase         = (String)       listProfilesInfo[1];
+		presentedUserIds = (int[])        listProfilesInfo[2];
+		assertEquals("Two profiles should be returned at this point", 2, profiles.length);
+		assertEquals("Wrong profile listed as the first one",  "Dom",  profiles[0].getNickname());
+		assertEquals("Wrong profile listed as the second one", "Paty", profiles[1].getNickname());
+		assertEquals("Wrong number of 'presentedUserIds'", 2, presentedUserIds.length);
+		
+		// test listing a next (and inexistent) profile
+		listProfilesInfo = config.profileModuleCommands.getListProfilesInfoWithLimitedPhraseLength(800, presentedUserIds);
+		assertNull("When there is no more profiles to list, null should be returned", listProfilesInfo);
 	}
 }

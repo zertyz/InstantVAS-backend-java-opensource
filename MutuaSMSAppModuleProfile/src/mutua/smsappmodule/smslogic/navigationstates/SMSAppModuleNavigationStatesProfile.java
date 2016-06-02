@@ -28,6 +28,8 @@ public class SMSAppModuleNavigationStatesProfile {
 	public static class NavigationStatesNamesProfile {
 		/** @see SMSAppModuleNavigationStatesProfile#nstRegisteringNickname */
 		public final static String nstRegisteringNickname = "RegisteringNickname";
+		/** @see SMSAppModuleNavigationStatesProfile#nstListingProfiles */
+		public final static String nstListingProfiles     = "ListingProfiles";
 	}
 	
 	// Navigation States Definitions
@@ -39,25 +41,40 @@ public class SMSAppModuleNavigationStatesProfile {
 	/** Navigation state used to interact with the user when asking for a nickname */
 	public final NavigationState nstRegisteringNickname;
 	
+	/** Navigation state used to interact with the user when listing existing and active User Profiles */
+	public final NavigationState nstListingProfiles;
+	
 	/** Provides the navigation states instance with the default test values */
 	public SMSAppModuleNavigationStatesProfile() { 
-		this(new Object[][] {
-			{cmdRegisterNickname,                trgGlobalRegisterNickname},
-			{cmdStartAskForNicknameDialog,       trgGlobalStartAskForNicknameDialog},
-			{cmdAskForNicknameDialogCancelation, trgLocalNicknameDialogCancelation},
-			{cmdShowUserProfile,                 trgGlobalShowUserProfile},
-			{cmdRegisterNickname,                trgLocalRegisterNickname},
-		});
+		this(
+			new Object[][] {
+				{cmdRegisterNickname,                trgGlobalRegisterNickname},
+				{cmdStartAskForNicknameDialog,       trgGlobalStartAskForNicknameDialog},
+				{cmdAskForNicknameDialogCancelation, trgLocalNicknameDialogCancelation},
+				{cmdShowUserProfile,                 trgGlobalShowUserProfile},
+				{cmdRegisterNickname,                trgLocalRegisterNickname},
+				{cmdListProfiles,                    trgGlobalListProfiles}},
+			new Object[][] {
+				{cmdRegisterNickname,                trgGlobalRegisterNickname},
+				{cmdStartAskForNicknameDialog,       trgGlobalStartAskForNicknameDialog},
+				{cmdAskForNicknameDialogCancelation, trgLocalNicknameDialogCancelation},
+				{cmdShowUserProfile,                 trgGlobalShowUserProfile},
+				{cmdRegisterNickname,                trgLocalRegisterNickname},
+				{cmdListProfiles,                    trgLocalListMoreProfiles}});
 	}
 
 	/** Provides the navigation states instance with custom triggers.
-	 *  @param nstRegisteringNicknameTriggers  The list of regular expression triggers and commands to execute when the user is on the {@link #nstRegisteringNickname} navigation state. See {@link NavigationState#applyCommandTriggersData(Object[][], mutua.smsappmodule.smslogic.commands.ICommandProcessor[])}*/
-	public SMSAppModuleNavigationStatesProfile(Object[][] nstRegisteringNicknameTriggers) {		
+	 *  @param nstRegisteringNicknameTriggers  The list of regular expression triggers and commands to execute when the user is on the {@link #nstRegisteringNickname} navigation state. See {@link NavigationState#applyCommandTriggersData(Object[][], mutua.smsappmodule.smslogic.commands.ICommandProcessor[])}
+	 *  @param nstListingProfilesTriggers      idem for when the user is on the {@link #nstListingProfiles} navigation state */
+	public SMSAppModuleNavigationStatesProfile(Object[][] nstRegisteringNicknameTriggers,
+	                                           Object[][] nstListingProfilesTriggers) {		
 		nstRegisteringNickname = new NavigationState(NavigationStatesNamesProfile.nstRegisteringNickname, nstRegisteringNicknameTriggers);
+		nstListingProfiles     = new NavigationState(NavigationStatesNamesProfile.nstListingProfiles,     nstListingProfilesTriggers);
 		
 		// the list of values
 		values = new NavigationState[] {
-			nstRegisteringNickname,	
+			nstRegisteringNickname,
+			nstListingProfiles,
 		};
 	}
 }

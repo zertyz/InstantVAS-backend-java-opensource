@@ -7,6 +7,10 @@ import instantvas.smsengine.producersandconsumers.MOConsumer;
 import instantvas.smsengine.producersandconsumers.MOProducer;
 import instantvas.smsengine.producersandconsumers.MTConsumer;
 import instantvas.smsengine.producersandconsumers.MTProducer;
+import instantvas.smsengine.producersandconsumers.SCConsumer;
+import instantvas.smsengine.producersandconsumers.SCProducer;
+import instantvas.smsengine.producersandconsumers.SRConsumer;
+import instantvas.smsengine.producersandconsumers.SRProducer;
 import instantvas.smsengine.web.AddToMOQueue;
 import mutua.events.EventClient;
 import mutua.icc.instrumentation.Instrumentation;
@@ -72,6 +76,10 @@ public class NativeHTTPServer {
 	public static MTProducer                               mtProducer;
 	public static EventClient<EInstantVASEvents>           moConsumer;
 	public static MOProducer                               moProducer;
+	public static SRProducer                               srProducer;
+	public static SRConsumer                               srConsumer;
+	public static SCProducer                               scProducer;
+	public static SCConsumer                               scConsumer;
 	
 	public static void instantiate() throws IllegalArgumentException, SecurityException, SQLException, IllegalAccessException, NoSuchFieldException {
 		ivac       = new InstantVASInstanceConfiguration();
@@ -85,6 +93,10 @@ public class NativeHTTPServer {
 		mtProducer = new MTProducer(ivac, new MTConsumer(ivac));
 		moConsumer = new MOConsumer(ivac, mtProducer);
 		moProducer = new MOProducer(ivac, moConsumer);
+		srConsumer = new SRConsumer(ivac);
+		srProducer = new SRProducer(ivac, srConsumer);
+		scConsumer = new SCConsumer(ivac);
+		scProducer = new SCProducer(ivac, scConsumer);
 
 		addToMOQueue = new AddToMOQueue(moProducer, moParser,
 		                                ALLOWABLE_MSISDN_MIN_LENGTH,
@@ -316,6 +328,7 @@ public class NativeHTTPServer {
 			public void handle(HttpExchange he) throws IOException {
 				byte[] response;
 				try {
+					InstantVASConfigurationLoader.applyConfigurationFromLicenseClass();
 					instantiate();
 					response = "RELOADED".intern().getBytes();
 				} catch (Throwable t) {
@@ -329,6 +342,8 @@ public class NativeHTTPServer {
 		        he.close();
 			}
 		}
+		
+		// TODO Subscribe, Unsubscribe, ...
 		
 		;
 		

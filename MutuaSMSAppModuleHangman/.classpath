@@ -3,10 +3,15 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/MutuaSMSAppModuleDALHangman"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/MutuaSMSAppModuleDALProfile"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/MutuaICCConfiguration"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/MutuaICCInstrumentation"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/MutuaSMSAppModule"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/MutuaSMSAppModuleSubscription"/>
+	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.6.0_45">
+		<attributes>
+			<attribute name="owner.project.facets" value="java"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

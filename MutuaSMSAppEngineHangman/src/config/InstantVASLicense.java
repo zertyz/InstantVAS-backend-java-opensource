@@ -108,7 +108,7 @@ public class InstantVASLicense {
 	/** @see #INSTANTVAS_INSTANCE_CONFIG_TYPE */
 	public static final String INSTANTVAS_INSTANCE_CONFIG0_TYPE         = /**/ ConfigurationSourceType_PLAIN_FS_FILE;	//*/ null; 
 	/** @see #INSTANTVAS_INSTANCE_CONFIG_ACCESS_INFO */
-	public static final String INSTANTVAS_INSTANCE_CONFIG0_ACCESS_INFO  = /**/ "/tmp/InstantVASHangman.config";			//*/ null;
+	public static /*final*/ String INSTANTVAS_INSTANCE_CONFIG0_ACCESS_INFO  = /**/ "/tmp/InstantVASHangman.config";			//*/ null;
 	/** @see #INSTANTVAS_INSTANCE_CONFIG_TOKEN */
 	public static final String INSTANTVAS_INSTANCE_CONFIG0_TOKEN        = /**/ "AiHfidSIfSmMd84ISi4";					//*/ null;
 	/** Tells how many hard-coded instance definitions the hard-coded version of the "instance recognition code" should consider.
@@ -225,7 +225,7 @@ public class InstantVASLicense {
 	//                  unsubscribe,
 	//                  nick(PROFILEtrgGlobalStartAskForNicknameDialog, PROFILEtrgGlobalRegisterNickname),
 	//                  chat(CHATtrgGlobalSendPrivateMessage),
-	//                  list,
+	//                  list(PROFILEtrgGlobalListProfiles),
 	//                  profile(PROFILEtrgGlobalShowUserProfile),
 	//					play
 	//                  invite
@@ -236,6 +236,7 @@ public class InstantVASLicense {
 		EInstantVASCommandTriggers.SUBSCRIPTIONtrgLocalAcceptDoubleOptin,	// the double opt-in process starts with an externally generated broadcast message -- so we may proceed from that point on
 		EInstantVASCommandTriggers.SUBSCRIPTIONtrgGlobalUnsubscribe,
 		EInstantVASCommandTriggers.PROFILEtrgGlobalShowUserProfile,
+		EInstantVASCommandTriggers.PROFILEtrgGlobalListProfiles,
 		EInstantVASCommandTriggers.SUBSCRIPTIONtrgLocalStartDoubleOptin,
 	};
 	/** Navigation state used by registered users. Also the 'main loop' navigation state, to which all other states revert to when they finish their businesses */
@@ -247,6 +248,7 @@ public class InstantVASLicense {
 		EInstantVASCommandTriggers.PROFILEtrgGlobalRegisterNickname,
 		EInstantVASCommandTriggers.PROFILEtrgGlobalShowUserProfile,
 		EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
+		EInstantVASCommandTriggers.PROFILEtrgGlobalListProfiles,
 		EInstantVASCommandTriggers.HANGMANtrgPlayWithRandomUserOrBot,
 		EInstantVASCommandTriggers.HANGMANtrgGlobalInviteNicknameOrPhoneNumber,
 		EInstantVASCommandTriggers.HELPtrgGlobalShowExistingUsersFallbackHelp,
@@ -259,6 +261,7 @@ public class InstantVASLicense {
 		EInstantVASCommandTriggers.PROFILEtrgGlobalRegisterNickname,
 		EInstantVASCommandTriggers.PROFILEtrgGlobalShowUserProfile,
 		EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
+		EInstantVASCommandTriggers.PROFILEtrgGlobalListProfiles,
 		EInstantVASCommandTriggers.HANGMANtrgPlayWithRandomUserOrBot,
 		EInstantVASCommandTriggers.HANGMANtrgGlobalInviteNicknameOrPhoneNumber,
 		EInstantVASCommandTriggers.HELPtrgGlobalStartCompositeHelpDialog,
@@ -281,9 +284,25 @@ public class InstantVASLicense {
 		EInstantVASCommandTriggers.PROFILEtrgGlobalRegisterNickname,
 		EInstantVASCommandTriggers.PROFILEtrgGlobalShowUserProfile,
 		EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
+		EInstantVASCommandTriggers.PROFILEtrgGlobalListProfiles,
 		EInstantVASCommandTriggers.HANGMANtrgPlayWithRandomUserOrBot,
 		EInstantVASCommandTriggers.HANGMANtrgGlobalInviteNicknameOrPhoneNumber,
 		EInstantVASCommandTriggers.PROFILEtrgLocalNicknameDialogCancelation,	// makes sense?
+		EInstantVASCommandTriggers.PROFILEtrgLocalRegisterNickname,
+		EInstantVASCommandTriggers.HELPtrgGlobalShowStatefulHelpMessageFallback,
+	};
+	/** Navigation state used to list online profiles available for interaction */
+	public static final EInstantVASCommandTriggers[] PROFILEnstListingProfilesTriggers = {
+		EInstantVASCommandTriggers.HELPtrgGlobalStartCompositeHelpDialog,
+		EInstantVASCommandTriggers.HELPtrgGlobalShowStatelessHelpMessage,
+		EInstantVASCommandTriggers.SUBSCRIPTIONtrgGlobalUnsubscribe,
+		EInstantVASCommandTriggers.PROFILEtrgGlobalStartAskForNicknameDialog,
+		EInstantVASCommandTriggers.PROFILEtrgGlobalRegisterNickname,
+		EInstantVASCommandTriggers.PROFILEtrgGlobalShowUserProfile,
+		EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
+		EInstantVASCommandTriggers.PROFILEtrgLocalListMoreProfiles,
+		EInstantVASCommandTriggers.HANGMANtrgPlayWithRandomUserOrBot,
+		EInstantVASCommandTriggers.HANGMANtrgGlobalInviteNicknameOrPhoneNumber,
 		EInstantVASCommandTriggers.PROFILEtrgLocalRegisterNickname,
 		EInstantVASCommandTriggers.HELPtrgGlobalShowStatefulHelpMessageFallback,
 	};
@@ -300,6 +319,7 @@ public class InstantVASLicense {
 		EInstantVASCommandTriggers.PROFILEtrgGlobalRegisterNickname,
 		EInstantVASCommandTriggers.PROFILEtrgGlobalShowUserProfile,
 		EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
+		EInstantVASCommandTriggers.PROFILEtrgGlobalListProfiles,
 		EInstantVASCommandTriggers.HANGMANtrgPlayWithRandomUserOrBot,
 		EInstantVASCommandTriggers.HANGMANtrgGlobalInviteNicknameOrPhoneNumber,
 		EInstantVASCommandTriggers.HANGMANtrgLocalHoldMatchWord,
@@ -308,6 +328,7 @@ public class InstantVASLicense {
 	/** State an invited user gets into after he/she is invited for a match, which is set by 'cmdHoldMatchWord'. The invited user answer will, then, be processed by 'cmdAnswerToInvitation' */
 	public static final EInstantVASCommandTriggers[] HANGMANnstAnsweringToHangmanMatchInvitation = {
 		EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
+		EInstantVASCommandTriggers.PROFILEtrgGlobalListProfiles,
 		EInstantVASCommandTriggers.HANGMANtrgLocalAcceptMatchInvitation,
 		EInstantVASCommandTriggers.HANGMANtrgLocalRefuseMatchInvitation,
 		EInstantVASCommandTriggers.PROFILEtrgGlobalShowUserProfile,
@@ -323,6 +344,7 @@ public class InstantVASLicense {
 		EInstantVASCommandTriggers.PROFILEtrgGlobalRegisterNickname,
 		EInstantVASCommandTriggers.PROFILEtrgGlobalShowUserProfile,
 		EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
+		EInstantVASCommandTriggers.PROFILEtrgGlobalListProfiles,
 		EInstantVASCommandTriggers.HANGMANtrgPlayWithRandomUserOrBot,
 		EInstantVASCommandTriggers.HANGMANtrgGlobalInviteNicknameOrPhoneNumber,
 		EInstantVASCommandTriggers.HANGMANtrgLocalEndCurrentHumanMatch,
@@ -339,6 +361,7 @@ public class InstantVASLicense {
 		EInstantVASCommandTriggers.PROFILEtrgGlobalRegisterNickname,
 		EInstantVASCommandTriggers.PROFILEtrgGlobalShowUserProfile,
 		EInstantVASCommandTriggers.CHATtrgGlobalSendPrivateMessage,
+		EInstantVASCommandTriggers.PROFILEtrgGlobalListProfiles,
 		EInstantVASCommandTriggers.HANGMANtrgPlayWithRandomUserOrBot,
 		EInstantVASCommandTriggers.HANGMANtrgGlobalInviteNicknameOrPhoneNumber,
 		EInstantVASCommandTriggers.HANGMANtrgLocalEndCurrentBotMatch,
@@ -366,6 +389,8 @@ public class InstantVASLicense {
 		PROFILEtrgLocalRegisterNickname,
 		PROFILEtrgGlobalRegisterNickname,
 		PROFILEtrgGlobalShowUserProfile,
+		PROFILEtrgGlobalListProfiles,
+		PROFILEtrgLocalListMoreProfiles,
 		// chat
 		CHATtrgGlobalSendPrivateMessage,
 		CHATtrgLocalSendPrivateReply,

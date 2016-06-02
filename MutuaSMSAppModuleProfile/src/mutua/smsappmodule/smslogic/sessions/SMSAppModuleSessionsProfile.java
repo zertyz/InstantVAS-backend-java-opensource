@@ -1,5 +1,6 @@
 package mutua.smsappmodule.smslogic.sessions;
 
+import mutua.smsappmodule.smslogic.SMSAppModuleCommandsProfile;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesProfile;
 
 /** <pre>
@@ -20,6 +21,10 @@ public enum SMSAppModuleSessionsProfile implements ISessionProperty {
 	/** Session property used to store the sequence on which the "profile wizard" should run the "cmd*Dialog" commands,
 	 * when on the {@link SMSAppModuleNavigationStatesProfile#nstFulfillingProfileWizard} state */
 	sprProfileWizardDialogSequence,
+	
+	/** Session property used to store the integer array of 'userId's already shown to a user via {@link SMSAppModuleCommandsProfile#cmdListProfiles} command,
+	 *  when on the {@link SMSAppModuleNavigationStatesProfile#nstListingProfiles} state */
+	sprListedProfiles,
 	
 	;
 	

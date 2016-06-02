@@ -51,9 +51,9 @@ public class SMSAppModulePhrasingsProfile {
 			"{{appName}}: Nickname registered: {{registeredNickname}}. Thanks. Now, who is going to tell you what commands may go next? Someone must customize this message.",
 			"{{appName}}: {{nickname}}: {{subscriptionState}}, from {{geoUserLocation}}, {{numberOfLuckyNumbers}} lucky numbers. Whatever more you want to show through customizations: {{whatever}} -- these new variables may be set as function calls on the phrasing facility, this way we can plug & play new features on all modules, for instance, lucky numbers, which might introduce {{numberOfLuckyNumbers}} and {{generateAndGetNewLuckyNumber}}",
 			"{{appName}}: There is no one like '{{nickname}}'. Maybe he/she changed nickname? Send LIST to {{shortCode}} to see who is online",
-			"{{nickname}}-{{CountryStateByMSISDNResolver}} ",
+			"{{nickname}}-{{countryStateByMSISDN}} ",
 			"{{profilesList}}. To play, send INVITE [NICK] to {{shortCode}}; MORE for more players or PROFILE [NICK]",
-			"There are no more online players to show. Send P [NICK] [MSG] to provoke or INVITE [PHONE] to invite a friend of yours to play the Hangman Game.",
+			"There are no more online players to show. Send P [NICK] [MSG] to provoke or INVITE [PHONE] to invite a friend of yours to play the Hangman Game",
 			new IGeoLocatorPlaceHolder() {
 				public String getPlaceHolderName() { return "CountryStateByMSISDNResolver"; }
 				public String getPlaceHolderValue(String msisdn) { return "JR"; }

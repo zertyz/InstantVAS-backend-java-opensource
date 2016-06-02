@@ -366,6 +366,12 @@ public class InstantVASInstanceConfiguration {
 	public static String PROFILEphrUserProfilePresentation;
 	@ConfigurableElement("Phrase sent to the sender user, who referenced a user by it's nickname, to inform that the command wasn't executed for the informed nickname was not found. Variables: {{shortCode}}, {{appName}}, {{targetNickname}}")
 	public static String PROFILEphrNicknameNotFound;
+	@ConfigurableElement("Phrase excerpt used when composing each of the profiles in the profiles list command. Variables: {{shortCode}}, {{appName}}, {{nickname}} and others, from extensions, such as {{countryStateByMSISDN}}")
+	public static String PROFILEphrShortProfilePresentation;
+	@ConfigurableElement("Builds a profiles list from 'profiles' using the phrase 'PROFILEphrShortProfilePresentation' for each element, which will be placed in substitution for {{profilesList}}. Variables: {{shortCode}}, {{appName}} and, of course, {{profilesList}}")
+	public static String PROFILEphrProfileList;
+	@ConfigurableElement("Phrase to show when, in the attempt to list available profiles, there are none left to show. Variables: {{shortCode}}, {{appName}}")
+	public static String PROFILEphrNoMoreProfiles;
 	@ConfigurableElement("Phrase sent as a help when the provided nickname, on the 'change nickname dialog', is not valid. Variables: {{shortCode}}, {{appName}}, {{MOText}}")
 	public static String PROFILENicknameRegistrationFallbackHelp;
 	
@@ -449,7 +455,7 @@ public class InstantVASInstanceConfiguration {
 		"Command names should appear as the first element, and the possible values are, for each module:",
 		"HELP:         ShowStatelessHelp, ShowStatefulHelp, StartCompositeHelpDialog, ShowNextCompositeHelpMessage, ShowNewUsersFallbackHelp, ShowExistingUsersFallbackHelp",
 		"SUBSCRIPTION: StartDoubleOptinProcess, Subscribe, Unsubscribe, DoNotAgreeToSubscribe",
-		"PROFILE:      StartAskForNicknameDialog, AskForNicknameDialogCancelation, RegisterNickname, ShowUserProfile",
+		"PROFILE:      StartAskForNicknameDialog, AskForNicknameDialogCancelation, RegisterNickname, ShowUserProfile, ListProfiles, ListMoreProfiles",
 		"CHAT:         SendPrivateReply, SendPrivateMessage",
 		"HANGMAN:      InviteNicknameOrPhoneNumber, StartHangmanMatchInvitationProcess, HoldOpponentPhoneNumber, HoldOpponentNickname, HoldMatchWord, AcceptMatchInvitation, RefuseMatchInvitation, SuggestLetterOrWordForHuman, SuggestLetterOrWordForBot",
         "",
@@ -492,6 +498,11 @@ public class InstantVASInstanceConfiguration {
 	public static String[] PROFILEtrgGlobalRegisterNickname;
 	@ConfigurableElement("If matched, presents the desired user's profile. May capture 1 parameter: the desired user's nickname. If matched with no parameters, the current user profile will be presented")
 	public static String[] PROFILEtrgGlobalShowUserProfile;
+	@ConfigurableElement("If matched, starts the presentation of the list of available profiles for interaction, starting with the one which most recently sent an MO. Should capture no parameters.")
+	public static String[] PROFILEtrgGlobalListProfiles;
+	@ConfigurableElement("For users in 'nstListingProfiles', if matched, keeps on presenting the list of available profiles ordered by their last sent MO. Should capture no parameters.")
+	public static String[] PROFILEtrgLocalListMoreProfiles;
+
 	
 	// chat
 	@ConfigurableElement({"CHAT module", "###########", "", "If matched, sends a private message to a user. Should capture 2 parameters: the nickname and the message"})
@@ -653,7 +664,7 @@ public class InstantVASInstanceConfiguration {
 	public SMSAppModulePhrasingsSubscription        subscriptionPhrasings    = null;
 	public SMSAppModuleEventsSubscription           subscriptionEventsServer = null;
 	public SMSAppModuleNavigationStatesProfile      profileStates            = null; 
-	public SMSAppModuleCommandsProfile              profilecommands          = null;
+	public SMSAppModuleCommandsProfile              profileCommands          = null;
 	public SMSAppModulePhrasingsProfile             profilePhrasings         = null;
 	public SMSAppModuleNavigationStatesChat         chatStates               = null;
 	public SMSAppModuleCommandsChat                 chatCommands             = null;
@@ -921,10 +932,14 @@ public class InstantVASInstanceConfiguration {
 				Object[] profileModuleInstances = SMSAppModuleConfigurationProfile.getProfileModuleInstances(SHORT_CODE, APP_NAME,
 					PROFILEphrAskForFirstNickname, PROFILEphrAskForNewNickname, PROFILEphrAskForNicknameCancelation,
 					PROFILEphrNicknameRegistrationNotification, PROFILEphrUserProfilePresentation, PROFILEphrNicknameNotFound,
-					userGeoLocatorPlugin,
-					profileModuleDAL, EInstantVASCommandTriggers.get2DStringArrayFromEInstantVASCommandTriggersArray(PROFILEnstRegisteringNickname));
+					PROFILEphrShortProfilePresentation, PROFILEphrProfileList, PROFILEphrNoMoreProfiles,
+					userGeoLocatorPlugin, profileModuleDAL,
+					new String[] {nstNewUser, nstAnsweringToHangmanMatchInvitation, nstAnsweringDoubleOptin, nstEnteringMatchWord,
+						          nstGuessingWordFromHangmanBotOpponent, nstGuessingWordFromHangmanHumanOpponent, nstRegisteringNickname},
+					EInstantVASCommandTriggers.get2DStringArrayFromEInstantVASCommandTriggersArray(PROFILEnstRegisteringNickname),
+					EInstantVASCommandTriggers.get2DStringArrayFromEInstantVASCommandTriggersArray(PROFILEnstListingProfilesTriggers));
 				profileStates    = (SMSAppModuleNavigationStatesProfile) profileModuleInstances[0]; 
-				profilecommands  = (SMSAppModuleCommandsProfile)         profileModuleInstances[1];
+				profileCommands  = (SMSAppModuleCommandsProfile)         profileModuleInstances[1];
 				profilePhrasings = (SMSAppModulePhrasingsProfile)        profileModuleInstances[2];
 				break;
 			case CHAT:
@@ -977,7 +992,7 @@ public class InstantVASInstanceConfiguration {
 		modulesCommandProcessors = new ICommandProcessor[][] {
 			helpCommands.values,
 			subscriptionCommands.values,
-			profilecommands.values,
+			profileCommands.values,
 			chatCommands.values,
 			hangmanCommands.values,
 		};
@@ -1018,8 +1033,11 @@ public class InstantVASInstanceConfiguration {
 		POSTGRESQL_SHOULD_DEBUG_QUERIES     = false;
 		LIFECYCLE_SERVICE_BASE_URL          = "http://test.InstantVAS.com/CelltickSubscriptions.php";
 		MT_SERVICE_URL                      = "http://test.InstantVAS.com/CelltickMTs.php";
-
-
+//		PROFILEGeoLocatorCountryStateByMSISDNPatterns = new String[] {
+//			"JR",
+//			".*",
+//			"?JR?",
+//		};
 	}
 	
 
@@ -1164,16 +1182,21 @@ public class InstantVASInstanceConfiguration {
 		PROFILEphrAskForNicknameCancelation        = "### PROFILEphrAskForNicknameCancelation ###";
 		PROFILEphrNicknameRegistrationNotification = "{{appName}}: Your nickname: {{registeredNickname}}. Text LIST to see online players; NICK [NEW NICK] to change your name again.";
 		PROFILEphrUserProfilePresentation          = "{{appName}}: {{nickname}}: Subscribed; Online; {{countryStateByMSISDN}}. Text INVITE {{nickname}} to play a hangman match; M {{nickname}} [MSG] to chat; LIST to see online players; P to play with a random user.";
-		PROFILEphrNicknameNotFound                 = "{{appName}}: No player with nickname '{{nickname}}' was found. Maybe he/she changed it? Text LIST to see online players";
+		PROFILEphrNicknameNotFound                 = "{{appName}}: No player with nickname '{{targetNickname}}' was found. Maybe he/she changed it? Text LIST to see online players";
+		PROFILEphrShortProfilePresentation         = "{{nickname}}-{{countryStateByMSISDN}} ";
+		PROFILEphrProfileList                      = "{{profilesList}}... You may text MORE if you didn't choose your opponent yet. Then, text INVITE and a nickname. For instance: INVITE Guest1234";
+		PROFILEphrNoMoreProfiles                   = "There are no more online players available. Text PLAY to start a game or LIST to query online users again. Text M [nickname] and a message to chat with someone";
 		PROFILENicknameRegistrationFallbackHelp    = "Ops! That is not a good nickname. You texted '{{MOText}}'. Please, text now your desired nickname with up to 8 letters or numbers, but with no special characters or space -- or text HELP";
 
 		
 		// command patterns
 		PROFILEtrgGlobalStartAskForNicknameDialog = getConcatenationOf(cmdStartAskForNicknameDialog,                      "[^A-Z0-9]*NIC?K?[^A-Z0-9]*");
 		PROFILEtrgLocalNicknameDialogCancelation  = getConcatenationOf(cmdAskForNicknameDialogCancelation/*,              "---"*/);
-		PROFILEtrgLocalRegisterNickname           = getConcatenationOf(cmdRegisterNickname,                               "[^A-Z0-9]*([^ ]+)");
-		PROFILEtrgGlobalRegisterNickname          = getConcatenationOf(cmdRegisterNickname, /*trgGlobalRegisterNickname*/ "[^A-Z0-9]*NIC?K?N?A?M?E?[^A-Z0-9]+([^ ]+)");
-		PROFILEtrgGlobalShowUserProfile           = getConcatenationOf(cmdShowUserProfile,  /*trgGlobalShowUserProfile*/  "[^A-Z0-9]*PRO?FILE?[^A-Z0-9]*|[^A-Z0-9]*PRO?FILE?[^A-Z0-9]+([^ ]+)");
+		PROFILEtrgLocalRegisterNickname           = getConcatenationOf(cmdRegisterNickname,                               "[^A-Z0-9]*([A-Z0-9]+).*");
+		PROFILEtrgGlobalRegisterNickname          = getConcatenationOf(cmdRegisterNickname, /*trgGlobalRegisterNickname*/ "[^A-Z0-9]*NIC?K?N?A?M?E?[^A-Z0-9]+([A-Z0-9]+).*");
+		PROFILEtrgGlobalShowUserProfile           = getConcatenationOf(cmdShowUserProfile,  /*trgGlobalShowUserProfile*/  "[^A-Z0-9]*PRO?FILE?[^A-Z0-9]*|[^A-Z0-9]*PRO?FILE?[^A-Z0-9]+([A-Z0-9]+).*");
+		PROFILEtrgGlobalListProfiles              = getConcatenationOf(cmdListProfiles,  /*trgGlobalListProfiles*/        "[^A-Z0-9]*LIST[^A-Z0-9]*|[^A-Z0-9]*RA[NM]KI?N?G?[^A-Z0-9]*");
+		PROFILEtrgLocalListMoreProfiles           = getConcatenationOf(cmdListMoreProfiles,  /*trgLocalListMoreProfiles*/ "[^A-Z0-9]*MORE?[^A-Z0-9]*|[^A-Z0-9]*LIST[^A-Z0-9]*|[^A-Z0-9]*LIST[^A-Z0-9]*|[^A-Z0-9]*RA[NM]KI?N?G?[^A-Z0-9]*");
 		
 		// Chat
 		///////
@@ -1184,7 +1207,7 @@ public class InstantVASInstanceConfiguration {
 		CHATphrDoNotKnowWhoYouAreChattingTo       = "### CHATphrDoNotKnowWhoYouAreChattingTo ###";
 		
 		// command patterns
-		CHATtrgGlobalSendPrivateMessage = getConcatenationOf(cmdSendPrivateMessage, /*trgGlobalSendPrivateMessage*/ "[^A-Z0-9]*[MP][^A-Z0-9]+([^ ]+)[^A-Z0-9]+(.*)");
+		CHATtrgGlobalSendPrivateMessage = getConcatenationOf(cmdSendPrivateMessage, /*trgGlobalSendPrivateMessage*/ "[^A-Z0-9]*[MP][^A-Z0-9]+([A-Z0-9]+)[^A-Z0-9]+(.*)");
 		CHATtrgLocalSendPrivateReply    = getConcatenationOf(cmdSendPrivateReply/*,                                 "---"*/);
 
 		// Hangman
@@ -1223,8 +1246,8 @@ public class InstantVASInstanceConfiguration {
 		
 		// command patterns
 		HANGMANtrgPlayWithRandomUserOrBot                = getConcatenationOf(cmdPlayWithRandomUserOrBot,     /*trgPlayWithRandomUserOrBot*/           "[^A-Z0-9]*[HR]A[NM]GM?A?N?[^A-Z0-9]*|[^A-Z0-9]*I[NM]VITE?[^A-Z0-9]*|[^A-Z0-9]*PL[AE][YI][^A-Z0-9]*");
-		HANGMANtrgGlobalInviteNicknameOrPhoneNumber      = getConcatenationOf(cmdInviteNicknameOrPhoneNumber, /*trgGlobalInviteNicknameOrPhoneNumber*/ "[^A-Z0-9]*[HR]A[NM]GM?A?N?[^A-Z0-9]+([^ ]+)|[^A-Z0-9]*I[NM]VITE?[^A-Z0-9]+([^ ]+)|[^A-Z0-9]*PL[AE][YI][^A-Z0-9]+([^ ]+)");
-		HANGMANtrgLocalHoldMatchWord                     = getConcatenationOf(cmdHoldMatchWord,               /*trgLocalHoldMatchWord*/                "[^A-Z0-9]*([^ ]+)");
+		HANGMANtrgGlobalInviteNicknameOrPhoneNumber      = getConcatenationOf(cmdInviteNicknameOrPhoneNumber, /*trgGlobalInviteNicknameOrPhoneNumber*/ "[^A-Z0-9]*[HR]A[NM]GM?A?N?[^A-Z0-9]+([A-Z0-9]+).*|[^A-Z0-9]*I[NM]VITE?[^A-Z0-9]+([A-Z0-9]+).*|[^A-Z0-9]*PL[AE][YI][^A-Z0-9]+([A-Z0-9]+).*");
+		HANGMANtrgLocalHoldMatchWord                     = getConcatenationOf(cmdHoldMatchWord,               /*trgLocalHoldMatchWord*/                "[^A-Z0-9]*([A-Z0-9]+).*");
 		HANGMANtrgLocalAcceptMatchInvitation             = getConcatenationOf(cmdAcceptMatchInvitation,       /*trgLocalAcceptMatchInvitation*/        "[^A-Z0-9]*Y[EA]?[SPA]?P?[^A-Z0-9]*|[^A-Z0-9]*SURE?[^A-Z0-9]*|[^A-Z0-9]*OK[^A-Z0-9]*|[^A-Z0-9]*FINE[^A-Z0-9]*|.*GO.*");
 		HANGMANtrgLocalRefuseMatchInvitation             = getConcatenationOf(cmdRefuseMatchInvitation,       /*trgLocalRefuseMatchInvitation*/        "[^A-Z0-9]*NO?P?E?[^A-Z0-9]*");
 		HANGMANtrgLocalSingleLetterSuggestionForHuman    = getConcatenationOf(cmdSuggestLetterOrWordForHuman, /*trgLocalSingleLetterSuggestion*/       "[^A-Z0-9]*([A-Z])");
@@ -1413,16 +1436,21 @@ public class InstantVASInstanceConfiguration {
 		PROFILEphrAskForNicknameCancelation        = "### PROFILEphrAskForNicknameCancelation ###";
 		PROFILEphrNicknameRegistrationNotification = "{{appName}}: Seu apelido: {{registeredNickname}}. Envie LISTA para para ver os apelidos de outros. Se quiser mudar o seu, apenas envie NICK e seu novo apelido, com espaco entre ambos.";
 		PROFILEphrUserProfilePresentation          = "{{appName}}: {{nickname}}: Jogador de {{countryStateByMSISDN}}. Quer desafiar? Envie C {{nickname}} para comecar uma partida. P {{nickname}} [MSG] para mandar uma mensagem. Para ver todos os jogadores disponiveis, envie LISTA.";
-		PROFILEphrNicknameNotFound                 = "{{appName}}: Nao encontramos nenhum jogador com o apelido '{{nickname}}'. Sera que mudou, ou esta mal digitado? Envie LISTA e veja a lista completa dos jogadores ativos. Caso ainda tenha duvidas, envie AJUDA.";
+		PROFILEphrNicknameNotFound                 = "{{appName}}: Nao encontramos nenhum jogador com o apelido '{{targetNickname}}'. Sera que mudou, ou esta mal digitado? Envie LISTA e veja a lista completa dos jogadores ativos. Caso ainda tenha duvidas, envie AJUDA.";
+		PROFILEphrShortProfilePresentation         = "{{nickname}}-{{countryStateByMSISDN}} ";
+		PROFILEphrProfileList                      = "{{profilesList}}. Escolheu seu adversario? Envie CHAMAR seguido do apelido. Exemplo: CHAMAR JOGADOR2398. Para ver mais jogadores, envie MAIS";
+		PROFILEphrNoMoreProfiles                   = "Nao ha mais jogadores disponiveis. Envie JOGAR p/ iniciar um jogo ou LISTA para rever a lista de jogadores online. Envie P seguido do apelido e a mensagem que quer enviar, sempre com um espaco no meio, para papear com alguem. Exemplo: P JOGADOR2398 Bom dia! Rola uma jogada?";
 		PROFILENicknameRegistrationFallbackHelp    = "###traduzir###";
 
 		
 		// command patterns
 		PROFILEtrgGlobalStartAskForNicknameDialog = getConcatenationOf(PROFILEtrgGlobalStartAskForNicknameDialog, "[^A-Z0-9]*AP?[EI]?L?I?D?[OU]?[^A-Z0-9]*|[^A-Z0-9]*NOME[^A-Z0-9]*");
 		PROFILEtrgLocalNicknameDialogCancelation  = getConcatenationOf(PROFILEtrgLocalNicknameDialogCancelation/*,  "---"*/);
-		PROFILEtrgLocalRegisterNickname           = getConcatenationOf(PROFILEtrgLocalRegisterNickname/*,           "[^A-Z0-9]*([^ ]+)"*/);
-		PROFILEtrgGlobalRegisterNickname          = getConcatenationOf(PROFILEtrgGlobalRegisterNickname,          "[^A-Z0-9]*AP?[EI]?L?I?D?[OU]?[^A-Z0-9]+([^ ]+)|[^A-Z0-9]*NOME[^A-Z0-9]+([^ ]+)");
-		PROFILEtrgGlobalShowUserProfile           = getConcatenationOf(PROFILEtrgGlobalShowUserProfile,           "[^A-Z0-9]*PER?FI[LU]?[^A-Z0-9]*|[^A-Z0-9]*PER?FI[LU]?[^A-Z0-9]+([^ ]+)");
+		PROFILEtrgLocalRegisterNickname           = getConcatenationOf(PROFILEtrgLocalRegisterNickname/*,           "[^A-Z0-9]*([A-Z0-9]+).*"*/);
+		PROFILEtrgGlobalRegisterNickname          = getConcatenationOf(PROFILEtrgGlobalRegisterNickname,          "[^A-Z0-9]*AP?[EI]?L?I?D?[OU]?[^A-Z0-9]+([A-Z0-9]+).*|[^A-Z0-9]*NOME[^A-Z0-9]+([A-Z0-9]+).*");
+		PROFILEtrgGlobalShowUserProfile           = getConcatenationOf(PROFILEtrgGlobalShowUserProfile,           "[^A-Z0-9]*PER?FI[LU]?[^A-Z0-9]*|[^A-Z0-9]*PER?FI[LU]?[^A-Z0-9]+([A-Z0-9]+).*");
+		PROFILEtrgGlobalListProfiles              = getConcatenationOf(PROFILEtrgGlobalListProfiles,              "[^A-Z0-9]*LIST[AE]R?[^A-Z0-9]*|[^A-Z0-9]*RANK[IE]?N?G?[^A-Z0-9]*|[^A-Z0-9]*RANQ?U?E?[^A-Z0-9]*");
+		PROFILEtrgLocalListMoreProfiles           = getConcatenationOf(PROFILEtrgLocalListMoreProfiles,           "[^A-Z0-9]*MA?I?S?[^A-Z0-9]*|[^A-Z0-9]*LIST[AE][^A-Z0-9]*|[^A-Z0-9]*RANK[IE]?N?G?[^A-Z0-9]*|[^A-Z0-9]*RANQ?U?E?[^A-Z0-9]*");
 		
 		// Chat
 		///////
@@ -1433,7 +1461,7 @@ public class InstantVASInstanceConfiguration {
 		CHATphrDoNotKnowWhoYouAreChattingTo       = "### CHATphrDoNotKnowWhoYouAreChattingTo ###";
 		
 		// command patterns
-		CHATtrgGlobalSendPrivateMessage = getConcatenationOf(CHATtrgGlobalSendPrivateMessage/*, "[^A-Z0-9]*[MP][^A-Z0-9]+([^ ]+)[^A-Z0-9]+(.*)"*/);
+		CHATtrgGlobalSendPrivateMessage = getConcatenationOf(CHATtrgGlobalSendPrivateMessage/*, "[^A-Z0-9]*[MP][^A-Z0-9]+([A-Z0-9]+).*[^A-Z0-9]+(.*)"*/);
 		CHATtrgLocalSendPrivateReply    = getConcatenationOf(CHATtrgLocalSendPrivateReply/*, "---"*/);
 
 		// Hangman
@@ -1458,11 +1486,11 @@ public class InstantVASInstanceConfiguration {
 		HANGMANphrInvitationRefusalResponseForInvitedPlayer                 = "O convite de jogo de {{invitingPlayerNickname}} foi recusado. Envie LISTA para ver outros jogadores ativos ou mande uma mensagem para ele(a). Envie P {{invitingPlayerNickname}} [MSG]";
 		HANGMANphrInvitationRefusalNotificationForInvitingPlayer            = "{{invitedPlayerNickname}} recusou o jogo. Envie LISTA para escolher outro adversario ou envie uma mensagem para ele(a). Envie P {{invitingPlayerNickname}} [MSG]";
 		HANGMANphrNotAGoodWord                                              = "Voce escolheu '{{word}}'. Hmmm... Esta palavra nao foi aceita. Escolha uma palavra apenas com letras de A a Z, sem acentos, numeros ou simbolos, e envie novamente!";
-		HANGMANphrWordProvidingPlayerMatchStart                             = "Pronto! O jogo contra {{wordGuessingPlayerNick}}.\n{{gallowsArt}}. Agora eh so esperar ele(a) enviar a primeira letra! Sera que sua palavra eh dificil mesmo? Veremos... Enquanto esperamos pelo primeiro palpite de {{wordGuessingPlayerNickname}}, vc pode dar uma dica enviando P {{invitingPlayerNickname}} [MSG]";
+		HANGMANphrWordProvidingPlayerMatchStart                             = "Pronto! O jogo contra {{wordGuessingPlayerNickname}}.\n{{gallowsArt}}. Agora eh so esperar ele(a) enviar a primeira letra! Sera que sua palavra eh dificil mesmo? Veremos... Enquanto esperamos pelo primeiro palpite de {{wordGuessingPlayerNickname}}, vc pode dar uma dica enviando P {{wordGuessingPlayerNickname}} [MSG]";
 		HANGMANphrWordGuessingPlayerMatchStart                              = "{{gallowsArt}}Palavra: {{guessedWordSoFar}}\nLetras: {{usedLetters}}\nVamos ver se a palavra vai ser desvendada! Qual é a sua primeira letra? Envie-a p/ {{shortCode}} ou peca dicas a {{wordProvidingPlayerNickname}} enviando P {{wordProvidingPlayerNickname}} [MSG]";
 		HANGMANphrWordProvidingPlayerStatus                                 = "Jogo rolando! {{wordGuessingPlayerNickname}} enviou uma letra! {{guessedLetter}}\n{{gallowsArt}}Palavra: {{guessedWordSoFar}}\nLetras: {{usedLetters}}\nQuer falar com ele(a)? Envie P {{wordGuessingPlayerNickname}} [MSG]";
 		HANGMANphrWordGuessingPlayerStatus                                  = "{{gallowsArt}}Palavra: {{guessedWordSoFar}}\nLetras: {{usedLetters}}\nEnvie uma letra para formar a palavra. Capriche para ganhar esse jogo!";
-		HANGMANphrWinningMessageForWordGuessingPlayer                       = "{{winningArt}}{{word}}! Parabens!! Voce completou a palavra! Continue jogando! Desafie esse mesmo jogador enviando CHAMAR {{wordProvidingPlayer}} com espaco no meio, ou escolha outro adversario enviando LISTA.";
+		HANGMANphrWinningMessageForWordGuessingPlayer                       = "{{winningArt}}{{word}}! Parabens!! Voce completou a palavra! Continue jogando! Desafie esse mesmo jogador enviando CHAMAR {{wordProvidingPlayerNickname}} com espaco no meio, ou escolha outro adversario enviando LISTA.";
 		HANGMANphrWinningMessageForWordProvidingPlayer                      = "{{wordGuessingPlayerNickname}} completou a palavra! Quer revanche? Envie CHAMAR {{wordGuessingPlayerNickname}} sempre com espaco entre as palavras, e boa sorte.";
 		HANGMANphrLosingMessageForWordGuessingPlayer                        = "{{losingArt}}Xi, enforcou... A palavra era {{word}}. Tente agora voce! Peca uma revanche! Envie CHAMAR {{wordProvidingPlayerNickname}}, sempre com espaco entre as palavras, e boa sorte!";
 		HANGMANphrLosingMessageForWordProvidingPlayer                       = "Boa!! {{wordGuessingPlayerNickname}} nao desvendou a palavra! Quer comentar o jogo com ele/a? Envie P {{wordGuessingPlayerNickname}} e sua mensagem, com espaco no meio. Quer comecar um novo duelo? Envie CHAMAR {{wordGuessingPlayerNickname}}, com espaco no meio, e caprich na escolha da palavra secreta!!";
@@ -1472,8 +1500,8 @@ public class InstantVASInstanceConfiguration {
 		
 		// command patterns
 		HANGMANtrgPlayWithRandomUserOrBot                = getConcatenationOf(HANGMANtrgPlayWithRandomUserOrBot,                "[^A-Z0-9]*E?[NM]?FOR[CÇç]AR?[^A-Z0-9]*|[^A-Z0-9]*CO?N?V?I?[DT]?[AEO]?R?[^A-Z0-9]*|[^A-Z0-9]*CH?A?M?[AEO]?R?[^A-Z0-9]*|[^A-Z0-9]*JO?G?[AO]?R?[^A-Z0-9]*|[^A-Z0-9]*PARTIDA[^A-Z0-9]*|[^A-Z0-9]*NOV[OU][^A-Z0-9]*|[^A-Z0-9]*D[EI] ?NOV[OU][^A-Z0-9]*|[^A-Z0-9]*OU?TR[OA][^A-Z0-9]*");
-		HANGMANtrgGlobalInviteNicknameOrPhoneNumber      = getConcatenationOf(HANGMANtrgGlobalInviteNicknameOrPhoneNumber,      "[^A-Z0-9]*E?[NM]?FOR[CÇç]AR?[^A-Z0-9]+([^ ]+)|[^A-Z0-9]*CO?N?V?I?[DT]?[AEO]?R?[^A-Z0-9]+([^ ]+)|[^A-Z0-9]*CH?A?M?[AEO]?R?[^A-Z0-9]+([^ ]+)|[^A-Z0-9]*JO?G?[AO]?R?[^A-Z0-9]+([^ ]+)|[^A-Z0-9]*PARTIDA[^A-Z0-9]+([^ ]+)|[^A-Z0-9]*NOV[OU][^A-Z0-9]+([^ ]+)|[^A-Z0-9]*D[EI] ?NOV[OU][^A-Z0-9]+([^ ]+)|[^A-Z0-9]*OU?TR[OA][^A-Z0-9]+([^ ]+)");
-		HANGMANtrgLocalHoldMatchWord                     = getConcatenationOf(HANGMANtrgLocalHoldMatchWord/*,                     "[^A-Z0-9]*([^ ]+)"*/);
+		HANGMANtrgGlobalInviteNicknameOrPhoneNumber      = getConcatenationOf(HANGMANtrgGlobalInviteNicknameOrPhoneNumber,      "[^A-Z0-9]*E?[NM]?FOR[CÇç]AR?[^A-Z0-9]+([A-Z0-9]+).*|[^A-Z0-9]*CO?N?V?I?[DT]?[AEO]?R?[^A-Z0-9]+([A-Z0-9]+).*|[^A-Z0-9]*CH?A?M?[AEO]?R?[^A-Z0-9]+([A-Z0-9]+).*|[^A-Z0-9]*JO?G?[AO]?R?[^A-Z0-9]+([A-Z0-9]+).*|[^A-Z0-9]*PARTIDA[^A-Z0-9]+([A-Z0-9]+).*|[^A-Z0-9]*NOV[OU][^A-Z0-9]+([A-Z0-9]+).*|[^A-Z0-9]*D[EI] ?NOV[OU][^A-Z0-9]+([A-Z0-9]+).*|[^A-Z0-9]*OU?TR[OA][^A-Z0-9]+([A-Z0-9]+).*");
+		HANGMANtrgLocalHoldMatchWord                     = getConcatenationOf(HANGMANtrgLocalHoldMatchWord/*,                     "[^A-Z0-9]*([A-Z0-9]+).*"*/);
 		HANGMANtrgLocalAcceptMatchInvitation             = getConcatenationOf(HANGMANtrgLocalAcceptMatchInvitation,             "[^A-Z0-9]*SI?M?[^A-Z0-9]*|[^A-Z0-9]*TA[^A-Z0-9]*|[^A-Z0-9]*OK[^A-Z0-9]*|[^A-Z0-9]*VAI[^A-Z0-9]*|[^A-Z0-9]*ACEIT[OA]R?[^A-Z0-9]*|.*AGORA.*");
 		HANGMANtrgLocalRefuseMatchInvitation             = getConcatenationOf(HANGMANtrgLocalRefuseMatchInvitation,             "[^A-Z0-9]*N[ÃãA]?O?[^A-Z0-9]*|[^A-Z0-9]*NEI?[MN][^A-Z0-9]*");
 		HANGMANtrgLocalSingleLetterSuggestionForHuman    = getConcatenationOf(HANGMANtrgLocalSingleLetterSuggestionForHuman/*,    "[^A-Z0-9]*([A-Z])"*/);

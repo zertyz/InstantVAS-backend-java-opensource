@@ -10,7 +10,6 @@ import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigatio
 import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesProfile.NavigationStatesNamesProfile.*;
 import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesChat.NavigationStatesNamesChat.*;
 import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesHangman.NavigationStatesNamesHangman.*;
-
 import mutua.icc.configuration.ConfigurationManager;
 import mutua.icc.instrumentation.DefaultInstrumentationEvents;
 import mutua.icc.instrumentation.InstrumentableEvent;
@@ -24,6 +23,7 @@ import mutua.smsappmodule.dal.IProfileDB;
 import mutua.smsappmodule.dal.ISessionDB;
 import mutua.smsappmodule.dal.ISubscriptionDB;
 import mutua.smsappmodule.dal.IUserDB;
+import mutua.smsappmodule.dto.ProfileDto;
 import mutua.smsappmodule.hangmangame.HangmanGame;
 import mutua.smsin.dto.IncomingSMSDto;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
@@ -266,8 +266,8 @@ public class HangmanAppEngineBehavioralTests {
 		
 		checkResponse("21991234899", "play",          "+-+\n| \n|  \n|  \n|\n====\nWord: C-------EE\nUsed: CE\nAnswer with your first letter, the complete word or ask for cues with M Guest4899 [MSG]");
 		
-		// user listing
-//		tc.checkResponse("21998019167", "list", "i want to see the list of users i can play with...");
+		// user listing -- no user is in a listable state...
+		tc.checkResponse("21998019167", "list", "There are no more online players available. Text PLAY to start a game or LIST to query online users again. Text M [nickname] and a message to chat with someone");
 		
 		// invitation
 		checkResponse("21998019167", "invite HardCodedNick", "HANGMAN: Inviting HardCodedNick. Think of a word without special digits and send it now to 993. The most rare words work better for you to win!");
@@ -553,7 +553,7 @@ public class HangmanAppEngineBehavioralTests {
 		checkResponse(navigateNewUserTo(nstNewUser), "nick",               ivac.subscriptionPhrasings.getDoubleOptinStart());
 		checkResponse(navigateNewUserTo(nstNewUser), "nick WhoAmI",        ivac.subscriptionPhrasings.getDoubleOptinStart());
 		checkResponse(navigateNewUserTo(nstNewUser), "m SomeOne hi there", ivac.subscriptionPhrasings.getDoubleOptinStart());
-		//checkResponse(navigateNewUserTo(nstNewUser), "list",               ivac.profilePhrasings....);
+		checkResponse(navigateNewUserTo(nstNewUser), "list",               ivac.profilePhrasings.getProfileList(new ProfileDto[] {profileDB.getProfileRecord("SomeOne")}));
 		checkResponse(navigateNewUserTo(nstNewUser), "profile SomeOne",    ivac.profilePhrasings.getUserProfilePresentation("SomeOne", "21999999999"));
 		checkResponse(navigateNewUserTo(nstNewUser), "invite SomeOne",     ivac.subscriptionPhrasings.getDoubleOptinStart());
 		
@@ -565,7 +565,7 @@ public class HangmanAppEngineBehavioralTests {
 		checkResponse(navigateNewUserTo(nstAnsweringDoubleOptin, "help"), "nick",               ivac.subscriptionPhrasings.getDoubleOptinStart());
 		checkResponse(navigateNewUserTo(nstAnsweringDoubleOptin, "help"), "nick WhoAmI",        ivac.subscriptionPhrasings.getDoubleOptinStart());
 		checkResponse(navigateNewUserTo(nstAnsweringDoubleOptin, "help"), "m SomeOne hi there", ivac.subscriptionPhrasings.getDoubleOptinStart());
-		//checkResponse(navigateNewUserTo(nstAnsweringDoubleOptin, "help"), "list",               ivac.profilePhrasings....);
+		checkResponse(navigateNewUserTo(nstAnsweringDoubleOptin, "help"), "list",               ivac.subscriptionPhrasings.getDoubleOptinStart());
 		checkResponse(navigateNewUserTo(nstAnsweringDoubleOptin, "help"), "profile SomeOne",    ivac.profilePhrasings.getUserProfilePresentation("SomeOne", "21999999999"));
 		checkResponse(navigateNewUserTo(nstAnsweringDoubleOptin, "help"), "invite SomeOne",     ivac.subscriptionPhrasings.getDoubleOptinStart());
 		checkResponse(navigateNewUserTo(nstAnsweringDoubleOptin, "help"), "wtf???",             ivac.subscriptionPhrasings.getDoubleOptinStart());

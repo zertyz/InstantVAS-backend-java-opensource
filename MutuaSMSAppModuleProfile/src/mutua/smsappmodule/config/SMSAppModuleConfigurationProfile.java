@@ -8,6 +8,7 @@ import mutua.smsappmodule.i18n.SMSAppModulePhrasingsProfile;
 import mutua.smsappmodule.i18n.plugins.IDynamicPlaceHolder;
 import mutua.smsappmodule.i18n.plugins.IGeoLocatorPlaceHolder;
 import mutua.smsappmodule.smslogic.SMSAppModuleCommandsProfile;
+import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesProfile;
 
 /** <pre>
@@ -36,7 +37,7 @@ public class SMSAppModuleConfigurationProfile {
 	public static Object[] getProfileModuleInstances(String shortCode, String appName,
 	                                                 SMSAppModuleDALFactoryProfile profileModuleDAL) {
 		SMSAppModulePhrasingsProfile        phrasings        = new SMSAppModulePhrasingsProfile(shortCode, appName);
-		SMSAppModuleCommandsProfile         commands         = new SMSAppModuleCommandsProfile(phrasings, profileModuleDAL);
+		SMSAppModuleCommandsProfile         commands         = new SMSAppModuleCommandsProfile(phrasings, profileModuleDAL, new String[] {SMSAppModuleNavigationStates.NavigationStatesNames.nstNewUser});
 		SMSAppModuleNavigationStatesProfile navigationStates = new SMSAppModuleNavigationStatesProfile();
 		
 		System.err.println(SMSAppModuleConfigurationProfile.class.getCanonicalName() + ": test configuration loaded.");
@@ -45,20 +46,22 @@ public class SMSAppModuleConfigurationProfile {
 	}
 	
 	/** Constructs the full version of this SMS Module, with all options set programmatically.<pre>
-	 *  @param shortCode                            &
-	 *  @param appName                              &
-	 *  @param phrAskForFirstNickname               &
-	 *  @param phrAskForNewNickname                 &
-	 *  @param phrAskForNicknameCancelation         & 
-	 *  @param phrNicknameRegistrationNotification  &
-	 *  @param phrUserProfilePresentation           &
-	 *  @param phrNicknameNotFound                  &
-	 *  @param phrShortProfilePresentation          &
-	 *  @param phrProfileList                       &
-	 *  @param phrNoMoreProfiles                    &
-	 *  @param userGeoLocatorPlugin                 see {@link SMSAppModulePhrasingsProfile#SMSAppModulePhrasingsProfile(String, String, String, String, String, String, String, String, String, String, String, IGeoLocatorPlaceHolder)}
-	 *  @param profileModuleDAL                     see {@link SMSAppModuleCommandsProfile#SMSAppModuleCommandsProfile}
-	 *  @param nstRegisteringNicknameTriggers       see {@link SMSAppModuleNavigationStatesProfile#SMSAppModuleNavigationStatesProfile(SMSAppModuleCommandsProfile, Object[][])}
+	 *  @param shortCode                                        &
+	 *  @param appName                                          &
+	 *  @param phrAskForFirstNickname                           &
+	 *  @param phrAskForNewNickname                             &
+	 *  @param phrAskForNicknameCancelation                     & 
+	 *  @param phrNicknameRegistrationNotification              &
+	 *  @param phrUserProfilePresentation                       &
+	 *  @param phrNicknameNotFound                              &
+	 *  @param phrShortProfilePresentation                      &
+	 *  @param phrProfileList                                   &
+	 *  @param phrNoMoreProfiles                                &
+	 *  @param userGeoLocatorPlugin                             see {@link SMSAppModulePhrasingsProfile#SMSAppModulePhrasingsProfile(String, String, String, String, String, String, String, String, String, String, String, IGeoLocatorPlaceHolder)}
+	 *  @param profileModuleDAL                                 &
+	 *  @param outcludedNavigationStateNamesFromProfileListings see {@link SMSAppModuleCommandsProfile#SMSAppModuleCommandsProfile}
+	 *  @param nstRegisteringNicknameTriggers                   &
+	 *  @param nstListingProfilesTriggers                       see {@link SMSAppModuleNavigationStatesProfile#SMSAppModuleNavigationStatesProfile(Object[][], Object[][])}
 	 *  @returns {(SMSAppModuleNavigationStatesProfile)navigationStates, (SMSAppModuleCommandsProfile)commands, (SMSAppModulePhrasingsProfile)phrasings} */
 	public static Object[] getProfileModuleInstances(String shortCode, String appName,
 		                                             String phrAskForFirstNickname,
@@ -71,15 +74,17 @@ public class SMSAppModuleConfigurationProfile {
 	                                                 String phrProfileList,
 	                                                 String phrNoMoreProfiles,
 		                                             IGeoLocatorPlaceHolder userGeoLocatorPlugin,
-		                                             SMSAppModuleDALFactoryProfile profileModuleDAL, Object[][] nstRegisteringNicknameTriggers) {
+		                                             SMSAppModuleDALFactoryProfile profileModuleDAL,
+		                                             String[] outcludedNavigationStateNamesFromProfileListings,
+		                                             Object[][] nstRegisteringNicknameTriggers, Object[][] nstListingProfilesTriggers) {
 		
 		SMSAppModulePhrasingsProfile        phrasings        = new SMSAppModulePhrasingsProfile(shortCode, appName,
 			phrAskForFirstNickname, phrAskForNewNickname, phrAskForNicknameCancelation, phrNicknameRegistrationNotification,
 			phrUserProfilePresentation, phrNicknameNotFound,
 			phrShortProfilePresentation, phrProfileList, phrNoMoreProfiles,
 			userGeoLocatorPlugin);
-		SMSAppModuleCommandsProfile         commands         = new SMSAppModuleCommandsProfile(phrasings, profileModuleDAL);
-		SMSAppModuleNavigationStatesProfile navigationStates = new SMSAppModuleNavigationStatesProfile(nstRegisteringNicknameTriggers);
+		SMSAppModuleCommandsProfile         commands         = new SMSAppModuleCommandsProfile(phrasings, profileModuleDAL, outcludedNavigationStateNamesFromProfileListings);
+		SMSAppModuleNavigationStatesProfile navigationStates = new SMSAppModuleNavigationStatesProfile(nstRegisteringNicknameTriggers, nstListingProfilesTriggers);
 		
 		// log
 		String logPrefix = "Profile Module";
@@ -98,11 +103,13 @@ public class SMSAppModuleConfigurationProfile {
 		};
 		Instrumentation.reportDebug(logPrefix + ": Phrasings        : " + Arrays.deepToString(logPhrasings));
 		Object[][] logCommands = {
-			{"profileModuleDAL",      profileModuleDAL},
+			{"profileModuleDAL",                                 profileModuleDAL},
+			{"outcludedNavigationStateNamesFromProfileListings", Arrays.toString(outcludedNavigationStateNamesFromProfileListings)},
 		};
 		Instrumentation.reportDebug(logPrefix + ": Commands         : " + Arrays.deepToString(logCommands));
 		Object[][] logCommandTriggers = {
-			{"nstRegisteringNicknameTriggers", nstRegisteringNicknameTriggers},	
+			{"nstRegisteringNicknameTriggers", nstRegisteringNicknameTriggers},
+			{"nstListingProfilesTriggers",     nstListingProfilesTriggers},
 		};
 		Instrumentation.reportDebug(logPrefix + ": Navigation States: " + Arrays.deepToString(logCommandTriggers));
 

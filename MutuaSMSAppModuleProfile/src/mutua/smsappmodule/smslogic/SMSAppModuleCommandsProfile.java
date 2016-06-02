@@ -7,7 +7,8 @@ import java.util.Arrays;
 import static mutua.smsappmodule.smslogic.CommandCommons.*;
 import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates.NavigationStatesNames.*;
 import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesProfile.NavigationStatesNamesProfile.*;
-
+import static mutua.smsappmodule.smslogic.sessions.SMSAppModuleSessionsProfile.*;
+import mutua.serialization.SerializationRepository;
 import mutua.smsappmodule.dal.IProfileDB;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactory;
 import mutua.smsappmodule.dal.SMSAppModuleDALFactoryProfile;
@@ -48,6 +49,10 @@ public class SMSAppModuleCommandsProfile {
 		public final static String cmdRegisterNickname                = "RegisterNickname";
 		/** @see SMSAppModuleCommandsProfile#cmdShowUserProfile */
 		public final static String cmdShowUserProfile                 = "ShowUserProfile";
+		/** @see SMSAppModuleCommandsProfile#cmdListProfiles */
+		public final static String cmdListProfiles                    = "ListProfiles";
+		/** @see SMSAppModuleCommandsProfile#cmdListMoreProfiles */
+		public final static String cmdListMoreProfiles                = "ListMoreProfiles";
 	}
 	
 	/** Class to be used as a reference when customizing the MO commands for this module */
@@ -72,6 +77,14 @@ public class SMSAppModuleCommandsProfile {
 		 *  Receives 1 optional parameter: the nickname. If called without a parameter, the user gets his/her own information instead --
 		 *  activates {@link SMSAppModuleCommandsProfile#cmdShowUserProfile} */
 		public final static String[] trgGlobalShowUserProfile             = {"PROFILE", "PROFILE (.*)"};
+		/** Global triggers (to be used on several navigation states) to execute the 'list active user's profiles' command.
+		 *  Receives no parameters.
+		 *  activates {@link SMSAppModuleCommandsProfile#cmdListProfiles} */
+		public final static String[] trgGlobalListProfiles                = {"LIST"};
+		/** Local triggers (available only to the 'ask for a nickname' navigation state) to execute the 'list more active user's profiles' command.
+		 *  Receives no parameters.
+		 *  activates {@link SMSAppModuleCommandsProfile#cmdListMoreProfiles} */
+		public final static String[] trgLocalListMoreProfiles             = {"LIST", "MORE"};
 	}
 	
 	// Instance Fields
@@ -79,15 +92,19 @@ public class SMSAppModuleCommandsProfile {
 
 	private final SMSAppModulePhrasingsProfile profilePhrases;
 	private final IProfileDB profileDB;
+	private final String[] outcludedNavigationStateNamesFromProfileListings;
 
 
 	/** Constructs an instance of this module's command processors.<pre>
-	 *  @param profilePhrases   an instance of the phrasings to be used
-	 *  @param profileModuleDAL one of the members of {@link SMSAppModuleDALFactoryProfile}, from which the {@link SMSAppModuleDALFactory} user data will also be taken */
+	 *  @param profilePhrases                                   an instance of the phrasings to be used
+	 *  @param profileModuleDAL                                 one of the members of {@link SMSAppModuleDALFactoryProfile}, from which the {@link SMSAppModuleDALFactory} user data will also be taken
+	 *  @param outcludedNavigationStateNamesFromProfileListings the list of nst* navigation states that should exclude users from figuring in profile lists -- for instance, 'nstNewUsers' usually should be out */
 	public SMSAppModuleCommandsProfile(SMSAppModulePhrasingsProfile  profilePhrases,
-	                                   SMSAppModuleDALFactoryProfile profileModuleDAL) {
-		this.profilePhrases = profilePhrases;
-		this.profileDB      = profileModuleDAL.getProfileDB();
+	                                   SMSAppModuleDALFactoryProfile profileModuleDAL,
+	                                   String[] outcludedNavigationStateNamesFromProfileListings) {
+		this.profilePhrases                                   = profilePhrases;
+		this.profileDB                                        = profileModuleDAL.getProfileDB();
+		this.outcludedNavigationStateNamesFromProfileListings = outcludedNavigationStateNamesFromProfileListings;
 	}
 
 	// Command Definitions
@@ -158,18 +175,18 @@ public class SMSAppModuleCommandsProfile {
 		}
 	};
 
-	/** Having in consideration the last Profiles who interacted with the service and which are not listed in the 'outcludeNavigationStatesFromProfileListings',
+	/** Having in consideration the last Profiles who interacted with the service and which are not listed in the 'outcludedNavigationStateNamesFromProfileListings',
 	 *  returns a 'listProfilesInfo' structure to be used to list available profiles, respecting the given message's 'maxChars', where:
 	 *  'listProfilesInfo' is null if there is nothing (or nothing else) to show.
 	 *  'listProfilesInfo' := {(ProfileDto[])yetUnpresentedProfiles, (String)yetUnpresentedProfilesListMTText, (int[])newPresentedUserIds} */
 	public Object[] getListProfilesInfoWithLimitedPhraseLength(int maxChars, int[] presentedUserIds) throws SQLException {
-		int lookAhead = 10;
-		ProfileDto[] latestPlayerProfiles = profileDB.getRecentProfilesByLastMOTimeNotInSessionValues(presentedUserIds.length+lookAhead, SessionModel.NAVIGATION_STATE_PROPERTY.getPropertyName(), nstNewUser);
+		int lookAhead = 30;
+		ProfileDto[] latestPlayerProfiles = profileDB.getRecentProfilesByLastMOTimeNotInSessionValues(presentedUserIds.length+lookAhead, SessionModel.NAVIGATION_STATE_PROPERTY.getPropertyName(), outcludedNavigationStateNamesFromProfileListings);
 		ArrayList<ProfileDto> unpresentedProfiles = new ArrayList<ProfileDto>(lookAhead);
 		// build 'unpresentedProfiles' not including the ones represented by 'presentedPhoneNumbers'
 		NEXT_PROFILE: for (int i=0; i<latestPlayerProfiles.length; i++) {
 			for (int j=0; j<presentedUserIds.length; j++) {
-				if (latestPlayerProfiles[i].getUser().getPhoneNumber().equals(presentedUserIds[j])) {
+				if (latestPlayerProfiles[i].getUser().getUserId() == presentedUserIds[j]) {
 					continue NEXT_PROFILE;
 				}
 			}
@@ -217,7 +234,49 @@ public class SMSAppModuleCommandsProfile {
 		return new Object[] {lastProfiles, lastProfileListPhrase, newPresentedUserIds};
 	}
 	
+	private CommandAnswerDto performListCommand(SessionModel session, ESMSInParserCarrier carrier, int[] presentedUsers) throws SQLException {
+		Object[] listProfilesInfo     = getListProfilesInfoWithLimitedPhraseLength(carrier.getMaxMTChars()*3, presentedUsers);
+		if (listProfilesInfo == null) {
+			if (session.getNavigationStateName().equals(nstListingProfiles)) {
+				return getNewStateReplyCommandAnswer(session, nstExistingUser, profilePhrases.getNoMoreProfiles());
+			} else {
+				return getSameStateReplyCommandAnswer(profilePhrases.getNoMoreProfiles());
+			}
+		}
+		ProfileDto[] profiles            = (ProfileDto[]) listProfilesInfo[0];
+		String       MTtext              = (String)       listProfilesInfo[1];
+		int[]        newPresentedUserIds = (int[])        listProfilesInfo[2];
+		session.setProperty(sprListedProfiles, SerializationRepository.serialize(new StringBuffer(newPresentedUserIds.length*6), newPresentedUserIds).toString());
+		if (session.getNavigationStateName().equals(nstListingProfiles)) {
+			return getSameStateReplyCommandAnswer(MTtext);
+		} else if (session.getNavigationStateName().equals(nstNewUser)) {
+			// new users may be allowed to list profiles, but without going out of 'nstNewUser'
+			return getSameStateReplyCommandAnswer(MTtext);
+		} else {
+			return getNewStateReplyCommandAnswer(session, nstListingProfiles, MTtext);
+		}
+	}
+	
+	/** Command called when the user wants to see a list of online users */
+	public final ICommandProcessor cmdListProfiles = new ICommandProcessor(CommandNamesProfile.cmdListProfiles) {
+		@Override
+		public CommandAnswerDto processCommand(SessionModel session, ESMSInParserCarrier carrier, String[] parameters) throws SQLException {
+			int[] presentedUsers = {session.getUser().getUserId()};
+			return performListCommand(session, carrier, presentedUsers);
+		}
+	};
 
+	/** Command called when the user wants to see more of the list of online users */
+	public final ICommandProcessor cmdListMoreProfiles = new ICommandProcessor(CommandNamesProfile.cmdListMoreProfiles) {
+		@Override
+		public CommandAnswerDto processCommand(SessionModel session, ESMSInParserCarrier carrier, String[] parameters) throws SQLException {
+			String serializedPresentedUsers = session.getStringProperty(sprListedProfiles);
+			int[] presentedUsers = SerializationRepository.deserializeIntArray(serializedPresentedUsers);
+			return performListCommand(session, carrier, presentedUsers);
+		}
+	};
+
+	
 	// SMSAppModuleCommandCommons candidates
 	////////////////////////////////////////
 
@@ -231,6 +290,8 @@ public class SMSAppModuleCommandsProfile {
 		cmdAskForNicknameDialogCancelation,
 		cmdRegisterNickname,
 		cmdShowUserProfile,
+		cmdListProfiles,
+		cmdListMoreProfiles,
 	};
 
 }

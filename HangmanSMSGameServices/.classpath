@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/HangmanSMSGame"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/SMSInCelltick"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/SMSOutCelltick"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/SubscriptionEngineCelltick"/>
@@ -19,5 +18,29 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/HTTPClientAdapter"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/JDBCAdapter"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/MutuaEvents"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/MutuaGPP2PCommunications"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/MutuaICCConfiguration"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/MutuaICCInstrumentation"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/MutuaIMILib"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/MutuaSerializationLib"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/MutuaSMSAppEngineHangman"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/MutuaSMSAppLogic"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/MutuaSMSAppModule"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/MutuaSMSAppModuleChat"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/MutuaSMSAppModuleDAL"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/MutuaSMSAppModuleDALHangman"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/MutuaSMSAppModuleDALProfile"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/MutuaSMSAppModuleDALSubscription"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/MutuaSMSAppModuleHangman"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/MutuaSMSAppModuleHelp"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/MutuaSMSAppModuleProfile"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/MutuaSMSAppModuleSubscription"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/SMSInParser"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/SMSOutSender"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/SubscriptionEngine"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/xz"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

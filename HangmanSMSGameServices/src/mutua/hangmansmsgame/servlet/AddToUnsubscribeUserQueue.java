@@ -1,47 +1,40 @@
 package mutua.hangmansmsgame.servlet;
 
-import static config.WebAppConfiguration.log;
+import static mutua.icc.instrumentation.DefaultInstrumentationEvents.*;
+import instantvas.nativewebserver.NativeHTTPServer;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.SQLException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import mutua.hangmansmsgame.config.Configuration;
-import mutua.hangmansmsgame.dal.DALFactory;
-import mutua.hangmansmsgame.dal.ISessionDB;
-import mutua.hangmansmsgame.dal.IUserDB;
-import mutua.hangmansmsgame.dal.dto.SessionDto;
+import config.Instantiator;
+import mutua.icc.instrumentation.Instrumentation;
 
 public class AddToUnsubscribeUserQueue extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
-       
-	private static IUserDB    userDB    = DALFactory.getUserDB(Configuration.DATA_ACCESS_LAYER);
-	private static ISessionDB sessionDB = DALFactory.getSessionDB(Configuration.SESSIONS_DATA_ACCESS_LAYER);
+	
+	static {
+		Instantiator.preloadConfiguration();
+	}
 
+       
 	protected void process(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		log.reportRequestStart(request.getQueryString());
+		Instrumentation.startRequest(MSG_PROPERTY, "AddToUnsubscribeUserQueue " + request.getQueryString());
 		PrintWriter out = response.getWriter();
+		String phone = request.getParameter("MSISDN");
 		try {
-			String phone = request.getParameter("MSISDN");
-			if (!userDB.isUserSubscribed(phone)) {
-				log.reportDebug("Hangman: received an api unregistration request for " + phone + ": not registered");
-			} else {
-				userDB.setSubscribed(phone, false);
-				sessionDB.setSession(new SessionDto(phone, "NEW_USER"));
-				log.reportDebug("Hangman: received an api unregistration request for " + phone + ": unregistration complete");
-			}
+			NativeHTTPServer.scProducer.dispatchAssureUserIsNotSubscribedEvent(phone);
 			out.print("ACCEPTED");
-		} catch (SQLException e) {
+		} catch (Throwable t) {
 			out.print("FAILED");
-			log.reportThrowable(e, "Error while unsubscribing user from the web");
+			Instrumentation.reportThrowable(t, "AddToUnsubscribeUserQueue error while unsubscribing user from the web");
 		}
-		log.reportRequestFinish();
+		Instrumentation.finishRequest();
 	}
 	
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
