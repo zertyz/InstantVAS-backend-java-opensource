@@ -195,8 +195,8 @@ public class InstantVASInstanceConfiguration {
 
 	@ConfigurableElement({"Integration Parameters", "######################", "", "Lifecycle Client service base URLs for Subscription & Unsubscription using 'CelltickLiveScreenSubscriptionAPI'"})
 	public static String LIFECYCLE_SERVICE_BASE_URL;
-//	@ConfigurableElement("The 'CelltickLiveScreenSubscriptionAPI's 'package name' for this service")
-//	public static String LIFECYCLE_CHANNEL_NAME;
+	@ConfigurableElement("The 'CelltickLiveScreenSubscriptionAPI's 'package name' for this service -- the token to be sent when attempting to subscribe / unsubscribe using the provided 'LIFECYCLE_SERVICE_BASE_URL'")
+	public static String LIFECYCLE_CHANNEL_NAME;
 	@ConfigurableElement("MT service URLs & data for Celltick's Kannel APIs")
 	public static String MT_SERVICE_URL;
 	@ConfigurableElement("the number of times 'sendMessage' will attempt to send the message before reporting it as unsendable")
@@ -1061,7 +1061,7 @@ public class InstantVASInstanceConfiguration {
 		HTTP_READ_TIMEOUT_MILLIS       = 30000;
 		
 		LIFECYCLE_SERVICE_BASE_URL          = "http://test.InstantVAS.com/CelltickSubscriptions.php"; //"http://localhost:8082/celltick/wapAPI";
-//		LIFECYCLE_CHANNEL_NAME              = "HangMan";
+		LIFECYCLE_CHANNEL_NAME              = "HangMan";
 		MT_SERVICE_URL                      = "http://test.InstantVAS.com/CelltickMTs.php"; //"http://localhost:15001/cgi-bin/sendsms";
 		MT_SERVICE_NUMBER_OF_RETRY_ATTEMPTS = 5;
 		MT_SERVICE_DELAY_BETWEEN_ATTEMPTS   = 5000;

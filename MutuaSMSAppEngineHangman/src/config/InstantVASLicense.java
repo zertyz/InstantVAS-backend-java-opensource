@@ -6,8 +6,8 @@ import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 import mutua.smsin.parsers.SMSInCelltick;
 
 /** <pre>
- * InstantVASLicenseConfiguration.java
- * ===================================
+ * InstantVASLicense.java
+ * ======================
  * (created by luiz, Mar 27, 2016)
  *
  * Class that regulates the scope of this Instant VAS Instance and sets it
@@ -24,7 +24,9 @@ import mutua.smsin.parsers.SMSInCelltick;
  * Some fields, that should otherwise be in 'InstantVASInstanceConfiguration', were moved
  * here to make any reverse-engineering attempt harder. The moved fields are, then, commented
  * out from that class, which makes the actual license a pair of this class and that class.
- *
+ * 
+ * @see InstantVASInstancesDefinitions
+ * @see InstantVASInstanceConfiguration
  * @version $Id$
  * @author luiz
 */
@@ -83,9 +85,26 @@ public class InstantVASLicense {
 	/** when true, use the hard-coded instance definition, bringing an extra layer of protection against reverse-engineering */
 //	public static final boolean IFDEF_HARDCODED_INSTANTVAS_INSTANCE    = true;
 	/** Defines the retrieve method for the Instant VAS instances definitions */
-	public static final String INSTANTVAS_INSTANCES_SOURCE_TYPE        = /**/ ConfigurationSourceType_HARDCODED; //*/ ConfigurationSourceType_FS_FILE; 
+	public static final String INSTANTVAS_INSTANCES_SOURCE_TYPE        = /**_/ ConfigurationSourceType_HARDCODED; //*/ ConfigurationSourceType_PLAIN_FS_FILE; 
 	/** The location, in respect to the above definition, to retrieve the data from */
-	public static final String INSTANTVAS_INSTANCES_SOURCE_ACCESS_INFO = /**/ null;                              //*/ "/InstantVASInstances.config";
+	public static /*final*/ String INSTANTVAS_INSTANCES_SOURCE_ACCESS_INFO = /**_/ null;                              //*/ "/InstantVASInstances.config";
+	
+	// Navite HTTP Server
+	/////////////////////
+
+	/** The port the Native HTTP server should listen to, on all interfaces */
+	public static final int NATIVE_HTTP_SERVER_PORT                = 8080;
+	/** The number of accepted connections put on wait while one of the request processing threads become available to process them */
+	public static final int NATIVE_HTTP_SOCKET_BACKLOG_QUEUE_SLOTS = 9999;
+	/** The maximum number of requests to be processed in parallel by the native web server */
+	public static final int NATIVE_HTTP_NUMBER_OF_THREADS          = 5;
+	/** For POST methods, the native web server reads chunks at the most this number of bytes */
+	public static final int NATIVE_HTTP_INPUT_BUFFER_SIZE          = 1024;
+	/** While reading the chunks above, wait at most this number of milliseconds before considering the connection stale */
+	public static final int NATIVE_HTTP_READ_TIMEOUT               = 30000;
+	/** The maximum number of parameters, among all request, for optimum hash configuration */
+	public static final int NATIVE_HTTP_PARAMETERS_HASH_CAPACITY   = 20;
+
 
 	// TODO 18/5/2016 -- corrigir a arquitetura de Instancias: O ConnectionPoolPolicy (uma nova variável a ser criada em InstanceConfiguration, ou até mesmo em InstantVASMainConfiguration)
 	//      pode ser 'private' ou shared. Também há o campo 'DatabaseSchema', que pode ser deixado em branco ou definido. Todas as tabelas
@@ -106,49 +125,29 @@ public class InstantVASLicense {
 	// these constants are exclusively used for the hard-coded version (when IFDEF_HARDCODED_INSTANTVAS_INSTANCE is true)...
 	
 	/** @see #INSTANTVAS_INSTANCE_CONFIG_TYPE */
-	public static final String INSTANTVAS_INSTANCE_CONFIG0_TYPE         = /**/ ConfigurationSourceType_PLAIN_FS_FILE;	//*/ null; 
+	public static /*final*/ String INSTANTVAS_INSTANCE_CONFIG0_TYPE         ;//= /**/ ConfigurationSourceType_PLAIN_FS_FILE;	//*/ null; 
 	/** @see #INSTANTVAS_INSTANCE_CONFIG_ACCESS_INFO */
-	public static /*final*/ String INSTANTVAS_INSTANCE_CONFIG0_ACCESS_INFO  = /**/ "/tmp/InstantVASHangman.config";			//*/ null;
+	public static /*final*/ String INSTANTVAS_INSTANCE_CONFIG0_ACCESS_INFO  ;//= /**/ "/tmp/InstantVASHangman.config";			//*/ null;
 	/** @see #INSTANTVAS_INSTANCE_CONFIG_TOKEN */
-	public static final String INSTANTVAS_INSTANCE_CONFIG0_TOKEN        = /**/ "AiHfidSIfSmMd84ISi4";					//*/ null;
+	public static /*final*/ String INSTANTVAS_INSTANCE_CONFIG0_TOKEN        ;//= /**/ "AiHfidSIfSmMd84ISi4";					//*/ null;
 	/** Tells how many hard-coded instance definitions the hard-coded version of the "instance recognition code" should consider.
 	 *  Set to 0 to disable the hard-coding -- if hard-coding is enabled, the non hard-coded version bellow won't be used. */
-	public static final int    INSTANTVAS_INSTANCE_CONFIGn_LENGTH       = /**/ 1;										//*/ 0;
+	public static /*final*/ int    INSTANTVAS_INSTANCE_CONFIGn_LENGTH       ;//= /**/ 1;										//*/ 0;
 
 	// ... and these are for the non hard-coded version
+	// taken from 'InstantVASInstancesDefinitions'
+//	/** Defines the retrieve method for each Instant VAS instance (application) configuration */
+//	public static /*final*/ String[] INSTANTVAS_INSTANCE_CONFIG_TYPE        = /**/ null;		//*/ ConfigurationSourceType_RESOURCE;
+//	/** The location, in respect to the above definition, to retrieve each instance configuration from */
+//	public static /*final*/ String[] INSTANTVAS_INSTANCE_CONFIG_ACCESS_INFO = /**/ null;		//*/ new String[] {"/CelltickHangmanClaroBR.config"};
+//	/** The token each instance's requests are required to provide to have their authorization granted */
+//	public static /*final*/ String[] INSTANTVAS_INSTANCE_CONFIG_TOKEN       = /**/ null;		//*/ new String[] {"AiHfidSIfSmMd84ISi4"};
 	
-	/** Defines the retrieve method for each Instant VAS instance (application) configuration */
-	public static final String[] INSTANTVAS_INSTANCE_CONFIG_TYPE        = /**/ null;		//*/ ConfigurationSourceType_RESOURCE;
-	/** The location, in respect to the above definition, to retrieve each instance configuration from */
-	public static final String[] INSTANTVAS_INSTANCE_CONFIG_ACCESS_INFO = /**/ null;		//*/ new String[] {"/CelltickHangmanClaroBR.config"};
-	/** The token each instance's requests are required to provide to have their authorization granted */
-	public static final String[] INSTANTVAS_INSTANCE_CONFIG_TOKEN       = /**/ null;		//*/ new String[] {"AiHfidSIfSmMd84ISi4"};
-	
-	// the above variables hard-codes into 'NativeHTTPServer' and all Servlet classes, requiring them to be reverse-engineered in order to break the protection
-	
-	// Navite HTTP Server
-	/////////////////////
-	// Note: defining those variables here brings no piracy control improvements, for they
-	//       are the same for every instance
-
-	/** The port the Native HTTP server should listen to, on all interfaces */
-	public static final int NATIVE_HTTP_SERVER_PORT                = 8080;
-	/** The number of accepted connections put on wait while one of the request processing threads become available to process them */
-	public static final int NATIVE_HTTP_SOCKET_BACKLOG_QUEUE_SLOTS = 9999;
-	/** The maximum number of requests to be processed in parallel by the native web server */
-	public static final int NATIVE_HTTP_NUMBER_OF_THREADS          = 5;
-	/** For POST methods, the native web server reads chunks at the most this number of bytes */
-	public static final int NATIVE_HTTP_INPUT_BUFFER_SIZE          = 1024;
-	/** While reading the chunks above, wait at most this number of milliseconds before considering the connection stale */
-	public static final int NATIVE_HTTP_READ_TIMEOUT               = 30000;
-	/** The maximum number of parameters, among all request, for optimum hash configuration */
-	public static final int NATIVE_HTTP_PARAMETERS_HASH_CAPACITY   = 20;
-
 	// Instance License Infringement Control
 	////////////////////////////////////////
 	// The following definitions will cause a hard code in 'InstantVASInstanceConfiguration'
 
-	/** The 'CelltickLiveScreenSubscriptionAPI's 'package name' for this service -- the token to be sent when attempting to subscribe / unsubscribe using the provided 'LIFECYCLE_SERVICE_BASE_URL' */
+	/**  */
 	public static final String LIFECYCLE_CHANNEL_NAME = "HangMan";
 	
 	// Passive HTTPD Service; Active HTTP Queue Client

@@ -53,14 +53,18 @@ public class InstantVASConfigurationLoader {
 				INSTANTVAS_INSTANCES_SOURCE_TYPE == ConfigurationSourceType_HTTP          ? "ConfigurationSourceType_HTTP"          : (
 				INSTANTVAS_INSTANCES_SOURCE_TYPE == ConfigurationSourceType_POSTGRESQL    ? "ConfigurationSourceType_POSTGRESQL"    : (
 				"Unknown value '"+INSTANTVAS_INSTANCES_SOURCE_TYPE+"'"))))))));
-			Instrumentation.reportDebug("INSTANTVAS_INSTANCE_CONFIGn_LENGTH := " + INSTANTVAS_INSTANCE_CONFIGn_LENGTH);
 		}
 		
 		if ((INSTANTVAS_INSTANCES_SOURCE_TYPE == ConfigurationSourceType_HARDCODED) && (INSTANTVAS_INSTANCE_CONFIGn_LENGTH > 0)) {
 			if (INSTANTVAS_INSTANCE_CONFIG0_TYPE == ConfigurationSourceType_PLAIN_FS_FILE) {
-				/* debug */ if (IFDEF_CONFIG_DEBUG) {Instrumentation.reportDebug("Loading Hard-Coded Instance 0 configuration from Plain FS File '"+INSTANTVAS_INSTANCE_CONFIG0_ACCESS_INFO+"'");}
+				/* debug */ if (IFDEF_CONFIG_DEBUG) {
+					Instrumentation.reportDebug("INSTANTVAS_INSTANCE_CONFIGn_LENGTH := " + INSTANTVAS_INSTANCE_CONFIGn_LENGTH);
+					Instrumentation.reportDebug("Loading Hard-Coded Instance 0 configuration from Plain FS File '"+INSTANTVAS_INSTANCE_CONFIG0_ACCESS_INFO+"'");
+				}
 				applyConfigurationFromPlainFSFile(INSTANTVAS_INSTANCE_CONFIG0_ACCESS_INFO);
 			}
+		} else if (INSTANTVAS_INSTANCES_SOURCE_TYPE == ConfigurationSourceType_PLAIN_FS_FILE) {
+			
 		} else {
 			/* debug */ if (IFDEF_CONFIG_DEBUG) {throw new RuntimeException("InstantVASConfigurationLoader ERROR: No detectable license configuration was found");}
 		}
