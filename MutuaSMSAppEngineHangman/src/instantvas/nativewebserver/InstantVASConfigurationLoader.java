@@ -28,6 +28,16 @@ import mutua.icc.instrumentation.handlers.InstrumentationHandlerRAM;
 */
 
 public class InstantVASConfigurationLoader {
+	
+	// INSTANCES DEFINITIONS LOADING METHODS
+	////////////////////////////////////////
+	
+	private static void loadInstanceDefinitionsFromPlainFSFile(String instancesDefinitionFile) {
+		
+	}
+
+	// INSTANCE CONFIGURATION LOADING METHODS
+	/////////////////////////////////////////
 
 	public static void applyConfigurationFromString(String configurationContents) {
 		
@@ -64,7 +74,12 @@ public class InstantVASConfigurationLoader {
 				applyConfigurationFromPlainFSFile(INSTANTVAS_INSTANCE_CONFIG0_ACCESS_INFO);
 			}
 		} else if (INSTANTVAS_INSTANCES_SOURCE_TYPE == ConfigurationSourceType_PLAIN_FS_FILE) {
-			
+			String instancesDefinitionFile = INSTANTVAS_INSTANCES_SOURCE_ACCESS_INFO;
+			/* debug */ if (IFDEF_CONFIG_DEBUG) {
+				Instrumentation.reportDebug("INSTANTVAS_INSTANCES_SOURCE_ACCESS_INFO := " + instancesDefinitionFile);
+				Instrumentation.reportDebug("Loading Hard-Coded Instance 0 configuration from Plain FS File '"+INSTANTVAS_INSTANCE_CONFIG0_ACCESS_INFO+"'");
+			}
+			loadInstanceDefinitionsFromPlainFSFile(instancesDefinitionFile);
 		} else {
 			/* debug */ if (IFDEF_CONFIG_DEBUG) {throw new RuntimeException("InstantVASConfigurationLoader ERROR: No detectable license configuration was found");}
 		}
