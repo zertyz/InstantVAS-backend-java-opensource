@@ -158,8 +158,8 @@ public class InstantVASInstanceConfiguration {
 	
 	@ConfigurableElement({"Game Options", "############", "", "The name of the Hangman Game -- phrases can refer to this value using {{appName}}"})
 	public static String APP_NAME;
-//	@ConfigurableElement("The short code of the Hangman Game -- phrases can refer to this value using {{shortCode}}")
-//	public static String SHORT_CODE;
+	@ConfigurableElement("The short code of the Hangman Game -- phrases can refer to this value using {{shortCode}}")
+	public static String SHORT_CODE;
 	@ConfigurableElement("The subscription cost to the end user -- phrases can refer to this value using {{priceTag}}")
 	public static String PRICE_TAG;
 	@ConfigurableElement("Default prefix for invited & new users -- The suffix are the last 4 phone number digits")
@@ -195,10 +195,12 @@ public class InstantVASInstanceConfiguration {
 
 	@ConfigurableElement({"Integration Parameters", "######################", "", "Lifecycle Client service base URLs for Subscription & Unsubscription using 'CelltickLiveScreenSubscriptionAPI'"})
 	public static String LIFECYCLE_SERVICE_BASE_URL;
-	@ConfigurableElement("The 'CelltickLiveScreenSubscriptionAPI's 'package name' for this service -- the token to be sent when attempting to subscribe / unsubscribe using the provided 'LIFECYCLE_SERVICE_BASE_URL'")
+	@ConfigurableElement("The 'CelltickLiveScreenSubscriptionAPI's 'package name' for this service -- the value to be sent when attempting to subscribe / unsubscribe using the provided 'LIFECYCLE_SERVICE_BASE_URL'")
 	public static String LIFECYCLE_CHANNEL_NAME;
 	@ConfigurableElement("MT service URLs & data for Celltick's Kannel APIs")
 	public static String MT_SERVICE_URL;
+	@ConfigurableElement("'SMSC' parameter when delivering MTs on the Celltick's Kannel API")
+	public static String KANNEL_MT_SMSC = "C1";
 	@ConfigurableElement("the number of times 'sendMessage' will attempt to send the message before reporting it as unsendable")
 	public static int    MT_SERVICE_NUMBER_OF_RETRY_ATTEMPTS;
 	@ConfigurableElement("the number of milliseconds 'sendMessage' will wait between retry attempts")
@@ -1052,7 +1054,7 @@ public class InstantVASInstanceConfiguration {
 		LOG_HANGMAN_FILE_PATH          = "";
 		LOG_WEBAPP_FILE_PATH           = "";
 		APP_NAME                       = "HANGMAN";
-//		SHORT_CODE                     = "993";
+		SHORT_CODE                     = "993";
 		PRICE_TAG                      = "$0.99";
 		DEFAULT_NICKNAME_PREFIX        = "Guest";
 		BOT_WORDS                      = new String[] {"CHIMPANZEE", "AGREGATE", "TWEEZERS"};
@@ -1364,7 +1366,7 @@ public class InstantVASInstanceConfiguration {
 
 		APP_NAME                = "FORCA PREMIADA";
 		PRICE_TAG               = "Rs1,99";
-		//SHORT_CODE            = "993";
+		SHORT_CODE              = "993";
 		DEFAULT_NICKNAME_PREFIX = "JOGADOR";
 		BOT_WORDS               = new String[] {
 			"JARDIM",		"MANTEIGA",		"RELATO",	"GANSO",	"PERRENGUE",	"MANEIRA",	"DRIBLAR",		"JOGATINA", 

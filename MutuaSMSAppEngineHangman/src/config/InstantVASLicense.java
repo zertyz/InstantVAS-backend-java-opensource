@@ -85,9 +85,9 @@ public class InstantVASLicense {
 	/** when true, use the hard-coded instance definition, bringing an extra layer of protection against reverse-engineering */
 //	public static final boolean IFDEF_HARDCODED_INSTANTVAS_INSTANCE    = true;
 	/** Defines the retrieve method for the Instant VAS instances definitions */
-	public static final String INSTANTVAS_INSTANCES_SOURCE_TYPE        = /**_/ ConfigurationSourceType_HARDCODED; //*/ ConfigurationSourceType_PLAIN_FS_FILE; 
+	public static final String INSTANTVAS_INSTANCES_SOURCE_TYPE        = /**/ ConfigurationSourceType_HARDCODED; //*/ ConfigurationSourceType_PLAIN_FS_FILE; 
 	/** The location, in respect to the above definition, to retrieve the data from */
-	public static /*final*/ String INSTANTVAS_INSTANCES_SOURCE_ACCESS_INFO = /**_/ null;                              //*/ "/InstantVASInstances.config";
+	public static /*final*/ String INSTANTVAS_INSTANCES_SOURCE_ACCESS_INFO = /** / null;                              //*/ "/InstantVASInstances.config";
 	
 	// Navite HTTP Server
 	/////////////////////
@@ -125,30 +125,21 @@ public class InstantVASLicense {
 	// these constants are exclusively used for the hard-coded version (when IFDEF_HARDCODED_INSTANTVAS_INSTANCE is true)...
 	
 	/** @see #INSTANTVAS_INSTANCE_CONFIG_TYPE */
-	public static /*final*/ String INSTANTVAS_INSTANCE_CONFIG0_TYPE         ;//= /**/ ConfigurationSourceType_PLAIN_FS_FILE;	//*/ null; 
+	public static final String INSTANTVAS_INSTANCE_CONFIG0_TYPE         = /**/ ConfigurationSourceType_PLAIN_FS_FILE;	//*/ null; 
 	/** @see #INSTANTVAS_INSTANCE_CONFIG_ACCESS_INFO */
-	public static /*final*/ String INSTANTVAS_INSTANCE_CONFIG0_ACCESS_INFO  ;//= /**/ "/tmp/InstantVASHangman.config";			//*/ null;
+	public static /*final*/ String INSTANTVAS_INSTANCE_CONFIG0_ACCESS_INFO  = /**/ "/tmp/InstantVASHangman.config";			//*/ null;
 	/** @see #INSTANTVAS_INSTANCE_CONFIG_TOKEN */
-	public static /*final*/ String INSTANTVAS_INSTANCE_CONFIG0_TOKEN        ;//= /**/ "AiHfidSIfSmMd84ISi4";					//*/ null;
+	public static final String INSTANTVAS_INSTANCE_CONFIG0_TOKEN        = /**/ "AiHfidSIfSmMd84ISi4";					//*/ null;
 	/** Tells how many hard-coded instance definitions the hard-coded version of the "instance recognition code" should consider.
 	 *  Set to 0 to disable the hard-coding -- if hard-coding is enabled, the non hard-coded version bellow won't be used. */
-	public static /*final*/ int    INSTANTVAS_INSTANCE_CONFIGn_LENGTH       ;//= /**/ 1;										//*/ 0;
-
-	// ... and these are for the non hard-coded version
-	// taken from 'InstantVASInstancesDefinitions'
-//	/** Defines the retrieve method for each Instant VAS instance (application) configuration */
-//	public static /*final*/ String[] INSTANTVAS_INSTANCE_CONFIG_TYPE        = /**/ null;		//*/ ConfigurationSourceType_RESOURCE;
-//	/** The location, in respect to the above definition, to retrieve each instance configuration from */
-//	public static /*final*/ String[] INSTANTVAS_INSTANCE_CONFIG_ACCESS_INFO = /**/ null;		//*/ new String[] {"/CelltickHangmanClaroBR.config"};
-//	/** The token each instance's requests are required to provide to have their authorization granted */
-//	public static /*final*/ String[] INSTANTVAS_INSTANCE_CONFIG_TOKEN       = /**/ null;		//*/ new String[] {"AiHfidSIfSmMd84ISi4"};
+	public static final int    INSTANTVAS_INSTANCE_CONFIGn_LENGTH       = /**/ 1;										//*/ 0;
 	
 	// Instance License Infringement Control
 	////////////////////////////////////////
 	// The following definitions will cause a hard code in 'InstantVASInstanceConfiguration'
 
-	/**  */
-	public static final String LIFECYCLE_CHANNEL_NAME = "HangMan";
+//	/** The 'CelltickLiveScreenSubscriptionAPI's 'package name' for this service -- the value to be sent when attempting to subscribe / unsubscribe using the provided 'LIFECYCLE_SERVICE_BASE_URL' */
+//	public static final String LIFECYCLE_CHANNEL_NAME = "HangMan";
 	
 	// Passive HTTPD Service; Active HTTP Queue Client
 	public static final String MOAcquisitionMethods_PASSIVE_ONLY             = "kBc8A";
@@ -160,11 +151,11 @@ public class InstantVASLicense {
 	public static final String MO_ACTIVE_HTTP_QUEUE_BATCH_SIZE        = "50";
 	public static final long   MO_ACTIVE_HTTP_QUEUE_POOLING_DELAY     = 1000;
 	
-	/** The short code of the Hangman Game -- phrases can refer to this value using {{shortCode}} */
-	public static final String SHORT_CODE  = "993";
+//	/** The short code of the Hangman Game -- phrases can refer to this value using {{shortCode}} */
+//	public static final String SHORT_CODE  = "993";
 	
-	/** 'SMSOutCelltick' parameter to allow sending MTs */
-	public static final String KANNEL_MT_SMSC = "C1";	// using a single SMSC might fuck it up for Celltick's Claro BR... but they need to provide guidance for a solution
+//	/** 'SMSOutCelltick' parameter to allow sending MTs */
+//	public static final String KANNEL_MT_SMSC = "C1";	// using a single SMSC might fuck it up for Celltick's Claro BR... but they need to provide guidance for a solution
 	
 	// Additional MO verification parameters
 	// The following variables provokes a hardcode check of the SMSC MO parameter on 'NativeHTTPServer.ADD_TO_MO_QUEUE' and 'AddToMOQueue' servlet -- Known values as of december, 2015:  C1, C1b, C1c, C1d, C1e, C1f, C1g, C1h
@@ -172,13 +163,13 @@ public class InstantVASLicense {
 	public static final String   HardCodeCheckMethodOfAdditionalMOParameterValues_STARTS_WITH  = "CxZs3";	// plain text only
 	public static final String   HardCodeCheckMethodOfAdditionalMOParameterValues_REGEX        = "dkP4W";	// uses Matcher.matches to decide
 	public static final String   IFDEF_HARDCODE_CHECK_METHOD_OF_ADDITIONAL_MO_PARAMETER_VALUES = HardCodeCheckMethodOfAdditionalMOParameterValues_REGEX;
-	public static final String   MO_ADDITIONAL_RULE0_FIELD_NAME  = SMSInCelltick.SMSCParameterName;
-	public static final int      MO_ADDITIONAL_RULE0_FIELD_INDEX = SMSInCelltick.SMSCParameterIndex;
-	public static final Pattern  MO_ADDITIONAL_RULE0_REGEX       = Pattern.compile("C1[abcdefg]?");
-	public static final String   MO_ADDITIONAL_RULE0_VALUE       = null; // "C1"; // KANNEL_MT_SMSC;
+	public static final String   MO_ADDITIONAL_RULE0_FIELD_NAME  = null; // SMSInCelltick.SMSCParameterName;
+	public static final int      MO_ADDITIONAL_RULE0_FIELD_INDEX = -1;   // SMSInCelltick.SMSCParameterIndex;
+	public static final Pattern  MO_ADDITIONAL_RULE0_REGEX       = null; // Pattern.compile("C1[abcdefg]?");
+	public static final String   MO_ADDITIONAL_RULE0_VALUE       = null; // "C1";
 	public static final int      MO_ADDITIONAL_RULE0_MIN_LEN     = -1;
 	public static final int      MO_ADDITIONAL_RULE0_MAX_LEN     = -1; // 3;
-	public static final int      MO_ADDITIONAL_RULEn_LENGTH      = 1;
+	public static final int      MO_ADDITIONAL_RULEn_LENGTH      = 0;  // 1;
 
 	/** Specifies the available Instant VAS modules to this instance and the order they should be loaded */
 	public static final EInstantVASModules[] ENABLED_MODULES = {
@@ -196,25 +187,25 @@ public class InstantVASLicense {
 	
 	public static final boolean IFDEF_HARCODED_INSTANCE_RESTRICTION = true;	// if true, the hard-coded information bellow will be used -- please, refactor this name & behavior
 	/** If set, instructs /AddToMOQueue and other services to require received MSISDNs to have a minimum length */
-	public static final int      ALLOWABLE_MSISDN_MIN_LENGTH = /** / -1; //*/ 12;	// if set to -1, restriction code for min length won't be used
+	public static final int      ALLOWABLE_MSISDN_MIN_LENGTH = /**/ -1; //*/ 12;	// if set to -1, restriction code for min length won't be used
 	/** Same as above, but for a maximum length */
-	public static final int      ALLOWABLE_MSISDN_MAX_LENGTH = /** / -1; //*/ 13;	// idem for max length
+	public static final int      ALLOWABLE_MSISDN_MAX_LENGTH = /**/ -1; //*/ 13;	// idem for max length
 	/** If set, MSISDNs used on any service will be required to have one of the listed prefixes */
-	public static final boolean  IFDEF_ALLOWABLE_MSISDN_PREFIXES  = /**/ true; //*/ false;	// if false, restriction code won't be present
+	public static final boolean  IFDEF_ALLOWABLE_MSISDN_PREFIXES  = /** / true; //*/ false;	// if false, restriction code won't be present
 	public static final String[] ALLOWABLE_MSISDN_PREFIXES        = /**/ null; //*/ {"55"};
-	public static final String   ALLOWABLE_MSISDN_PREFIX0         = /**/ "55"; //*/ null;
-	public static final int      ALLOWABLE_MSISDN_PREFIXn_LENGTH  = /**/ 1;    //*/ 0;		// if set to 0 and IFDEF is true, flexible code for 'ALLOWABLE_MSISDN_PREFIXES' will be used instead of the hard-code for '*PREFIXn' values
+	public static final String   ALLOWABLE_MSISDN_PREFIX0         = /** / "55"; //*/ null;
+	public static final int      ALLOWABLE_MSISDN_PREFIXn_LENGTH  = /** / 1;    //*/ 0;		// if set to 0 and IFDEF is true, flexible code for 'ALLOWABLE_MSISDN_PREFIXES' will be used instead of the hard-code for '*PREFIXn' values
 	/** If set, /AddToMOQueue will only process MOs from the listed carriers */
-	public static final boolean               IFDEF_ALLOWABLE_CARRIERS  = /**/ true;                     //*/ false;	// if false, restriction code won't be present
+	public static final boolean               IFDEF_ALLOWABLE_CARRIERS  = /** / true;                     //*/ false;	// if false, restriction code won't be present
 	public static final ESMSInParserCarrier[] ALLOWABLE_CARRIERS        = /**/ null;                     //*/ {ESMSInParserCarrier.VIVO};
-	public static final ESMSInParserCarrier   ALLOWABLE_CARRIER0        = /**/ ESMSInParserCarrier.VIVO; //*/ null;
-	public static final int                   ALLOWABLE_CARRIERn_LENGTH = /**/ 1;                        //*/ 0;		// if set to 0 and IFDEF is true, flexible code for 'ALLOWABLE_CARRIERS' will be used instead of the hard-code for '*CARRIERn' values
+	public static final ESMSInParserCarrier   ALLOWABLE_CARRIER0        = /** / ESMSInParserCarrier.VIVO; //*/ null;
+	public static final int                   ALLOWABLE_CARRIERn_LENGTH = /** / 1;                        //*/ 0;		// if set to 0 and IFDEF is true, flexible code for 'ALLOWABLE_CARRIERS' will be used instead of the hard-code for '*CARRIERn' values
 	/** If set, /AddToMOQueue (and other services) will only process MOs and send MTs to the listed short codes -- which may be long codes as well */
-	public static final boolean  IFDEF_ALLOWABLE_SHORT_CODES  = /**/ true;  //*/ false;	// if false, restriction code won't be present
+	public static final boolean  IFDEF_ALLOWABLE_SHORT_CODES  = /** / true;  //*/ false;	// if false, restriction code won't be present
 	public static final String[] ALLOWABLE_SHORT_CODES        = /**/ null;  //*/ {"993", "990"};
-	public static final String   ALLOWABLE_SHORT_CODE0        = /**/ "993"; //*/ null;
-	public static final String   ALLOWABLE_SHORT_CODE1        = /**/ "990"; //*/ null;
-	public static final int      ALLOWABLE_SHORT_CODEn_LENGTH = /**/ 2;     //*/ 0;		// if set to 0 and IFDEF is true, flexible code for 'ALLOWABLE_SHORT_CODES' will be used instead of the hard-code for '*SHORT_CODEn' values
+	public static final String   ALLOWABLE_SHORT_CODE0        = /** / "993"; //*/ null;
+	public static final String   ALLOWABLE_SHORT_CODE1        = /** / "990"; //*/ null;
+	public static final int      ALLOWABLE_SHORT_CODEn_LENGTH = /** / 2;     //*/ 0;		// if set to 0 and IFDEF is true, flexible code for 'ALLOWABLE_SHORT_CODES' will be used instead of the hard-code for '*SHORT_CODEn' values
 	
 	// navigation states
 	////////////////////

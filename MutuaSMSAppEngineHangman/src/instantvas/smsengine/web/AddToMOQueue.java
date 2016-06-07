@@ -215,15 +215,18 @@ public class AddToMOQueue {
 		    ( ((ALLOWABLE_MSISDN_MIN_LENGTH == -1) || (mo.getPhone().length() >= ALLOWABLE_MSISDN_MIN_LENGTH)) && 
 		      ((ALLOWABLE_MSISDN_MAX_LENGTH == -1) || (mo.getPhone().length() <= ALLOWABLE_MSISDN_MAX_LENGTH)) ) &&
 		    // msisdn prefixes validation
-		    ( ((ALLOWABLE_MSISDN_PREFIXn_LENGTH > 0) && (mo.getPhone().startsWith(ALLOWABLE_MSISDN_PREFIX0)))/* ||
+		    ( (ALLOWABLE_MSISDN_PREFIXn_LENGTH == 0) ||
+		      ((ALLOWABLE_MSISDN_PREFIXn_LENGTH > 0) && (mo.getPhone().startsWith(ALLOWABLE_MSISDN_PREFIX0)))/* ||
 		      ((ALLOWABLE_MSISDN_PREFIXn_LENGTH > 1) && (mo.getPhone().startsWith(ALLOWABLE_MSISDN_PREFIX1))) ||*/
 		    ) &&
 		    // carrier validation
-		    ( ((ALLOWABLE_CARRIERn_LENGTH > 0) && (mo.getCarrier() == ALLOWABLE_CARRIER0))/* ||
+		    ( (ALLOWABLE_CARRIERn_LENGTH == 0) ||
+		      ((ALLOWABLE_CARRIERn_LENGTH > 0) && (mo.getCarrier() == ALLOWABLE_CARRIER0))/* ||
 		      ((ALLOWABLE_CARRIERn_LENGTH > 1) && (mo.getCarrier() == ALLOWABLE_CARRIER1)) ||*/
 		    ) &&
 		    // allowable short codes validation
-		    ( ((ALLOWABLE_SHORT_CODEn_LENGTH > 0) && (ALLOWABLE_SHORT_CODE0.equals(mo.getLargeAccount()))) ||
+		    ( (ALLOWABLE_SHORT_CODEn_LENGTH == 0) ||
+		      ((ALLOWABLE_SHORT_CODEn_LENGTH > 0) && (ALLOWABLE_SHORT_CODE0.equals(mo.getLargeAccount()))) ||
 		      ((ALLOWABLE_SHORT_CODEn_LENGTH > 1) && (ALLOWABLE_SHORT_CODE1.equals(mo.getLargeAccount())))
 		   ) )) ||
 		   // use the flexible (non-hard coded) version of the validation

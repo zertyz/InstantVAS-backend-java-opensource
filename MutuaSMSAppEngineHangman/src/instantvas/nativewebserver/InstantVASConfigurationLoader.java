@@ -6,6 +6,7 @@ import static config.MutuaHardCodedConfiguration.*;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import config.InstantVASInstanceConfiguration;
 import mutua.icc.configuration.ConfigurationManager;
 import mutua.icc.instrumentation.InstrumentableEvent;
@@ -33,7 +34,7 @@ public class InstantVASConfigurationLoader {
 	////////////////////////////////////////
 	
 	private static void loadInstanceDefinitionsFromPlainFSFile(String instancesDefinitionFile) {
-		
+		throw new NotImplementedException();
 	}
 
 	// INSTANCE CONFIGURATION LOADING METHODS
