@@ -17,6 +17,7 @@ import mutua.icc.instrumentation.Instrumentation;
 import mutua.smsin.parsers.SMSInParser;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
@@ -81,7 +82,7 @@ public class NativeHTTPServer {
 	public static SCProducer                               scProducer;
 	public static SCConsumer                               scConsumer;
 	
-	public static void instantiate() throws IllegalArgumentException, SecurityException, SQLException, IllegalAccessException, NoSuchFieldException {
+	public static void instantiate() throws IllegalArgumentException, SecurityException, SQLException, IllegalAccessException, NoSuchFieldException, UnsupportedEncodingException, FileNotFoundException {
 		ivac       = new InstantVASInstanceConfiguration();
 		
 		// TODO 18/5/2016 -- corrigir a arquitetura de Instancias: o código abaixo é válido para somente 1 instância.

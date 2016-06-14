@@ -18,6 +18,8 @@ import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHangman.CommandNam
 import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsHangman.CommandTriggersHangman.*;
 import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesHangman.NavigationStatesNamesHangman.*;
 
+import java.io.FileNotFoundException;
+import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -41,6 +43,10 @@ import mutua.icc.instrumentation.InstrumentableEvent.ELogSeverity;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.icc.instrumentation.handlers.IInstrumentationHandler;
 import mutua.icc.instrumentation.handlers.InstrumentationHandlerLogConsole;
+import mutua.icc.instrumentation.handlers.InstrumentationHandlerLogPlainFile;
+import mutua.icc.instrumentation.handlers.InstrumentationHandlerLogRotatoryCompressedFile;
+import mutua.icc.instrumentation.handlers.InstrumentationHandlerLogRotatoryFile;
+import mutua.icc.instrumentation.handlers.InstrumentationHandlerLogRotatoryPlainFile;
 import mutua.smsappmodule.config.InstantVASSMSAppModuleConfiguration;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationChat;
 import mutua.smsappmodule.config.SMSAppModuleConfigurationHangman;
@@ -679,7 +685,7 @@ public class InstantVASInstanceConfiguration {
 	public final ICommandProcessor[][]  modulesCommandProcessors;
 
 	
-	public InstantVASInstanceConfiguration() throws SQLException, IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
+	public InstantVASInstanceConfiguration() throws SQLException, IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException, UnsupportedEncodingException, FileNotFoundException {
 		
 		IInstrumentationHandler logHandler;
 		IInstrumentationHandler reportHandler;
@@ -697,12 +703,24 @@ public class InstantVASInstanceConfiguration {
 		switch (LOG_STRATEGY) {
 		case CONSOLE:
 			logHandler = new InstrumentationHandlerLogConsole(APP_NAME, MINIMUM_LOG_SEVERITY);
+			reportHandler = logHandler;
+			break;
+		case PLAIN_FILE:
+			logHandler    = new InstrumentationHandlerLogPlainFile(APP_NAME, LOG_HANGMAN_FILE_PATH, MINIMUM_LOG_SEVERITY);
+			reportHandler = new InstrumentationHandlerLogPlainFile(APP_NAME, LOG_WEBAPP_FILE_PATH,  ELogSeverity.INFO);
+			break;
+		case ROTATORY_PLAIN_FILE:
+			logHandler    = new InstrumentationHandlerLogRotatoryPlainFile(APP_NAME, LOG_HANGMAN_FILE_PATH, ".log", MINIMUM_LOG_SEVERITY, InstrumentationHandlerLogRotatoryFile.DAILY_ROTATION_FREQUENCY);
+			reportHandler = new InstrumentationHandlerLogRotatoryPlainFile(APP_NAME, LOG_WEBAPP_FILE_PATH,  ".log", ELogSeverity.INFO,    InstrumentationHandlerLogRotatoryFile.DAILY_ROTATION_FREQUENCY);
+			break;
+		case ROTATORY_COMPRESSED_FILE:
+			logHandler    = new InstrumentationHandlerLogRotatoryCompressedFile(APP_NAME, LOG_HANGMAN_FILE_PATH, ".log.xz", MINIMUM_LOG_SEVERITY, InstrumentationHandlerLogRotatoryFile.DAILY_ROTATION_FREQUENCY);
+			reportHandler = new InstrumentationHandlerLogRotatoryCompressedFile(APP_NAME, LOG_WEBAPP_FILE_PATH,  ".log.xz", ELogSeverity.INFO,    InstrumentationHandlerLogRotatoryFile.DAILY_ROTATION_FREQUENCY);
 			break;
 		default:
 			throw new RuntimeException("LOG_STRATEGY '"+LOG_STRATEGY+"' isn't implemented yet");
 		}
 		
-		reportHandler = logHandler;
 		profileHandler = new MOAndMTProfileInstrumentationHandler();
 		
 		Instrumentation.configureDefaultValuesForNewInstances(logHandler, reportHandler, profileHandler);

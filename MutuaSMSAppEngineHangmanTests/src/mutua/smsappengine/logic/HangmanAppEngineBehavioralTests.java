@@ -2,6 +2,8 @@ package mutua.smsappengine.logic;
 
 import static org.junit.Assert.*;
 
+import java.io.FileNotFoundException;
+import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 
 import static mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates.NavigationStatesNames.*;
@@ -64,7 +66,7 @@ public class HangmanAppEngineBehavioralTests {
 	
 	private static TestableSubscriptionAPI subscriptionEngine;
 	
-	public HangmanAppEngineBehavioralTests() throws IllegalArgumentException, SecurityException, SQLException, IllegalAccessException, NoSuchFieldException {
+	public HangmanAppEngineBehavioralTests() throws IllegalArgumentException, SecurityException, SQLException, IllegalAccessException, NoSuchFieldException, UnsupportedEncodingException, FileNotFoundException {
 		
 		InstantVASInstanceConfiguration.setHangmanTestDefaults();
 		ivac = new InstantVASInstanceConfiguration();
