@@ -6,6 +6,7 @@ import instantvas.nativewebserver.NativeHTTPServer;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -40,10 +41,14 @@ public class AddToMOQueue extends HttpServlet {
 	private static String[] parameterNames = NativeHTTPServer.moParser.getRequestParameterNames("AUTHENTICATION_TOKEN");
 	private void process(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		
+		// Override the Servlet's default ISO-5589-1 character encoding, for scenarios where the customer cannot edit
+		// tomcat's 'server.xml' and specify URIEncoding="UTF-8", as documented in https://struts.apache.org/docs/how-to-support-utf-8-uriencoding-with-tomcat.html
+		HashMap<String, String> utf8Parameters = NativeHTTPServer.retrieveGetParameters(request.getQueryString());
+		
 		// get parameter names
 		String[] parameterValues = new String[parameterNames.length];
 		for (int i=0; i<parameterNames.length; i++) {
-			parameterValues[i] = request.getParameter(parameterNames[i]);
+			parameterValues[i] = utf8Parameters.get(parameterNames[i]);
 		}
 		
 		byte[] contents;

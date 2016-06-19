@@ -1,7 +1,14 @@
 #! /bin/bash
 
+HOME_DIR=~
+WORKSPACE_DIR="`pwd`/.."
+
 mkdir tmp
 cd tmp
+
+echo "Creating Symlinks on tmp/ for proguard.config use"
+echo ln -s ${HOME_DIR}/external ./external
+echo ln -s ${WORKSPACE_DIR}     ./workspace
 
 echo "Cleaning previous outputs..."
 rm -f /tmp/HangmanSMSGameServices.onejar.war
