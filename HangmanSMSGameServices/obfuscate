@@ -7,8 +7,8 @@ mkdir tmp
 cd tmp
 
 echo "Creating Symlinks on tmp/ for proguard.config use"
-echo ln -s ${HOME_DIR}/external ./external
-echo ln -s ${WORKSPACE_DIR}     ./workspace
+ln -s ${HOME_DIR}/external ./external
+ln -s ${WORKSPACE_DIR}     ./workspace
 
 echo "Cleaning previous outputs..."
 rm -f /tmp/HangmanSMSGameServices.onejar.war
@@ -56,3 +56,10 @@ jar cvf /tmp/HangmanSMSGameServices.proguard.war META-INF/ WEB-INF/
 echo "Cleaning up..."
 cd ..
 rm -fr tmp
+
+echo "Seems to be done. Tomcat may be started with:"
+echo "Mac:   mv /tmp/HangmanSMSGameServices.war /usr/local/Cellar/tomcat6/6.0.45/libexec/webapps/HangmanSMSGameServices.war; mv /tmp/HangmanSMSGameServices.proguard.war /usr/local/Cellar/tomcat6/6.0.45/libexec/webapps/HangmanSMSGameServices.war; rm -fr /usr/local/Cellar/tomcat6/6.0.45/libexec/webapps/HangmanSMSGameServices; /usr/local/Cellar/tomcat6/6.0.45/libexec/bin/startup.sh; tail -F /usr/local/Cellar/tomcat6/6.0.45/libexec/logs/catalina.out & cat; pkill -f 'tail -F /usr/local'; /usr/local/Cellar/tomcat6/6.0.45/libexec/bin/shutdown.sh"
+echo "Linux: ..."
+echo
+echo "... and requests may be made with:"
+echo "# curl 'localhost:8080/HangmanSMSGameServices/AddToMOQueue?AUTHENTICATION_TOKEN=AiHfidSIfSmMd84ISi4&MSISDN=56986507776&CARRIER_NAME=Vivo&LA=993&MO_ID=1&TEXT=%D0%9A%D0%BE%D0%B1%D0%B8&KANNEL_UNIQUE=1234&SMSC=C'"

@@ -1,5 +1,6 @@
 package mutua.smsout.dto;
 
+import mutua.serialization.SerializationRepository;
 import mutua.serialization.SerializationRepository.EfficientTextualSerializationMethod;
 
 /** <pre>
@@ -53,8 +54,9 @@ public class OutgoingSMSDto {
 	
 	@EfficientTextualSerializationMethod
 	public void toString(StringBuffer buffer) {
-		buffer.append("phone='").append(phone).append("', text='").
-		       append(text).append("', billingType=").append(billingType.name());
+		buffer.append("phone='").append(phone).append("', text='");
+		SerializationRepository.serialize(buffer, text);
+		buffer.append("', billingType=").append(billingType.name());
 	}
 
 	@Override

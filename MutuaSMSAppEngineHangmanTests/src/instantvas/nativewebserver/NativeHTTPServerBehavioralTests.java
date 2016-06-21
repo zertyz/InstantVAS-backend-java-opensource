@@ -81,6 +81,18 @@ public class NativeHTTPServerBehavioralTests {
 	}
 	
 	@Test
+	public void testUTF8() throws UnsupportedEncodingException {
+		
+		// query string as defined on a default (unconfigured) tomcat instance
+		String queryString = new String("game=forca&cirillic=%D0%9A%D0%BE%D0%B1%D0%B8".getBytes(), "ISO-8859-1");
+		
+		HashMap<String, String> parameters = NativeHTTPServer.retrieveGetParameters(queryString);
+		assertEquals("parameter 'game' was wrongly decoded",     "forca", parameters.get("game"));
+		assertEquals("parameter 'cirillic' was wrongly decoded", "Коби", parameters.get("cirillic"));
+	}
+
+	
+	@Test
 	public void performanceTests() throws UnsupportedEncodingException {
 		int count = 1000000;
 		String[] parameterNames = {"a", "c", "e", "nonexistingparametername"};
