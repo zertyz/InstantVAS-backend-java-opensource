@@ -54,7 +54,7 @@ public class SMSAppModulePostgreSQLAdapterProfile extends PostgreSQLAdapter {
 	/** The phone field name, within the MO table */
 	private static String MO_PHONE_FIELD_NAME;
 
-	/** method to be called when attempting to configure the singleton for new instances of 'PostgreSQLAdapter'.
+	/** method to be called when attempting to configure the singleton for new instances of this 'PostgreSQLAdapter'.
 	 *  @param allowDataStructuresAssertion see {@link #ALLOW_DATA_STRUCTURES_ASSERTION}
 	 *  @param shouldDebugQueries           see {@link #SHOULD_DEBUG_QUERIES}
 	 *  @param hostname                     see {@link #HOSTNAME}

@@ -99,4 +99,8 @@ public class JDBCAdapterInstrumentationMethods {
 	public static void reportDatabaseSQL(AbstractPreparedProcedure absPP, Object... pvp) {
 		Instrumentation.justLog(databaseSQLEvent, preparedSQLProperty, absPP.getPreparedProcedureSQL(), parametersAndValuesPairsProperty, pvp);
 	}
+
+	public static void reportDatabaseSQL(String query) {
+		Instrumentation.justLog(databaseSQLEvent, preparedSQLProperty, query);
+	}
 }

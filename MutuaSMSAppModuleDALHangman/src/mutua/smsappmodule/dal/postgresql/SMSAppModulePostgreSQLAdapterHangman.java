@@ -48,7 +48,7 @@ public class SMSAppModulePostgreSQLAdapterHangman extends PostgreSQLAdapter {
 	/** @see JDBCAdapter#shouldDebugQueries */
 	private static boolean SHOULD_DEBUG_QUERIES;	
 	
-	/** method to be called when attempting to configure the singleton for new instances of 'PostgreSQLAdapter'.
+	/** method to be called when attempting to configure the singleton for new instances of this 'PostgreSQLAdapter'.
 	 *  @param allowDataStructuresAssertion see {@link #ALLOW_DATA_STRUCTURES_ASSERTION}
 	 *  @param shouldDebugQueries           see {@link #SHOULD_DEBUG_QUERIES}
 	 *  @param hostname                     see {@link #HOSTNAME}

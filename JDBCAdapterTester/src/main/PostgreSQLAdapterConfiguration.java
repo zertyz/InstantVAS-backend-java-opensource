@@ -1,9 +1,11 @@
 package main;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 
 import adapters.AbstractPreparedProcedure;
 import adapters.IJDBCAdapterParameterDefinition;
+import adapters.JDBCAdapter;
 import adapters.PostgreSQLAdapter;
 
 /** <pre>
@@ -19,10 +21,54 @@ import adapters.PostgreSQLAdapter;
  */
 
 public class PostgreSQLAdapterConfiguration extends PostgreSQLAdapter {
-	 
 	
+	// Mutua Configurable Class pattern
+	///////////////////////////////////
+	
+	/** this class' singleton instance */
+	private static PostgreSQLAdapterConfiguration instance = null;
+	
+	// JDBCAdapter default values
+	/** @see JDBCAdapter#hostname */
+	private static String HOSTNAME;
+	/** @see JDBCAdapter#port */
+	private static int    PORT;
+	/** @see JDBCAdapter#database */
+	private static String DATABASE;
+	/** @see JDBCAdapter#user */
+	private static String USER;
+	/** @see JDBCAdapter#password */
+	private static String PASSWORD;
+	/** @see JDBCAdapter#allowDataStructuresAssertion */
+	private static boolean ALLOW_DATA_STRUCTURES_ASSERTION;
+	/** @see JDBCAdapter#shouldDebugQueries */
+	private static boolean SHOULD_DEBUG_QUERIES;	
+	
+	/** method to be called when attempting to configure the singleton for new instances of this 'PostgreSQLAdapter'.
+	 *  @param allowDataStructuresAssertion see {@link #ALLOW_DATA_STRUCTURES_ASSERTION}
+	 *  @param shouldDebugQueries           see {@link #SHOULD_DEBUG_QUERIES}
+	 *  @param hostname                     see {@link #HOSTNAME}
+	 *  @param port                         see {@link #PORT}
+	 *  @param database                     see {@link #DATABASE}
+	 *  @param user                         see {@link #USER}
+	 *  @param password                     see {@link #PASSWORD} */
+	public static void configureDefaultValuesForNewInstances(
+		boolean allowDataStructuresAssertion, boolean shouldDebugQueries,
+	    String hostname, int port, String database, String user, String password) throws SQLException {
+				
+		ALLOW_DATA_STRUCTURES_ASSERTION = allowDataStructuresAssertion;
+		SHOULD_DEBUG_QUERIES            = shouldDebugQueries;
+		HOSTNAME = hostname;
+		PORT     = port;
+		DATABASE = database;
+		USER     = user;
+		PASSWORD = password;
+
+		instance = null;
+	}
+
 	private PostgreSQLAdapterConfiguration() throws SQLException {
-		super(true, true, "venus", 5432, "hangmantest", "hangman", "hangman");
+		super(ALLOW_DATA_STRUCTURES_ASSERTION, SHOULD_DEBUG_QUERIES, HOSTNAME, PORT, DATABASE, USER, PASSWORD);
 	}
 
 	@Override
@@ -115,6 +161,9 @@ public class PostgreSQLAdapterConfiguration extends PostgreSQLAdapter {
 	////////////////////////
 	
 	public static PostgreSQLAdapter getDBAdapter() throws SQLException {
-		return new PostgreSQLAdapterConfiguration();
+		if (instance == null) {
+			instance = new PostgreSQLAdapterConfiguration();
+		}
+		return instance;
 	}
 }

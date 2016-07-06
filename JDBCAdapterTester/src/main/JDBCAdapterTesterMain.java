@@ -12,7 +12,7 @@ import mutua.icc.instrumentation.handlers.InstrumentationHandlerLogConsole;
  * Some 'MysqlHelper' spikes
  */
 
-public class Main {
+public class JDBCAdapterTesterMain {
 
 	public static void main(String[] args) {
 
@@ -33,7 +33,7 @@ public class Main {
 			// TODO JDBCAdapter does not allow two different database engines to coexist on the same VM due to the connection pool implementation
 			
 			// test embedded Derby connectivity
-			DerbyEmbeddedTester.embeddedDerbyTesterMain(args);
+			//DerbyEmbeddedTester.embeddedDerbyTesterMain(args);
 			
 		} catch (Throwable e) {
 			e.printStackTrace();

@@ -55,7 +55,7 @@ public class SMSAppModulePostgreSQLAdapterChat extends PostgreSQLAdapter {
 	/** The text field name, within the MO table */
 	private static String MO_TEXT_FIELD_NAME;
 	
-	/** method to be called when attempting to configure the singleton for new instances of 'PostgreSQLAdapter'.
+	/** method to be called when attempting to configure the singleton for new instances of this 'PostgreSQLAdapter'.
 	 *  @param allowDataStructuresAssertion see {@link #ALLOW_DATA_STRUCTURES_ASSERTION}
 	 *  @param shouldDebugQueries           see {@link #SHOULD_DEBUG_QUERIES}
 	 *  @param hostname                     see {@link #HOSTNAME}

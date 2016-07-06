@@ -87,7 +87,11 @@ public abstract class JDBCAdapter {
 		
 		// database does not exist. Create it
 		reportAdministrationWarningMessage("Database '"+database+"' seems not to exist. Attempting to create it...");
-		stm.executeUpdate("CREATE DATABASE "+database+";");
+		String createDatabaseSQL = "CREATE DATABASE "+database+";";
+		if (shouldDebugQueries) {
+			reportDatabaseSQL(createDatabaseSQL);
+		}
+		stm.executeUpdate(createDatabaseSQL);
 		reportAdministrationWarningMessage("Database '"+database+"': created.");
 		
 		stm.close();
@@ -107,6 +111,9 @@ public abstract class JDBCAdapter {
 		Statement stm = con.createStatement();
 		String requiredTableName = null;
 		try {
+			if (shouldDebugQueries) {
+				reportDatabaseSQL(getShowTablesCommand());
+			}
 			Object[][] tables = getArrayFromQueryExecution(con, getShowTablesCommand());
 	
 			// match
@@ -124,10 +131,13 @@ public abstract class JDBCAdapter {
 				if (!found) {
 					reportAdministrationWarningMessage("Table '"+requiredTableName+"' seems not to exist. Attempting to create it...");
 					for (int j=1; j<tableCreationStatements.length; j++) {
+						if (shouldDebugQueries) {
+							reportDatabaseSQL(tableCreationStatements[j]);
+						}
 						stm.addBatch(tableCreationStatements[j]);
 					}
 					int[] result = stm.executeBatch();
-					reportAdministrationWarningMessage("Table '"+requiredTableName+"': created uppon the execution of "+tableCreationStatements.length+" statement(s).");
+					reportAdministrationWarningMessage("Table '"+requiredTableName+"': created uppon the execution of "+(tableCreationStatements.length-1)+" statement(s).");
 				}
 			}
 		} catch (SQLException e) {
@@ -486,6 +496,9 @@ public abstract class JDBCAdapter {
 			Statement stm = conn.createStatement();
 			
 			for (String sql : getDropDatabaseCommand()) {
+				if (shouldDebugQueries) {
+					reportDatabaseSQL(sql);
+				}
 				stm.addBatch(sql);
 			}
 			stm.executeBatch();
