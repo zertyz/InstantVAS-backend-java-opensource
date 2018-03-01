@@ -11,7 +11,7 @@ import java.util.concurrent.Semaphore;
  * ====================
  * (created by luiz, Jan 8, 2016)
  *
- * Manages a schedule of expected events, as well as controls its realization.
+ * Manages a schedule of expected events and controls its realization.
  * Originally made to be used by the automated MO/MT tests, but may suit any other
  * attribution which needs to keep track of the realization of expected events.
  * Timeout and correct realization should be controlled by the analysis of the data
@@ -29,13 +29,26 @@ public class ScheduleControl<EVENT_TYPE, KEY_TYPE> {
 
 	/** creates an instance to control its own set of events */
 	public ScheduleControl(IScheduleIndexingFunction<EVENT_TYPE, KEY_TYPE> scheduleIndexingFunction) {
-		this.scheduleIndexingFunction = scheduleIndexingFunction;
+		this.scheduleIndexingFunction   = scheduleIndexingFunction;
 		this.scheduledEvents            = new ConcurrentHashMap<KEY_TYPE, ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE>>(100, 0.75f, 3);
 		this.completedEvents            = new ArrayList<ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE>>();
 	}
 
-	/** The same as {@link #registerEvent(Object, Object)}, but allowing a late event registration, which requires the
-	 *  'scheduledTimeMillis' to provide the correct time */
+	/** Registers an event which is expected to happen in the future. Events are qualified by their 'key' (returned by
+	 *  the 'scheduleIndexingFunction') and, if an event with the same key is already registered but not reported as
+	 *  completed (through 'notifyEvent'), an exception will be thrown */
+	public void registerEvent(EVENT_TYPE toScheduleEvent) throws EventAlreadyScheduledException {
+		KEY_TYPE eventKey = scheduleIndexingFunction.getKey(toScheduleEvent);
+		registerEvent(toScheduleEvent, eventKey);
+	}
+
+	/** same as {@link #registerEvent(Object)}, but using the provided 'eventKey' */
+	public void registerEvent(EVENT_TYPE toScheduleEvent, KEY_TYPE eventKey) throws EventAlreadyScheduledException {
+		registerEvent(toScheduleEvent, eventKey, System.currentTimeMillis());
+	}
+
+	/** same as {@link #registerEvent(Object, Object)}, but allowing a late event registration, which requires the
+	 *  'scheduledTimeMillis' to provide the correct time, in the past, when it happened */
 	public void registerEvent(EVENT_TYPE toScheduleEvent, KEY_TYPE eventKey, long scheduledTimeMillis) throws EventAlreadyScheduledException {
 		ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE> eventInfo = new ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE>(eventKey, scheduledTimeMillis, toScheduleEvent, -1, null);
 		synchronized (scheduledEvents) {
@@ -46,19 +59,14 @@ public class ScheduleControl<EVENT_TYPE, KEY_TYPE> {
 		}
 	}
 	
-	/** The same as {@link #registerEvent(Object)}, but using the provided 'eventKey' */
-	public void registerEvent(EVENT_TYPE toScheduleEvent, KEY_TYPE eventKey) throws EventAlreadyScheduledException {
-		registerEvent(toScheduleEvent, eventKey, System.currentTimeMillis());
+	/** notifies that an event previously registered with 'registerEvent' has been completed, making it available
+	 *  to be inquired by 'consumeExecutedEvents' */
+	public void notifyEvent(EVENT_TYPE executedEvent) throws EventNotScheduledException {
+		KEY_TYPE key = scheduleIndexingFunction.getKey(executedEvent);
+		notifyEvent(executedEvent, key);
 	}
-	/** Registers an event which is expected to happen in the future. Events are qualified by their 'key', returned by
-	 *  the 'scheduleIndexingFunction' and if an event with the same key is already registered but not reported as
-	 *  completed with 'notifyEvent', an exception will be thrown */
-	public void registerEvent(EVENT_TYPE toScheduleEvent) throws EventAlreadyScheduledException {
-		KEY_TYPE eventKey = scheduleIndexingFunction.getKey(toScheduleEvent);
-		registerEvent(toScheduleEvent, eventKey);
-	}
-
-	/** The same as {@link #notifyEvent(Object)}, but using the provided 'eventKey' */
+	
+	/** same as {@link #notifyEvent(Object)}, but using the provided 'eventKey' */
 	public void notifyEvent(EVENT_TYPE executedEvent, KEY_TYPE eventKey) throws EventNotScheduledException {
 		ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE> scheduledEventInfo;
 		synchronized (scheduledEvents) {
@@ -74,13 +82,6 @@ public class ScheduleControl<EVENT_TYPE, KEY_TYPE> {
 		}
 	}
 
-	/** notifies that an event previously registered with 'registerEvent' has been completed, making it available
-	 *  to be inquired by 'consumeExecutedEvents' */
-	public void notifyEvent(EVENT_TYPE executedEvent) throws EventNotScheduledException {
-		KEY_TYPE key = scheduleIndexingFunction.getKey(executedEvent);
-		notifyEvent(executedEvent, key);
-	}
-	
 	public boolean isKeyPending(KEY_TYPE key) {
 		synchronized (scheduledEvents) {
 			return scheduledEvents.containsKey(key);
@@ -133,7 +134,7 @@ public class ScheduleControl<EVENT_TYPE, KEY_TYPE> {
 					ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE> event = iterator.next();
 					if ((currentMillis - event.getScheduledMillis()) > timeoutMillis) {
 						
-						// lazy creation of 'timedoutEvents' list, because the relation between the number elements returned / number of expected calls
+						// lazy creation of 'timedoutEvents' list, because the relation between the number of elements returned / number of expected calls
 						// is likely to be very, very low -- this strategy avoids the creation of an ArrayList (costly) and a native array (cheap)
 						if (timedOutEvents == null) {
 							timedOutEvents = new ArrayList<ScheduleEntryInfo<EVENT_TYPE, KEY_TYPE>>();
