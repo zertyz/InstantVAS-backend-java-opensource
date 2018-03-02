@@ -822,7 +822,7 @@ public class InstantVASInstanceConfiguration {
 			throw new RuntimeException("InstantVAS 'MO arrived' Event Processing Strategy '"+MO_PROCESSING_STRATEGY+"' is not implemented");
 		}
 		Instrumentation.reportDebug("### Configuring 'MT ready for delivert' event processing strategy: ");
-		switch (MO_PROCESSING_STRATEGY) {
+		switch (MT_PROCESSING_STRATEGY) {
 		case POSTGRESQL:
 			Instrumentation.reportDebug("  PostgreSQL Queue...");
 			QueuesPostgreSQLAdapter.configureDefaultValuesForNewInstances(POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD);
@@ -1050,7 +1050,7 @@ public class InstantVASInstanceConfiguration {
 	public static void setHangmanTestDefaults() {
 		setHangmanProductionDefaults();
 		ENABLED_MODULES[0] = EInstantVASModules.CELLTICK_JUNIT_TESTS_INTEGRATION;
-		POSTGRESQL_SHOULD_DEBUG_QUERIES     = false;
+		POSTGRESQL_SHOULD_DEBUG_QUERIES     = true;
 		LIFECYCLE_SERVICE_BASE_URL          = "http://test.InstantVAS.com/CelltickSubscriptions.php";
 		MT_SERVICE_URL                      = "http://test.InstantVAS.com/CelltickMTs.php";
 //		PROFILEGeoLocatorCountryStateByMSISDNPatterns = new String[] {
