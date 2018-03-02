@@ -13,7 +13,8 @@ import java.util.concurrent.Semaphore;
  *
  * Manages a schedule of expected events and controls its realization.
  * Originally made to be used by the automated MO/MT tests, but may suit any other
- * attribution which needs to keep track of the realization of expected events.
+ * attribution which needs to keep track of the realization of expected events,
+ * making it a somewhat nice infrastructure for Timers.
  * Timeout and correct realization should be controlled by the analysis of the data
  * returned by 'getUnnotifiedEventsCount' and 'consumeExecutedEvents'
  *
