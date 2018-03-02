@@ -71,7 +71,7 @@ public class SMSProcessor {
 	/** Gets a processor instance which will deliver Output SMSes (MT's) to the 
 	 * provided 'interactionReceiver' MessageReceiver instance */
 	public SMSProcessor(IResponseReceiver defaultReceiver, NavigationState[][] navigationStatesArrays, ICommandProcessor[][] commandProcessorsArrays) {
-		mtDispatcher          = new MessageDispatcher(defaultReceiver);
+		mtDispatcher = new MessageDispatcher(defaultReceiver);
 		Instrumentation.reportDebug("SMSProcessor started with navigation states '"+Arrays.deepToString(navigationStatesArrays)+"' and commands '"+Arrays.deepToString(commandProcessorsArrays)+"'");
 				
 		// rearrange for 'commandProcessors'

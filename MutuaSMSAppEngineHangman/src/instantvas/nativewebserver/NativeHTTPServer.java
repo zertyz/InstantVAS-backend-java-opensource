@@ -88,7 +88,7 @@ public class NativeHTTPServer {
 		// TODO 18/5/2016 -- corrigir a arquitetura de Instancias: o código abaixo é válido para somente 1 instância.
 		//      As instâncias devem ser carregadas (configuradas) via definição em Licenses, onde um campo
 		//      chamado "InstantiationStyle" poderia ter os valores "preload", "lazyload", ou "cacheable"
-		//      onde o preload incorporaria somente código otimizado e os outros, tanto faz.
+		//      onde o preload incorporaria somente código otimizado (com IFDEFs) e os outros, tanto faz.
 		
 		moParser   = ivac.moParser;
 		mtProducer = new MTProducer(ivac, new MTConsumer(ivac));

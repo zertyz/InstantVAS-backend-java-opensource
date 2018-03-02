@@ -937,7 +937,7 @@ public class InstantVASInstanceConfiguration {
 				subscriptionEventsServer = (SMSAppModuleEventsSubscription)           subscriptionModuleInstances[3];
 				break;
 			case PROFILE:
-				// determines which geo locator to use
+				// determines which geolocator to use
 				IGeoLocatorPlaceHolder userGeoLocatorPlugin;
 				switch (PROFILEGeoLocator) {
 				case MSISDNRegex:
