@@ -2,6 +2,7 @@ package mutua.smsappmodule.smslogic.commands;
 
 import java.sql.SQLException;
 
+import mutua.serialization.SerializationRepository.EfficientTextualSerializationMethod;
 import mutua.smsappmodule.smslogic.sessions.SessionModel;
 import mutua.smsin.dto.IncomingSMSDto.ESMSInParserCarrier;
 
@@ -44,5 +45,18 @@ public abstract class ICommandProcessor {
 	 *  By convention when -- in the 'CommandAnswerInfo' -- the 'phone' is null, the MTs are
 	 *  addressed to the same phone who sent the MO */
 	public abstract CommandAnswerDto processCommand(SessionModel session, ESMSInParserCarrier carrier, String[] parameters) throws SQLException;
+	
+	@EfficientTextualSerializationMethod
+	public void toString(StringBuffer buffer) {
+		buffer.append(commandName);
+	}
+	
+	@Override
+	public String toString() {
+		StringBuffer buffer = new StringBuffer();
+		toString(buffer);
+		return buffer.toString();
+	}
+
 
 }

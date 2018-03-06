@@ -132,6 +132,13 @@ public class NavigationState {
 		buffer.append(navigationStateName);
 	}
 	
+	@Override
+	public String toString() {
+		StringBuffer buffer = new StringBuffer();
+		toString(buffer);
+		return buffer.toString();
+	}
+	
 	// events
 	
 	/** Happens (called) by the 'SMSProcessor' whenever a command changes the current (this) state -- the command that generated 'leavingStateCommandAnswer'.
