@@ -96,6 +96,8 @@ public class SMSProcessor {
 		}
 		this.navigationStates = tempNavStates.toArray(new NavigationState[tempNavStates.size()]);
 		
+		Instrumentation.reportDebug("Processor started with navigation states '"+Arrays.deepToString(this.navigationStates)+"' and commands '"+Arrays.deepToString(this.commandProcessors)+"'");
+		
 	}
 	
 	/** Given a commandName, return the right command processor instance */

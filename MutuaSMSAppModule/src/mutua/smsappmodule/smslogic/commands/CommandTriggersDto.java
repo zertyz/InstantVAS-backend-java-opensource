@@ -49,9 +49,10 @@ public class CommandTriggersDto {
 	public void toString(StringBuffer buffer) {
 		buffer.
 			append("{command='").
-			append(command).
-			append("', patterns=").
-			append(SerializationRepository.serialize(buffer, patterns)).
+			append(command.getCommandName()).
+			append("', patterns=");
+		SerializationRepository.serialize(buffer, patterns);
+		buffer.
 			append(", timeout=").
 			append(timeout).
 			append("}");

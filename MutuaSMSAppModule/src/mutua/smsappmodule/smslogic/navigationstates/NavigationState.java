@@ -136,7 +136,7 @@ public class NavigationState {
 		buffer.
 			append("{navigationState='").
 			append(navigationStateName).
-			append("', commandTriggers={").
+			append("', commandTriggers=").
 			append(SerializationRepository.serialize(buffer, commandTriggersSerializationMethod, commandTriggers)).
 			append('}');
 	}
