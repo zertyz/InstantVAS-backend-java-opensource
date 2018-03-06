@@ -56,9 +56,9 @@ public class CommandMessageDto {
 	
 	@EfficientTextualSerializationMethod
 	public void toString(StringBuffer buffer) {
-		buffer.append("phone='").append(phone).append("', text='");
+		buffer.append("{phone='").append(phone).append("', text='");
 		SerializationRepository.serialize(buffer, text);
-		buffer.append("', type='").append((type != null) ? type.name() : "NULL").append('\'');
+		buffer.append("', type='").append((type != null) ? type.name() : "NULL").append("'}");
 	}
 
 	@Override

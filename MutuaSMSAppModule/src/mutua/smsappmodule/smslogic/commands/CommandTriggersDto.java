@@ -1,6 +1,7 @@
 package mutua.smsappmodule.smslogic.commands;
 
-import java.util.Arrays;
+import mutua.serialization.SerializationRepository;
+import mutua.serialization.SerializationRepository.EfficientTextualSerializationMethod;
 
 /** <pre>
  * CommandTriggersDto.java
@@ -43,10 +44,24 @@ public class CommandTriggersDto {
 	public long getTimeout() {
 		return timeout;
 	}
-
+	
+	@EfficientTextualSerializationMethod
+	public void toString(StringBuffer buffer) {
+		buffer.
+			append("{command='").
+			append(command).
+			append("', patterns=").
+			append(SerializationRepository.serialize(buffer, patterns)).
+			append(", timeout=").
+			append(timeout).
+			append("}");
+	}
+	
 	@Override
 	public String toString() {
-		return "command='" + command.getCommandName() + "', patterns=" +
-		       Arrays.toString(patterns) + ", timeout=" + timeout;
+		StringBuffer buffer = new StringBuffer();
+		toString(buffer);
+		return buffer.toString();
 	}
+
 }
