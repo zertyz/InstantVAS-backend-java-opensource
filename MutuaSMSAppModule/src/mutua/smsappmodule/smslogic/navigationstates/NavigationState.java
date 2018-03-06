@@ -7,7 +7,6 @@ import java.util.Arrays;
 import mutua.serialization.SerializationRepository;
 import mutua.serialization.SerializationRepository.EfficientTextualSerializationMethod;
 import mutua.smsappmodule.smslogic.commands.CommandAnswerDto;
-import mutua.smsappmodule.smslogic.commands.CommandMessageDto;
 import mutua.smsappmodule.smslogic.commands.CommandTriggersDto;
 import mutua.smsappmodule.smslogic.commands.ICommandProcessor;
 
@@ -136,9 +135,9 @@ public class NavigationState {
 		buffer.
 			append("{navigationState='").
 			append(navigationStateName).
-			append("', commandTriggers=").
-			append(SerializationRepository.serialize(buffer, commandTriggersSerializationMethod, commandTriggers)).
-			append('}');
+			append("', commandTriggers=");
+		SerializationRepository.serialize(buffer, commandTriggersSerializationMethod, commandTriggers);
+		buffer.append('}');
 	}
 	
 	@Override
