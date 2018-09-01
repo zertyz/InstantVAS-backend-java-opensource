@@ -39,7 +39,7 @@ public class NavigationStateCommonsTests {
 			{availableCommandName, new String[] {"regex1", "regex2"}, 1001l}});
 		nsc.applyCommandTriggersData(availableCommands);
 		assertEquals("serialization didn't work",
-		             "command='TestCommandProcessor', patterns=[regex1, regex2], timeout=1001",
+		             "{command='TestCommandProcessor', patterns={\"regex1\",\"regex2\"}, timeout=1001}",
 		             nsc.serializeCommandTrigger(null)[0]);
 	}
 	
@@ -49,20 +49,20 @@ public class NavigationStateCommonsTests {
 			{availableCommandName, new String[] {"regex1", "regex2"}, 1001l}},
 			availableCommands);
 		assertEquals("serialization of regex & timeout didn't work",
-		             "command='TestCommandProcessor', patterns=[regex1, regex2], timeout=1001",
+		             "{command='TestCommandProcessor', patterns={\"regex1\",\"regex2\"}, timeout=1001}",
 		             config.baseModuleNavigationStates.nstNewUser.serializeCommandTrigger(null)[0]);
 
 		config.baseModuleNavigationStates.nstNewUser.setCommandTriggers(new Object[][] {
 			{availableCommandName, new String[] {"regex1", "regex2"}}},
 			availableCommands);
 		assertEquals("serialization of regex & without timeout didn't work",
-		             "command='TestCommandProcessor', patterns=[regex1, regex2], timeout=-1",
+		             "{command='TestCommandProcessor', patterns={\"regex1\",\"regex2\"}, timeout=-1}",
 		             config.baseModuleNavigationStates.nstNewUser.serializeCommandTrigger(null)[0]);
 
 		config.baseModuleNavigationStates.nstNewUser.setCommandTriggers(new Object[][] {
 				{availableCommandName, 101l}}, availableCommands);
 		assertEquals("serialization of timeout & without regex didn't work",
-		             "command='TestCommandProcessor', patterns=[], timeout=101",
+		             "{command='TestCommandProcessor', patterns={}, timeout=101}",
 		             config.baseModuleNavigationStates.nstNewUser.serializeCommandTrigger(null)[0]);
 	}
 
