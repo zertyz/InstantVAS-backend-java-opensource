@@ -37,6 +37,14 @@ public enum SMSAppModuleDALFactory {
 
 	},
 	
+	/** H2's MVStore -- NoSQL embedded storage library used in H2 database, for blazing performance */
+	MVSTORE {
+		protected void instantiateDataAccessLayers() {
+			super.userDB    = new mutua.smsappmodule.dal.mvstore.UserDB();
+			super.sessionDB = new mutua.smsappmodule.dal.mvstore.SessionDB();
+		}
+	}
+	
 	;
 	
 	private IUserDB    userDB;
