@@ -2,6 +2,7 @@ package instantvas.tests;
 
 import java.sql.SQLException;
 
+import adapters.MVStoreAdapter;
 import adapters.PostgreSQLAdapter;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.icc.instrumentation.InstrumentableEvent.ELogSeverity;
@@ -48,6 +49,7 @@ public class InstantVASSMSAppModuleTestsConfiguration {
 	public static void configureDefaultValuesForNewInstances(
 		int performanceTestsLoadFactor, SMSAppModuleDALFactory baseModuleDAL,
 		String postgreSQLConnectionProperties, int postgreSQLConnectionPoolSize,
+		String mvStoreDatabaseFileName,
 		boolean postgreSQLAllowDataStructuresAssertion, boolean postreSQLShouldDebugQueries, String postreSQLHostname, int postreSQLPort, String postreSQLDatabase,
 		String postreSQLUser, String postreSQLPassword) throws SQLException {
 		
@@ -62,6 +64,9 @@ public class InstantVASSMSAppModuleTestsConfiguration {
 				PostgreSQLAdapter.configureDefaultValuesForNewInstances(postgreSQLConnectionProperties, postgreSQLConnectionPoolSize);
 				SMSAppModulePostgreSQLAdapter.configureDefaultValuesForNewInstances(postgreSQLAllowDataStructuresAssertion, postreSQLShouldDebugQueries,
 					postreSQLHostname, postreSQLPort, postreSQLDatabase, postreSQLUser, postreSQLPassword);
+				break;
+			case MVSTORE:
+				MVStoreAdapter.configureDefaultValuesForNewInstances(mvStoreDatabaseFileName);
 				break;
 			case RAM:
 				break;
@@ -89,9 +94,11 @@ public class InstantVASSMSAppModuleTestsConfiguration {
 
 		try {
 			configureDefaultValuesForNewInstances(
-				1, SMSAppModuleDALFactory.POSTGRESQL,
+				10, SMSAppModuleDALFactory.MVSTORE,
 				// PostgreSQL properties (don't touch default connection properties & pool size)
 				null, 0,
+				// MVStore
+				"/tmp/InstantVASSMSAppModuleTests.mvstoredb",
 				true, false, "venus", 5432, "hangman", "hangman", "hangman");
 		} catch (SQLException e) {
 			throw new ExceptionInInitializerError(e);
