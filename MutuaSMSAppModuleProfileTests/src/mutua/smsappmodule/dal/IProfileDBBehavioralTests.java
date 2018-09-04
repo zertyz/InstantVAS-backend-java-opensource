@@ -49,7 +49,9 @@ public class IProfileDBBehavioralTests {
 	
 	@Before
 	public void resetTables() throws SQLException {
-		config.moDB.resetQueues();
+		if (config.moDB != null) {
+			config.moDB.resetQueues();
+		}
 		profileDB.reset();
 		SMSAppModuleTestCommons.resetBaseTables(BASE_MODULE_DAL);
 	}

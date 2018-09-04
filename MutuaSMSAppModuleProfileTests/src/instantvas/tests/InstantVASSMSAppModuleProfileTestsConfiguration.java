@@ -22,6 +22,7 @@ import static mutua.smsappmodule.smslogic.SMSAppModuleCommandsProfile.CommandTri
 
 import java.sql.SQLException;
 
+import adapters.MVStoreAdapter;
 import adapters.PostgreSQLAdapter;
 
 /** <pre>
@@ -63,6 +64,7 @@ public class InstantVASSMSAppModuleProfileTestsConfiguration {
 	/** method to be called to configure all the modules needed to get instances of the test classes */
 	public static void configureDefaultValuesForNewInstances(
 		int performanceTestsLoadFactor, SMSAppModuleDALFactoryProfile profileModuleDAL,
+		String mvStoreDatabaseFileName,
 		String postgreSQLconnectionProperties, int postgreSQLConnectionPoolSize,
 		boolean postgreSQLAllowDataStructuresAssertion, boolean postgreSQLShouldDebugQueries,
 		String postgreSQLHostname, int postgreSQLPort, String postgreSQLDatabase, String postgreSQLUser, String postgreSQLPassword) throws SQLException {
@@ -83,6 +85,11 @@ public class InstantVASSMSAppModuleProfileTestsConfiguration {
 				QueuesPostgreSQLAdapter.configureDefaultValuesForNewInstances(postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries, postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
 				// other databases
 				BASE_MODULE_DAL = SMSAppModuleDALFactory.POSTGRESQL;
+				break;
+			case MVSTORE:
+				MVStoreAdapter.configureDefaultValuesForNewInstances(mvStoreDatabaseFileName);
+				// other databases
+				BASE_MODULE_DAL = SMSAppModuleDALFactory.MVSTORE;
 				break;
 			case RAM:
 				// other databases
@@ -114,7 +121,9 @@ public class InstantVASSMSAppModuleProfileTestsConfiguration {
 		try {
 			configureDefaultValuesForNewInstances(
 				// module DAL
-				1, SMSAppModuleDALFactoryProfile.POSTGRESQL,
+				//1, SMSAppModuleDALFactoryProfile.POSTGRESQL,
+				10, SMSAppModuleDALFactoryProfile.MVSTORE,
+				"/tmp/InstantVASSMSAppModuleTests.mvstoredb",
 				// PostgreSQL properties
 				null,	// connection properties
 				-1,		// connection pool size
@@ -138,10 +147,22 @@ public class InstantVASSMSAppModuleProfileTestsConfiguration {
 		profileModuleCommands         = (SMSAppModuleCommandsProfile)         profileModule[1];
 		profileModulePhrasings        = (SMSAppModulePhrasingsProfile)        profileModule[2];
 		
-		SpecializedMOQueueDataBureau dataBureau = new SpecializedMOQueueDataBureau();
-		moDB = QueuesPostgreSQLAdapter.getQueuesDBAdapter("MOSMSes", dataBureau.getFieldsCreationLine(), dataBureau.getQueueElementFieldList(),
-                dataBureau.getParametersListForInsertNewQueueElementQuery(), 10);
-
+		// MO simulation queue configuration
+		switch(PROFILE_MODULE_DAL) {
+			case POSTGRESQL:
+				SpecializedMOQueueDataBureau dataBureau = new SpecializedMOQueueDataBureau();
+				moDB = QueuesPostgreSQLAdapter.getQueuesDBAdapter("MOSMSes", dataBureau.getFieldsCreationLine(), dataBureau.getQueueElementFieldList(),
+		                                                          dataBureau.getParametersListForInsertNewQueueElementQuery(), 10);
+				break;
+			case MVSTORE:
+				moDB = null;
+				break;
+			case RAM:
+				moDB = null;
+				break;
+			default:
+				throw new RuntimeException("Not implemented");
+		}
 		
 		// base module -- configured to interact with the Profile Module commands 
 		Object[] baseModule = InstantVASSMSAppModuleConfiguration.getBaseModuleInstances(BASE_MODULE_DAL,

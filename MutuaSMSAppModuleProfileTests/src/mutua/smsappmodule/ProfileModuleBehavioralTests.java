@@ -13,6 +13,7 @@ import mutua.events.SpecializedMOQueueDataBureau.SpecializedMOParameters;
 import mutua.smsappmodule.dal.IProfileDB;
 import mutua.smsappmodule.dal.ISessionDB;
 import mutua.smsappmodule.dal.IUserDB;
+import mutua.smsappmodule.dal.SMSAppModuleDALFactoryProfile;
 import mutua.smsappmodule.dto.ProfileDto;
 import mutua.smsappmodule.dto.UserDto;
 import mutua.smsappmodule.smslogic.navigationstates.NavigationState;
@@ -142,10 +143,12 @@ public class ProfileModuleBehavioralTests {
 	@Test
 	public void testListProfilesInfo() throws SQLException {
 		
+		// TODO correct this test when we are not using POSTGRESQL DAL -- we should have a common MO for all DALs and, today, we only have it for POSTGRESQL. Tip: see we should use a queue event link (PostgreSQLQueueEventLink) istead of the low level, postgresql only adapter for the queue
+		
 		// fill in listable profiles (simulates the MO, session & nickname setting)
 		///////////////////////////////////////////////////////////////////////////
 
-		// simulate MO inclusion (BUGs when we're usimg the RAM DAL)
+		// simulate MO inclusion (BUGs when we're not using the POSTGRESQL DAL)
 		config.moDB.invokeUpdateBatchProcedure(config.moDB.BatchInsertNewQueueElement, new Object[][] {
 			{SpecializedMOParameters.PHONE, "21998919167", SpecializedMOParameters.TEXT, "this is an MO from Paty!"},
 			{SpecializedMOParameters.PHONE, "21991234899", SpecializedMOParameters.TEXT, "this is the MO from Dom!"},
