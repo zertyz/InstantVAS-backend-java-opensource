@@ -10,16 +10,21 @@ import mutua.smsappmodule.dal.mvstore.ChatDB;
  * ===============================
  * (created by luiz, Sep 8, 2015)
  *
- * Enum based implementation of the Factory Pattern, to select among
- * data access layers
+ * Enum based implementation of the Mutua's DAL Factory Pattern, to select among
+ * data access layers.
  *
- * @see RelatedClass(es)
+ * @see SMSAppModuleDALFactory
  * @version $Id$
  * @author luiz
  */
 
 public enum SMSAppModuleDALFactoryChat {
 	
+	
+	// DALs
+	///////
+	
+	/** The RAM based DAL instances of the "Chat SMS Module", for modeling & testing purposes */
 	RAM(false) {
 		@Override
 		protected void instantiateDataAccessLayers() {
@@ -27,6 +32,7 @@ public enum SMSAppModuleDALFactoryChat {
 		}
 	},
 	
+	/** The persistent PostgreSQL DAL instances of the "Chat SMS Module", for production */
 	POSTGRESQL(true) {
 		@Override
 		protected void instantiateDataAccessLayers() throws SQLException {
@@ -34,6 +40,7 @@ public enum SMSAppModuleDALFactoryChat {
 		}
 	},
 	
+	/** H2's MVStore -- NoSQL embedded storage library used in H2 database, for blazing performance */
 	MVSTORE(true) {
 		@Override
 		protected void instantiateDataAccessLayers() {
@@ -43,19 +50,21 @@ public enum SMSAppModuleDALFactoryChat {
 	
 	;
 	
+	// Data Access Objects & methods
+	////////////////////////////////
+	
 	private IChatDB chatDB;
 	
-	private boolean requireInstantiationParameters;
-	private boolean wasInstantiationParametersProvided = false;
-	private boolean wasInstantiated                    = false;
-	
-	/** Enum constructor. Each enum of this class should state if it requires that {@link #setInstantiationParameters} is called before use. */
-	SMSAppModuleDALFactoryChat(boolean requireInstantiationParameters) {
-		this.requireInstantiationParameters = requireInstantiationParameters;
+	public IChatDB getChatDB() {
+		checkDataAccessLayers();
+		return chatDB;
 	}
 	
+	/** Method to construct the DAO instances, which is Overridden by each enum. */
+	protected abstract void instantiateDataAccessLayers() throws SQLException;
+	
 
-	// instantiation parameters
+	// Instantiation Parameters
 	///////////////////////////
 	
 	/** The table used to register MOs */
@@ -86,9 +95,16 @@ public enum SMSAppModuleDALFactoryChat {
 		return this;
 	}
 	
-	/** Method to construct the DAO instances, which is Overridden by each enum. */
-	protected abstract void instantiateDataAccessLayers() throws SQLException;
+	private boolean requireInstantiationParameters;
+	private boolean wasInstantiationParametersProvided = false;
+	private boolean wasInstantiated                    = false;
 	
+	/** Some enums of this class require that {@link #setInstantiationParameters} is called before use. */
+	SMSAppModuleDALFactoryChat(boolean requireInstantiationParameters) {
+		this.requireInstantiationParameters = requireInstantiationParameters;
+	}
+	
+
 	/** This method allows the instantiation of only the desired data access layer
 	/* (preventing unnecessary drivers to be loaded)
 	 * ... and checks if {@link #setInstantiationParameters} was properly called. */
@@ -96,7 +112,7 @@ public enum SMSAppModuleDALFactoryChat {
 		if (!wasInstantiated) try {
 			// checks if {@link #setInstantiationParameters} was properly called
 			if (requireInstantiationParameters && (wasInstantiationParametersProvided == false)) {
-				throw new RuntimeException("SMSAppModuleDALFactory pattern: '"+this.getClass().getName()+"."+this.name()+".setInstantiationParameters(...)' was not properly called at DATA_ACCESS_LAYERs setup.");
+				throw new RuntimeException("Mutua's DAL Factory pattern: '"+this.getClass().getName()+"."+this.name()+".setInstantiationParameters(...)' was not properly called at DATA_ACCESS_LAYERs setup.");
 			}
 			instantiateDataAccessLayers();
 			wasInstantiated = true;
@@ -105,8 +121,4 @@ public enum SMSAppModuleDALFactoryChat {
 		}
 	}
 	
-	public IChatDB getChatDB() {
-		checkDataAccessLayers();
-		return chatDB;
-	}
 }
