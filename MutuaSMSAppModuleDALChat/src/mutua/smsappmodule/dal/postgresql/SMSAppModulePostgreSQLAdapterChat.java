@@ -13,7 +13,7 @@ import adapters.PostgreSQLAdapter;
  * ======================================
  * (created by luiz, Sep 8, 2015)
  *
- * Provides {@link PostgreSQLAdapter}s to manipulate the "Hangman" module database & tables
+ * Provides {@link PostgreSQLAdapter}s to manipulate the "Chat" module database & tables
  *
  * @see PostgreSQLAdapter
  * @version $Id$
@@ -62,14 +62,10 @@ public class SMSAppModulePostgreSQLAdapterChat extends PostgreSQLAdapter {
 	 *  @param port                         see {@link #PORT}
 	 *  @param database                     see {@link #DATABASE}
 	 *  @param user                         see {@link #USER}
-	 *  @param password                     see {@link #PASSWORD}
-	 *  @param moTableName                  see {@link #MO_TABLE_NAME}
-	 *  @param moIdFieldName                see {@link #MO_ID_FIELD_NAME}
-	 *  @param moTextFieldName              see {@link #MO_Text_FIELD_NAME} */
+	 *  @param password                     see {@link #PASSWORD} */
 	public static void configureDefaultValuesForNewInstances(
 		boolean allowDataStructuresAssertion, boolean shouldDebugQueries,
-	    String hostname, int port, String database, String user, String password,
-	    String moTableName, String moIdFieldName, String moTextFieldName) throws SQLException {
+	    String hostname, int port, String database, String user, String password) throws SQLException {
 
 		ALLOW_DATA_STRUCTURES_ASSERTION = allowDataStructuresAssertion;
 		SHOULD_DEBUG_QUERIES            = shouldDebugQueries;
@@ -79,10 +75,6 @@ public class SMSAppModulePostgreSQLAdapterChat extends PostgreSQLAdapter {
 		USER     = user;
 		PASSWORD = password;
 		
-		MO_TABLE_NAME      = moTableName;
-		MO_ID_FIELD_NAME   = moIdFieldName;
-		MO_TEXT_FIELD_NAME = moTextFieldName;
-
 		instance = null;
 	}
 	
@@ -161,13 +153,14 @@ public class SMSAppModulePostgreSQLAdapterChat extends PostgreSQLAdapter {
 			"TRUNCATE PrivateMessages CASCADE");
 		InsertPrivateMessage  = new AbstractPreparedProcedure(connectionPool,
 			"INSERT INTO PrivateMessages(moId, senderUserId, recipientUserId, moTextStartIndex) ",
-		                                                      "VALUES(",Parameters.MO_ID,", ",Parameters.SENDER_USER_ID,", ",Parameters.RECIPIENT_USER_ID,", ",Parameters.MO_TEXT_START_INDEX,")");
+		                         "VALUES(",Parameters.MO_ID,", ",Parameters.SENDER_USER_ID,", ",Parameters.RECIPIENT_USER_ID,", ",Parameters.MO_TEXT_START_INDEX,")");
 		SelectPeers           = new AbstractPreparedProcedure(connectionPool,
 			"SELECT DISTINCT userId, phoneNumber FROM ",
-		    "(SELECT senderUserId    AS userId, phoneNumber, moId FROM PrivateMessages, Users WHERE PrivateMessages.recipientUserId=",
-		    Parameters.USER_ID," AND Users.userId=",Parameters.USER_ID," UNION ",
+		    "(SELECT senderUserId AS userId, phoneNumber, moId FROM PrivateMessages, Users WHERE PrivateMessages.recipientUserId=",Parameters.USER_ID,
+		                                                                                   " AND Users.userId=",Parameters.USER_ID,
+		    " UNION ",
 		    " SELECT recipientUserId AS userId, phoneNumber, moId FROM PrivateMessages, Users WHERE PrivateMessages.senderUserId=",Parameters.USER_ID,
-		    " AND Users.userId=",Parameters.USER_ID," ORDER BY moId ASC) uq");
+		                                                                                   " AND Users.userId=",Parameters.USER_ID," ORDER BY moId ASC) uq");
 		SelectPrivateMessages = new AbstractPreparedProcedure(connectionPool,
 			"SELECT pm.moId, pm.senderUserID, su.phoneNumber AS senderPhoneNumber, pm.recipientUserID, ru.phoneNumber AS recipientPhoneNumber, SUBSTRING(",
 		    moTableName,".",moTextFieldName," FROM pm.moTextStartIndex+1) AS message FROM PrivateMessages pm, Users su, Users ru, ",moTableName," WHERE ",
@@ -180,18 +173,25 @@ public class SMSAppModulePostgreSQLAdapterChat extends PostgreSQLAdapter {
 	// public methods
 	/////////////////
 	
-	public static SMSAppModulePostgreSQLAdapterChat getInstance() throws SQLException {
+	private static SMSAppModulePostgreSQLAdapterChat getInstance(String moTableName, String moIdFieldName, String moTextFieldName) throws SQLException {
+		if (!moTableName.equals(MO_TABLE_NAME) || !moIdFieldName.equals(MO_ID_FIELD_NAME) || !moTextFieldName.equals(MO_TEXT_FIELD_NAME)) {
+			MO_TABLE_NAME      = moTableName;
+			MO_ID_FIELD_NAME   = moIdFieldName;
+			MO_TEXT_FIELD_NAME = moTextFieldName;
+			instance = null;
+		}
 		if (instance == null) {
 			instance = new SMSAppModulePostgreSQLAdapterChat();
-//			throw new RuntimeException("Class '" + SMSAppModulePostgreSQLAdapterChat.class.getCanonicalName() + "' was not configured according to the " +
-//			                           "'SMSAppModulePostgreSQLAdapterHangman' pattern -- a preliminar call to 'configureDefaultValuesForNewInstances' " +
-//			                           "was not made.");
 		}
 		return instance;
 	}
 	
-	public static SMSAppModulePostgreSQLAdapterChat getChatDBAdapter() throws SQLException {
-		return getInstance();
+	/** Get an instance of this class according to the parameters below, (re)instantiating, if necessary.
+	 * @param moTableName                  see {@link #MO_TABLE_NAME}
+	 * @param moIdFieldName                see {@link #MO_ID_FIELD_NAME}
+	 * @param moTextFieldName              see {@link #MO_Text_FIELD_NAME} */
+	public static SMSAppModulePostgreSQLAdapterChat getChatDBAdapter(String moTableName, String moIdFieldName, String moTextFieldName) throws SQLException {
+		return getInstance(moTableName, moIdFieldName, moTextFieldName);
 	}
 
 }

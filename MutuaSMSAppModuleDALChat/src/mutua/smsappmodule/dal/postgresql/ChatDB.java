@@ -25,8 +25,8 @@ public class ChatDB extends IChatDB {
 	private SMSAppModulePostgreSQLAdapterChat dba;
 	
 	
-	public ChatDB() throws SQLException {
-		dba = SMSAppModulePostgreSQLAdapterChat.getChatDBAdapter();
+	public ChatDB(String moTableName, String moIdFieldName, String moTextFieldName) throws SQLException {
+		dba = SMSAppModulePostgreSQLAdapterChat.getChatDBAdapter(moTableName, moIdFieldName, moTextFieldName);
 	}
 
 	@Override
@@ -37,7 +37,7 @@ public class ChatDB extends IChatDB {
 	@Override
 	public void logPrivateMessage(UserDto sender, UserDto recipient, int moId, int moTextStartIndex) throws SQLException {
 		dba.invokeUpdateProcedure(dba.InsertPrivateMessage,
-			MO_ID, moId,
+			MO_ID,               moId,
 			SENDER_USER_ID,      sender.getUserId(),
 			RECIPIENT_USER_ID,   recipient.getUserId(),
 			MO_TEXT_START_INDEX, moTextStartIndex);
