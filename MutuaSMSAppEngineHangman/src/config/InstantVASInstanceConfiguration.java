@@ -769,11 +769,10 @@ public class InstantVASInstanceConfiguration {
 					profileModuleDAL.checkDataAccessLayers();
 					break;
 				case CHAT:
-					chatModuleDAL = SMSAppModuleDALFactoryChat.POSTGRESQL;
-					SMSAppModulePostgreSQLAdapterChat.configureDefaultValuesForNewInstances(POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD,
-					                                                                        MOSMSesQueueDataBureau.MO_TABLE_NAME,
-					                                                                        MOSMSesQueueDataBureau.MO_ID_FIELD_NAME,
-					                                                                        MOSMSesQueueDataBureau.MO_TEXT_FIELD_NAME);
+					chatModuleDAL = SMSAppModuleDALFactoryChat.POSTGRESQL.setInstantiationParameters(MOSMSesQueueDataBureau.MO_TABLE_NAME,
+					                                                                                 MOSMSesQueueDataBureau.MO_ID_FIELD_NAME,
+					                                                                                 MOSMSesQueueDataBureau.MO_TEXT_FIELD_NAME);
+					SMSAppModulePostgreSQLAdapterChat.configureDefaultValuesForNewInstances(POSTGRESQL_ALLOW_DATA_STRUCTURES_ASSERTIONS, POSTGRESQL_SHOULD_DEBUG_QUERIES, POSTGRESQL_HOSTNAME, POSTGRESQL_PORT, POSTGRESQL_DATABASE, POSTGRESQL_USER, POSTGRESQL_PASSWORD);
 					chatModuleDAL.checkDataAccessLayers();
 					break;
 				case HANGMAN:
