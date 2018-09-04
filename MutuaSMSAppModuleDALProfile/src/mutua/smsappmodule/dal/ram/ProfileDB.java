@@ -26,7 +26,7 @@ public class ProfileDB implements IProfileDB {
 	//////////////////
 	
 	private static Hashtable<UserDto, ProfileDto> profilesByUser = new Hashtable<UserDto, ProfileDto>(15641,1); // 15625 * 2^7 = 2002048
-	private static Hashtable<String,  ProfileDto> profilesByNick = new Hashtable<String, ProfileDto>(15641,1);
+	private static Hashtable<String,  ProfileDto> profilesByNick = new Hashtable<String,  ProfileDto>(15641,1);
 	
 	
 	// common methods

@@ -4,6 +4,7 @@ import java.sql.SQLException;
 
 import mutua.icc.configuration.annotations.ConfigurableElement;
 import mutua.icc.instrumentation.Instrumentation;
+import mutua.smsappmodule.dal.mvstore.ProfileDB;
 
 /** <pre>
  * SMSAppModuleDALFactoryProfile.java
@@ -21,16 +22,25 @@ import mutua.icc.instrumentation.Instrumentation;
 public enum SMSAppModuleDALFactoryProfile {
 	
 	RAM {
+		@Override
 		protected void instantiateDataAccessLayers() {
 			super.profileDB = new mutua.smsappmodule.dal.ram.ProfileDB();
 		}
 	},
 	
 	POSTGRESQL {
+		@Override
 		protected void instantiateDataAccessLayers() throws SQLException {
 			super.profileDB = new mutua.smsappmodule.dal.postgresql.ProfileDB();
 		}
 	},
+	
+	MVSTORE {
+		@Override
+		protected void instantiateDataAccessLayers() throws SQLException {
+			super.profileDB = new mutua.smsappmodule.dal.mvstore.ProfileDB();
+		}
+	}
 	
 	;
 	
