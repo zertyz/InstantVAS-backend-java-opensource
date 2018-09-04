@@ -48,8 +48,8 @@ public class InstantVASSMSAppModuleTestsConfiguration {
 	/** method to be called to configure all the modules needed to get the desired instance of 'InstantVASSMSAppModule' base modules */
 	public static void configureDefaultValuesForNewInstances(
 		int performanceTestsLoadFactor, SMSAppModuleDALFactory baseModuleDAL,
-		String postgreSQLConnectionProperties, int postgreSQLConnectionPoolSize,
 		String mvStoreDatabaseFileName,
+		String postgreSQLConnectionProperties, int postgreSQLConnectionPoolSize,
 		boolean postgreSQLAllowDataStructuresAssertion, boolean postreSQLShouldDebugQueries, String postreSQLHostname, int postreSQLPort, String postreSQLDatabase,
 		String postreSQLUser, String postreSQLPassword) throws SQLException {
 		
@@ -94,11 +94,12 @@ public class InstantVASSMSAppModuleTestsConfiguration {
 
 		try {
 			configureDefaultValuesForNewInstances(
+				//1, SMSAppModuleDALFactory.POSTGRESQL,
 				10, SMSAppModuleDALFactory.MVSTORE,
+				// MVStore properties
+				"/tmp/InstantVASSMSAppModuleTests.mvstoredb",
 				// PostgreSQL properties (don't touch default connection properties & pool size)
 				null, 0,
-				// MVStore
-				"/tmp/InstantVASSMSAppModuleTests.mvstoredb",
 				true, false, "venus", 5432, "hangman", "hangman", "hangman");
 		} catch (SQLException e) {
 			throw new ExceptionInInitializerError(e);
