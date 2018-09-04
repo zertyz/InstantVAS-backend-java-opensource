@@ -62,6 +62,8 @@ public class SMSAppModuleChatTestCommons {
 	public int addMO(UserDto user, String moText) throws SQLException {
 		if (chatDB instanceof mutua.smsappmodule.dal.postgresql.ChatDB) {
 			return config.MO_QUEUE_PRODUCER.addToMOQueue(new MO(user.getPhoneNumber(), moText));
+		} else if (chatDB instanceof mutua.smsappmodule.dal.mvstore.ChatDB) {
+			return ((mutua.smsappmodule.dal.mvstore.ChatDB)chatDB).addMO(moText);
 		} else if (chatDB instanceof mutua.smsappmodule.dal.ram.ChatDB) {
 			return ((mutua.smsappmodule.dal.ram.ChatDB)chatDB).addMO(moText);
 		} else {

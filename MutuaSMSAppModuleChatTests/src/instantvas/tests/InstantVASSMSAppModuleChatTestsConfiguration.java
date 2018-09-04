@@ -27,6 +27,7 @@ import mutua.smsappmodule.smslogic.SMSAppModuleCommandsChat;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStates;
 import mutua.smsappmodule.smslogic.navigationstates.SMSAppModuleNavigationStatesChat;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import adapters.MVStoreAdapter;
 import adapters.PostgreSQLAdapter;
 
 /** <pre>
@@ -72,6 +73,7 @@ public class InstantVASSMSAppModuleChatTestsConfiguration {
 	/** method to be called to configure all the modules needed to get instances of the test classes */
 	public static void configureDefaultValuesForNewInstances(
 		int performanceTestsLoadFactor, SMSAppModuleDALFactoryChat chatModuleDAL,
+		String mvStoreDatabaseFileName,
 		String postgreSQLconnectionProperties, int postgreSQLConnectionPoolSize,
 		boolean postgreSQLAllowDataStructuresAssertion, boolean postgreSQLShouldDebugQueries,
 		String postgreSQLHostname, int postgreSQLPort, String postgreSQLDatabase, String postgreSQLUser, String postgreSQLPassword) throws SQLException {
@@ -95,11 +97,15 @@ public class InstantVASSMSAppModuleChatTestsConfiguration {
 				PostgreSQLQueueEventLink.configureDefaultValuesForNewInstances(-1, -1);
 				// chat db
 				SMSAppModulePostgreSQLAdapterChat.configureDefaultValuesForNewInstances(postgreSQLAllowDataStructuresAssertion, postgreSQLShouldDebugQueries,
-					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword,
-					MO_TABLE_NAME, "eventId", "text");
+					postgreSQLHostname, postgreSQLPort, postgreSQLDatabase, postgreSQLUser, postgreSQLPassword);
 				// other databases
 				BASE_MODULE_DAL    = SMSAppModuleDALFactory       .POSTGRESQL;
 				PROFILE_MODULE_DAL = SMSAppModuleDALFactoryProfile.POSTGRESQL;
+				break;
+			case MVSTORE:
+				MVStoreAdapter.configureDefaultValuesForNewInstances(mvStoreDatabaseFileName);
+				BASE_MODULE_DAL    = SMSAppModuleDALFactory       .MVSTORE;
+				PROFILE_MODULE_DAL = SMSAppModuleDALFactoryProfile.MVSTORE;
 				break;
 			case RAM:
 				// other databases
@@ -132,7 +138,11 @@ public class InstantVASSMSAppModuleChatTestsConfiguration {
 		try {
 			configureDefaultValuesForNewInstances(
 				// module DAL
-				1, SMSAppModuleDALFactoryChat   .POSTGRESQL,
+				//1, SMSAppModuleDALFactoryChat   .POSTGRESQL.setInstantiationParameters(MO_TABLE_NAME, "eventId", "text"),
+				1, SMSAppModuleDALFactoryChat   .MVSTORE.   setInstantiationParameters(MO_TABLE_NAME, "0", "1"),
+				//1, SMSAppModuleDALFactoryChat   .RAM,
+				// MVStore properties
+				"/tmp/InstantVASSMSAppModuleTests.mvstoredb",
 				// PostgreSQL properties
 				null,	// connection properties
 				-1,		// connection pool size
@@ -156,11 +166,16 @@ public class InstantVASSMSAppModuleChatTestsConfiguration {
 				MO_QUEUE_LINK     = new PostgreSQLQueueEventLink<ETestAdditionalEventServices>(ETestAdditionalEventServices.class, null, MO_TABLE_NAME, new SpecializedMOQueueDataBureau());
 				MO_QUEUE_PRODUCER = new TestAdditionalEventServer(MO_QUEUE_LINK);
 				break;
+			case MVSTORE:
+				MO_QUEUE_LINK     = null;
+				MO_QUEUE_PRODUCER = null;
+				break;
 			case RAM:
 				MO_QUEUE_LINK     = null;
 				MO_QUEUE_PRODUCER = null;
 				break;
 			default:
+				throw new RuntimeException("Not implemented");
 		}
 
 		Object[] chatModule = SMSAppModuleConfigurationChat.getChatModuleInstances(shortCode, appName,
