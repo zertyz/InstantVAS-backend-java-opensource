@@ -48,7 +48,7 @@ public class InstantVASTester {
 		System.out.println("                      Use this tool regularly to validate refactorings, performance enhancements and");
 		System.out.println("                      ProGuard settings.");
 		System.out.println("                      For a correct algorithm analysis, run these tests on a idle system, with an empty database.");
-		if ((args.length < 5) || (args.length > 10)) {
+		if ((args.length < 6) || (args.length > 11)) {
 			System.out.println("Usage: sudo bash -c 'echo 0 >/proc/sys/vm/swappiness'");
 			System.out.println("       java -Xms1408M -Xmx1408M -Xmn50M -Xss228k -XX:ReservedCodeCacheSize=12M -XX:+AlwaysPreTouch -XX:MaxMetaspaceSize=32M");
 			System.out.println("            -Xbatch -Xcomp -XX:+AggressiveOpts -Xshare:auto -Xverify:none -XX:-UseHugeTLBFS -XX:+RelaxAccessControlCheck");
@@ -57,8 +57,9 @@ public class InstantVASTester {
 			System.out.println("            -XX:CMSInitiatingOccupancyFraction=95 -XX:+ScavengeBeforeFullGC -XX:+CMSScavengeBeforeRemark -XX:+UseNUMA");
 			System.out.println("            -XX:+UseSerialGC -XX:-UseSHM -XX:+UseStringDeduplication -jar");
 			System.out.println("            InstantVASTester.jar <postgresql host/ip> <port> <database name> <user> <password>");
+			System.out.println("                                 <path and name of the MVStore database file>");
 			System.out.println("                                 [number of concurrent database connections]");
-			System.out.println("                                 [data access layer -- one of RAM, POSTGRESQL, MYSQL, EMBEDDED_DERBY]");
+			System.out.println("                                 [data access layer -- one of RAM, POSTGRESQL, MVSTORE, MYSQL, EMBEDDED_DERBY]");
 			System.out.println("                                 [performance tests load factor -- increase '-Xmx' accordingly]");
 			System.out.println("                                 ['true' or 'false' for creating the database model, if necessary (caution!)]");
 			System.out.println("                                 ['true' or 'false' for logging queries]");
@@ -76,11 +77,12 @@ public class InstantVASTester {
 		String       database                     = args[2];
 		String       user                         = args[3];
 		String       password                     = args[4];
-		int          concurrentConnectionsNumber  = args.length >= 6  ? Integer.parseInt(args[5])     : 8;
-		String       dal                          = args.length >= 7  ? args[6]                       : "POSTGRESQL";
-		int          loadFactor                   = args.length >= 8  ? Integer.parseInt(args[7])     : 42;
-		boolean      allowDataStructuresAssertion = args.length >= 9  ? Boolean.parseBoolean(args[8]) : true;
-		boolean      shouldDebugQueries           = args.length >= 10 ? Boolean.parseBoolean(args[9]) : false;
+		String       mvStoreDatabaseFile          = args[5];
+		int          concurrentConnectionsNumber  = args.length >= 7  ? Integer.parseInt(args[6])      : 8;
+		String       dal                          = args.length >= 8  ? args[7]                        : "POSTGRESQL";
+		int          loadFactor                   = args.length >= 9  ? Integer.parseInt(args[8])      : 42;
+		boolean      allowDataStructuresAssertion = args.length >= 10 ? Boolean.parseBoolean(args[9])  : true;
+		boolean      shouldDebugQueries           = args.length >= 11 ? Boolean.parseBoolean(args[10]) : false;
 		ELogSeverity logSeverity                  = shouldDebugQueries ? ELogSeverity.DEBUG : ELogSeverity.ERROR;
 		String       connectionProperties         = PostgreSQLAdapter.CONNECTION_PROPERTIES;
 
@@ -90,6 +92,7 @@ public class InstantVASTester {
 		System.out.println("\tdatabase                    : "+database);
 		System.out.println("\tuser                        : "+user);
 		System.out.println("\tpassword                    : "+password);
+		System.out.println("\tMVStore file                : "+mvStoreDatabaseFile);
 		System.out.println("\tconcurrentConnectionsNumber : "+concurrentConnectionsNumber);
 		System.out.println("\tdal                         : "+dal);
 		System.out.println("\tloadFactor                  : "+loadFactor);
@@ -111,6 +114,12 @@ public class InstantVASTester {
 			profileModuleDAL = SMSAppModuleDALFactoryProfile     .POSTGRESQL;
 			chatModuleDAL    = SMSAppModuleDALFactoryChat        .POSTGRESQL;
 			hangmanModuleDAL = SMSAppModuleDALFactoryHangman     .POSTGRESQL;
+		} else if ("MVSTORE".equals(dal)) {
+			baseModuleDAL    = SMSAppModuleDALFactory            .MVSTORE;
+			subscriptionDAL  = SMSAppModuleDALFactorySubscription.MVSTORE;
+			profileModuleDAL = SMSAppModuleDALFactoryProfile     .MVSTORE;
+			chatModuleDAL    = SMSAppModuleDALFactoryChat        .MVSTORE;
+			hangmanModuleDAL = SMSAppModuleDALFactoryHangman     .MVSTORE;
 		} else if ("RAM".equals(dal)) {
 			baseModuleDAL    = SMSAppModuleDALFactory            .RAM;
 			subscriptionDAL  = SMSAppModuleDALFactorySubscription.RAM;
@@ -129,12 +138,12 @@ public class InstantVASTester {
 			// configure postgreSQL queues
 			MutuaEventsAdditionalEventLinksTestsConfiguration   .configureDefaultValuesForNewInstances(loadFactor, -1, -1,           connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
 		}
-		InstantVASSMSAppModuleTestsConfiguration            .configureDefaultValuesForNewInstances(loadFactor, baseModuleDAL,    connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
-		InstantVASSMSAppModuleHelpTestsConfiguration        .configureDefaultValuesForNewInstances(            baseModuleDAL,    connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
-		InstantVASSMSAppModuleSubscriptionTestsConfiguration.configureDefaultValuesForNewInstances(loadFactor, subscriptionDAL,  connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
-		InstantVASSMSAppModuleProfileTestsConfiguration     .configureDefaultValuesForNewInstances(loadFactor, profileModuleDAL, connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);	
-		InstantVASSMSAppModuleChatTestsConfiguration        .configureDefaultValuesForNewInstances(loadFactor, chatModuleDAL,    connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
-		InstantVASSMSAppModuleHangmanTestsConfiguration     .configureDefaultValuesForNewInstances(loadFactor, hangmanModuleDAL, connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
+		InstantVASSMSAppModuleTestsConfiguration            .configureDefaultValuesForNewInstances(loadFactor, baseModuleDAL,    mvStoreDatabaseFile, connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
+		InstantVASSMSAppModuleHelpTestsConfiguration        .configureDefaultValuesForNewInstances(            baseModuleDAL,                         connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
+		InstantVASSMSAppModuleSubscriptionTestsConfiguration.configureDefaultValuesForNewInstances(loadFactor, subscriptionDAL,  mvStoreDatabaseFile, connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
+		InstantVASSMSAppModuleProfileTestsConfiguration     .configureDefaultValuesForNewInstances(loadFactor, profileModuleDAL, mvStoreDatabaseFile, connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);	
+		InstantVASSMSAppModuleChatTestsConfiguration        .configureDefaultValuesForNewInstances(loadFactor, chatModuleDAL,    mvStoreDatabaseFile, connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
+		InstantVASSMSAppModuleHangmanTestsConfiguration     .configureDefaultValuesForNewInstances(loadFactor, hangmanModuleDAL, mvStoreDatabaseFile, connectionProperties, concurrentConnectionsNumber, allowDataStructuresAssertion, shouldDebugQueries, hostname, port, database, user, password);
 		
 		
 				

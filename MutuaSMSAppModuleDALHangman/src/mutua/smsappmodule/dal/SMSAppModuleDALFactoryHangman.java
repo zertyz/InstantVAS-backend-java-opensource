@@ -4,6 +4,7 @@ import java.sql.SQLException;
 
 import mutua.icc.configuration.annotations.ConfigurableElement;
 import mutua.icc.instrumentation.Instrumentation;
+import mutua.smsappmodule.dal.mvstore.MatchDB;
 
 /** <pre>
  * SMSAppModuleDALFactoryHangman.java
@@ -39,6 +40,14 @@ public enum SMSAppModuleDALFactoryHangman {
 			super.nextBotWordsDB = new mutua.smsappmodule.dal.postgresql.NextBotWordsDB();
 		}
 	},
+	
+	MVSTORE {
+		@Override
+		protected void instantiateDataAccessLayers() {
+			super.matchDB        = new mutua.smsappmodule.dal.mvstore.MatchDB();
+			super.nextBotWordsDB = new mutua.smsappmodule.dal.mvstore.NextBotWordsDB();
+		}
+	}
 	
 	;
 	

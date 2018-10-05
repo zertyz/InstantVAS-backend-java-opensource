@@ -3,6 +3,7 @@ package mutua.smsappmodule.dal;
 import java.sql.SQLException;
 
 import mutua.icc.instrumentation.Instrumentation;
+import mutua.smsappmodule.dal.mvstore.SubscriptionDB;
 
 /** <pre>
  * SMSAppModuleDALFactorySubscription.java
@@ -39,6 +40,13 @@ public enum SMSAppModuleDALFactorySubscription {
 		}
 	},
 	
+	MVSTORE {
+		@Override
+		protected void instantiateDataAccessLayers() {
+			super.subscriptionDB = new mutua.smsappmodule.dal.mvstore.SubscriptionDB();
+		}
+	}
+
 	;
 	
 	

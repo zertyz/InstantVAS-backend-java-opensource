@@ -32,8 +32,9 @@ public class ProfileDB implements IProfileDB {
 	// databases
 	private IUserDB userDB;
 	
+	
 	public ProfileDB() {
-		MVStore store   = MVStoreAdapter.getStore();
+		MVStore store            = MVStoreAdapter.getStore();
 		nicknameByPhone          = store.openMap("smsappmoduleprofile.NicknameByPhone",  new MVMap.Builder<String, String>());
 		phoneByLowerCaseNickname = store.openMap("smsappmoduleprofile.PhoneByNickname",  new MVMap.Builder<String, String>());
 		userDB                   = SMSAppModuleDALFactory.MVSTORE.getUserDB();

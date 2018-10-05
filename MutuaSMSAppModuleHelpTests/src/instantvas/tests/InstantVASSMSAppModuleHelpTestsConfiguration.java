@@ -71,6 +71,8 @@ public class InstantVASSMSAppModuleHelpTestsConfiguration {
 				SMSAppModulePostgreSQLAdapter.configureDefaultValuesForNewInstances(postgreSQLAllowDataStructuresAssertion, postreSQLShouldDebugQueries,
 					postreSQLHostname, postreSQLPort, postreSQLDatabase, postreSQLUser, postreSQLPassword);
 				break;
+			case MVSTORE:
+				break;
 			case RAM:
 				break;
 			default:

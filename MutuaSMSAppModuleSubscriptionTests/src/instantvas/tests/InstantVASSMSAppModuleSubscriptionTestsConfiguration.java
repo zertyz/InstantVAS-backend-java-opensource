@@ -2,6 +2,7 @@ package instantvas.tests;
 
 import java.sql.SQLException;
 
+import adapters.MVStoreAdapter;
 import adapters.PostgreSQLAdapter;
 import mutua.icc.instrumentation.Instrumentation;
 import mutua.icc.instrumentation.InstrumentableEvent.ELogSeverity;
@@ -62,6 +63,7 @@ public class InstantVASSMSAppModuleSubscriptionTestsConfiguration {
 	/** method to be called to configure all the modules needed to get instances of the test classes */
 	public static void configureDefaultValuesForNewInstances( 
 		int performanceTestsLoadFactor, SMSAppModuleDALFactorySubscription subscriptionDAL,
+		String mvStoreDatabaseFileName,
 		String postgreSQLconnectionProperties, int postgreSQLConnectionPoolSize,
 		boolean postgreSQLAllowDataStructuresAssertion, boolean postgreSQLShouldDebugQueries,
 		String postgreSQLHostname, int postgreSQLPort, String postgreSQLDatabase, String postgreSQLUser, String postgreSQLPassword) throws SQLException {
@@ -82,6 +84,9 @@ public class InstantVASSMSAppModuleSubscriptionTestsConfiguration {
 				// other databases
 				BASE_MODULE_DAL = SMSAppModuleDALFactory.POSTGRESQL;
 				break;
+			case MVSTORE:
+				MVStoreAdapter.configureDefaultValuesForNewInstances(mvStoreDatabaseFileName);
+				BASE_MODULE_DAL = SMSAppModuleDALFactory.MVSTORE;
 			case RAM:
 				// other databases
 				BASE_MODULE_DAL = SMSAppModuleDALFactory.RAM;
@@ -113,7 +118,10 @@ public class InstantVASSMSAppModuleSubscriptionTestsConfiguration {
 		try {
 			configureDefaultValuesForNewInstances(
 				// modules DAL
-				1, SMSAppModuleDALFactorySubscription.POSTGRESQL,
+				//1, SMSAppModuleDALFactorySubscription.POSTGRESQL,
+				10, SMSAppModuleDALFactorySubscription.MVSTORE,
+				// MVStore properties
+				"/tmp/InstantVASSMSAppModuleTests.mvstoredb",
 				// PostgreSQL properties
 				null,	// connection properties
 				-1,		// connection pool size

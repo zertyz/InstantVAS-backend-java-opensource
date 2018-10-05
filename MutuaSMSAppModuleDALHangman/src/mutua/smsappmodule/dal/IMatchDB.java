@@ -23,7 +23,7 @@ public interface IMatchDB {
 	/** Resets the database, for testing purposes */
 	void reset() throws SQLException;
 
-	/** Stores & mark a 'MatchDto' as active, return it's 'matchId' */
+	/** Stores & mark a 'MatchDto' as active, return it's 'matchId'. Also, sets the ID on the 'match' parameter. */
 	int storeNewMatch(MatchDto match) throws SQLException;
 	
 	/** Retrieves a 'MatchDto' from the database */

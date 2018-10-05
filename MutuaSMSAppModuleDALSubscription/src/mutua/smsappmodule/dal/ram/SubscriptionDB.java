@@ -11,7 +11,7 @@ import mutua.smsappmodule.dto.UserDto;
  * ===================
  * (created by luiz, Jul 24, 2015)
  *
- * Implements the RAM version of {@link ISubscriptionDB}
+ * Implements the RAM version of {@link ISubscriptionDB}.
  *
  * @see ISubscriptionDB
  * @version $Id$
